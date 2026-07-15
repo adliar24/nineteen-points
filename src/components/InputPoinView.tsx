@@ -299,7 +299,7 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
       {/* INPUT WORKSPACE (Full Width) */}
       <div className="lg:col-span-12 space-y-4">
         
-        <h2 className="text-xl font-extrabold text-brand-950 tracking-tight">Pencatatan Poin Siswa</h2>
+        <h2 className="text-xl font-extrabold text-brand-950 tracking-tight">Pencatatan Poin Murid</h2>
         
         {/* Active Teacher Inline Info */}
         <div className="flex items-center justify-between text-xs text-brand-500 bg-white px-4 py-2.5 rounded-xl border border-brand-100/60 shadow-xs">
@@ -337,7 +337,7 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
               }`}
             >
               <Search className="w-4 h-4" />
-              Cari Siswa
+              Cari Murid
             </button>
           </div>
         )}
@@ -405,7 +405,7 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
                 {inputMethod === "manual" && (
                   <div className="space-y-4 flex-1 flex flex-col justify-start">
                     <div className="space-y-2">
-                      <label className="text-xs font-black text-brand-900 uppercase tracking-wider block">Cari Siswa Terdaftar</label>
+                      <label className="text-xs font-black text-brand-900 uppercase tracking-wider block">Cari Murid Terdaftar</label>
                       <div className="flex flex-col sm:flex-row gap-3">
                         <div className="relative flex-1">
                           <Search className="w-4.5 h-4.5 text-brand-400 absolute left-4 top-1/2 -translate-y-1/2" />
@@ -451,7 +451,7 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
                         ))
                       ) : (
                         <div className="py-12 text-center text-xs text-brand-400 font-bold">
-                          Siswa tidak ditemukan. Silakan periksa kembali ketikan Anda.
+                          Murid tidak ditemukan. Silakan periksa kembali ketikan Anda.
                         </div>
                       )}
                     </div>

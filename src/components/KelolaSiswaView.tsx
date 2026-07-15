@@ -327,21 +327,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
   const totalPages = Math.ceil(filteredSiswa.length / itemsPerPage);
   const paginatedSiswa = filteredSiswa.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
   
-  const renderPageNumbers = () => {
-    const pageNumbers = [];
-    const maxVisiblePages = 5;
-    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-    
-    if (endPage - startPage + 1 < maxVisiblePages) {
-      startPage = Math.max(1, endPage - maxVisiblePages + 1);
-    }
-    
-    for (let i = startPage; i <= endPage; i++) {
-      pageNumbers.push(i);
-    }
-    return pageNumbers;
-  };
+
 
   // Selection Checkboxes
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -421,12 +407,12 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
       setIsAddSiswaModalOpen(false);
       
       if (authCreated) {
-        showToast(`Siswa "${upperNama}" & akun login berhasil dibuat.`);
+        showToast(`Murid "${upperNama}" & akun login berhasil dibuat.`);
       } else {
-        showToast(`Siswa "${upperNama}" disimpan (gagal membuat akun login).`);
+        showToast(`Murid "${upperNama}" disimpan (gagal membuat akun login).`);
       }
     } catch (err: any) {
-      setAddSiswaError("Gagal menambahkan siswa: " + err.message);
+      setAddSiswaError("Gagal menambahkan murid: " + err.message);
     }
   };
 
@@ -446,7 +432,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
 
       await syncSiswa();
       setSelectedSiswaIds(selectedSiswaIds.filter(item => item !== id));
-      showToast(`Siswa "${nama}" telah dihapus.`);
+      showToast(`Murid "${nama}" telah dihapus.`);
     } catch (err: any) {
       alert("Gagal menghapus siswa: " + err.message);
     }
@@ -479,7 +465,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
   const downloadExcelTemplate = () => {
     try {
       const data = [
-        ["NIS", "Nama Siswa", "Kelas"],
+        ["NIS", "Nama Murid", "Kelas"],
         ["19001", "Ahmad Fauzi", "XII IPA 1"],
         ["19002", "Siti Aminah", "XII IPA 2"],
         ["19003", "Rian Hidayat", "XII IPS 1"],
@@ -488,7 +474,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
       
       const worksheet = XLSX.utils.aoa_to_sheet(data);
       const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Template Siswa SMAN 19");
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Template Murid SMAN 19");
       
       // Auto fit columns optionally
       worksheet["!cols"] = [
@@ -1189,7 +1175,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
       )}
 
 
-      <h2 className="text-xl font-extrabold text-brand-950 tracking-tight">Data Siswa</h2>
+      <h2 className="text-xl font-extrabold text-brand-950 tracking-tight">Data Murid</h2>
 
       {/* SEARCH & CONTROLS BAR */}
       <div className="bg-white p-5 rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -1313,7 +1299,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
             <div className="bg-rose-50 border border-rose-100 rounded-3xl p-4 flex items-center justify-between shadow-lg shadow-rose-900/5 mb-2">
               <div className="flex items-center gap-2.5">
                 <Trash2 className="w-5 h-5 text-rose-600 animate-pulse" />
-                <span className="text-xs font-black text-rose-950 uppercase tracking-wider">{selectedSiswaIds.length} Siswa Terpilih</span>
+                <span className="text-xs font-black text-rose-950 uppercase tracking-wider">{selectedSiswaIds.length} Murid Terpilih</span>
               </div>
               <div className="flex items-center gap-2">
                 <button
@@ -1391,7 +1377,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                 ) : paginatedSiswa.length === 0 ? (
                   <tr>
                     <td colSpan={userSession.role === "guru" ? 7 : 8} className="text-center py-12 text-slate-400 text-xs font-bold">
-                      Tidak ada siswa yang ditemukan.
+                      Tidak ada murid yang ditemukan.
                     </td>
                   </tr>
                 ) : (
@@ -1483,7 +1469,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
           {/* Table Pagination & Actions Footer */}
           <div className="bg-brand-50/30 p-4 border-t border-brand-100 text-sm text-brand-500 font-bold flex flex-col sm:flex-row items-center justify-between gap-3">
             <span>
-              Menampilkan {filteredSiswa.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} - {Math.min(currentPage * itemsPerPage, filteredSiswa.length)} dari {filteredSiswa.length} siswa
+              Menampilkan {filteredSiswa.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} - {Math.min(currentPage * itemsPerPage, filteredSiswa.length)} dari {filteredSiswa.length} murid
             </span>
             
             {/* Pagination Controls */}
@@ -1496,19 +1482,32 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                 >
                   &larr; Prev
                 </button>
-                {renderPageNumbers().map((pageNum) => (
-                  <button
-                    key={pageNum}
-                    onClick={() => setCurrentPage(pageNum)}
-                    className={`px-4 py-2 rounded-xl border text-sm font-black transition-all cursor-pointer ${
-                      currentPage === pageNum
-                        ? "bg-brand-600 border-brand-600 text-white"
-                        : "bg-white hover:bg-brand-50 border-brand-200 text-brand-800"
-                    }`}
-                  >
-                    {pageNum}
-                  </button>
-                ))}
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter(pageNum => pageNum === 1 || pageNum === totalPages || Math.abs(pageNum - currentPage) <= 1)
+                  .reduce<(number | string)[]>((acc, pageNum, i, arr) => {
+                    if (i > 0 && typeof arr[i - 1] === "number" && (pageNum as number) - (arr[i - 1] as number) > 1) {
+                      acc.push("...");
+                    }
+                    acc.push(pageNum);
+                    return acc;
+                  }, [])
+                  .map((pageNum, i) => (
+                    typeof pageNum === "string" ? (
+                      <span key={`ellipsis-${i}`} className="px-2 text-brand-400">...</span>
+                    ) : (
+                      <button
+                        key={pageNum}
+                        onClick={() => setCurrentPage(pageNum)}
+                        className={`px-4 py-2 rounded-xl border text-sm font-black transition-all cursor-pointer ${
+                          currentPage === pageNum
+                            ? "bg-brand-600 border-brand-600 text-white"
+                            : "bg-white hover:bg-brand-50 border-brand-200 text-brand-800"
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    )
+                  ))}
                 <button
                   disabled={currentPage === totalPages}
                   onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
@@ -1532,7 +1531,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
             setSiswaToDelete(null);
           }
         }}
-        title="Hapus Data Siswa?"
+        title="Hapus Data Murid?"
         message={`Apakah Anda yakin ingin menghapus data "${siswaToDelete?.nama}" secara permanen? Semua riwayat absensi & sanksi miliknya akan ikut terhapus.`}
         confirmText="Ya, Hapus"
         cancelText="Batal"
@@ -1547,8 +1546,8 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
           executeDeleteSelected();
           setIsBulkDeleteConfirm(false);
         }}
-        title="Hapus Massal Data Siswa?"
-        message={`Apakah Anda yakin ingin menghapus ${selectedSiswaIds.length} data siswa terpilih secara permanen? Semua akun login, riwayat absensi & sanksi milik mereka akan ikut terhapus.`}
+        title="Hapus Massal Data Murid?"
+        message={`Apakah Anda yakin ingin menghapus ${selectedSiswaIds.length} data murid terpilih secara permanen? Semua akun login, riwayat absensi & sanksi milik mereka akan ikut terhapus.`}
         confirmText="Ya, Hapus Semua"
         cancelText="Batal"
         type="danger"
@@ -1565,7 +1564,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
               className="bg-white rounded-3xl shadow-2xl border border-brand-100 p-6 max-w-sm w-full space-y-5"
             >
               <div className="flex justify-between items-start">
-                <h4 className="text-lg font-black text-brand-950">Detail Siswa</h4>
+                <h4 className="text-lg font-black text-brand-950">Detail Murid</h4>
                 <button
                   onClick={() => setDetailStudent(null)}
                   className="p-2 hover:bg-brand-50 text-brand-400 hover:text-brand-700 rounded-xl transition-all cursor-pointer"
@@ -1641,7 +1640,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
               className="bg-white rounded-3xl shadow-2xl border border-brand-150 p-6 max-w-md w-full space-y-5"
             >
               <div className="flex justify-between items-center">
-                <h4 className="text-lg font-black text-brand-950">Tambah Siswa Baru SMAN 19</h4>
+                <h4 className="text-lg font-black text-brand-950">Tambah Murid Baru SMAN 19</h4>
                 <button
                   onClick={() => setIsAddSiswaModalOpen(false)}
                   className="p-2 hover:bg-brand-50 text-brand-400 hover:text-brand-700 rounded-xl transition-all cursor-pointer"
@@ -1658,7 +1657,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
 
               <form onSubmit={handleAddSiswa} className="space-y-4">
                 <div className="space-y-1">
-                  <label className="text-[10px] font-black text-brand-400 uppercase tracking-wider block">Nomor Induk Siswa (NIS)</label>
+                  <label className="text-[10px] font-black text-brand-400 uppercase tracking-wider block">Nomor Induk Murid (NIS)</label>
                   <input
                     type="text"
                     required
@@ -1670,7 +1669,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10px] font-black text-brand-400 uppercase tracking-wider block">Nama Lengkap Siswa</label>
+                  <label className="text-[10px] font-black text-brand-400 uppercase tracking-wider block">Nama Lengkap Murid</label>
                   <input
                     type="text"
                     required
@@ -1719,7 +1718,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
                   <FileSpreadsheet className="w-5 h-5 text-brand-600" />
-                  <h4 className="text-base font-black text-brand-950">Impor Data Siswa</h4>
+                  <h4 className="text-base font-black text-brand-950">Impor Data Murid</h4>
                 </div>
                 <button
                   onClick={() => setIsImportModalOpen(false)}
@@ -1796,7 +1795,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                       <div className="text-[10px] text-brand-500 font-medium">
                         Ketik langsung atau tempel baris-baris data Anda dengan format:
                         <code className="block p-2 bg-slate-900 text-slate-100 rounded-lg text-[10px] font-mono font-bold select-all mt-1.5">
-                          NIS,NamaSiswa,Kelas<br />
+                          NIS,NamaMurid,Kelas<br />
                           19013,Cahya Lestari,XII IPS 1
                         </code>
                       </div>
@@ -1938,7 +1937,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                             <tr className="bg-brand-50/40 border-b border-brand-100 text-brand-500 font-black uppercase tracking-wider text-[10px]">
                               <th className="py-3 px-4">Nama File</th>
                               <th className="py-3 px-4">Tinjau Foto</th>
-                              <th className="py-3 px-4">Siswa Terpetakan</th>
+                              <th className="py-3 px-4">Murid Terpetakan</th>
                               <th className="py-3 px-4 text-center">Status</th>
                               <th className="py-3 px-4">Ubah Pemetaan</th>
                             </tr>

@@ -176,7 +176,7 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
         <AlertCircle className="w-12 h-12 text-rose-500 mx-auto animate-bounce" />
         <h3 className="text-base font-extrabold text-brand-900">NIS Tidak Terhubung</h3>
         <p className="text-xs text-brand-500 leading-relaxed">
-          Akun siswa Anda belum terhubung dengan nomor induk siswa (NIS) yang terdaftar di database. Silakan hubungi Super Admin untuk menyinkronkan NIS Anda.
+          Akun murid Anda belum terhubung dengan nomor induk murid (NIS) yang terdaftar di database. Silakan hubungi Super Admin untuk menyinkronkan NIS Anda.
         </p>
       </div>
     );

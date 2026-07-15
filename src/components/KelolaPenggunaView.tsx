@@ -133,7 +133,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
 
     if (role === "siswa") {
       if (!selectedNis) {
-        setErrorMsg("NIS wajib dipilih untuk pengguna dengan peran Siswa.");
+        setErrorMsg("NIS wajib dipilih untuk pengguna dengan peran Murid.");
         return;
       }
       if (!fullName) {
@@ -512,7 +512,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
           }`}
         >
           <Users className="w-4 h-4" />
-          Kelola Data Siswa
+          Kelola Data Murid
         </button>
       </div>
 
@@ -679,7 +679,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
                     <th className="py-4 px-6">Nama Lengkap</th>
                     <th className="py-4 px-6">Username / Email</th>
                     <th className="py-4 px-6">Peran (Role)</th>
-                    <th className="py-4 px-6">Tautan NIS Siswa</th>
+                    <th className="py-4 px-6">Tautan NIS Murid</th>
                     <th className="py-4 px-6">Terdaftar Pada</th>
                     <th className="py-4 px-6 text-right">Aksi</th>
                   </tr>
@@ -875,7 +875,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
                             : "bg-white border-brand-100 text-brand-600 hover:bg-brand-50"
                         }`}
                       >
-                        {r === "guru" ? "Guru" : r === "siswa" ? "Siswa" : "Piket"}
+                        {r === "guru" ? "Guru" : r === "siswa" ? "Murid" : "Piket"}
                       </button>
                     ))}
                   </div>
@@ -909,7 +909,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
                         disabled={role === "siswa"}
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
-                        placeholder={role === "siswa" ? "Pilih Siswa terlebih dahulu" : "Nama Lengkap Guru & Gelar"}
+                        placeholder={role === "siswa" ? "Pilih Murid terlebih dahulu" : "Nama Lengkap Guru & Gelar"}
                         className="w-full border border-brand-100 rounded-xl py-2.5 pl-10 pr-4 text-sm font-semibold focus:ring-1 focus:ring-brand-500 outline-none text-brand-900 bg-brand-50/20 disabled:opacity-75"
                       />
                     </div>
@@ -932,7 +932,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
 
                 {role === "siswa" && (
                   <div className="space-y-1 animate-slide-up">
-                    <label className="text-xs font-black text-brand-900 uppercase block">Hubungkan NIS Siswa</label>
+                    <label className="text-xs font-black text-brand-900 uppercase block">Hubungkan NIS Murid</label>
                     <select
                       required
                       value={selectedNis}
@@ -943,7 +943,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
                       }}
                       className="w-full border border-brand-100 rounded-xl py-2.5 px-3 text-sm font-bold text-brand-800 outline-none focus:ring-1 focus:ring-brand-500 bg-white"
                     >
-                      <option value="">-- Pilih NIS & Nama Siswa --</option>
+                      <option value="">-- Pilih NIS & Nama Murid --</option>
                       {studentsList.map((s) => (
                         <option key={s.id} value={s.nis}>
                           [{s.nis}] {s.nama} ({s.kelas})
@@ -989,7 +989,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
 
                 {(role === "guru" || role === "siswa") && (
                   <div className="text-[10px] font-bold text-brand-500 bg-brand-50/60 border border-brand-100/50 p-3 rounded-2xl space-y-1 animate-slide-up leading-relaxed">
-                    <div><strong className="text-brand-900 font-extrabold">Username (Login):</strong> {role === "siswa" ? (selectedNis || "[NIS Siswa]") : (nip || "[NIP Guru]")}</div>
+                    <div><strong className="text-brand-900 font-extrabold">Username (Login):</strong> {role === "siswa" ? (selectedNis || "[NIS Murid]") : (nip || "[NIP Guru]")}</div>
                     <div><strong className="text-brand-900 font-extrabold">Password:</strong> {role === "siswa" ? "siswa19" : "guru19*"}</div>
                   </div>
                 )}
@@ -1119,7 +1119,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
 
               <div className="space-y-4">
                 <p className="text-xs text-brand-500 leading-relaxed font-medium">
-                  Unggah file Excel Anda yang berisi data akun Guru dan Siswa. Gunakan format tabel yang sesuai agar registrasi berjalan lancar.
+                  Unggah file Excel Anda yang berisi data akun Guru dan Murid. Gunakan format tabel yang sesuai agar registrasi berjalan lancar.
                 </p>
 
                 <div className="bg-brand-50/70 border border-brand-100 rounded-2xl p-4 flex items-center justify-between gap-3">

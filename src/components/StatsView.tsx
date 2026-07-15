@@ -60,7 +60,7 @@ export default function StatsView() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <h2 className="text-xl font-extrabold text-brand-950 tracking-tight">Statistik Karakter Siswa</h2>
+        <h2 className="text-xl font-extrabold text-brand-950 tracking-tight">Statistik Karakter Murid</h2>
 
         {/* Metric Cards Skeleton */}
         <SkeletonLoader type="metrics" />
@@ -122,7 +122,7 @@ export default function StatsView() {
   const classChartData = Object.keys(classGroups).map(className => ({
     name: className,
     "Rata-rata Poin": Math.round(classGroups[className].total / classGroups[className].count),
-    "Jumlah Siswa": classGroups[className].count
+    "Jumlah Murid": classGroups[className].count
   }));
 
   // 3. Top 5 Students by Achievement (Highest total_poin)
@@ -176,14 +176,14 @@ export default function StatsView() {
     <div className="space-y-6 animate-fade-in font-sans">
       
       {/* Page Title (Simple text, no board, no border, no icon) */}
-      <h2 className="text-xl font-extrabold text-brand-950 tracking-tight">Statistik Karakter Siswa</h2>
+      <h2 className="text-xl font-extrabold text-brand-950 tracking-tight">Statistik Karakter Murid</h2>
 
       {/* 2. LARGE METRIC CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Total Siswa */}
         <div className="bg-white p-5 rounded-3xl border border-brand-100/60 shadow-md shadow-brand-900/5 flex items-center justify-between">
           <div>
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Total Siswa</span>
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Total Murid</span>
             <span className="text-3xl font-black text-brand-950 block mt-1">{totalSiswa}</span>
             <span className="text-[10px] font-bold text-brand-500 mt-1 block">Aktif Terdaftar</span>
           </div>

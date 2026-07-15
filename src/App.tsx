@@ -174,7 +174,7 @@ export default function App() {
   let navItems = [
     { id: "stats", label: "Statistik Poin", icon: TrendingUp, description: "Ikhtisar & analisis grafik" },
     { id: "input", label: "Input Poin", icon: Camera, description: "Catat via QR atau pencarian" },
-    { id: "students", label: "Kelola Siswa", icon: Users, description: "Database & kartu pelajar" },
+    { id: "students", label: "Kelola Murid", icon: Users, description: "Database & kartu pelajar" },
     { id: "history", label: "Riwayat Poin", icon: Calendar, description: "Audit trail pencatatan" },
     { id: "rules", label: "Pengaturan Poin", icon: Settings, description: "Atur sanksi & prestasi" },
   ];
@@ -187,14 +187,14 @@ export default function App() {
   } else if (userSession.role === "guru") {
     navItems = [
       { id: "input", label: "Input Poin", icon: Camera, description: "Catat via QR atau pencarian" },
-      { id: "students", label: "Data Siswa", icon: Users, description: "Lihat database & kartu pelajar" },
+      { id: "students", label: "Data Murid", icon: Users, description: "Lihat database & kartu pelajar" },
     ];
   } else if (userSession.role === "super_admin") {
     navItems.push({
       id: "users",
       label: "Kelola Akun",
       icon: ShieldCheck,
-      description: "Atur akun guru & siswa"
+      description: "Atur akun guru & murid"
     });
   } else if (userSession.role === "siswa") {
     navItems = [
@@ -300,7 +300,7 @@ export default function App() {
                   <p className="text-[11px] md:text-xs font-bold text-white md:!text-[#1e1b4b] tracking-wide whitespace-nowrap">{userSession.fullName}</p>
                   <div className="flex items-center justify-end gap-1 text-[9px] md:text-[10px] text-brand-200 md:!text-slate-500 font-extrabold uppercase tracking-widest mt-0.5">
                     <ShieldCheck className="w-2.5 h-2.5 text-accent-500" />
-                    <span>{userSession.role.replace("_", " ")}</span>
+                    <span>{userSession.role === "siswa" ? "murid" : userSession.role.replace("_", " ")}</span>
                   </div>
                 </div>
                 {(userSession.foto_url && !headerImgFailed) ? (

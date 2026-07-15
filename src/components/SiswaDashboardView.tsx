@@ -11,7 +11,8 @@ import {
   Clock, 
   AlertCircle,
   School,
-  Sparkles
+  Sparkles,
+  Check
 } from "lucide-react";
 import { UserSession, RiwayatPoin, Siswa } from "../types";
 import { supabase } from "../supabaseClient";
@@ -19,9 +20,10 @@ import html2canvas from "html2canvas-pro";
 
 interface SiswaDashboardViewProps {
   userSession: UserSession;
+  activeTab: string;
 }
 
-export default function SiswaDashboardView({ userSession }: SiswaDashboardViewProps) {
+export default function SiswaDashboardView({ userSession, activeTab }: SiswaDashboardViewProps) {
   const [siswaDetail, setSiswaDetail] = useState<Siswa | null>(null);
   const [riwayat, setRiwayat] = useState<RiwayatPoin[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -77,7 +79,7 @@ export default function SiswaDashboardView({ userSession }: SiswaDashboardViewPr
   const handleDownloadCard = async () => {
     if (!siswaDetail) return;
     setIsDownloading(true);
-    const cardElement = document.getElementById("student-digital-card");
+    const cardElement = document.getElementById("student-digital-card-portrait");
     if (cardElement) {
       try {
         const canvas = await html2canvas(cardElement, {
@@ -122,222 +124,382 @@ export default function SiswaDashboardView({ userSession }: SiswaDashboardViewPr
   const totalPrestasi = riwayat.filter(r => r.nilai_diberikan > 0).reduce((acc, r) => acc + r.nilai_diberikan, 0);
   const totalPelanggaran = riwayat.filter(r => r.nilai_diberikan < 0).reduce((acc, r) => acc + r.nilai_diberikan, 0);
 
+  const isSafe = siswaDetail.total_poin >= 100;
+  const isWarning = siswaDetail.total_poin >= 50 && siswaDetail.total_poin < 100;
+
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-6">
       
-      {/* Welcome Banner */}
-      <div className="bg-white rounded-3xl p-6 border border-brand-100 shadow-xl shadow-brand-900/5 flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="space-y-1">
-          <h2 className="text-2xl font-black text-brand-900 flex items-center gap-2">
-            Halo, {siswaDetail.nama}! <Sparkles className="w-5 h-5 text-amber-500 animate-pulse" />
-          </h2>
-          <p className="text-xs text-brand-500 font-medium">
-            Selamat datang di Portal Nilai & Karakter Siswa. Pantau terus prestasimu!
-          </p>
-        </div>
-        <div className="flex gap-4">
-          <div className="bg-brand-50/70 border border-brand-100 rounded-2xl px-5 py-3 text-center min-w-[100px]">
-            <span className="text-[10px] font-black text-brand-500 block uppercase tracking-wider">Total Skor</span>
-            <span className="text-xl font-black text-brand-900">{siswaDetail.total_poin} pts</span>
-          </div>
-          <div className="bg-emerald-50/70 border border-emerald-100 rounded-2xl px-5 py-3 text-center min-w-[100px]">
-            <span className="text-[10px] font-black text-emerald-600 block uppercase tracking-wider">Kelas</span>
-            <span className="text-base font-extrabold text-emerald-800">{siswaDetail.kelas}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Grid: Card Generator + Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
-        
-        {/* Left Side: Student Card (5 cols) */}
-        <div className="md:col-span-5 space-y-4">
-          <div className="flex justify-between items-center px-1">
-            <h3 className="text-sm font-black text-brand-950 uppercase tracking-widest">Kartu Pelajar Digital</h3>
-            <button
-              onClick={handleDownloadCard}
-              disabled={isDownloading}
-              className="text-xs font-bold text-brand-600 hover:text-brand-800 flex items-center gap-1.5 transition-colors cursor-pointer"
-            >
-              <Download className="w-4 h-4" />
-              {isDownloading ? "Mengunduh..." : "Download PNG"}
-            </button>
+      {/* 1. STATISTIK TAB */}
+      {activeTab === "siswa_stats" && (
+        <div className="space-y-6 animate-fade-in">
+          {/* Welcome Banner */}
+          <div className="bg-white rounded-3xl p-6 border border-brand-100 shadow-xl shadow-brand-900/5 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="space-y-1">
+              <h2 className="text-2xl font-black text-brand-900 flex items-center gap-2">
+                Halo, {siswaDetail.nama}! <Sparkles className="w-5 h-5 text-amber-500 animate-pulse" />
+              </h2>
+              <p className="text-xs text-brand-500 font-medium">
+                Selamat datang di Portal Nilai & Karakter Siswa SMAN 19 Bandung. Pantau terus prestasimu!
+              </p>
+            </div>
+            <div className="flex gap-4">
+              <div className="bg-brand-50/70 border border-brand-100 rounded-2xl px-5 py-3 text-center min-w-[100px]">
+                <span className="text-[10px] font-black text-brand-500 block uppercase tracking-wider">Total Skor</span>
+                <span className="text-xl font-black text-brand-900">{siswaDetail.total_poin} pts</span>
+              </div>
+              <div className="bg-emerald-50/70 border border-emerald-100 rounded-2xl px-5 py-3 text-center min-w-[100px]">
+                <span className="text-[10px] font-black text-emerald-600 block uppercase tracking-wider">Kelas</span>
+                <span className="text-base font-extrabold text-emerald-800">{siswaDetail.kelas}</span>
+              </div>
+            </div>
           </div>
 
-          {/* Render Digital Card container */}
-          <div 
-            id="student-digital-card"
-            className="w-full aspect-[1.58/1] rounded-3xl bg-[#080710] text-white p-5 border border-slate-800 relative overflow-hidden flex flex-col justify-between shadow-2xl"
-          >
-            {/* Holographic background gradients */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-brand-600/30 to-accent-600/20 rounded-full filter blur-2xl -translate-y-1/3 translate-x-1/3 pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-emerald-500/10 to-amber-500/10 rounded-full filter blur-xl -translate-x-1/4 translate-y-1/4 pointer-events-none" />
-
-            {/* Top Row: School Logo & Title */}
-            <div className="flex items-center justify-between border-b border-white/10 pb-3 relative z-10">
-              <div className="flex items-center gap-2">
-                <img src="/logo.png" className="w-7.5 h-7.5 object-contain" alt="Logo" />
+          {/* Stats Summary row */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+            <div className="md:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {/* Positive Points Card */}
+              <div className="bg-white rounded-3xl p-6 border border-brand-100 shadow-xl shadow-brand-900/5 flex items-center gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold flex-shrink-0">
+                  <Award className="w-7 h-7" />
+                </div>
                 <div>
-                  <h4 className="text-[10px] font-black tracking-widest uppercase text-accent-400">SMAN 19 Bandung</h4>
-                  <p className="text-[8px] text-white/50 font-bold uppercase tracking-wider">NineTeen Points Card</p>
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Akumulasi Prestasi</span>
+                  <span className="text-xl font-black text-emerald-600">+{totalPrestasi} Poin</span>
+                  <p className="text-[10px] text-slate-400 mt-0.5">Poin penghargaan karakter terpuji</p>
                 </div>
               </div>
-              <span className="text-[7px] font-black px-2 py-0.5 bg-brand-500/20 border border-brand-500/40 text-brand-300 rounded-md uppercase tracking-widest">
-                Pelajar
-              </span>
+
+              {/* Negative Points Card */}
+              <div className="bg-white rounded-3xl p-6 border border-brand-100 shadow-xl shadow-brand-900/5 flex items-center gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold flex-shrink-0">
+                  <TrendingUp className="w-7 h-7 rotate-180" />
+                </div>
+                <div>
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Akumulasi Pelanggaran</span>
+                  <span className="text-xl font-black text-rose-600">{totalPelanggaran} Poin</span>
+                  <p className="text-[10px] text-slate-400 mt-0.5">Pengurangan dari perilaku negatif</p>
+                </div>
+              </div>
             </div>
 
-            {/* Middle Row: Student detail and QR */}
-            <div className="flex items-center justify-between gap-4 py-2 relative z-10 flex-1">
-              <div className="space-y-2">
-                <div>
-                  <span className="text-[7px] font-bold text-white/40 uppercase tracking-widest block">Nama Lengkap</span>
-                  <span className="text-sm font-black tracking-wide text-white line-clamp-1">{siswaDetail.nama}</span>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <span className="text-[7px] font-bold text-white/40 uppercase tracking-widest block">NIS</span>
-                    <span className="text-xs font-mono font-bold tracking-wider text-slate-200">{siswaDetail.nis}</span>
+            {/* Status meter indicator */}
+            <div className="md:col-span-4">
+              {isSafe ? (
+                <div className="bg-emerald-50/50 border border-emerald-100 rounded-3xl p-6 h-full flex flex-col justify-between space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-black text-emerald-800 uppercase tracking-wider">Status Karakter</span>
+                    <span className="px-2.5 py-1 bg-emerald-500 text-white rounded-xl text-[10px] font-black uppercase tracking-wider border border-emerald-400">
+                      AMAN
+                    </span>
                   </div>
                   <div>
-                    <span className="text-[7px] font-bold text-white/40 uppercase tracking-widest block">Kelas</span>
-                    <span className="text-xs font-extrabold text-slate-200">{siswaDetail.kelas}</span>
+                    <h4 className="text-base font-black text-emerald-950">Kondisi Sangat Baik!</h4>
+                    <p className="text-xs text-emerald-700/80 font-medium leading-relaxed mt-1">
+                      Poin Anda berada dalam batas aman. Pertahankan perilaku terpuji dan patuhi selalu tata tertib sekolah!
+                    </p>
                   </div>
                 </div>
-              </div>
-
-              {/* QR Code section */}
-              <div className="bg-white p-2 rounded-2xl flex items-center justify-center shadow-lg border border-white/15">
-                <QRCodeSVG
-                  value={siswaDetail.nis}
-                  size={75}
-                  level="M"
-                  includeMargin={false}
-                />
-              </div>
-            </div>
-
-            {/* Bottom Row: Verification Info */}
-            <div className="flex items-center justify-between border-t border-white/5 pt-2 relative z-10 text-[7px] text-white/40 font-bold">
-              <div className="flex items-center gap-1">
-                <ShieldCheck className="w-3 h-3 text-emerald-400" />
-                <span>Kartu Terverifikasi Sistem</span>
-              </div>
-              <span>TAHUN AJARAN {new Date().getFullYear()}/{new Date().getFullYear() + 1}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Side: Score Summary & Breakdown (7 cols) */}
-        <div className="md:col-span-7 space-y-4">
-          <h3 className="text-sm font-black text-brand-950 uppercase tracking-widest px-1">Rincian Prestasi & Sanksi</h3>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            
-            {/* Positive Points Summary */}
-            <div className="bg-white rounded-3xl p-5 border border-brand-100 shadow-xl shadow-brand-900/5 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
-                <Award className="w-6 h-6" />
-              </div>
-              <div>
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Akumulasi Prestasi</span>
-                <span className="text-lg font-black text-emerald-600">+{totalPrestasi} Poin</span>
-              </div>
-            </div>
-
-            {/* Negative Points Summary */}
-            <div className="bg-white rounded-3xl p-5 border border-brand-100 shadow-xl shadow-brand-900/5 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold">
-                <TrendingUp className="w-6 h-6 rotate-180" />
-              </div>
-              <div>
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Akumulasi Pelanggaran</span>
-                <span className="text-lg font-black text-rose-600">{totalPelanggaran} Poin</span>
-              </div>
+              ) : isWarning ? (
+                <div className="bg-amber-50/50 border border-amber-100 rounded-3xl p-6 h-full flex flex-col justify-between space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-black text-amber-800 uppercase tracking-wider">Status Karakter</span>
+                    <span className="px-2.5 py-1 bg-amber-500 text-white rounded-xl text-[10px] font-black uppercase tracking-wider border border-amber-400">
+                      WASPADA
+                    </span>
+                  </div>
+                  <div>
+                    <h4 className="text-base font-black text-amber-950">Harap Perhatikan Perilaku</h4>
+                    <p className="text-xs text-amber-700/80 font-medium leading-relaxed mt-1">
+                      Poin Anda mulai berkurang. Lakukan lebih banyak perilaku positif untuk memulihkan skor poin karakter Anda!
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-rose-50/50 border border-rose-100 rounded-3xl p-6 h-full flex flex-col justify-between space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-black text-rose-800 uppercase tracking-wider">Status Karakter</span>
+                    <span className="px-2.5 py-1 bg-rose-500 text-white rounded-xl text-[10px] font-black uppercase tracking-wider border border-rose-400">
+                      SANKSI
+                    </span>
+                  </div>
+                  <div>
+                    <h4 className="text-base font-black text-rose-950">Memerlukan Tindakan Segera</h4>
+                    <p className="text-xs text-rose-700/80 font-medium leading-relaxed mt-1">
+                      Poin Anda berada di bawah ambang batas aman. Segera hubungi wali kelas atau guru BK untuk proses bimbingan.
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
-          <div className="bg-brand-50/40 rounded-3xl p-5 border border-brand-100 flex items-center gap-3">
-            <User className="w-5 h-5 text-brand-600 flex-shrink-0" />
-            <p className="text-xs text-brand-800 font-medium leading-relaxed">
-              Tunjukkan **QR Code** pada kartu pelajarmu di samping kiri kepada guru pembina atau wali kelas untuk merekam poin pelanggaran atau penghargaan prestasimu secara otomatis.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Audit Log / History Section */}
-      <div className="bg-white rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 overflow-hidden">
-        <div className="p-6 border-b border-brand-100 flex justify-between items-center">
-          <div>
-            <h3 className="text-base font-extrabold text-brand-900 flex items-center gap-2">
+          <div className="bg-white rounded-3xl p-6 border border-brand-100 shadow-xl shadow-brand-900/5 space-y-4">
+            <h3 className="text-sm font-black text-brand-950 uppercase tracking-widest flex items-center gap-2">
               <Clock className="w-5 h-5 text-brand-600" />
-              Catatan Riwayat Poin Anda
+              Sekilas Riwayat Terakhir
             </h3>
-            <p className="text-[10px] text-brand-500 font-medium mt-0.5">
-              Daftar kronologis sanksi disiplin dan penghargaan prestasi yang dicatat oleh guru.
-            </p>
-          </div>
-          <span className="px-3 py-1.5 bg-brand-50 text-brand-700 font-bold rounded-xl text-[10px]">
-            {riwayat.length} Transaksi
-          </span>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-brand-50/40 border-b border-brand-100 text-brand-500 text-[10px] font-black uppercase tracking-wider">
-                <th className="py-4 px-6">Tanggal & Waktu</th>
-                <th className="py-4 px-6">Aturan / Keterangan</th>
-                <th className="py-4 px-6 text-center">Nilai Poin</th>
-                <th className="py-4 px-6 text-right">Guru Pencatat</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-brand-50 text-brand-900 text-xs font-semibold">
-              {riwayat.length > 0 ? (
-                riwayat.map((record) => {
-                  const isPositive = record.nilai_diberikan > 0;
-                  return (
-                    <tr key={record.id} className="hover:bg-brand-50/20 transition-colors">
-                      <td className="py-4 px-6 font-mono text-[10px] text-brand-500">
-                        {new Date(record.created_at).toLocaleString("id-ID", {
-                          dateStyle: "medium",
-                          timeStyle: "short"
-                        })}
-                      </td>
-                      <td className="py-4 px-6 max-w-sm">
-                        <span className="font-bold block text-brand-950 leading-relaxed">
-                          {record.nama_poin}
-                        </span>
-                      </td>
-                      <td className="py-4 px-6 text-center">
-                        <span 
-                          className={`font-black font-mono px-3 py-1 rounded-full text-[10px] ${
-                            isPositive 
-                              ? "bg-emerald-50 text-emerald-700 border border-emerald-100" 
-                              : "bg-rose-50 text-rose-700 border border-rose-100"
-                          }`}
-                        >
-                          {isPositive ? `+${record.nilai_diberikan}` : record.nilai_diberikan}
-                        </span>
-                      </td>
-                      <td className="py-4 px-6 text-right font-mono text-brand-500 text-[10px]">
-                        {record.guru_email}
+            
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-brand-50/40 border-b border-brand-100 text-brand-500 text-[10px] font-black uppercase tracking-wider">
+                    <th className="py-3 px-4">Tanggal & Waktu</th>
+                    <th className="py-3 px-4">Keterangan</th>
+                    <th className="py-3 px-4 text-center">Nilai Poin</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-brand-50 text-brand-900 text-xs font-semibold">
+                  {riwayat.slice(0, 3).length > 0 ? (
+                    riwayat.slice(0, 3).map((record) => {
+                      const isPositive = record.nilai_diberikan > 0;
+                      return (
+                        <tr key={record.id} className="hover:bg-brand-50/20 transition-colors">
+                          <td className="py-3.5 px-4 font-mono text-[10px] text-brand-500">
+                            {new Date(record.created_at).toLocaleString("id-ID", {
+                              dateStyle: "medium",
+                              timeStyle: "short"
+                            })}
+                          </td>
+                          <td className="py-3.5 px-4 max-w-sm">
+                            <span className="font-bold block text-brand-950 truncate">{record.nama_poin}</span>
+                          </td>
+                          <td className="py-3.5 px-4 text-center">
+                            <span 
+                              className={`font-black font-mono px-2 py-0.5 rounded-full text-[9px] ${
+                                isPositive 
+                                  ? "bg-emerald-50 text-emerald-700 border border-emerald-100" 
+                                  : "bg-rose-50 text-rose-700 border border-rose-100"
+                              }`}
+                            >
+                              {isPositive ? `+${record.nilai_diberikan}` : record.nilai_diberikan}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <tr>
+                      <td colSpan={3} className="py-8 text-center text-brand-400 font-bold text-xs">
+                        Belum ada riwayat pencatatan poin.
                       </td>
                     </tr>
-                  );
-                })
-              ) : (
-                <tr>
-                  <td colSpan={4} className="py-12 text-center text-brand-400 font-bold text-xs">
-                    Belum ada riwayat pencatatan poin untuk Anda. Tetap patuhi aturan sekolah!
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* 2. BARCODE / KARTU TAB */}
+      {activeTab === "siswa_barcode" && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start animate-fade-in">
+          {/* Card Showcase Column (5 cols) */}
+          <div className="lg:col-span-5 flex flex-col items-center space-y-5">
+            <div className="flex justify-between items-center w-full max-w-[290px] px-1">
+              <h3 className="text-xs font-black text-brand-950 uppercase tracking-widest">Kartu Pelajar Digital</h3>
+              <button
+                onClick={handleDownloadCard}
+                disabled={isDownloading}
+                className="text-xs font-bold text-brand-600 hover:text-brand-800 flex items-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <Download className="w-4 h-4" />
+                {isDownloading ? "Mengunduh..." : "Download PNG"}
+              </button>
+            </div>
+
+            {/* Portrait digital card */}
+            <div
+              id="student-digital-card-portrait"
+              className="w-full max-w-[290px] aspect-[1/1.58] rounded-[32px] bg-gradient-to-b from-[#0e0c20] via-[#090714] to-[#0e0c20] text-white p-6 border border-brand-800/40 relative overflow-hidden flex flex-col justify-between shadow-2xl shadow-brand-950/40 flex-shrink-0"
+              style={{ width: "290px", height: "458px" }}
+            >
+              {/* Decorative glassy mesh gradients */}
+              <div className="absolute top-0 inset-x-0 h-40 bg-gradient-to-b from-brand-500/25 to-transparent filter blur-xl pointer-events-none" />
+              <div className="absolute bottom-0 right-0 w-44 h-44 bg-accent-500/10 rounded-full filter blur-2xl pointer-events-none" />
+              
+              {/* Header block: School name & logo */}
+              <div className="flex items-center gap-2.5 border-b border-white/10 pb-4 relative z-10">
+                <img src="/logo.png" className="w-8 h-8 object-contain" alt="Logo" />
+                <div>
+                  <h4 className="text-[10px] font-black tracking-widest text-accent-400 uppercase font-sans leading-tight">SMAN 19 BANDUNG</h4>
+                  <p className="text-[8px] text-white/50 font-bold uppercase tracking-wider mt-0.5">NineTeen Points Card</p>
+                </div>
+              </div>
+
+              {/* Middle block: Student avatar initial & detail */}
+              <div className="flex flex-col items-center justify-center space-y-4 my-auto relative z-10">
+                {/* Avatar with initial letter */}
+                <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-brand-600 via-accent-500 to-amber-400 p-[3px] shadow-lg shadow-brand-500/20">
+                  <div className="w-full h-full rounded-full bg-[#080710] flex items-center justify-center font-black text-2xl uppercase tracking-wider text-white">
+                    {siswaDetail.nama.slice(0, 2)}
+                  </div>
+                </div>
+
+                {/* Name & Class info */}
+                <div className="text-center space-y-1">
+                  <span className="text-[7px] bg-brand-500/20 border border-brand-500/40 text-brand-300 px-2 py-0.5 rounded-full uppercase font-black tracking-widest inline-block mb-1">
+                    PELAJAR
+                  </span>
+                  <h3 className="text-base font-black tracking-tight text-white px-2 line-clamp-1">
+                    {siswaDetail.nama}
+                  </h3>
+                  <div className="flex items-center justify-center gap-3 text-[10px] text-white/60 font-bold font-mono">
+                    <span>NIS: {siswaDetail.nis}</span>
+                    <span className="w-1 h-1 bg-white/20 rounded-full" />
+                    <span>KELAS: {siswaDetail.kelas}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom block: High quality QR code */}
+              <div className="flex flex-col items-center justify-center space-y-4 relative z-10 border-t border-white/10 pt-4">
+                <div className="bg-white p-2.5 rounded-2xl shadow-lg border border-white/20">
+                  <QRCodeSVG
+                    value={siswaDetail.nis}
+                    size={100}
+                    level="M"
+                    includeMargin={false}
+                  />
+                </div>
+                
+                <div className="flex items-center gap-1.5 text-[8px] text-white/35 font-bold uppercase tracking-widest">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>KARTU INTEGRASI DIGITAL TERVERIFIKASI</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Guide / Instruction Column (7 cols) */}
+          <div className="lg:col-span-7 space-y-6">
+            <div className="bg-white p-6 rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 space-y-4">
+              <h3 className="text-sm font-black text-brand-950 uppercase tracking-widest">Panduan Kartu Pelajar Digital</h3>
+              
+              <div className="space-y-4">
+                <div className="flex gap-4">
+                  <div className="w-8 h-8 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center font-bold text-xs flex-shrink-0">
+                    1
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-black text-brand-950">Fungsi Utama Barcode / QR Code</h4>
+                    <p className="text-xs text-brand-500 leading-relaxed mt-0.5">
+                      QR Code pada kartu pelajar Anda berisi NIS unik Anda yang terverifikasi. Tunjukkan QR ini kepada Guru Piket atau Pembina untuk pencatatan poin pelanggaran maupun prestasi.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-4">
+                  <div className="w-8 h-8 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center font-bold text-xs flex-shrink-0">
+                    2
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-black text-brand-950">Simpan di Handphone Anda</h4>
+                    <p className="text-xs text-brand-500 leading-relaxed mt-0.5">
+                      Gunakan tombol **Download PNG** di kiri atas untuk menyimpan gambar kartu digital ini. Anda bisa menjadikannya sebagai wallpaper lockscreen atau menyimpannya di galeri agar mudah ditunjukkan sewaktu-waktu.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-4">
+                  <div className="w-8 h-8 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center font-bold text-xs flex-shrink-0">
+                    3
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-black text-brand-950">Keamanan Data</h4>
+                    <p className="text-xs text-brand-500 leading-relaxed mt-0.5">
+                      Kartu ini terintegrasi secara real-time dengan database sekolah. Penyalahgunaan QR Code oleh pihak lain dapat dilaporkan ke wali kelas.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-brand-50/40 rounded-3xl p-5 border border-brand-100 flex items-center gap-3">
+              <User className="w-5 h-5 text-brand-600 flex-shrink-0" />
+              <p className="text-xs text-brand-800 font-medium leading-relaxed">
+                Kartu pelajar digital portrait ini telah sesuai dengan format kartu resmi integrasi karakter SMAN 19 Bandung.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 3. RIWAYAT POIN TAB */}
+      {activeTab === "siswa_history" && (
+        <div className="bg-white rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 overflow-hidden animate-fade-in">
+          <div className="p-6 border-b border-brand-100 flex justify-between items-center">
+            <div>
+              <h3 className="text-base font-extrabold text-brand-900 flex items-center gap-2">
+                <Clock className="w-5 h-5 text-brand-600" />
+                Catatan Riwayat Poin Anda
+              </h3>
+              <p className="text-[10px] text-brand-500 font-medium mt-0.5">
+                Daftar kronologis sanksi disiplin dan penghargaan prestasi yang dicatat oleh guru.
+              </p>
+            </div>
+            <span className="px-3 py-1.5 bg-brand-50 text-brand-700 font-bold rounded-xl text-[10px]">
+              {riwayat.length} Transaksi
+            </span>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-brand-50/40 border-b border-brand-100 text-brand-500 text-[10px] font-black uppercase tracking-wider">
+                  <th className="py-4 px-6">Tanggal & Waktu</th>
+                  <th className="py-4 px-6">Aturan / Keterangan</th>
+                  <th className="py-4 px-6 text-center">Nilai Poin</th>
+                  <th className="py-4 px-6 text-right">Guru Pencatat</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-brand-50 text-brand-900 text-xs font-semibold">
+                {riwayat.length > 0 ? (
+                  riwayat.map((record) => {
+                    const isPositive = record.nilai_diberikan > 0;
+                    return (
+                      <tr key={record.id} className="hover:bg-brand-50/20 transition-colors">
+                        <td className="py-4 px-6 font-mono text-[10px] text-brand-500">
+                          {new Date(record.created_at).toLocaleString("id-ID", {
+                            dateStyle: "medium",
+                            timeStyle: "short"
+                          })}
+                        </td>
+                        <td className="py-4 px-6 max-w-sm">
+                          <span className="font-bold block text-brand-950 leading-relaxed">
+                            {record.nama_poin}
+                          </span>
+                        </td>
+                        <td className="py-4 px-6 text-center">
+                          <span 
+                            className={`font-black font-mono px-3 py-1 rounded-full text-[10px] ${
+                              isPositive 
+                                ? "bg-emerald-50 text-emerald-700 border border-emerald-100" 
+                                : "bg-rose-50 text-rose-700 border border-rose-100"
+                            }`}
+                          >
+                            {isPositive ? `+${record.nilai_diberikan}` : record.nilai_diberikan}
+                          </span>
+                        </td>
+                        <td className="py-4 px-6 text-right font-mono text-brand-500 text-[10px]">
+                          {record.guru_email}
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td colSpan={4} className="py-12 text-center text-brand-400 font-bold text-xs">
+                      Belum ada riwayat pencatatan poin untuk Anda. Tetap patuhi aturan sekolah!
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
     </div>
   );

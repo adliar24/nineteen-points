@@ -16,7 +16,8 @@ import {
   X,
   ShieldCheck,
   Award,
-  TrendingUp
+  TrendingUp,
+  CreditCard
 } from "lucide-react";
 import { UserSession } from "./types";
 import { getLocalStorage, setLocalStorage } from "./dbStore";
@@ -96,8 +97,20 @@ export default function App() {
   }, [activeTab]);
 
   useEffect(() => {
-    if (userSession && userSession.role === "piket" && activeTab === "stats") {
-      setActiveTab("input");
+    if (userSession) {
+      if (userSession.role === "siswa") {
+        if (!["siswa_stats", "siswa_barcode", "siswa_history"].includes(activeTab)) {
+          setActiveTab("siswa_stats");
+        }
+      } else if (userSession.role === "piket") {
+        if (!["input", "history"].includes(activeTab)) {
+          setActiveTab("input");
+        }
+      } else {
+        if (!["stats", "input", "students", "history", "rules", "users"].includes(activeTab)) {
+          setActiveTab("stats");
+        }
+      }
     }
   }, [userSession, activeTab]);
 
@@ -109,71 +122,7 @@ export default function App() {
     return <LoginView onLoginSuccess={(session) => setUserSession(session)} />;
   }
 
-  // Check role: if role is student, render read-only student layout immediately
-  if (userSession.role === "siswa") {
-    return (
-      <motion.div
-        initial={{ opacity: 0, scale: 0.98 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="min-h-screen bg-[#faf9ff] text-[#1e1b4b] flex flex-col font-sans"
-      >
-        <header className="brand-gradient md:!bg-none md:!bg-transparent text-white md:text-[#1e1b4b] sticky top-0 z-40 shadow-xl shadow-brand-900/15 md:shadow-none wave-bg md:wave-bg-none relative md:border-b md:border-brand-100/50">
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent pointer-events-none md:hidden" />
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-3 relative z-10">
-            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-              <img src="/logo.png" className="w-6.5 h-6.5 object-contain" alt="Logo" />
-              <span className="font-extrabold text-white md:!text-brand-950 text-sm sm:text-base tracking-tight whitespace-nowrap">Portal Siswa SMAN 19</span>
-            </div>
-            
-            <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
-              <div className="flex items-center gap-2 sm:gap-3 bg-brand-950/40 md:bg-brand-50/70 pl-2 sm:pl-4 pr-1.5 py-1.5 rounded-2xl border border-white/10 md:border-brand-100 shadow-xs">
-                <div className="text-right">
-                  <p className="text-[11px] md:text-xs font-bold text-white md:!text-[#1e1b4b] tracking-wide whitespace-nowrap">{userSession.fullName}</p>
-                  <div className="flex items-center justify-end gap-1 text-[9px] md:text-[10px] text-brand-200 md:!text-slate-500 font-extrabold uppercase tracking-widest mt-0.5">
-                    <ShieldCheck className="w-2.5 h-2.5 text-accent-500" />
-                    <span>SISWA</span>
-                  </div>
-                </div>
-                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-accent-500 to-amber-400 border border-white/30 md:border-brand-200/50 flex items-center justify-center font-bold text-xs uppercase text-white shadow-md relative">
-                  {userSession.fullName.slice(0, 2)}
-                </div>
-              </div>
-              
-              <button
-                onClick={handleLogout}
-                className="p-2.5 bg-white/10 md:bg-brand-50 hover:bg-rose-600 md:hover:bg-rose-50 hover:text-white md:hover:text-rose-600 rounded-xl text-white md:!text-brand-600 transition-all cursor-pointer"
-                title="Keluar"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        </header>
-
-        <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <SiswaDashboardView userSession={userSession} />
-        </main>
-
-        <ConfirmationModal
-          isOpen={isLogoutConfirmOpen}
-          onClose={() => setIsLogoutConfirmOpen(false)}
-          onConfirm={async () => {
-            await supabase.auth.signOut();
-            setUserSession(null);
-            setIsLogoutConfirmOpen(false);
-          }}
-          title="Keluar dari Portal Siswa?"
-          message="Apakah Anda yakin ingin keluar dari sistem NineTeen Points?"
-          confirmText="Ya, Keluar"
-          cancelText="Batal"
-          type="warning"
-        />
-      </motion.div>
-    );
-  }
-
-  // Construct Dynamic Nav Items based on user role (for Teachers/Super Admin/Piket)
+  // Construct Dynamic Nav Items based on user role
   let navItems = [
     { id: "stats", label: "Statistik Poin", icon: TrendingUp, description: "Ikhtisar & analisis grafik" },
     { id: "input", label: "Input Poin", icon: Camera, description: "Catat via QR atau pencarian" },
@@ -194,6 +143,12 @@ export default function App() {
       icon: ShieldCheck,
       description: "Atur akun guru & siswa"
     });
+  } else if (userSession.role === "siswa") {
+    navItems = [
+      { id: "siswa_stats", label: "Statistik", icon: TrendingUp, description: "Statistik poin Anda" },
+      { id: "siswa_barcode", label: "Kartu Pelajar", icon: CreditCard, description: "QR Kartu Pelajar Digital" },
+      { id: "siswa_history", label: "Riwayat Poin", icon: Calendar, description: "Riwayat perolehan poin" },
+    ];
   }
 
   return (
@@ -430,6 +385,10 @@ export default function App() {
                   userSession={userSession}
                   onRefreshHistory={() => setHistoryRefreshCount((c) => c + 1)}
                 />
+              )}
+
+              {["siswa_stats", "siswa_barcode", "siswa_history"].includes(activeTab) && (
+                <SiswaDashboardView userSession={userSession} activeTab={activeTab} />
               )}
             </motion.div>
           </AnimatePresence>

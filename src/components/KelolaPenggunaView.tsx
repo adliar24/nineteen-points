@@ -31,6 +31,7 @@ interface Profile {
   nama: string;
   role: string;
   nis: string | null;
+  foto_url: string | null;
   created_at: string;
 }
 
@@ -675,6 +676,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
                         className="w-4 h-4 rounded-lg border-brand-200 text-brand-600 focus:ring-brand-500 cursor-pointer"
                       />
                     </th>
+                    <th className="py-4 px-6">Foto</th>
                     <th className="py-4 px-6">Nama Lengkap</th>
                     <th className="py-4 px-6">Username / Email</th>
                     <th className="py-4 px-6">Peran (Role)</th>
@@ -688,6 +690,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
                     Array.from({ length: 5 }).map((_, idx) => (
                       <tr key={idx} className="animate-pulse">
                         <td className="py-4 px-6 text-center"><div className="h-4 w-4 bg-slate-200 rounded mx-auto" /></td>
+                        <td className="py-4 px-6"><div className="h-10 w-10 bg-slate-200 rounded-xl" /></td>
                         <td className="py-4 px-6"><div className="h-4 w-36 bg-slate-200 rounded" /></td>
                         <td className="py-4 px-6"><div className="h-4 w-48 bg-slate-200 rounded" /></td>
                         <td className="py-4 px-6"><div className="h-5 w-16 bg-slate-200 rounded-lg" /></td>
@@ -698,7 +701,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
                     ))
                   ) : paginatedProfiles.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="py-12 text-center text-slate-400 text-xs font-bold">
+                      <td colSpan={8} className="py-12 text-center text-slate-400 text-xs font-bold">
                         Tidak ada akun yang ditemukan.
                       </td>
                     </tr>
@@ -717,6 +720,15 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
                                 onChange={() => toggleSelect(p.id)}
                                 className="w-4 h-4 rounded-lg border-brand-200 text-brand-600 focus:ring-brand-500 cursor-pointer"
                               />
+                            )}
+                          </td>
+                          <td className="py-4 px-6">
+                            {p.foto_url ? (
+                              <img src={p.foto_url} alt={p.nama} className="w-10 h-13 rounded-xl object-cover border border-brand-200" />
+                            ) : (
+                              <div className="w-10 h-13 rounded-xl border border-brand-200 bg-brand-50 flex items-center justify-center text-brand-500 font-bold text-xs uppercase">
+                                {p.nama.slice(0, 2)}
+                              </div>
                             )}
                           </td>
                           <td className="py-4 px-6 font-extrabold text-sm text-brand-950 uppercase">{p.nama}</td>

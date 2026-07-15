@@ -361,7 +361,7 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
 
               {/* 3. High quality QR code */}
               <div className="mt-4 flex flex-col items-center">
-                <div className="bg-white p-2.5 rounded-2xl shadow-lg border border-brand-500/30">
+                <div className="bg-white p-2.5 rounded-2xl border-[3.5px] border-brand-600">
                   <QRCodeSVG
                     value={siswaDetail.nis}
                     size={95}
@@ -436,7 +436,7 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
                           </span>
                           <span className="hidden sm:inline w-1 h-1 bg-slate-300 rounded-full" />
                           <span className="truncate">
-                            Dicatat: {record.guru_email}
+                            Dicatat: {record.guru_email.endsWith("@sman19.sch.id") ? record.guru_email.split("@")[0] : record.guru_email}
                           </span>
                         </div>
                       </div>
@@ -530,7 +530,7 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
 
               {/* 3. High quality QR code */}
               <div className="mt-4 flex flex-col items-center">
-                <div className="bg-white p-3.5 rounded-2xl shadow-lg border border-brand-500/30">
+                <div className="bg-white p-3.5 rounded-2xl border-[3.5px] border-brand-600">
                   <QRCodeSVG
                     value={siswaDetail.nis}
                     size={110}

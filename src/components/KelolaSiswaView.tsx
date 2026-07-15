@@ -981,7 +981,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
 
               {/* 3. High quality QR code */}
               <div className="mt-4 flex flex-col items-center">
-                <div className="bg-white p-2.5 rounded-2xl shadow-lg border border-brand-500/30">
+                <div className="bg-white p-2.5 rounded-2xl border-[3.5px] border-brand-600">
                   <QRCodeSVG
                     value={siswa.nis}
                     size={95}
@@ -1041,7 +1041,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
 
               {/* 3. High quality QR code */}
               <div className="mt-4 flex flex-col items-center">
-                <div className="bg-white p-2.5 rounded-2xl shadow-lg border border-brand-500/30">
+                <div className="bg-white p-2.5 rounded-2xl border-[3.5px] border-brand-600">
                   <QRCodeSVG
                     value={printingSiswa.nis}
                     size={95}

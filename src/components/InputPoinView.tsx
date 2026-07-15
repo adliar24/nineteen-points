@@ -52,6 +52,7 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
   const [customPointName, setCustomPointName] = useState("");
   const [customPointValue, setCustomPointValue] = useState(10);
   const [isCustomPoint, setIsCustomPoint] = useState(false);
+  const [customPointType, setCustomPointType] = useState<"positif" | "negatif">("positif");
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Load data
@@ -188,7 +189,8 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
         return;
       }
       name = customPointName;
-      value = customPointValue;
+      const absValue = Math.abs(customPointValue) || 0;
+      value = customPointType === "positif" ? absValue : -absValue;
     } else {
       const rule = masterPoin.find(mp => mp.id === selectedPoinId);
       if (!rule) {
@@ -497,15 +499,15 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
                         <label className="text-[10px] font-black text-brand-400 uppercase tracking-wider block">Pilih Jenis Poin</label>
                         
                         {/* Inline Filter Pills for standard rules */}
-                        <div className="flex gap-1">
+                        <div className="flex gap-1.5">
                           {(["Semua", "Positif", "Negatif"] as const).map((tab) => (
                             <button
                               key={tab}
                               type="button"
                               onClick={() => setRuleFilterType(tab)}
-                              className={`px-2 py-0.5 rounded-lg text-[9px] font-extrabold border transition-all cursor-pointer ${
+                              className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold border transition-all cursor-pointer ${
                                 ruleFilterType === tab
-                                  ? "brand-gradient text-white border-transparent"
+                                  ? "brand-gradient text-white border-transparent shadow-xs"
                                   : "bg-brand-50/50 text-brand-700 border-brand-100 hover:bg-brand-100/30"
                               }`}
                             >
@@ -597,25 +599,59 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
                     </div>
                   ) : (
                     /* CUSTOM POIN ASSIGNMENT */
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                      <div className="md:col-span-3 space-y-2">
-                        <label className="text-[10px] font-black text-brand-400 uppercase tracking-wider block">Deskripsi Kasus Kustom</label>
-                        <input
-                          type="text"
-                          placeholder="Contoh: Mengikuti upacara dengan khidmat / Telat apel pagi"
-                          value={customPointName}
-                          onChange={(e) => setCustomPointName(e.target.value)}
-                          className="w-full border border-brand-100 rounded-2xl p-3.5 text-xs font-semibold text-brand-900 focus:ring-2 focus:ring-brand-500 outline-none bg-white shadow-xs"
-                        />
-                      </div>
+                    <div className="space-y-4">
+                      {/* Tipe Poin Selector for Custom Point */}
                       <div className="space-y-2">
-                        <label className="text-[10px] font-black text-brand-400 uppercase tracking-wider block">Nilai Poin (Isi negatif untuk sanksi)</label>
-                        <input
-                          type="number"
-                          value={customPointValue}
-                          onChange={(e) => setCustomPointValue(parseInt(e.target.value, 10) || 0)}
-                          className="w-full border border-brand-100 rounded-2xl p-3.5 text-xs font-bold text-brand-900 focus:ring-2 focus:ring-brand-500 outline-none bg-white shadow-xs font-mono"
-                        />
+                        <label className="text-[10px] font-black text-brand-400 uppercase tracking-wider block">Tipe Poin</label>
+                        <div className="flex gap-3">
+                          <button
+                            type="button"
+                            onClick={() => setCustomPointType("positif")}
+                            className={`flex-1 py-3 px-4 rounded-2xl text-xs font-extrabold border flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                              customPointType === "positif"
+                                ? "bg-emerald-50 text-emerald-700 border-emerald-200 ring-2 ring-emerald-500/10"
+                                : "bg-brand-50/20 text-brand-400 border-brand-100 hover:bg-brand-50/50"
+                            }`}
+                          >
+                            <Award className="w-4.5 h-4.5" />
+                            Prestasi (Poin Tambah)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setCustomPointType("negatif")}
+                            className={`flex-1 py-3 px-4 rounded-2xl text-xs font-extrabold border flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                              customPointType === "negatif"
+                                ? "bg-rose-50 text-rose-700 border-rose-200 ring-2 ring-rose-500/10"
+                                : "bg-brand-50/20 text-brand-400 border-brand-100 hover:bg-brand-50/50"
+                            }`}
+                          >
+                            <AlertCircle className="w-4.5 h-4.5" />
+                            Sanksi (Poin Minus)
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="md:col-span-3 space-y-2">
+                          <label className="text-[10px] font-black text-brand-400 uppercase tracking-wider block">Deskripsi Kasus Kustom</label>
+                          <input
+                            type="text"
+                            placeholder="Contoh: Mengikuti upacara dengan khidmat / Telat apel pagi"
+                            value={customPointName}
+                            onChange={(e) => setCustomPointName(e.target.value)}
+                            className="w-full border border-brand-100 rounded-2xl p-3.5 text-xs font-semibold text-brand-900 focus:ring-2 focus:ring-brand-500 outline-none bg-white shadow-xs"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black text-brand-400 uppercase tracking-wider block">Nilai Poin</label>
+                          <input
+                            type="number"
+                            min="1"
+                            value={Math.abs(customPointValue) || ""}
+                            onChange={(e) => setCustomPointValue(Math.abs(parseInt(e.target.value, 10)) || 0)}
+                            className="w-full border border-brand-100 rounded-2xl p-3.5 text-xs font-bold text-brand-900 focus:ring-2 focus:ring-brand-500 outline-none bg-white shadow-xs font-mono"
+                          />
+                        </div>
                       </div>
                     </div>
                   )}

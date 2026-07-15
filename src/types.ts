@@ -4,6 +4,7 @@ export interface Siswa {
   nama: string;
   kelas: string;
   total_poin: number;
+  foto_url?: string | null;
 }
 
 export interface MasterPoin {
@@ -29,4 +30,5 @@ export interface UserSession {
   fullName: string;
   role: string;
   nis?: string;
+  foto_url?: string | null;
 }

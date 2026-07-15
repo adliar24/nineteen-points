@@ -58,6 +58,7 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
             fullName: data.user.user_metadata?.fullName || loginEmail.split("@")[0].toUpperCase(),
             role: data.user.user_metadata?.role || "guru",
             nis: data.user.user_metadata?.nis,
+            foto_url: data.user.user_metadata?.foto_url || undefined,
           };
           onLoginSuccess(session);
         } else {
@@ -66,6 +67,7 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
             fullName: profile.nama,
             role: profile.role,
             nis: profile.nis || undefined,
+            foto_url: profile.foto_url || undefined,
           };
           onLoginSuccess(session);
         }

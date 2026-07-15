@@ -344,9 +344,13 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
               
               {/* 1. 3x4 Portrait Avatar (Pas Foto Style) */}
               <div className="w-21 h-28 rounded-2xl border-[3px] border-pink-500 bg-white flex items-center justify-center p-[2.5px] shadow-md shadow-pink-500/10 flex-shrink-0">
-                <div className="w-full h-full rounded-xl border border-pink-100 bg-rose-50/50 flex items-center justify-center text-pink-600 font-black text-3xl uppercase tracking-wider">
-                  {siswaDetail.nama.slice(0, 2)}
-                </div>
+                {siswaDetail.foto_url ? (
+                  <img src={siswaDetail.foto_url} className="w-full h-full rounded-xl object-cover" alt={siswaDetail.nama} />
+                ) : (
+                  <div className="w-full h-full rounded-xl border border-pink-100 bg-rose-50/50 flex items-center justify-center text-pink-600 font-black text-3xl uppercase tracking-wider">
+                    {siswaDetail.nama.slice(0, 2)}
+                  </div>
+                )}
               </div>
 
               {/* 2. Student Info */}
@@ -513,9 +517,13 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
               
               {/* 1. 3x4 Portrait Avatar (Pas Foto Style) */}
               <div className="w-27 h-36 rounded-[24px] border-[4px] border-pink-500 bg-white flex items-center justify-center p-[3px] shadow-md shadow-pink-500/10 flex-shrink-0">
-                <div className="w-full h-full rounded-[18px] border border-pink-100 bg-rose-50/50 flex items-center justify-center text-pink-600 font-black text-4xl uppercase tracking-wider">
-                  {siswaDetail.nama.slice(0, 2)}
-                </div>
+                {siswaDetail.foto_url ? (
+                  <img src={siswaDetail.foto_url} className="w-full h-full rounded-[18px] object-cover" alt={siswaDetail.nama} />
+                ) : (
+                  <div className="w-full h-full rounded-[18px] border border-pink-100 bg-rose-50/50 flex items-center justify-center text-pink-600 font-black text-4xl uppercase tracking-wider">
+                    {siswaDetail.nama.slice(0, 2)}
+                  </div>
+                )}
               </div>
 
               {/* 2. Student Info */}

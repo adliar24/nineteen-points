@@ -22,8 +22,12 @@ import {
   CreditCard,
   Settings,
   Grid,
-  Users
+  Users,
+  Camera,
+  Image
 } from "lucide-react";
+interface UserSessionProps { // dummy, we just need types import
+}
 import { Siswa, UserSession } from "../types";
 import { 
   getSiswaList, 
@@ -35,6 +39,85 @@ import html2canvas from "html2canvas-pro";
 import jsPDF from "jspdf";
 import * as XLSX from "xlsx";
 import { supabase, supabaseAdminAuth } from "../supabaseClient";
+
+// Helper 1: Dice's Coefficient Fuzzy Matching Algorithm
+export function calculateSimilarity(s1: string, s2: string): number {
+  const str1 = s1.toLowerCase().replace(/[^a-z0-9]/g, "");
+  const str2 = s2.toLowerCase().replace(/[^a-z0-9]/g, "");
+  if (str1 === str2) return 1.0;
+  if (str1.length < 2 || str2.length < 2) return 0.0;
+
+  const bigrams1 = new Set<string>();
+  for (let i = 0; i < str1.length - 1; i++) {
+    bigrams1.add(str1.slice(i, i + 2));
+  }
+
+  const bigrams2 = new Set<string>();
+  for (let i = 0; i < str2.length - 1; i++) {
+    bigrams2.add(str2.slice(i, i + 2));
+  }
+
+  let intersection = 0;
+  bigrams1.forEach(b => {
+    if (bigrams2.has(b)) intersection++;
+  });
+
+  return (2 * intersection) / (bigrams1.size + bigrams2.size);
+}
+
+// Helper 2: Client-side Image Compression using Canvas (outputs 3:4 aspect-ratio JPEG blob)
+export function compressImage(file: File, maxWidth = 300, maxHeight = 400, quality = 0.75): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.src = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(img.src);
+      
+      const targetRatio = maxWidth / maxHeight;
+      const canvas = document.createElement("canvas");
+      canvas.width = maxWidth;
+      canvas.height = maxHeight;
+      
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        reject(new Error("Gagal membuat context canvas"));
+        return;
+      }
+      
+      // Calculate crop coordinates to fit a center-cropped 3:4 frame
+      const sourceWidth = img.width;
+      const sourceHeight = img.height;
+      
+      let sWidth = sourceWidth;
+      let sHeight = sourceHeight;
+      let sx = 0;
+      let sy = 0;
+      
+      if (sourceWidth / sourceHeight > targetRatio) {
+        sWidth = sourceHeight * targetRatio;
+        sx = (sourceWidth - sWidth) / 2;
+      } else {
+        sHeight = sourceWidth / targetRatio;
+        sy = (sourceHeight - sHeight) / 2;
+      }
+      
+      ctx.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, maxWidth, maxHeight);
+      
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            resolve(blob);
+          } else {
+            reject(new Error("Gagal mengompresi gambar"));
+          }
+        },
+        "image/jpeg",
+        quality
+      );
+    };
+    img.onerror = (err) => reject(err);
+  });
+}
 
 interface KelolaSiswaViewProps {
   userSession: UserSession;
@@ -53,6 +136,22 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isAddSiswaModalOpen, setIsAddSiswaModalOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [isImportPhotoOpen, setIsImportPhotoOpen] = useState(false);
+
+  // Photo Bulk Upload states
+  const [isUploadingPhotos, setIsUploadingPhotos] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadStatusMsg, setUploadStatusMsg] = useState("");
+  
+  interface PhotoMatchItem {
+    id: string;
+    file: File;
+    previewUrl: string;
+    status: "matched" | "suggested" | "nomatch";
+    matchedSiswaId: string | null;
+    similarity: number;
+  }
+  const [photoMatchItems, setPhotoMatchItems] = useState<PhotoMatchItem[]>([]);
 
   // New Student fields
   const [newNis, setNewNis] = useState("");
@@ -500,6 +599,227 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
     }
   };
 
+  // Helper inside component to find best matching student for a filename
+  const matchFileToStudent = (filename: string): { matchedSiswaId: string | null; status: "matched" | "suggested" | "nomatch"; similarity: number } => {
+    // 1. Strip extension and clean name
+    const cleanFilename = filename.split('.').slice(0, -1).join('.').trim().toLowerCase();
+    
+    // 2. Check for numeric sequence of 5 or more digits (like NIS)
+    const digitsMatch = cleanFilename.match(/\d{5,}/);
+    if (digitsMatch) {
+      const targetNis = digitsMatch[0];
+      const matched = siswaList.find(s => s.nis === targetNis);
+      if (matched) {
+        return { matchedSiswaId: matched.id, status: "matched", similarity: 1.0 };
+      }
+    }
+    
+    // 3. Exact matching on name (ignoring casing & non-alphanumeric chars)
+    const cleanFileCleaned = cleanFilename.replace(/[^a-z0-9]/g, "");
+    const exactMatch = siswaList.find(s => s.nama.toLowerCase().replace(/[^a-z0-9]/g, "") === cleanFileCleaned);
+    if (exactMatch) {
+      return { matchedSiswaId: exactMatch.id, status: "matched", similarity: 1.0 };
+    }
+    
+    // 4. Fuzzy string similarity matching
+    let bestMatchSiswaId: string | null = null;
+    let maxSim = 0;
+    
+    siswaList.forEach(s => {
+      const sim = calculateSimilarity(cleanFilename, s.nama);
+      if (sim > maxSim) {
+        maxSim = sim;
+        bestMatchSiswaId = s.id;
+      }
+    });
+    
+    // 5. Determine matching status based on threshold
+    if (maxSim >= 0.75) {
+      return { matchedSiswaId: bestMatchSiswaId, status: "matched", similarity: maxSim };
+    } else if (maxSim >= 0.45) {
+      return { matchedSiswaId: bestMatchSiswaId, status: "suggested", similarity: maxSim };
+    } else {
+      return { matchedSiswaId: null, status: "nomatch", similarity: 0 };
+    }
+  };
+
+  // Handler for multiple file select
+  const handleMultipleFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
+    const newItems: PhotoMatchItem[] = [];
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const matchResult = matchFileToStudent(file.name);
+      
+      newItems.push({
+        id: Math.random().toString(36).substring(7),
+        file,
+        previewUrl: URL.createObjectURL(file),
+        status: matchResult.status,
+        matchedSiswaId: matchResult.matchedSiswaId,
+        similarity: matchResult.similarity
+      });
+    }
+    
+    setPhotoMatchItems(prev => [...prev, ...newItems]);
+    e.target.value = ""; // Clear input
+  };
+
+  // Handler for ZIP file upload & client extraction
+  const handleZipFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingPhotos(true);
+    setUploadStatusMsg("Membaca & mengekstrak file ZIP...");
+    
+    try {
+      const JSZip = (await import("jszip")).default;
+      const zip = new JSZip();
+      const zipData = await zip.loadAsync(file);
+      
+      const newItems: PhotoMatchItem[] = [];
+      const promises: Promise<void>[] = [];
+      
+      zipData.forEach((relativePath, entry) => {
+        // Skip directories and non-image files
+        if (entry.dir || !relativePath.match(/\.(jpe?g|png|webp)$/i)) {
+          return;
+        }
+        
+        const filename = relativePath.split("/").pop() || relativePath;
+        
+        const promise = entry.async("blob").then((blob) => {
+          const imageFile = new File([blob], filename, { 
+            type: `image/${filename.toLowerCase().endsWith('.png') ? 'png' : 'jpeg'}` 
+          });
+          
+          const matchResult = matchFileToStudent(filename);
+          
+          newItems.push({
+            id: Math.random().toString(36).substring(7),
+            file: imageFile,
+            previewUrl: URL.createObjectURL(imageFile),
+            status: matchResult.status,
+            matchedSiswaId: matchResult.matchedSiswaId,
+            similarity: matchResult.similarity
+          });
+        });
+        
+        promises.push(promise);
+      });
+      
+      await Promise.all(promises);
+      setPhotoMatchItems(prev => [...prev, ...newItems]);
+      showToast(`Sukses memuat ${newItems.length} foto dari file ZIP!`);
+    } catch (err: any) {
+      console.error(err);
+      alert("Gagal mengekstrak file ZIP: " + err.message);
+    } finally {
+      setIsUploadingPhotos(false);
+      setUploadStatusMsg("");
+      e.target.value = ""; // Clear input
+    }
+  };
+
+  // Batch upload all matched photos (compressing them client-side first!)
+  const handleUploadAllPhotos = async () => {
+    const itemsToUpload = photoMatchItems.filter(item => item.matchedSiswaId !== null);
+    if (itemsToUpload.length === 0) {
+      alert("Tidak ada foto tercocokkan yang dapat diunggah.");
+      return;
+    }
+    
+    setIsUploadingPhotos(true);
+    setUploadProgress(0);
+    setUploadStatusMsg("Mempersiapkan server penyimpanan Supabase...");
+    
+    try {
+      // Create bucket if not exists
+      const { data: bucketData, error: bucketError } = await supabase.storage.getBucket('profile-photos');
+      if (bucketError || !bucketData) {
+        await supabase.storage.createBucket('profile-photos', {
+          public: true,
+          allowedMimeTypes: ['image/png', 'image/jpeg', 'image/webp'],
+          fileSizeLimit: 10485760
+        });
+      }
+      
+      let successCount = 0;
+      let failCount = 0;
+      
+      for (let i = 0; i < itemsToUpload.length; i++) {
+        const item = itemsToUpload[i];
+        const student = siswaList.find(s => s.id === item.matchedSiswaId);
+        if (!student) continue;
+        
+        setUploadStatusMsg(`Mengompresi & mengunggah foto ${student.nama}...`);
+        setUploadProgress(Math.round((i / itemsToUpload.length) * 100));
+        
+        try {
+          // 1. COMPRESS VIA CANVAS (300x400 JPG, quality 0.75)
+          const compressedBlob = await compressImage(item.file, 300, 400, 0.75);
+          const compressedFile = new File([compressedBlob], `${student.nis}.jpg`, { type: "image/jpeg" });
+          
+          // 2. UPLOAD TO SUPABASE STORAGE
+          const fileExt = "jpg";
+          const fileName = `${student.id}_${Date.now()}.${fileExt}`;
+          const filePath = `${fileName}`;
+          
+          const { error: uploadErr } = await supabase.storage
+            .from('profile-photos')
+            .upload(filePath, compressedFile, {
+              cacheControl: '3600',
+              upsert: true
+            });
+            
+          if (uploadErr) throw uploadErr;
+          
+          // 3. GET ACCESS URL
+          const { data: urlData } = supabase.storage
+            .from('profile-photos')
+            .getPublicUrl(filePath);
+            
+          const publicUrl = urlData.publicUrl;
+          
+          // 4. UPDATE DATABASE COLUMN
+          const { error: dbErr } = await supabase
+            .from('siswa')
+            .update({ foto_url: publicUrl })
+            .eq('id', student.id);
+            
+          if (dbErr) throw dbErr;
+          
+          successCount++;
+        } catch (uploadFail) {
+          console.error(`Gagal memproses foto untuk ${student.nama}:`, uploadFail);
+          failCount++;
+        }
+      }
+      
+      setUploadProgress(100);
+      setUploadStatusMsg(`Selesai! Berhasil mengunggah ${successCount} foto profil.${failCount > 0 ? ` Gagal ${failCount} foto.` : ""}`);
+      showToast(`Sukses mengunggah ${successCount} foto profil.`);
+      
+      await reloadData();
+      
+      setTimeout(() => {
+        setIsImportPhotoOpen(false);
+        setPhotoMatchItems([]);
+        setUploadProgress(0);
+        setIsUploadingPhotos(false);
+        setUploadStatusMsg("");
+      }, 1800);
+    } catch (err: any) {
+      console.error(err);
+      alert("Gagal memproses unggah massal: " + err.message);
+      setIsUploadingPhotos(false);
+      setUploadStatusMsg("");
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Toast */}
@@ -581,6 +901,16 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
             >
               <FileSpreadsheet className="w-4.5 h-4.5 text-brand-600" />
               Impor Excel
+            </motion.button>
+
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setIsImportPhotoOpen(true)}
+              className="flex items-center gap-2 px-5 py-3 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-100 rounded-2xl text-sm font-black transition-all cursor-pointer shadow-xs"
+            >
+              <Camera className="w-4.5 h-4.5 text-purple-600" />
+              Unggah Foto Massal
             </motion.button>
 
             <motion.button
@@ -932,6 +1262,241 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
         )}
       </AnimatePresence>
 
+      {/* EXCEL IMPORT PHOTO MODAL */}
+      <AnimatePresence>
+        {isImportPhotoOpen && (
+          <div className="fixed inset-0 bg-brand-950/65 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white rounded-3xl p-6 w-full max-w-4xl max-h-[85vh] border border-brand-100 shadow-2xl flex flex-col"
+            >
+              {/* Header */}
+              <div className="flex justify-between items-center border-b pb-4 border-brand-50 flex-shrink-0">
+                <div>
+                  <h3 className="text-base font-extrabold text-brand-950 flex items-center gap-2">
+                    <Camera className="w-5 h-5 text-purple-600" />
+                    Unggah & Petakan Foto Profil Massal
+                  </h3>
+                  <p className="text-[11px] text-brand-400 font-bold mt-0.5 uppercase tracking-wide">Pencocokan Cerdas berbasis Nama / NIS</p>
+                </div>
+                <button
+                  onClick={() => {
+                    setIsImportPhotoOpen(false);
+                    setPhotoMatchItems([]);
+                  }}
+                  disabled={isUploadingPhotos}
+                  className="p-1 text-brand-400 hover:text-brand-600 hover:bg-brand-50 rounded-xl cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Body */}
+              <div className="flex-1 overflow-y-auto py-5 space-y-5">
+                
+                {/* How it works info */}
+                <div className="bg-brand-50/50 border border-brand-100/60 rounded-2xl p-4 text-xs text-brand-700 leading-relaxed font-semibold">
+                  💡 **Petunjuk Penggunaan Cepat:**
+                  <ul className="list-disc list-inside mt-2 space-y-1 text-brand-500 font-medium">
+                    <li>Namai file foto dengan **NIS** (misal: `19013.jpg`) untuk pencocokan otomatis 100% tepat.</li>
+                    <li>Sistem juga dapat mendeteksi nama secara cerdas jika ada salah ketik kecil (misal: `amiir hamza.jpg` akan cocok ke `Amir Hamzah`).</li>
+                    <li>Anda bisa memilih banyak file gambar sekaligus atau mengunggah satu file **.zip** berisi semua foto.</li>
+                  </ul>
+                </div>
+
+                {/* Upload selectors */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  
+                  {/* Option A: Select Multiple Images */}
+                  <div className="border border-dashed border-brand-200 rounded-2xl p-5 flex flex-col items-center justify-center text-center space-y-3 bg-brand-50/10 hover:bg-brand-50/30 transition-all cursor-pointer relative group">
+                    <div className="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-purple-600 group-hover:scale-110 transition-transform">
+                      <Image className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h5 className="text-xs font-bold text-brand-950">Pilih Berkas Foto Langsung</h5>
+                      <p className="text-[10px] text-brand-400 font-medium mt-0.5">Mendukung format JPG, PNG, WEBP sekaligus banyak</p>
+                    </div>
+                    <input 
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      onChange={handleMultipleFilesChange}
+                      disabled={isUploadingPhotos}
+                      className="absolute inset-0 opacity-0 cursor-pointer"
+                    />
+                  </div>
+
+                  {/* Option B: Upload ZIP */}
+                  <div className="border border-dashed border-brand-200 rounded-2xl p-5 flex flex-col items-center justify-center text-center space-y-3 bg-brand-50/10 hover:bg-brand-50/30 transition-all cursor-pointer relative group">
+                    <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
+                      <FileSpreadsheet className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h5 className="text-xs font-bold text-brand-950">Unggah Berkas File ZIP</h5>
+                      <p className="text-[10px] text-brand-400 font-medium mt-0.5">Kompresi semua file foto dalam satu berkas .zip</p>
+                    </div>
+                    <input 
+                      type="file"
+                      accept=".zip"
+                      onChange={handleZipFileChange}
+                      disabled={isUploadingPhotos}
+                      className="absolute inset-0 opacity-0 cursor-pointer"
+                    />
+                  </div>
+                </div>
+
+                {/* Progress bar info */}
+                {isUploadingPhotos && (
+                  <div className="bg-purple-50/75 border border-purple-100 rounded-2xl p-4 space-y-3">
+                    <div className="flex justify-between text-xs font-bold text-purple-950">
+                      <span>{uploadStatusMsg}</span>
+                      {uploadProgress > 0 && <span>{uploadProgress}%</span>}
+                    </div>
+                    {uploadProgress > 0 && (
+                      <div className="w-full bg-purple-200 h-2.5 rounded-full overflow-hidden">
+                        <div 
+                          className="bg-purple-600 h-full rounded-full transition-all duration-300"
+                          style={{ width: `${uploadProgress}%` }}
+                        ></div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Preview Match List Table */}
+                {photoMatchItems.length > 0 && (
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <h4 className="text-xs font-black text-brand-900 uppercase tracking-wider">
+                        Pratinjau Hasil Pemetaan ({photoMatchItems.length} Berkas)
+                      </h4>
+                      <button
+                        onClick={() => setPhotoMatchItems([])}
+                        disabled={isUploadingPhotos}
+                        className="text-[10px] text-rose-600 hover:text-rose-800 font-bold underline cursor-pointer"
+                      >
+                        Reset Daftar
+                      </button>
+                    </div>
+
+                    <div className="border border-brand-100 rounded-2xl overflow-hidden shadow-xs">
+                      <div className="max-h-[300px] overflow-y-auto">
+                        <table className="w-full text-left border-collapse text-xs">
+                          <thead>
+                            <tr className="bg-brand-50/60 text-brand-800 font-extrabold uppercase text-[10px] border-b border-brand-100">
+                              <th className="py-2.5 px-4">Nama File</th>
+                              <th className="py-2.5 px-4 text-center">Foto</th>
+                              <th className="py-2.5 px-4">Hasil Auto-Match</th>
+                              <th className="py-2.5 px-4 text-center">Status</th>
+                              <th className="py-2.5 px-4">Koreksi Manual</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-brand-50 text-brand-950 font-semibold bg-white">
+                            {photoMatchItems.map((item) => {
+                              const sMatch = siswaList.find(s => s.id === item.matchedSiswaId);
+                              return (
+                                <tr key={item.id} className="hover:bg-slate-50/50">
+                                  <td className="py-3 px-4 font-mono text-[10px] text-brand-600 max-w-[150px] truncate" title={item.file.name}>
+                                    {item.file.name}
+                                  </td>
+                                  <td className="py-3 px-4 text-center">
+                                    <img 
+                                      src={item.previewUrl} 
+                                      className="w-9 h-11 object-cover border border-brand-100 rounded-lg mx-auto shadow-xs" 
+                                      alt="preview" 
+                                    />
+                                  </td>
+                                  <td className="py-3 px-4">
+                                    {sMatch ? (
+                                      <div>
+                                        <p className="font-extrabold text-brand-950">{sMatch.nama}</p>
+                                        <p className="text-[10px] text-brand-400 mt-0.5">Kelas {sMatch.kelas} &bull; NIS {sMatch.nis}</p>
+                                      </div>
+                                    ) : (
+                                      <span className="text-slate-400 italic">Belum terpetakan</span>
+                                    )}
+                                  </td>
+                                  <td className="py-3 px-4 text-center">
+                                    {item.status === "matched" && (
+                                      <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full text-[9px] font-black uppercase">
+                                        Cocok
+                                      </span>
+                                    )}
+                                    {item.status === "suggested" && (
+                                      <span className="px-2.5 py-1 bg-amber-50 text-amber-700 rounded-full text-[9px] font-black uppercase">
+                                        Rekomendasi
+                                      </span>
+                                    )}
+                                    {item.status === "nomatch" && (
+                                      <span className="px-2.5 py-1 bg-rose-50 text-rose-700 rounded-full text-[9px] font-black uppercase">
+                                        Gagal
+                                      </span>
+                                    )}
+                                  </td>
+                                  <td className="py-3 px-4">
+                                    <select
+                                      value={item.matchedSiswaId || ""}
+                                      onChange={(e) => {
+                                        const val = e.target.value;
+                                        setPhotoMatchItems(prev => prev.map(p => 
+                                          p.id === item.id 
+                                            ? { ...p, matchedSiswaId: val === "" ? null : val, status: val === "" ? "nomatch" : "matched" } 
+                                            : p
+                                        ));
+                                      }}
+                                      disabled={isUploadingPhotos}
+                                      className="w-full text-[11px] bg-slate-50 border border-slate-200 rounded-xl p-2 font-bold outline-none text-brand-900 focus:bg-white cursor-pointer"
+                                    >
+                                      <option value="">-- Pilih Siswa Manual --</option>
+                                      {[...siswaList]
+                                        .sort((a, b) => a.nama.localeCompare(b.nama))
+                                        .map(s => (
+                                          <option key={s.id} value={s.id}>
+                                            {s.nama} ({s.kelas}) - {s.nis}
+                                          </option>
+                                        ))}
+                                    </select>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Footer */}
+              <div className="flex justify-end gap-2 border-t pt-4 border-brand-50 flex-shrink-0">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsImportPhotoOpen(false);
+                    setPhotoMatchItems([]);
+                  }}
+                  disabled={isUploadingPhotos}
+                  className="px-5 py-2.5 border border-brand-100 rounded-xl text-sm font-bold text-brand-600 hover:bg-brand-50 cursor-pointer disabled:opacity-50"
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  onClick={handleUploadAllPhotos}
+                  disabled={isUploadingPhotos || photoMatchItems.filter(item => item.matchedSiswaId !== null).length === 0}
+                  className="px-6 py-2.5 brand-gradient hover:opacity-95 text-white font-bold rounded-xl text-sm shadow-md shadow-brand-500/20 disabled:opacity-50 cursor-pointer"
+                >
+                  {isUploadingPhotos ? "Mengunggah..." : `Konfirmasi & Unggah (${photoMatchItems.filter(item => item.matchedSiswaId !== null).length} Foto)`}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       {/* OFF-SCREEN CARD RENDERERS (Hidden from view, used purely by html2canvas for PDF and PNG downloads) */}
       <div className="absolute top-[-9999px] left-[-9999px] pointer-events-none overflow-hidden">
         {/* Hidden area for bulk printing targets - Rendered dynamically only during export */}
@@ -967,9 +1532,13 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                 
                 {/* 1. 3x4 Portrait Avatar (Pas Foto Style) */}
                 <div className="w-21 h-28 rounded-2xl border-[3px] border-pink-500 bg-white flex items-center justify-center p-[2.5px] shadow-md shadow-pink-500/10 flex-shrink-0">
-                  <div className="w-full h-full rounded-xl border border-pink-100 bg-rose-50/50 flex items-center justify-center text-pink-600 font-black text-3xl uppercase tracking-wider">
-                    {siswa.nama.slice(0, 2)}
-                  </div>
+                  {siswa.foto_url ? (
+                    <img src={siswa.foto_url} className="w-full h-full rounded-xl object-cover" alt={siswa.nama} />
+                  ) : (
+                    <div className="w-full h-full rounded-xl border border-pink-100 bg-rose-50/50 flex items-center justify-center text-pink-600 font-black text-3xl uppercase tracking-wider">
+                      {siswa.nama.slice(0, 2)}
+                    </div>
+                  )}
                 </div>
 
                 {/* 2. Student Info */}
@@ -1028,9 +1597,13 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
               
               {/* 1. 3x4 Portrait Avatar (Pas Foto Style) */}
               <div className="w-21 h-28 rounded-2xl border-[3px] border-pink-500 bg-white flex items-center justify-center p-[2.5px] shadow-md shadow-pink-500/10 flex-shrink-0">
-                <div className="w-full h-full rounded-xl border border-pink-100 bg-rose-50/50 flex items-center justify-center text-pink-600 font-black text-3xl uppercase tracking-wider">
-                  {printingSiswa.nama.slice(0, 2)}
-                </div>
+                {printingSiswa.foto_url ? (
+                  <img src={printingSiswa.foto_url} className="w-full h-full rounded-xl object-cover" alt={printingSiswa.nama} />
+                ) : (
+                  <div className="w-full h-full rounded-xl border border-pink-100 bg-rose-50/50 flex items-center justify-center text-pink-600 font-black text-3xl uppercase tracking-wider">
+                    {printingSiswa.nama.slice(0, 2)}
+                  </div>
+                )}
               </div>
 
               {/* 2. Student Info */}

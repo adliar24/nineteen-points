@@ -358,75 +358,92 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
 
       {/* 3. RIWAYAT POIN TAB */}
       {activeTab === "siswa_history" && (
-        <div className="bg-white rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 overflow-hidden animate-fade-in">
-          <div className="p-6 border-b border-brand-100 flex justify-between items-center">
+        <div className="space-y-4 animate-fade-in">
+          {/* Header block */}
+          <div className="bg-white rounded-3xl p-6 border border-brand-100 shadow-xl shadow-brand-900/5 flex justify-between items-center">
             <div>
               <h3 className="text-base font-extrabold text-brand-900 flex items-center gap-2">
                 <Clock className="w-5 h-5 text-brand-600" />
-                Catatan Riwayat Poin Anda
+                Riwayat Perolehan Poin
               </h3>
               <p className="text-[10px] text-brand-500 font-medium mt-0.5">
-                Daftar kronologis sanksi disiplin dan penghargaan prestasi yang dicatat oleh guru.
+                Catatan kronologis penghargaan prestasi dan sanksi disiplin Anda.
               </p>
             </div>
-            <span className="px-3 py-1.5 bg-brand-50 text-brand-700 font-bold rounded-xl text-[10px]">
-              {riwayat.length} Transaksi
+            <span className="px-3.5 py-1.5 bg-brand-50 text-brand-700 font-black rounded-xl text-[10px] tracking-wide border border-brand-100 flex-shrink-0">
+              {riwayat.length} Catatan
             </span>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-brand-50/40 border-b border-brand-100 text-brand-500 text-[10px] font-black uppercase tracking-wider">
-                  <th className="py-4 px-6">Tanggal & Waktu</th>
-                  <th className="py-4 px-6">Aturan / Keterangan</th>
-                  <th className="py-4 px-6 text-center">Nilai Poin</th>
-                  <th className="py-4 px-6 text-right">Guru Pencatat</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-brand-50 text-brand-900 text-xs font-semibold">
-                {riwayat.length > 0 ? (
-                  riwayat.map((record) => {
-                    const isPositive = record.nilai_diberikan > 0;
-                    return (
-                      <tr key={record.id} className="hover:bg-brand-50/20 transition-colors">
-                        <td className="py-4 px-6 font-mono text-[10px] text-brand-500">
-                          {new Date(record.created_at).toLocaleString("id-ID", {
-                            dateStyle: "medium",
-                            timeStyle: "short"
-                          })}
-                        </td>
-                        <td className="py-4 px-6 max-w-sm">
-                          <span className="font-bold block text-brand-950 leading-relaxed">
-                            {record.nama_poin}
+          {/* Cards List container */}
+          <div className="space-y-3">
+            {riwayat.length > 0 ? (
+              riwayat.map((record) => {
+                const isPositive = record.nilai_diberikan > 0;
+                return (
+                  <div 
+                    key={record.id} 
+                    className="bg-white rounded-2xl p-4.5 border border-brand-100 shadow-xs flex items-center justify-between gap-4 card-hover-effect"
+                  >
+                    {/* Left: Icon Badge & Details */}
+                    <div className="flex items-center gap-4 min-w-0">
+                      {/* Icon Badge */}
+                      <div 
+                        className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                          isPositive 
+                            ? "bg-emerald-50 text-emerald-600 border border-emerald-100" 
+                            : "bg-rose-50 text-rose-600 border border-rose-100"
+                        }`}
+                      >
+                        {isPositive ? (
+                          <Award className="w-5 h-5" />
+                        ) : (
+                          <TrendingUp className="w-5 h-5 rotate-180" />
+                        )}
+                      </div>
+                      
+                      {/* Name, Date, and Recorder */}
+                      <div className="min-w-0">
+                        <span className="font-extrabold text-xs text-brand-950 block leading-snug truncate">
+                          {record.nama_poin}
+                        </span>
+                        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-slate-400 font-semibold mt-1">
+                          <span className="font-mono text-slate-500">
+                            {new Date(record.created_at).toLocaleString("id-ID", {
+                              dateStyle: "medium",
+                              timeStyle: "short"
+                            })}
                           </span>
-                        </td>
-                        <td className="py-4 px-6 text-center">
-                          <span 
-                            className={`font-black font-mono px-3 py-1 rounded-full text-[10px] ${
-                              isPositive 
-                                ? "bg-emerald-50 text-emerald-700 border border-emerald-100" 
-                                : "bg-rose-50 text-rose-700 border border-rose-100"
-                            }`}
-                          >
-                            {isPositive ? `+${record.nilai_diberikan}` : record.nilai_diberikan}
+                          <span className="hidden sm:inline w-1 h-1 bg-slate-300 rounded-full" />
+                          <span className="truncate">
+                            Dicatat: {record.guru_email}
                           </span>
-                        </td>
-                        <td className="py-4 px-6 text-right font-mono text-brand-500 text-[10px]">
-                          {record.guru_email}
-                        </td>
-                      </tr>
-                    );
-                  })
-                ) : (
-                  <tr>
-                    <td colSpan={4} className="py-12 text-center text-brand-400 font-bold text-xs">
-                      Belum ada riwayat pencatatan poin untuk Anda. Tetap patuhi aturan sekolah!
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right: Point Value */}
+                    <div className="flex-shrink-0">
+                      <span 
+                        className={`font-black font-mono px-3.5 py-1.5 rounded-xl text-xs ${
+                          isPositive 
+                            ? "bg-emerald-50 text-emerald-700 border border-emerald-100/50" 
+                            : "bg-rose-50 text-rose-700 border border-rose-100/50"
+                        }`}
+                      >
+                        {isPositive ? `+${record.nilai_diberikan}` : record.nilai_diberikan}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="bg-white rounded-3xl p-12 text-center border border-brand-100 shadow-xl shadow-brand-900/5">
+                <p className="text-xs text-slate-400 font-bold">
+                  Belum ada riwayat pencatatan poin. Tetap patuhi tata tertib sekolah!
+                </p>
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -248,14 +248,6 @@ export default function App() {
                 </button>
               </div>
 
-              {/* Branding (Mobile Only) */}
-              <div className="flex md:hidden items-center gap-2 sm:gap-2.5">
-                <img src="/logo.png" className="w-6.5 h-6.5 object-contain" alt="Logo" />
-                <div>
-                  <h4 className="text-sm sm:text-base font-black tracking-tight text-white font-sans">SMAN 19 Bandung</h4>
-                  <p className="text-[11px] text-accent-300 font-black uppercase tracking-wider">NineTeen Points</p>
-                </div>
-              </div>
             </div>
 
             {/* Right profile header info */}

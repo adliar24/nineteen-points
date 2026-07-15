@@ -87,7 +87,7 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
         const canvas = await html2canvas(cardElement, {
           scale: 3, // High-quality rendering
           useCORS: true,
-          backgroundColor: "#4c1d95"
+          backgroundColor: "#ffffff"
         });
         const imgData = canvas.toDataURL("image/png");
         const link = document.createElement("a");
@@ -256,19 +256,15 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
               </button>
             </div>
 
-            {/* Portrait digital card: Premium Purple Theme */}
+            {/* Portrait digital card: Purple Header & White Body */}
             <div
               id="student-digital-card-portrait"
               onClick={() => setIsZoomed(true)}
-              className="w-full max-w-[290px] aspect-[1/1.58] rounded-[32px] bg-gradient-to-b from-brand-900 via-brand-800 to-brand-950 text-white p-6 border border-brand-700/50 relative overflow-hidden flex flex-col justify-between shadow-2xl shadow-brand-950/40 flex-shrink-0 cursor-zoom-in hover:scale-[1.02] transition-transform duration-300"
+              className="w-full max-w-[290px] aspect-[1/1.58] rounded-[32px] bg-white text-brand-950 border border-brand-200 relative overflow-hidden flex flex-col justify-between shadow-2xl shadow-brand-950/10 flex-shrink-0 cursor-zoom-in hover:scale-[1.02] transition-transform duration-300"
               style={{ width: "290px", height: "458px" }}
             >
-              {/* Decorative mesh gradients in purple/fuchsia */}
-              <div className="absolute top-0 inset-x-0 h-40 bg-gradient-to-b from-brand-500/20 to-transparent filter blur-xl pointer-events-none" />
-              <div className="absolute bottom-0 right-0 w-44 h-44 bg-accent-500/10 rounded-full filter blur-2xl pointer-events-none" />
-              
-              {/* Header block: School name & logo */}
-              <div className="flex items-center gap-2.5 border-b border-white/10 pb-4 relative z-10">
+              {/* TOP HEADER: Solid Purple */}
+              <div className="bg-brand-900 text-white px-6 py-5 flex items-center gap-2.5 relative z-10 border-b border-brand-800">
                 <img src="/logo.png" className="w-8 h-8 object-contain" alt="Logo" />
                 <div>
                   <h4 className="text-[10px] font-black tracking-widest text-white uppercase font-sans leading-tight">SMAN 19 BANDUNG</h4>
@@ -276,45 +272,48 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
                 </div>
               </div>
 
-              {/* Middle block: Student avatar initial & detail */}
-              <div className="flex flex-col items-center justify-center space-y-4 my-auto relative z-10">
-                {/* Avatar with initial letter */}
-                <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-brand-500 via-accent-500 to-amber-400 p-[3px] shadow-lg shadow-brand-500/20">
-                  <div className="w-full h-full rounded-full bg-brand-950/80 flex items-center justify-center font-black text-2xl uppercase tracking-wider text-white">
-                    {siswaDetail.nama.slice(0, 2)}
+              {/* CARD BODY: Solid White */}
+              <div className="flex-1 px-6 py-5 flex flex-col justify-between bg-white relative">
+                {/* Middle block: Student avatar initial & detail */}
+                <div className="flex flex-col items-center justify-center space-y-3.5 my-auto relative z-10">
+                  {/* Avatar with initial letter */}
+                  <div className="w-18 h-18 rounded-full bg-gradient-to-tr from-brand-600 via-brand-500 to-brand-600 p-[2.5px] shadow-md shadow-brand-500/10">
+                    <div className="w-full h-full rounded-full bg-brand-50 flex items-center justify-center font-black text-xl uppercase tracking-wider text-brand-900">
+                      {siswaDetail.nama.slice(0, 2)}
+                    </div>
+                  </div>
+
+                  {/* Name & Class info */}
+                  <div className="text-center space-y-1">
+                    <span className="text-[7px] bg-brand-900 text-white px-2.5 py-0.5 rounded-full uppercase font-black tracking-widest inline-block mb-0.5">
+                      PELAJAR
+                    </span>
+                    <h3 className="text-base font-black tracking-tight text-brand-950 px-2 line-clamp-1">
+                      {siswaDetail.nama}
+                    </h3>
+                    <div className="flex items-center justify-center gap-2 text-[9px] text-brand-600 font-bold font-mono">
+                      <span>NIS: {siswaDetail.nis}</span>
+                      <span className="w-1 h-1 bg-brand-200 rounded-full" />
+                      <span>KELAS: {siswaDetail.kelas}</span>
+                    </div>
                   </div>
                 </div>
 
-                {/* Name & Class info */}
-                <div className="text-center space-y-1">
-                  <span className="text-[7px] bg-accent-500 text-white px-2.5 py-0.5 rounded-full uppercase font-black tracking-widest inline-block mb-1">
-                    PELAJAR
-                  </span>
-                  <h3 className="text-base font-black tracking-tight text-white px-2 line-clamp-1">
-                    {siswaDetail.nama}
-                  </h3>
-                  <div className="flex items-center justify-center gap-2.5 text-[10px] text-brand-200 font-bold font-mono">
-                    <span>NIS: {siswaDetail.nis}</span>
-                    <span className="w-1 h-1 bg-white/20 rounded-full" />
-                    <span>KELAS: {siswaDetail.kelas}</span>
+                {/* Bottom block: High quality QR code */}
+                <div className="flex flex-col items-center justify-center space-y-3.5 relative z-10 border-t border-brand-100 pt-4">
+                  <div className="bg-white p-2 rounded-2xl shadow-md border border-brand-100">
+                    <QRCodeSVG
+                      value={siswaDetail.nis}
+                      size={90}
+                      level="M"
+                      includeMargin={false}
+                    />
                   </div>
-                </div>
-              </div>
-
-              {/* Bottom block: High quality QR code */}
-              <div className="flex flex-col items-center justify-center space-y-4 relative z-10 border-t border-white/10 pt-4">
-                <div className="bg-white p-2.5 rounded-2xl shadow-lg border border-white/20">
-                  <QRCodeSVG
-                    value={siswaDetail.nis}
-                    size={100}
-                    level="M"
-                    includeMargin={false}
-                  />
-                </div>
-                
-                <div className="flex items-center gap-1.5 text-[8px] text-brand-200/60 font-bold uppercase tracking-widest">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>KARTU DIGITAL TERVERIFIKASI</span>
+                  
+                  <div className="flex items-center gap-1 text-[8px] text-brand-400 font-bold uppercase tracking-widest">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+                    <span>KARTU DIGITAL TERVERIFIKASI</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -465,18 +464,14 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
             <X className="w-6 h-6" />
           </button>
 
-          {/* Scaled-up Card: Purple Theme */}
+          {/* Scaled-up Card: Purple Header & White Body */}
           <div 
-            className="w-full max-w-[340px] sm:max-w-[360px] aspect-[1/1.58] rounded-[36px] bg-gradient-to-b from-brand-900 via-brand-800 to-brand-950 text-white p-7 border border-brand-700/50 shadow-2xl relative flex flex-col justify-between cursor-default animate-fade-in"
+            className="w-full max-w-[340px] sm:max-w-[360px] aspect-[1/1.58] rounded-[36px] bg-white text-brand-950 border border-brand-200 shadow-2xl relative flex flex-col justify-between cursor-default animate-fade-in overflow-hidden"
             style={{ width: "340px", height: "537px" }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Decorative mesh gradients in purple/fuchsia */}
-            <div className="absolute top-0 inset-x-0 h-48 bg-gradient-to-b from-brand-500/20 to-transparent filter blur-xl pointer-events-none" />
-            <div className="absolute bottom-0 right-0 w-48 h-48 bg-accent-500/10 rounded-full filter blur-2xl pointer-events-none" />
-            
-            {/* Header block: School name & logo */}
-            <div className="flex items-center gap-3 border-b border-white/10 pb-4.5 relative z-10">
+            {/* TOP HEADER: Solid Purple */}
+            <div className="bg-brand-900 text-white px-7 py-6 flex items-center gap-3 relative z-10 border-b border-brand-850">
               <img src="/logo.png" className="w-9 h-9 object-contain" alt="Logo" />
               <div>
                 <h4 className="text-xs font-black tracking-widest text-white uppercase font-sans leading-tight">SMAN 19 BANDUNG</h4>
@@ -484,45 +479,48 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
               </div>
             </div>
 
-            {/* Middle block: Student avatar initial & detail */}
-            <div className="flex flex-col items-center justify-center space-y-5 my-auto relative z-10">
-              {/* Avatar with initial letter */}
-              <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-brand-500 via-accent-500 to-amber-400 p-[3.5px] shadow-md shadow-brand-500/20">
-                <div className="w-full h-full rounded-full bg-brand-950/80 flex items-center justify-center font-black text-3xl uppercase tracking-wider text-white">
-                  {siswaDetail.nama.slice(0, 2)}
+            {/* CARD BODY: Solid White */}
+            <div className="flex-1 px-7 py-6 flex flex-col justify-between bg-white relative">
+              {/* Middle block: Student avatar initial & detail */}
+              <div className="flex flex-col items-center justify-center space-y-4 my-auto relative z-10">
+                {/* Avatar with initial letter */}
+                <div className="w-22 h-22 rounded-full bg-gradient-to-tr from-brand-600 via-brand-500 to-brand-600 p-[3px] shadow-lg shadow-brand-500/10">
+                  <div className="w-full h-full rounded-full bg-brand-50 flex items-center justify-center font-black text-2xl uppercase tracking-wider text-brand-900">
+                    {siswaDetail.nama.slice(0, 2)}
+                  </div>
+                </div>
+
+                {/* Name & Class info */}
+                <div className="text-center space-y-1">
+                  <span className="text-[8px] bg-brand-900 text-white px-3 py-0.5 rounded-full uppercase font-black tracking-widest inline-block mb-1">
+                    PELAJAR
+                  </span>
+                  <h3 className="text-lg font-black tracking-tight text-white px-2 line-clamp-1">
+                    {siswaDetail.nama}
+                  </h3>
+                  <div className="flex items-center justify-center gap-2 text-xs text-brand-600 font-bold font-mono">
+                    <span>NIS: {siswaDetail.nis}</span>
+                    <span className="w-1.5 h-1.5 bg-brand-200 rounded-full" />
+                    <span>KELAS: {siswaDetail.kelas}</span>
+                  </div>
                 </div>
               </div>
 
-              {/* Name & Class info */}
-              <div className="text-center space-y-1">
-                <span className="text-[8px] bg-accent-500 text-white px-3 py-0.5 rounded-full uppercase font-black tracking-widest inline-block mb-1">
-                  PELAJAR
-                </span>
-                <h3 className="text-lg font-black tracking-tight text-white px-2 line-clamp-1">
-                  {siswaDetail.nama}
-                </h3>
-                <div className="flex items-center justify-center gap-2.5 text-xs text-brand-200 font-bold font-mono">
-                  <span>NIS: {siswaDetail.nis}</span>
-                  <span className="w-1.5 h-1.5 bg-white/20 rounded-full" />
-                  <span>KELAS: {siswaDetail.kelas}</span>
+              {/* Bottom block: High quality QR code */}
+              <div className="flex flex-col items-center justify-center space-y-4 relative z-10 border-t border-brand-100 pt-4.5">
+                <div className="bg-white p-3 rounded-2xl shadow-md border border-brand-100">
+                  <QRCodeSVG
+                    value={siswaDetail.nis}
+                    size={110}
+                    level="M"
+                    includeMargin={false}
+                  />
                 </div>
-              </div>
-            </div>
-
-            {/* Bottom block: High quality QR code */}
-            <div className="flex flex-col items-center justify-center space-y-4 relative z-10 border-t border-white/10 pt-4.5">
-              <div className="bg-white p-3 rounded-2xl shadow-md border border-brand-100">
-                <QRCodeSVG
-                  value={siswaDetail.nis}
-                  size={120}
-                  level="M"
-                  includeMargin={false}
-                />
-              </div>
-              
-              <div className="flex items-center gap-1.5 text-[9px] text-brand-200/60 font-bold uppercase tracking-widest">
-                <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                <span>KARTU DIGITAL TERVERIFIKASI</span>
+                
+                <div className="flex items-center gap-1.5 text-[9px] text-brand-400 font-bold uppercase tracking-widest">
+                  <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                  <span>KARTU DIGITAL TERVERIFIKASI</span>
+                </div>
               </div>
             </div>
           </div>

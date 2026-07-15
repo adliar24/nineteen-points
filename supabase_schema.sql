@@ -21,6 +21,7 @@ CREATE TABLE public.siswa (
   nama TEXT NOT NULL,
   kelas TEXT NOT NULL,
   total_poin INT DEFAULT 100 NOT NULL,
+  foto_url TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 CREATE INDEX idx_siswa_nis ON public.siswa(nis);
@@ -49,6 +50,7 @@ CREATE TABLE public.profiles (
   nama TEXT NOT NULL,
   role TEXT NOT NULL CHECK (role IN ('super_admin', 'guru', 'siswa')),
   nis TEXT REFERENCES public.siswa(nis) ON DELETE SET NULL,
+  foto_url TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 

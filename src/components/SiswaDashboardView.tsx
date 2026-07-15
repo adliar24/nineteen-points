@@ -194,13 +194,22 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
         <div className="space-y-6 animate-fade-in">
           {/* Welcome Banner */}
           <div className="bg-white rounded-3xl p-6 border border-brand-100 shadow-xl shadow-brand-900/5 flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="space-y-1">
-              <h2 className="text-2xl font-black text-brand-900 flex items-center gap-2">
-                Halo, {siswaDetail.nama}! <Sparkles className="w-5 h-5 text-amber-500 animate-pulse" />
-              </h2>
-              <p className="text-xs text-brand-500 font-medium">
-                Pantau poin prestasi dan pelanggaranmu di sini.
-              </p>
+            <div className="flex items-center gap-4">
+              {siswaDetail.foto_url ? (
+                <img src={siswaDetail.foto_url} className="w-16 h-20 rounded-2xl object-cover border-2 border-pink-400 shadow-md flex-shrink-0" alt={siswaDetail.nama} />
+              ) : (
+                <div className="w-16 h-20 rounded-2xl border-2 border-pink-200 bg-pink-50 flex items-center justify-center text-pink-500 font-black text-2xl uppercase flex-shrink-0">
+                  {siswaDetail.nama.slice(0, 2)}
+                </div>
+              )}
+              <div className="space-y-1">
+                <h2 className="text-2xl font-black text-brand-900 flex items-center gap-2">
+                  Halo, {siswaDetail.nama}! <Sparkles className="w-5 h-5 text-amber-500 animate-pulse" />
+                </h2>
+                <p className="text-xs text-brand-500 font-medium">
+                  Pantau poin prestasi dan pelanggaranmu di sini.
+                </p>
+              </div>
             </div>
             <div className="flex gap-4">
               <div className="bg-brand-50/70 border border-brand-100 rounded-2xl px-5 py-3 text-center min-w-[100px]">

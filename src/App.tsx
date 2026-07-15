@@ -32,6 +32,7 @@ import HistoryView from "./components/HistoryView";
 import MasterPoinView from "./components/MasterPoinView";
 import SiswaDashboardView from "./components/SiswaDashboardView";
 import KelolaPenggunaView from "./components/KelolaPenggunaView";
+import ChangePasswordView from "./components/ChangePasswordView";
 import ConfirmationModal from "./components/ConfirmationModal";
 
 export default function App() {
@@ -99,19 +100,19 @@ export default function App() {
   useEffect(() => {
     if (userSession) {
       if (userSession.role === "siswa") {
-        if (!["siswa_stats", "siswa_barcode", "siswa_history"].includes(activeTab)) {
+        if (!["siswa_stats", "siswa_barcode", "siswa_history", "change_password"].includes(activeTab)) {
           setActiveTab("siswa_stats");
         }
       } else if (userSession.role === "piket") {
-        if (!["input", "history"].includes(activeTab)) {
+        if (!["input", "history", "change_password"].includes(activeTab)) {
           setActiveTab("input");
         }
       } else if (userSession.role === "guru") {
-        if (!["input", "students"].includes(activeTab)) {
+        if (!["input", "students", "change_password"].includes(activeTab)) {
           setActiveTab("input");
         }
       } else {
-        if (!["stats", "input", "students", "history", "rules", "users"].includes(activeTab)) {
+        if (!["stats", "input", "students", "history", "rules", "users", "change_password"].includes(activeTab)) {
           setActiveTab("stats");
         }
       }
@@ -159,6 +160,14 @@ export default function App() {
       { id: "siswa_history", label: "Riwayat Poin", icon: Calendar, description: "Riwayat perolehan poin" },
     ];
   }
+
+  // Self-service change password tab for all logged in accounts
+  navItems.push({
+    id: "change_password",
+    label: "Ubah Password",
+    icon: Settings,
+    description: "Ganti password akun Anda"
+  });
 
   return (
     <motion.div
@@ -394,6 +403,10 @@ export default function App() {
                   userSession={userSession}
                   onRefreshHistory={() => setHistoryRefreshCount((c) => c + 1)}
                 />
+              )}
+
+              {activeTab === "change_password" && (
+                <ChangePasswordView />
               )}
 
               {["siswa_stats", "siswa_barcode", "siswa_history"].includes(activeTab) && (

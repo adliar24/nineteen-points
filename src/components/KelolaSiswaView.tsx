@@ -260,7 +260,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
         nis: newNis,
         nama: upperNama,
         kelas: newKelas,
-        total_poin: 100,
+        total_poin: 0,
       });
 
       if (error) throw error;
@@ -390,7 +390,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
           const nis = String(row[0] || "").trim();
           const nama = String(row[1] || "").trim().toUpperCase(); // Force imported names to UPPERCASE
           const kelas = String(row[2] || "").trim();
-          const total_poin = 100; // Default all new students to 100 points initial
+          const total_poin = 0; // Default all new students to 0 points initial
 
           if (!nis || !nama || !kelas) continue;
 

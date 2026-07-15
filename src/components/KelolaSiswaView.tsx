@@ -800,45 +800,64 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
     if (!file) return;
 
     setIsUploadingPhotos(true);
-    setUploadStatusMsg("Membaca & mengekstrak file ZIP...");
+    setUploadProgress(0);
+    setUploadStatusMsg("Membaca file ZIP...");
     
     try {
       const JSZip = (await import("jszip")).default;
       const zip = new JSZip();
       const zipData = await zip.loadAsync(file);
       
-      const newItems: PhotoMatchItem[] = [];
-      const promises: Promise<void>[] = [];
-      
+      // Collect image entries first to know total count
+      const imageEntries: { path: string; entry: any }[] = [];
       zipData.forEach((relativePath, entry) => {
-        // Skip directories and non-image files
-        if (entry.dir || !relativePath.match(/\.(jpe?g|png|webp)$/i)) {
-          return;
+        if (!entry.dir && relativePath.match(/\.(jpe?g|png|webp)$/i)) {
+          imageEntries.push({ path: relativePath, entry });
         }
+      });
+
+      const totalFiles = imageEntries.length;
+      if (totalFiles === 0) {
+        alert("Tidak ditemukan file gambar dalam ZIP. Format yang didukung: JPG, PNG, WebP.");
+        setIsUploadingPhotos(false);
+        setUploadStatusMsg("");
+        e.target.value = "";
+        return;
+      }
+
+      setUploadStatusMsg(`Mengekstrak 0 dari ${totalFiles} foto...`);
+      setUploadProgress(5);
+
+      const newItems: PhotoMatchItem[] = [];
+      
+      // Extract sequentially so we can track progress
+      for (let idx = 0; idx < imageEntries.length; idx++) {
+        const { path, entry } = imageEntries[idx];
+        const filename = path.split("/").pop() || path;
         
-        const filename = relativePath.split("/").pop() || relativePath;
-        
-        const promise = entry.async("blob").then((blob) => {
-          const imageFile = new File([blob], filename, { 
-            type: `image/${filename.toLowerCase().endsWith('.png') ? 'png' : 'jpeg'}` 
-          });
-          
-          const matchResult = matchFileToStudent(filename);
-          
-          newItems.push({
-            id: Math.random().toString(36).substring(7),
-            file: imageFile,
-            previewUrl: URL.createObjectURL(imageFile),
-            status: matchResult.status,
-            matchedSiswaId: matchResult.matchedSiswaId,
-            similarity: matchResult.similarity
-          });
+        const blob = await entry.async("blob");
+        const imageFile = new File([blob], filename, { 
+          type: `image/${filename.toLowerCase().endsWith('.png') ? 'png' : 'jpeg'}` 
         });
         
-        promises.push(promise);
-      });
-      
-      await Promise.all(promises);
+        const matchResult = matchFileToStudent(filename);
+        
+        newItems.push({
+          id: Math.random().toString(36).substring(7),
+          file: imageFile,
+          previewUrl: URL.createObjectURL(imageFile),
+          status: matchResult.status,
+          matchedSiswaId: matchResult.matchedSiswaId,
+          similarity: matchResult.similarity
+        });
+
+        // Update progress every file
+        const pct = Math.round(((idx + 1) / totalFiles) * 90) + 5; // 5%–95% range
+        setUploadProgress(pct);
+        setUploadStatusMsg(`Mengekstrak ${idx + 1} dari ${totalFiles} foto...`);
+      }
+
+      setUploadProgress(100);
       setPhotoMatchItems(prev => [...prev, ...newItems]);
       showToast(`Sukses memuat ${newItems.length} foto dari file ZIP!`);
     } catch (err: any) {
@@ -847,6 +866,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
     } finally {
       setIsUploadingPhotos(false);
       setUploadStatusMsg("");
+      setUploadProgress(0);
       e.target.value = ""; // Clear input
     }
   };
@@ -860,7 +880,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
     }
     
     setIsUploadingPhotos(true);
-    setUploadProgress(0);
+    setUploadProgress(1);
     setUploadStatusMsg("Mempersiapkan server penyimpanan Supabase...");
     
     try {
@@ -882,8 +902,8 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
         const student = siswaList.find(s => s.id === item.matchedSiswaId);
         if (!student) continue;
         
-        setUploadStatusMsg(`Mengompresi & mengunggah foto ${student.nama}...`);
-        setUploadProgress(Math.round((i / itemsToUpload.length) * 100));
+        setUploadStatusMsg(`Mengompresi & mengunggah foto ${student.nama} (${i + 1}/${itemsToUpload.length})...`);
+        setUploadProgress(Math.round(((i + 1) / itemsToUpload.length) * 100));
         
         try {
           // 1. COMPRESS VIA CANVAS (300x400 JPG, quality 0.75)
@@ -929,8 +949,14 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
       setUploadProgress(100);
       setUploadStatusMsg(`Selesai! Berhasil mengunggah ${successCount} foto profil.${failCount > 0 ? ` Gagal ${failCount} foto.` : ""}`);
       showToast(`Sukses mengunggah ${successCount} foto profil.`);
-      
-      await reloadData();
+
+      // Reload data silently (don't flash skeleton)
+      try {
+        const list = await getSiswaList();
+        setSiswaList(list);
+      } catch (err) {
+        console.error("Gagal sync data setelah upload:", err);
+      }
       
       setTimeout(() => {
         setIsImportPhotoOpen(false);
@@ -1668,19 +1694,23 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
 
                 {/* Progress bar info */}
                 {isUploadingPhotos && (
-                  <div className="bg-purple-50/75 border border-purple-100 rounded-2xl p-4 space-y-3">
-                    <div className="flex justify-between text-xs font-bold text-purple-950">
-                      <span>{uploadStatusMsg}</span>
-                      {uploadProgress > 0 && <span>{uploadProgress}%</span>}
-                    </div>
-                    {uploadProgress > 0 && (
-                      <div className="w-full bg-purple-200 h-2.5 rounded-full overflow-hidden">
-                        <div 
-                          className="bg-purple-600 h-full rounded-full transition-all duration-300"
-                          style={{ width: `${uploadProgress}%` }}
-                        ></div>
+                  <div className="bg-purple-50/75 border border-purple-200 rounded-2xl p-5 space-y-3">
+                    <div className="flex justify-between items-center text-sm font-bold text-purple-950">
+                      <div className="flex items-center gap-2">
+                        <svg className="animate-spin h-4 w-4 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                        </svg>
+                        <span>{uploadStatusMsg}</span>
                       </div>
-                    )}
+                      <span className="text-purple-700 tabular-nums">{uploadProgress}%</span>
+                    </div>
+                    <div className="w-full bg-purple-200 h-3 rounded-full overflow-hidden">
+                      <div 
+                        className="bg-purple-600 h-full rounded-full transition-all duration-300 ease-out"
+                        style={{ width: `${uploadProgress}%` }}
+                      ></div>
+                    </div>
                   </div>
                 )}
 

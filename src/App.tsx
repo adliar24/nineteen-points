@@ -261,9 +261,9 @@ export default function App() {
                   </div>
                 </div>
                 {userSession.foto_url ? (
-                  <img src={userSession.foto_url} className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl object-cover border border-white/30 md:border-brand-200/50 shadow-md flex-shrink-0" alt="Avatar" />
+                  <img src={userSession.foto_url} className="w-9 h-12 sm:w-10 sm:h-[53px] rounded-xl object-cover border border-white/30 md:border-brand-200/50 shadow-md flex-shrink-0" alt="Avatar" />
                 ) : (
-                  <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-accent-500 to-amber-400 border border-white/30 md:border-brand-200/50 flex items-center justify-center font-bold text-xs uppercase text-white shadow-md relative flex-shrink-0">
+                  <div className="w-9 h-12 sm:w-10 sm:h-[53px] rounded-xl bg-gradient-to-tr from-accent-500 to-amber-400 border border-white/30 md:border-brand-200/50 flex items-center justify-center font-bold text-xs uppercase text-white shadow-md relative flex-shrink-0">
                     {userSession.fullName.slice(0, 2)}
                   </div>
                 )}

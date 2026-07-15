@@ -196,9 +196,9 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
           <div className="bg-white rounded-3xl p-6 border border-brand-100 shadow-xl shadow-brand-900/5 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="flex items-center gap-4">
               {siswaDetail.foto_url ? (
-                <img src={siswaDetail.foto_url} className="w-16 h-20 rounded-2xl object-cover border-2 border-pink-400 shadow-md flex-shrink-0" alt={siswaDetail.nama} />
+                <img src={siswaDetail.foto_url} className="w-20 h-[107px] rounded-2xl object-cover border-2 border-pink-400 shadow-md flex-shrink-0" alt={siswaDetail.nama} />
               ) : (
-                <div className="w-16 h-20 rounded-2xl border-2 border-pink-200 bg-pink-50 flex items-center justify-center text-pink-500 font-black text-2xl uppercase flex-shrink-0">
+                <div className="w-20 h-[107px] rounded-2xl border-2 border-pink-200 bg-pink-50 flex items-center justify-center text-pink-500 font-black text-3xl uppercase flex-shrink-0">
                   {siswaDetail.nama.slice(0, 2)}
                 </div>
               )}

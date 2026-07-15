@@ -85,7 +85,7 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
         const canvas = await html2canvas(cardElement, {
           scale: 3, // High-quality rendering
           useCORS: true,
-          backgroundColor: "#080710"
+          backgroundColor: "#f5f3ff"
         });
         const imgData = canvas.toDataURL("image/png");
         const link = document.createElement("a");
@@ -309,53 +309,53 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
               </button>
             </div>
 
-            {/* Portrait digital card */}
+            {/* Portrait digital card: White & Purple Theme */}
             <div
               id="student-digital-card-portrait"
-              className="w-full max-w-[290px] aspect-[1/1.58] rounded-[32px] bg-gradient-to-b from-[#0e0c20] via-[#090714] to-[#0e0c20] text-white p-6 border border-brand-800/40 relative overflow-hidden flex flex-col justify-between shadow-2xl shadow-brand-950/40 flex-shrink-0"
+              className="w-full max-w-[290px] aspect-[1/1.58] rounded-[32px] bg-gradient-to-b from-[#f5f3ff] via-white to-[#f5f3ff] text-brand-950 p-6 border border-brand-200 relative overflow-hidden flex flex-col justify-between shadow-2xl shadow-brand-950/10 flex-shrink-0"
               style={{ width: "290px", height: "458px" }}
             >
-              {/* Decorative glassy mesh gradients */}
-              <div className="absolute top-0 inset-x-0 h-40 bg-gradient-to-b from-brand-500/25 to-transparent filter blur-xl pointer-events-none" />
-              <div className="absolute bottom-0 right-0 w-44 h-44 bg-accent-500/10 rounded-full filter blur-2xl pointer-events-none" />
+              {/* Decorative mesh gradients in purple/fuchsia */}
+              <div className="absolute top-0 inset-x-0 h-40 bg-gradient-to-b from-brand-100/40 to-transparent filter blur-xl pointer-events-none" />
+              <div className="absolute bottom-0 right-0 w-44 h-44 bg-accent-500/5 rounded-full filter blur-2xl pointer-events-none" />
               
               {/* Header block: School name & logo */}
-              <div className="flex items-center gap-2.5 border-b border-white/10 pb-4 relative z-10">
+              <div className="flex items-center gap-2.5 border-b border-brand-200/50 pb-4 relative z-10">
                 <img src="/logo.png" className="w-8 h-8 object-contain" alt="Logo" />
                 <div>
-                  <h4 className="text-[10px] font-black tracking-widest text-accent-400 uppercase font-sans leading-tight">SMAN 19 BANDUNG</h4>
-                  <p className="text-[8px] text-white/50 font-bold uppercase tracking-wider mt-0.5">NineTeen Points Card</p>
+                  <h4 className="text-[10px] font-black tracking-widest text-brand-900 uppercase font-sans leading-tight">SMAN 19 BANDUNG</h4>
+                  <p className="text-[8px] text-brand-500/80 font-bold uppercase tracking-wider mt-0.5">NineTeen Points Card</p>
                 </div>
               </div>
 
               {/* Middle block: Student avatar initial & detail */}
               <div className="flex flex-col items-center justify-center space-y-4 my-auto relative z-10">
                 {/* Avatar with initial letter */}
-                <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-brand-600 via-accent-500 to-amber-400 p-[3px] shadow-lg shadow-brand-500/20">
-                  <div className="w-full h-full rounded-full bg-[#080710] flex items-center justify-center font-black text-2xl uppercase tracking-wider text-white">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-brand-600 via-accent-500 to-brand-500 p-[3px] shadow-md shadow-brand-500/15">
+                  <div className="w-full h-full rounded-full bg-brand-50 flex items-center justify-center font-black text-2xl uppercase tracking-wider text-brand-850">
                     {siswaDetail.nama.slice(0, 2)}
                   </div>
                 </div>
 
                 {/* Name & Class info */}
                 <div className="text-center space-y-1">
-                  <span className="text-[7px] bg-brand-500/20 border border-brand-500/40 text-brand-300 px-2 py-0.5 rounded-full uppercase font-black tracking-widest inline-block mb-1">
+                  <span className="text-[7px] bg-brand-600 text-white px-2.5 py-0.5 rounded-full uppercase font-black tracking-widest inline-block mb-1">
                     PELAJAR
                   </span>
-                  <h3 className="text-base font-black tracking-tight text-white px-2 line-clamp-1">
+                  <h3 className="text-base font-black tracking-tight text-brand-950 px-2 line-clamp-1">
                     {siswaDetail.nama}
                   </h3>
-                  <div className="flex items-center justify-center gap-3 text-[10px] text-white/60 font-bold font-mono">
+                  <div className="flex items-center justify-center gap-2.5 text-[10px] text-brand-700 font-bold font-mono">
                     <span>NIS: {siswaDetail.nis}</span>
-                    <span className="w-1 h-1 bg-white/20 rounded-full" />
+                    <span className="w-1 h-1 bg-brand-200 rounded-full" />
                     <span>KELAS: {siswaDetail.kelas}</span>
                   </div>
                 </div>
               </div>
 
               {/* Bottom block: High quality QR code */}
-              <div className="flex flex-col items-center justify-center space-y-4 relative z-10 border-t border-white/10 pt-4">
-                <div className="bg-white p-2.5 rounded-2xl shadow-lg border border-white/20">
+              <div className="flex flex-col items-center justify-center space-y-4 relative z-10 border-t border-brand-200/50 pt-4">
+                <div className="bg-white p-2.5 rounded-2xl shadow-md border border-brand-100">
                   <QRCodeSVG
                     value={siswaDetail.nis}
                     size={100}
@@ -364,62 +364,44 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
                   />
                 </div>
                 
-                <div className="flex items-center gap-1.5 text-[8px] text-white/35 font-bold uppercase tracking-widest">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                <div className="flex items-center gap-1.5 text-[8px] text-brand-500/70 font-bold uppercase tracking-widest">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
                   <span>KARTU INTEGRASI DIGITAL TERVERIFIKASI</span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Guide / Instruction Column (7 cols) */}
-          <div className="lg:col-span-7 space-y-6">
+          {/* Guide / Instruction Column (7 cols) - Shortened and clean */}
+          <div className="lg:col-span-7 space-y-4">
             <div className="bg-white p-6 rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 space-y-4">
-              <h3 className="text-sm font-black text-brand-950 uppercase tracking-widest">Panduan Kartu Pelajar Digital</h3>
+              <h3 className="text-sm font-black text-brand-950 uppercase tracking-widest">Informasi Kartu</h3>
               
-              <div className="space-y-4">
-                <div className="flex gap-4">
-                  <div className="w-8 h-8 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center font-bold text-xs flex-shrink-0">
+              <div className="space-y-3.5">
+                <div className="flex gap-3">
+                  <div className="w-6 h-6 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center font-bold text-[10.5px] flex-shrink-0">
                     1
                   </div>
-                  <div>
-                    <h4 className="text-xs font-black text-brand-950">Fungsi Utama Barcode / QR Code</h4>
-                    <p className="text-xs text-brand-500 leading-relaxed mt-0.5">
-                      QR Code pada kartu pelajar Anda berisi NIS unik Anda yang terverifikasi. Tunjukkan QR ini kepada Guru Piket atau Pembina untuk pencatatan poin pelanggaran maupun prestasi.
-                    </p>
-                  </div>
+                  <p className="text-xs text-brand-600 leading-relaxed font-semibold">
+                    Tunjukkan QR Code pada Guru Piket/Pembina untuk pencatatan poin secara instan.
+                  </p>
                 </div>
 
-                <div className="flex gap-4">
-                  <div className="w-8 h-8 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center font-bold text-xs flex-shrink-0">
+                <div className="flex gap-3">
+                  <div className="w-6 h-6 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center font-bold text-[10.5px] flex-shrink-0">
                     2
                   </div>
-                  <div>
-                    <h4 className="text-xs font-black text-brand-950">Simpan di Handphone Anda</h4>
-                    <p className="text-xs text-brand-500 leading-relaxed mt-0.5">
-                      Gunakan tombol **Download PNG** di kiri atas untuk menyimpan gambar kartu digital ini. Anda bisa menjadikannya sebagai wallpaper lockscreen atau menyimpannya di galeri agar mudah ditunjukkan sewaktu-waktu.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <div className="w-8 h-8 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center font-bold text-xs flex-shrink-0">
-                    3
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-black text-brand-950">Keamanan Data</h4>
-                    <p className="text-xs text-brand-500 leading-relaxed mt-0.5">
-                      Kartu ini terintegrasi secara real-time dengan database sekolah. Penyalahgunaan QR Code oleh pihak lain dapat dilaporkan ke wali kelas.
-                    </p>
-                  </div>
+                  <p className="text-xs text-brand-600 leading-relaxed font-semibold">
+                    Gunakan **Download PNG** untuk menyimpan gambar kartu digital ini langsung di galeri handphone Anda.
+                  </p>
                 </div>
               </div>
             </div>
-
-            <div className="bg-brand-50/40 rounded-3xl p-5 border border-brand-100 flex items-center gap-3">
-              <User className="w-5 h-5 text-brand-600 flex-shrink-0" />
-              <p className="text-xs text-brand-800 font-medium leading-relaxed">
-                Kartu pelajar digital portrait ini telah sesuai dengan format kartu resmi integrasi karakter SMAN 19 Bandung.
+            
+            <div className="bg-brand-50/40 rounded-3xl p-4.5 border border-brand-100 flex items-center gap-3">
+              <ShieldCheck className="w-5 h-5 text-brand-600 flex-shrink-0" />
+              <p className="text-[11px] text-brand-800 font-bold leading-normal">
+                Format kartu digital ini terintegrasi secara aman dengan sistem poin SMAN 19 Bandung.
               </p>
             </div>
           </div>

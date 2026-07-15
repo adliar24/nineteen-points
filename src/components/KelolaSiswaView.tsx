@@ -67,17 +67,30 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
   // Toast feedback
   const [toastMessage, setToastMessage] = useState("");
   const [siswaToDelete, setSiswaToDelete] = useState<{ id: string; nama: string } | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
-      setSiswaList(await getSiswaList());
+      setIsLoading(true);
+      try {
+        setSiswaList(await getSiswaList());
+      } catch (err) {
+        console.error("Gagal memuat siswa:", err);
+      }
+      setIsLoading(false);
     }
     load();
   }, []);
 
   const syncSiswa = async () => {
-    const list = await getSiswaList();
-    setSiswaList(list);
+    setIsLoading(true);
+    try {
+      const list = await getSiswaList();
+      setSiswaList(list);
+    } catch (err) {
+      console.error("Gagal sinkronisasi siswa:", err);
+    }
+    setIsLoading(false);
   };
 
   const showToast = (msg: string) => {
@@ -629,7 +642,23 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                 </tr>
               </thead>
               <tbody className="divide-y divide-brand-100/40">
-                {filteredSiswa.length === 0 ? (
+                {isLoading ? (
+                  Array.from({ length: 5 }).map((_, idx) => (
+                    <tr key={idx} className="animate-pulse">
+                      {userSession.role !== "guru" && (
+                        <td className="py-4 px-6 text-center">
+                          <div className="h-4 w-4 bg-slate-200 rounded mx-auto" />
+                        </td>
+                      )}
+                      <td className="py-4 px-4"><div className="h-4 w-20 bg-slate-200 rounded" /></td>
+                      <td className="py-4 px-6"><div className="h-4 w-44 bg-slate-200 rounded" /></td>
+                      <td className="py-4 px-6"><div className="h-4 w-16 bg-slate-200 rounded" /></td>
+                      <td className="py-4 px-6 text-center"><div className="h-4 w-12 bg-slate-200 rounded mx-auto" /></td>
+                      <td className="py-4 px-6 text-center"><div className="h-4.5 w-18 bg-slate-200 rounded-full mx-auto" /></td>
+                      <td className="py-4 px-6 text-right"><div className="h-4.5 w-24 bg-slate-200 rounded-xl ml-auto" /></td>
+                    </tr>
+                  ))
+                ) : filteredSiswa.length === 0 ? (
                   <tr>
                     <td colSpan={userSession.role === "guru" ? 6 : 7} className="text-center py-12 text-slate-400 text-xs font-bold">
                       Tidak ada siswa yang ditemukan.

@@ -18,6 +18,7 @@ import {
 import { UserSession, RiwayatPoin, Siswa } from "../types";
 import { supabase } from "../supabaseClient";
 import html2canvas from "html2canvas-pro";
+import SkeletonLoader from "./SkeletonLoader";
 
 interface SiswaDashboardViewProps {
   userSession: UserSession;
@@ -103,9 +104,20 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[50vh] gap-3">
-        <div className="w-10 h-10 border-4 border-brand-500 border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-xs font-bold text-brand-600">Memuat data dashboard portal siswa...</p>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div className="lg:col-span-5 flex flex-col items-center">
+          <SkeletonLoader type="card" />
+        </div>
+        <div className="lg:col-span-7 space-y-6">
+          <div className="bg-white p-6 rounded-3xl border border-brand-100 shadow-xl space-y-4">
+            <div className="h-4 w-1/3 bg-slate-200 rounded-md animate-pulse" />
+            <div className="space-y-3">
+              <div className="h-3 w-full bg-slate-200/80 rounded-md animate-pulse" />
+              <div className="h-3 w-5/6 bg-slate-200/80 rounded-md animate-pulse" />
+            </div>
+          </div>
+          <SkeletonLoader type="list" count={3} />
+        </div>
       </div>
     );
   }

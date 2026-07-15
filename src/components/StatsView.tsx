@@ -30,22 +30,68 @@ import {
   Cell 
 } from "recharts";
 
+import SkeletonLoader from "./SkeletonLoader";
+
 export default function StatsView() {
   const [siswaList, setSiswaList] = useState<Siswa[]>([]);
   const [riwayatList, setRiwayatList] = useState<RiwayatPoin[]>([]);
   const [masterPoin, setMasterPoin] = useState<MasterPoin[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function loadData() {
-      const siswa = await getSiswaList();
-      const riwayat = await getRiwayatList();
-      const master = await getMasterPoinList();
-      setSiswaList(siswa);
-      setRiwayatList(riwayat);
-      setMasterPoin(master);
+      setIsLoading(true);
+      try {
+        const siswa = await getSiswaList();
+        const riwayat = await getRiwayatList();
+        const master = await getMasterPoinList();
+        setSiswaList(siswa);
+        setRiwayatList(riwayat);
+        setMasterPoin(master);
+      } catch (err) {
+        console.error("Gagal memuat statistik:", err);
+      }
+      setIsLoading(false);
     }
     loadData();
   }, []);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        {/* Metric Cards Skeleton */}
+        <SkeletonLoader type="metrics" />
+
+        {/* Charts Section Skeleton */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="bg-white p-6 rounded-3xl border border-brand-100/60 h-80 animate-pulse flex flex-col justify-between">
+            <div className="h-4 w-1/3 bg-slate-200 rounded-md" />
+            <div className="h-48 w-full bg-slate-100 rounded-2xl" />
+          </div>
+          <div className="bg-white p-6 rounded-3xl border border-brand-100/60 h-80 animate-pulse flex flex-col justify-between">
+            <div className="h-4 w-1/3 bg-slate-200 rounded-md" />
+            <div className="h-48 w-full bg-slate-100 rounded-2xl" />
+          </div>
+        </div>
+
+        {/* Rankings Section Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-white p-6 rounded-3xl border border-brand-100/60 space-y-4">
+            <div className="h-4 w-1/2 bg-slate-200 rounded-md animate-pulse" />
+            <SkeletonLoader type="list" count={3} />
+          </div>
+          <div className="bg-white p-6 rounded-3xl border border-brand-100/60 space-y-4">
+            <div className="h-4 w-1/2 bg-slate-200 rounded-md animate-pulse" />
+            <SkeletonLoader type="list" count={3} />
+          </div>
+          <div className="bg-white p-6 rounded-3xl border border-brand-100/60 space-y-4">
+            <div className="h-4 w-1/2 bg-slate-200 rounded-md animate-pulse" />
+            <SkeletonLoader type="list" count={3} />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // 1. Metric Calculations
   const totalSiswa = siswaList.length;

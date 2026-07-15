@@ -4,6 +4,8 @@ import { RiwayatPoin } from "../types";
 import { getRiwayatList, deleteRiwayat } from "../dbStore";
 import ConfirmationModal from "./ConfirmationModal";
 
+import SkeletonLoader from "./SkeletonLoader";
+
 interface HistoryViewProps {
   onRefreshTrigger: () => void;
   refreshCount: number;
@@ -15,11 +17,18 @@ export default function HistoryView({ onRefreshTrigger, refreshCount }: HistoryV
   const [filterType, setFilterType] = useState("Semua"); // Semua, Positif, Negatif
   const [sortOrder, setSortOrder] = useState<"terbaru" | "terlama">("terbaru");
   const [revertTarget, setRevertTarget] = useState<{ id: string; namaSiswa: string; nilai: number; namaPoin: string } | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Reload logs when requested or when refreshCount changes
   useEffect(() => {
     async function load() {
-      setHistoryList(await getRiwayatList());
+      setIsLoading(true);
+      try {
+        setHistoryList(await getRiwayatList());
+      } catch (err) {
+        console.error("Gagal memuat riwayat:", err);
+      }
+      setIsLoading(false);
     }
     load();
   }, [refreshCount]);
@@ -159,7 +168,25 @@ export default function HistoryView({ onRefreshTrigger, refreshCount }: HistoryV
               </tr>
             </thead>
             <tbody className="divide-y divide-brand-100/30 text-brand-950 text-sm font-semibold">
-              {sortedLogs.length === 0 ? (
+              {isLoading ? (
+                Array.from({ length: 5 }).map((_, idx) => (
+                  <tr key={idx} className="animate-pulse">
+                    <td className="py-4.5 px-5"><div className="h-4 w-28 bg-slate-200 rounded" /></td>
+                    <td className="py-4.5 px-5">
+                      <div className="h-4 w-32 bg-slate-200 rounded mb-1" />
+                      <div className="h-3 w-16 bg-slate-200 rounded" />
+                    </td>
+                    <td className="py-4.5 px-4"><div className="h-4 w-12 bg-slate-200 rounded" /></td>
+                    <td className="py-4.5 px-5">
+                      <div className="h-4 w-48 bg-slate-200 rounded mb-1" />
+                      <div className="h-3.5 w-16 bg-slate-200 rounded-full" />
+                    </td>
+                    <td className="py-4.5 px-4 text-center"><div className="h-4.5 w-10 bg-slate-200 rounded mx-auto" /></td>
+                    <td className="py-4.5 px-5"><div className="h-4 w-28 bg-slate-200 rounded" /></td>
+                    <td className="py-4.5 px-5 text-right"><div className="h-5 w-16 bg-slate-200 rounded ml-auto" /></td>
+                  </tr>
+                ))
+              ) : sortedLogs.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="text-center py-12 text-brand-400 font-medium">
                     Belum ada riwayat poin tercatat yang sesuai filter.

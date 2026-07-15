@@ -1,40 +1,33 @@
 -- =========================================================================
--- NINETEEN POINTS DATABASE SCHEMA & SEEDING (SMAN 19 BANDUNG)
+-- NINETEEN POINTS DATABASE SCHEMA (SMAN 19 BANDUNG)
+-- AMAN DIJALANKAN BERULANG KALI — TIDAK MENGHAPUS DATA YANG SUDAH ADA
 -- =========================================================================
 
--- HAPUS SEMUA TABEL DAN TRIGGER YANG ADA AGAR BENAR-BENAR BERSIH (RESET)
-DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
-
-DROP FUNCTION IF EXISTS public.handle_new_user() CASCADE;
-DROP FUNCTION IF EXISTS public.update_total_poin_on_insert() CASCADE;
-DROP FUNCTION IF EXISTS public.update_total_poin_on_delete() CASCADE;
-
-DROP TABLE IF EXISTS public.riwayat_poin CASCADE;
-DROP TABLE IF EXISTS public.profiles CASCADE;
-DROP TABLE IF EXISTS public.master_poin CASCADE;
-DROP TABLE IF EXISTS public.siswa CASCADE;
-
 -- 1. TABEL SISWA
-CREATE TABLE public.siswa (
+CREATE TABLE IF NOT EXISTS public.siswa (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   nis TEXT UNIQUE NOT NULL,
   nama TEXT NOT NULL,
   kelas TEXT NOT NULL,
-  total_poin INT DEFAULT 100 NOT NULL,
+  total_poin INT DEFAULT 0 NOT NULL,
   foto_url TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
-CREATE INDEX idx_siswa_nis ON public.siswa(nis);
+
+-- Tambah kolom foto_url jika belum ada (untuk database yang sudah jalan)
+ALTER TABLE public.siswa ADD COLUMN IF NOT EXISTS foto_url TEXT;
+
+CREATE INDEX IF NOT EXISTS idx_siswa_nis ON public.siswa(nis);
 
 -- 2. TABEL MASTER BOBOT POIN (ATURAN BAKU)
-CREATE TABLE public.master_poin (
+CREATE TABLE IF NOT EXISTS public.master_poin (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   nama_poin TEXT NOT NULL,
   nilai_poin INT NOT NULL
 );
 
 -- 3. TABEL RIWAYAT POIN SISWA (LOG AUDIT)
-CREATE TABLE public.riwayat_poin (
+CREATE TABLE IF NOT EXISTS public.riwayat_poin (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   siswa_id UUID REFERENCES public.siswa(id) ON DELETE CASCADE NOT NULL,
   nilai_diberikan INT NOT NULL,
@@ -44,7 +37,7 @@ CREATE TABLE public.riwayat_poin (
 );
 
 -- 4. TABEL PROFILES (HAK AKSES / ROLE-BASED ACCESS CONTROL)
-CREATE TABLE public.profiles (
+CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   email TEXT NOT NULL,
   nama TEXT NOT NULL,
@@ -53,6 +46,9 @@ CREATE TABLE public.profiles (
   foto_url TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
+
+-- Tambah kolom foto_url jika belum ada (untuk database yang sudah jalan)
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS foto_url TEXT;
 
 -- =========================================================================
 -- TRIGGER 1: OTOMATIS MEMBUAT PROFIL SAAT PENGGUNA BARU MENDAFTAR (AUTH)
@@ -72,7 +68,9 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
-CREATE OR REPLACE TRIGGER on_auth_user_created
+-- Drop trigger lama jika ada, lalu buat ulang
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
@@ -89,7 +87,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE TRIGGER trg_riwayat_poin_insert
+DROP TRIGGER IF EXISTS trg_riwayat_poin_insert ON public.riwayat_poin;
+CREATE TRIGGER trg_riwayat_poin_insert
   AFTER INSERT ON public.riwayat_poin
   FOR EACH ROW EXECUTE FUNCTION public.update_total_poin_on_insert();
 
@@ -103,12 +102,14 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE TRIGGER trg_riwayat_poin_delete
+DROP TRIGGER IF EXISTS trg_riwayat_poin_delete ON public.riwayat_poin;
+CREATE TRIGGER trg_riwayat_poin_delete
   AFTER DELETE ON public.riwayat_poin
   FOR EACH ROW EXECUTE FUNCTION public.update_total_poin_on_delete();
 
 -- =========================================================================
 -- SEEDING DATA AWAL: ATURAN MASTER POIN BAKU SMAN 19 BANDUNG
+-- Hanya insert jika belum ada (ON CONFLICT DO NOTHING)
 -- =========================================================================
 INSERT INTO public.master_poin (nama_poin, nilai_poin) VALUES
 ('Juara Umum Lomba Nasional (Akademik/Non-Akademik)', 100),
@@ -120,7 +121,8 @@ INSERT INTO public.master_poin (nama_poin, nilai_poin) VALUES
 ('Membuang Sampah Sembarangan', -10),
 ('Atribut Seragam Tidak Lengkap', -10),
 ('Membuat Kegaduhan di Kelas', -15),
-('Bolos Jam Pelajaran', -25);
+('Bolos Jam Pelajaran', -25)
+ON CONFLICT DO NOTHING;
 
 -- =========================================================================
 -- KEAMANAN: ROW LEVEL SECURITY (RLS) POLICIES
@@ -130,10 +132,52 @@ ALTER TABLE public.master_poin ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.riwayat_poin ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
+-- Drop policies lama jika ada, lalu buat ulang
+DROP POLICY IF EXISTS "Akses baca profil terautentikasi" ON public.profiles;
+DROP POLICY IF EXISTS "Akses penuh profil ke service role" ON public.profiles;
+DROP POLICY IF EXISTS "Akses baca siswa oleh semua user terautentikasi" ON public.siswa;
+DROP POLICY IF EXISTS "Akses penuh siswa oleh guru dan admin" ON public.siswa;
+DROP POLICY IF EXISTS "Akses penuh master_poin oleh semua user terautentikasi" ON public.master_poin;
+DROP POLICY IF EXISTS "Akses baca riwayat oleh semua user terautentikasi" ON public.riwayat_poin;
+DROP POLICY IF EXISTS "Akses penuh riwayat oleh guru dan admin" ON public.riwayat_poin;
+
 CREATE POLICY "Akses baca profil terautentikasi" ON public.profiles FOR SELECT TO authenticated USING (true);
 CREATE POLICY "Akses penuh profil ke service role" ON public.profiles FOR ALL TO service_role USING (true);
+CREATE POLICY "Akses penuh profil oleh admin" ON public.profiles FOR ALL TO authenticated USING (true);
 CREATE POLICY "Akses baca siswa oleh semua user terautentikasi" ON public.siswa FOR SELECT TO authenticated USING (true);
 CREATE POLICY "Akses penuh siswa oleh guru dan admin" ON public.siswa FOR ALL TO authenticated USING (true);
 CREATE POLICY "Akses penuh master_poin oleh semua user terautentikasi" ON public.master_poin FOR ALL TO authenticated USING (true);
 CREATE POLICY "Akses baca riwayat oleh semua user terautentikasi" ON public.riwayat_poin FOR SELECT TO authenticated USING (true);
 CREATE POLICY "Akses penuh riwayat oleh guru dan admin" ON public.riwayat_poin FOR ALL TO authenticated USING (true);
+
+-- Storage bucket untuk foto profil (jalankan sekali saja)
+-- Jika bucket sudah ada, abaikan error
+DO $$
+BEGIN
+  INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+  VALUES ('profile-photos', 'profile-photos', true, 10485760, ARRAY['image/png', 'image/jpeg', 'image/webp']);
+EXCEPTION WHEN unique_violation THEN
+  NULL; -- Bucket sudah ada, skip
+END $$;
+
+-- Storage RLS policies
+DROP POLICY IF EXISTS "Public access untuk foto profil" ON storage.objects;
+DROP POLICY IF EXISTS "Upload foto profil oleh user terautentikasi" ON storage.objects;
+DROP POLICY IF EXISTS "Update foto profil oleh user terautentikasi" ON storage.objects;
+DROP POLICY IF EXISTS "Delete foto profil oleh user terautentikasi" ON storage.objects;
+
+CREATE POLICY "Public access untuk foto profil"
+  ON storage.objects FOR SELECT
+  TO public USING (bucket_id = 'profile-photos');
+
+CREATE POLICY "Upload foto profil oleh user terautentikasi"
+  ON storage.objects FOR INSERT
+  TO authenticated WITH CHECK (bucket_id = 'profile-photos');
+
+CREATE POLICY "Update foto profil oleh user terautentikasi"
+  ON storage.objects FOR UPDATE
+  TO authenticated USING (bucket_id = 'profile-photos');
+
+CREATE POLICY "Delete foto profil oleh user terautentikasi"
+  ON storage.objects FOR DELETE
+  TO authenticated USING (bucket_id = 'profile-photos');

@@ -122,7 +122,9 @@ export default function App() {
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent pointer-events-none md:hidden" />
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-3 relative z-10">
             <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-              <School className="w-5.5 h-5.5 text-white md:!text-brand-600" />
+              <div className="w-7 h-7 bg-white rounded-lg flex items-center justify-center p-0.5 shadow-xs border border-white/20">
+                <img src="/logo.png" className="w-full h-full object-contain" alt="Logo" />
+              </div>
               <span className="font-extrabold text-white md:!text-brand-950 text-sm sm:text-base tracking-tight whitespace-nowrap">Portal Siswa SMAN 19</span>
             </div>
             
@@ -209,8 +211,8 @@ export default function App() {
         <div className="space-y-6">
           {/* Branding inside Sidebar */}
           <div className="flex items-center gap-2.5 pb-4 border-b border-brand-800/60">
-            <div className="w-10 h-10 brand-gradient rounded-xl flex items-center justify-center border border-white/10 shadow-md">
-              <School className="w-5.5 h-5.5 text-white" />
+            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center border border-white/10 shadow-md p-1">
+              <img src="/logo.png" className="w-full h-full object-contain" alt="Logo" />
             </div>
             <div>
               <h4 className="text-sm font-black tracking-tight text-white uppercase">SMAN 19 Bandung</h4>
@@ -279,7 +281,9 @@ export default function App() {
 
               {/* Branding (Mobile Only) */}
               <div className="flex md:hidden items-center gap-2 sm:gap-2.5">
-                <School className="w-6 h-6 text-white" />
+                <div className="w-7 h-7 bg-white rounded-lg flex items-center justify-center p-0.5 shadow-xs border border-white/20">
+                  <img src="/logo.png" className="w-full h-full object-contain" alt="Logo" />
+                </div>
                 <div>
                   <h4 className="text-sm sm:text-base font-black tracking-tight text-white font-sans">SMAN 19 Bandung</h4>
                   <p className="text-[11px] text-accent-300 font-black uppercase tracking-wider">NineTeen Points</p>
@@ -329,8 +333,8 @@ export default function App() {
                 {/* Header Information */}
                 <div className="p-6 border-b border-brand-800/60 flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 brand-gradient rounded-xl flex items-center justify-center border border-white/10 shadow-md">
-                      <School className="w-5 h-5 text-white" />
+                    <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center border border-white/10 shadow-md p-1">
+                      <img src="/logo.png" className="w-full h-full object-contain" alt="Logo" />
                     </div>
                     <div>
                       <h4 className="text-sm font-black tracking-tight text-white">SMAN 19 Bandung</h4>

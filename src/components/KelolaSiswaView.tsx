@@ -883,8 +883,8 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
             {/* Top Header */}
             <div className="flex items-center justify-between relative z-10 border-b border-white/10 pb-2">
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 bg-white/10 rounded-lg flex items-center justify-center border border-white/20">
-                  <School className="w-4 h-4 text-accent-400" />
+                <div className="w-7 h-7 bg-white rounded-lg flex items-center justify-center border border-white/20 p-0.5">
+                  <img src="/logo.png" className="w-full h-full object-contain" alt="Logo" />
                 </div>
                 <div>
                   <h4 className="text-[10px] font-black tracking-widest text-white uppercase font-sans">SMAN 19 BANDUNG</h4>
@@ -946,8 +946,8 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
             {/* Top Header */}
             <div className="flex items-center justify-between relative z-10 border-b border-white/10 pb-2">
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 bg-white/10 rounded-lg flex items-center justify-center border border-white/20">
-                  <School className="w-4 h-4 text-accent-400" />
+                <div className="w-7 h-7 bg-white rounded-lg flex items-center justify-center border border-white/20 p-0.5">
+                  <img src="/logo.png" className="w-full h-full object-contain" alt="Logo" />
                 </div>
                 <div>
                   <h4 className="text-[10px] font-black tracking-widest text-white uppercase font-sans">SMAN 19 BANDUNG</h4>

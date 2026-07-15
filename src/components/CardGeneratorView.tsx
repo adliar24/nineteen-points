@@ -225,8 +225,8 @@ export default function CardGeneratorView() {
 
                 {/* School title card header */}
                 <div className="flex items-center gap-2 border-b border-white/10 pb-2.5 relative z-10">
-                  <div className="w-7 h-7 bg-white/10 backdrop-blur-md rounded-lg flex items-center justify-center border border-white/15">
-                    <School className="w-4 h-4 text-accent-400" />
+                  <div className="w-7 h-7 bg-white rounded-lg flex items-center justify-center border border-white/15 p-0.5">
+                    <img src="/logo.png" className="w-full h-full object-contain" alt="Logo" />
                   </div>
                   <div>
                     <h4 className="text-[10px] font-black tracking-widest text-white uppercase font-sans">SMAN 19 BANDUNG</h4>

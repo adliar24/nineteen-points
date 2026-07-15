@@ -96,9 +96,9 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
             initial={{ scale: 0.7, opacity: 0, rotate: -10 }}
             animate={{ scale: 1, opacity: 1, rotate: 0 }}
             transition={{ delay: 0.15, duration: 0.6, type: "spring", stiffness: 200 }}
-            className="mx-auto h-20 w-20 brand-gradient rounded-3xl flex items-center justify-center shadow-xl shadow-brand-500/35 wave-bg-white relative"
+            className="mx-auto h-20 w-20 bg-white rounded-3xl flex items-center justify-center shadow-xl shadow-brand-500/15 border border-brand-100 relative p-3"
           >
-            <School className="h-10 w-10 text-white z-10" />
+            <img src="/logo.png" className="w-full h-full object-contain z-10" alt="Logo" />
           </motion.div>
           <h2 className="mt-6 text-3xl font-extrabold tracking-tight text-brand-900 font-sans bg-gradient-to-r from-brand-700 to-accent-600 bg-clip-text text-transparent">
             NineTeen Points

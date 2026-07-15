@@ -176,8 +176,8 @@ export default function SiswaDashboardView({ userSession }: SiswaDashboardViewPr
             {/* Top Row: School Logo & Title */}
             <div className="flex items-center justify-between border-b border-white/10 pb-3 relative z-10">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center border border-white/20">
-                  <School className="w-4.5 h-4.5 text-white" />
+                <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center border border-white/20 p-1">
+                  <img src="/logo.png" className="w-full h-full object-contain" alt="Logo" />
                 </div>
                 <div>
                   <h4 className="text-[10px] font-black tracking-widest uppercase text-accent-400">SMAN 19 Bandung</h4>

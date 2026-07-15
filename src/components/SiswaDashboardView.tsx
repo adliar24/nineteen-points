@@ -281,11 +281,11 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
               </div>
 
               {/* CARD CONTENT LAYER */}
-              <div className="relative z-10 w-full flex-1 flex flex-col justify-between items-center pt-16 pb-1">
+              <div className="relative z-10 w-full flex-1 flex flex-col justify-between items-center pt-11 pb-1">
                 
                 {/* 1. 3x4 Portrait Avatar (Pas Foto Style) */}
-                <div className="w-18 h-24 rounded-2xl border-[3px] border-pink-500 bg-white flex items-center justify-center p-[2.5px] shadow-md shadow-pink-500/10 flex-shrink-0">
-                  <div className="w-full h-full rounded-xl border border-pink-100 bg-rose-50/50 flex items-center justify-center text-pink-600 font-black text-2xl uppercase tracking-wider">
+                <div className="w-21 h-28 rounded-2xl border-[3px] border-pink-500 bg-white flex items-center justify-center p-[2.5px] shadow-md shadow-pink-500/10 flex-shrink-0">
+                  <div className="w-full h-full rounded-xl border border-pink-100 bg-rose-50/50 flex items-center justify-center text-pink-600 font-black text-3xl uppercase tracking-wider">
                     {siswaDetail.nama.slice(0, 2)}
                   </div>
                 </div>
@@ -485,11 +485,11 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
             </div>
 
             {/* CARD CONTENT LAYER */}
-            <div className="relative z-10 w-full flex-1 flex flex-col justify-between items-center pt-20 pb-1">
+            <div className="relative z-10 w-full flex-1 flex flex-col justify-between items-center pt-14 pb-1">
               
               {/* 1. 3x4 Portrait Avatar (Pas Foto Style) */}
-              <div className="w-24 h-32 rounded-[24px] border-[4px] border-pink-500 bg-white flex items-center justify-center p-[3px] shadow-md shadow-pink-500/10 flex-shrink-0">
-                <div className="w-full h-full rounded-[18px] border border-pink-100 bg-rose-50/50 flex items-center justify-center text-pink-600 font-black text-3xl uppercase tracking-wider">
+              <div className="w-27 h-36 rounded-[24px] border-[4px] border-pink-500 bg-white flex items-center justify-center p-[3px] shadow-md shadow-pink-500/10 flex-shrink-0">
+                <div className="w-full h-full rounded-[18px] border border-pink-100 bg-rose-50/50 flex items-center justify-center text-pink-600 font-black text-4xl uppercase tracking-wider">
                   {siswaDetail.nama.slice(0, 2)}
                 </div>
               </div>

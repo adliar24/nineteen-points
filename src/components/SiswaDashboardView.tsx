@@ -193,32 +193,64 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
       {activeTab === "siswa_stats" && (
         <div className="space-y-6 animate-fade-in">
           {/* Welcome Banner */}
-          <div className="bg-white rounded-3xl p-6 border border-brand-100 shadow-xl shadow-brand-900/5 flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="flex items-center gap-4">
-              {siswaDetail.foto_url ? (
-                <img src={siswaDetail.foto_url} className="w-20 h-[107px] rounded-2xl object-cover border-2 border-pink-400 shadow-md flex-shrink-0" alt={siswaDetail.nama} />
-              ) : (
-                <div className="w-20 h-[107px] rounded-2xl border-2 border-pink-200 bg-pink-50 flex items-center justify-center text-pink-500 font-black text-3xl uppercase flex-shrink-0">
-                  {siswaDetail.nama.slice(0, 2)}
+          <div className="bg-white rounded-3xl p-6 border border-brand-100 shadow-xl shadow-brand-900/5">
+            {/* MOBILE LAYOUT */}
+            <div className="flex md:hidden gap-5">
+              <div className="flex-shrink-0">
+                {siswaDetail.foto_url ? (
+                  <img src={siswaDetail.foto_url} className="w-[130px] h-[173px] rounded-2xl object-cover border-2 border-pink-400 shadow-md" alt={siswaDetail.nama} />
+                ) : (
+                  <div className="w-[130px] h-[173px] rounded-2xl border-2 border-pink-200 bg-pink-50 flex items-center justify-center text-pink-500 font-black text-4xl uppercase">
+                    {siswaDetail.nama.slice(0, 2)}
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-col justify-center flex-1 min-w-0 space-y-3">
+                <div className="space-y-0.5">
+                  <h2 className="text-lg font-black text-brand-900 leading-tight truncate">Halo, {siswaDetail.nama}!</h2>
+                  <p className="text-[11px] text-brand-500 font-medium">Pantau poin prestasi dan pelanggaranmu.</p>
                 </div>
-              )}
-              <div className="space-y-1">
-                <h2 className="text-2xl font-black text-brand-900 flex items-center gap-2">
-                  Halo, {siswaDetail.nama}! <Sparkles className="w-5 h-5 text-amber-500 animate-pulse" />
-                </h2>
-                <p className="text-xs text-brand-500 font-medium">
-                  Pantau poin prestasi dan pelanggaranmu di sini.
-                </p>
+                <div className="flex gap-3">
+                  <div className="bg-brand-50/70 border border-brand-100 rounded-2xl px-4 py-2.5 text-center flex-1">
+                    <span className="text-[9px] font-black text-brand-500 block uppercase tracking-wider">Skor</span>
+                    <span className="text-lg font-black text-brand-900">{siswaDetail.total_poin}</span>
+                  </div>
+                  <div className="bg-emerald-50/70 border border-emerald-100 rounded-2xl px-4 py-2.5 text-center flex-1">
+                    <span className="text-[9px] font-black text-emerald-600 block uppercase tracking-wider">Kelas</span>
+                    <span className="text-sm font-extrabold text-emerald-800 truncate">{siswaDetail.kelas}</span>
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="flex gap-4">
-              <div className="bg-brand-50/70 border border-brand-100 rounded-2xl px-5 py-3 text-center min-w-[100px]">
-                <span className="text-[10px] font-black text-brand-500 block uppercase tracking-wider">Total Skor</span>
-                <span className="text-xl font-black text-brand-900">{siswaDetail.total_poin} pts</span>
+
+            {/* DESKTOP LAYOUT */}
+            <div className="hidden md:flex md:items-center justify-between gap-6">
+              <div className="flex items-center gap-4">
+                {siswaDetail.foto_url ? (
+                  <img src={siswaDetail.foto_url} className="w-20 h-[107px] rounded-2xl object-cover border-2 border-pink-400 shadow-md flex-shrink-0" alt={siswaDetail.nama} />
+                ) : (
+                  <div className="w-20 h-[107px] rounded-2xl border-2 border-pink-200 bg-pink-50 flex items-center justify-center text-pink-500 font-black text-3xl uppercase flex-shrink-0">
+                    {siswaDetail.nama.slice(0, 2)}
+                  </div>
+                )}
+                <div className="space-y-1">
+                  <h2 className="text-2xl font-black text-brand-900 flex items-center gap-2">
+                    Halo, {siswaDetail.nama}! <Sparkles className="w-5 h-5 text-amber-500 animate-pulse" />
+                  </h2>
+                  <p className="text-xs text-brand-500 font-medium">
+                    Pantau poin prestasi dan pelanggaranmu di sini.
+                  </p>
+                </div>
               </div>
-              <div className="bg-emerald-50/70 border border-emerald-100 rounded-2xl px-5 py-3 text-center min-w-[100px]">
-                <span className="text-[10px] font-black text-emerald-600 block uppercase tracking-wider">Kelas</span>
-                <span className="text-base font-extrabold text-emerald-800">{siswaDetail.kelas}</span>
+              <div className="flex gap-4">
+                <div className="bg-brand-50/70 border border-brand-100 rounded-2xl px-5 py-3 text-center min-w-[100px]">
+                  <span className="text-[10px] font-black text-brand-500 block uppercase tracking-wider">Total Skor</span>
+                  <span className="text-xl font-black text-brand-900">{siswaDetail.total_poin} pts</span>
+                </div>
+                <div className="bg-emerald-50/70 border border-emerald-100 rounded-2xl px-5 py-3 text-center min-w-[100px]">
+                  <span className="text-[10px] font-black text-emerald-600 block uppercase tracking-wider">Kelas</span>
+                  <span className="text-base font-extrabold text-emerald-800">{siswaDetail.kelas}</span>
+                </div>
               </div>
             </div>
           </div>

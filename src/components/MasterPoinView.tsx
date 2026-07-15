@@ -188,7 +188,7 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
       </div>
 
       {/* Space-Saving Minimalist List Area Body */}
-      <div className="border border-brand-100 border-t-0 rounded-b-2xl overflow-y-auto max-h-[250px] bg-brand-50/10">
+      <div className="border border-brand-100 border-t-0 rounded-b-2xl overflow-y-auto max-h-[420px] bg-brand-50/10">
         <div key={isLoading ? "loading" : filterType} className="divide-y divide-brand-100/50">
           {isLoading ? (
             [...Array(4)].map((_, i) => (

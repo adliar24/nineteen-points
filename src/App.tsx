@@ -75,6 +75,7 @@ export default function App() {
   const [historyRefreshCount, setHistoryRefreshCount] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
+  const [headerImgFailed, setHeaderImgFailed] = useState(false);
 
   // Disable background scrolling when mobile menu is open
   useEffect(() => {
@@ -260,8 +261,8 @@ export default function App() {
                     <span>{userSession.role.replace("_", " ")}</span>
                   </div>
                 </div>
-                {userSession.foto_url ? (
-                  <img src={userSession.foto_url} className="w-9 h-12 sm:w-10 sm:h-[53px] rounded-xl object-cover border border-white/30 md:border-brand-200/50 shadow-md flex-shrink-0" alt="Avatar" />
+                {(userSession.foto_url && !headerImgFailed) ? (
+                  <img src={userSession.foto_url} onError={() => setHeaderImgFailed(true)} className="w-9 h-12 sm:w-10 sm:h-[53px] rounded-xl object-cover border border-white/30 md:border-brand-200/50 shadow-md flex-shrink-0" alt="Avatar" />
                 ) : (
                   <div className="w-9 h-12 sm:w-10 sm:h-[53px] rounded-xl bg-gradient-to-tr from-accent-500 to-amber-400 border border-white/30 md:border-brand-200/50 flex items-center justify-center font-bold text-xs uppercase text-white shadow-md relative flex-shrink-0">
                     {userSession.fullName.slice(0, 2)}

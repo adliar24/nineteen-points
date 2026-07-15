@@ -157,6 +157,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [isBulkDeleteConfirm, setIsBulkDeleteConfirm] = useState(false);
+  const [photoUploadSiswaId, setPhotoUploadSiswaId] = useState<string | null>(null);
 
   // Reset pagination on search or class filter changes
   useEffect(() => {
@@ -879,8 +880,80 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
     }
   };
 
+  // Upload photo for a single student inline
+  const handleSinglePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !photoUploadSiswaId) return;
+
+    showToast("Mengompresi & mengunggah foto profil...");
+    
+    try {
+      // 1. COMPRESS VIA CANVAS (300x400 JPG, quality 0.75)
+      const compressedBlob = await compressImage(file, 300, 400, 0.75);
+      const student = siswaList.find(s => s.id === photoUploadSiswaId);
+      const studentNis = student ? student.nis : "profile";
+      const compressedFile = new File([compressedBlob], `${studentNis}.jpg`, { type: "image/jpeg" });
+      
+      // Create bucket if not exists
+      const { data: bucketData, error: bucketError } = await supabase.storage.getBucket('profile-photos');
+      if (bucketError || !bucketData) {
+        await supabase.storage.createBucket('profile-photos', {
+          public: true,
+          allowedMimeTypes: ['image/png', 'image/jpeg', 'image/webp'],
+          fileSizeLimit: 10485760
+        });
+      }
+      
+      // 2. UPLOAD TO SUPABASE STORAGE
+      const fileExt = "jpg";
+      const fileName = `${photoUploadSiswaId}_${Date.now()}.${fileExt}`;
+      const filePath = `${fileName}`;
+      
+      const { error: uploadErr } = await supabase.storage
+        .from('profile-photos')
+        .upload(filePath, compressedFile, {
+          cacheControl: '3600',
+          upsert: true
+        });
+        
+      if (uploadErr) throw uploadErr;
+      
+      // 3. GET ACCESS URL
+      const { data: urlData } = supabase.storage
+        .from('profile-photos')
+        .getPublicUrl(filePath);
+        
+      const publicUrl = urlData.publicUrl;
+      
+      // 4. UPDATE DATABASE COLUMN
+      const { error: dbErr } = await supabase
+        .from('siswa')
+        .update({ foto_url: publicUrl })
+        .eq('id', photoUploadSiswaId);
+        
+      if (dbErr) throw dbErr;
+      
+      showToast("Foto profil berhasil diperbarui!");
+      await reloadData();
+    } catch (err: any) {
+      console.error(err);
+      alert("Gagal mengunggah foto profil: " + err.message);
+    } finally {
+      setPhotoUploadSiswaId(null);
+      e.target.value = ""; // Clear input
+    }
+  };
+
   return (
     <div className="space-y-6">
+      {/* Hidden input for single student profile photo upload */}
+      <input
+        type="file"
+        id="single-photo-upload-input"
+        accept="image/*"
+        className="hidden"
+        onChange={handleSinglePhotoChange}
+      />
       {/* Toast */}
       {toastMessage && (
         <div className="fixed bottom-5 right-5 z-50 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 animate-bounce border border-slate-700">
@@ -969,7 +1042,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
               className="flex items-center gap-2 px-5 py-3 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-100 rounded-2xl text-sm font-black transition-all cursor-pointer shadow-xs"
             >
               <Camera className="w-4.5 h-4.5 text-purple-600" />
-              Unggah Foto Massal
+              Foto Massal
             </motion.button>
 
             <motion.button
@@ -980,7 +1053,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
               className="flex items-center gap-2 px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-sm font-black transition-all shadow-md cursor-pointer disabled:opacity-55"
             >
               <Printer className="w-4.5 h-4.5" />
-              {isExporting ? "Memproses ZIP..." : `Cetak Kartu Ujian (${selectedSiswaIds.length > 0 ? selectedSiswaIds.length : "Semua"})`}
+              {isExporting ? "Memproses ZIP..." : `Kartu Siswa (${selectedSiswaIds.length > 0 ? selectedSiswaIds.length : "Semua"})`}
             </motion.button>
           </div>
         )}
@@ -1092,19 +1165,30 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                           )}
                         </td>
                         <td className="py-4 px-6 text-right whitespace-nowrap">
-                          <div className="flex items-center justify-end gap-2">
+                          <div className="flex items-center justify-end gap-1.5">
                             <button
                               onClick={() => handleDownloadSingleCard(siswa)}
-                              className="px-2.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-100 rounded-xl text-[10px] font-extrabold uppercase transition-all flex items-center gap-1 cursor-pointer"
+                              className="p-2 hover:bg-brand-50 text-brand-600 hover:text-brand-800 rounded-xl transition-all cursor-pointer border border-transparent hover:border-brand-100"
                               title="Cetak Kartu Ujian (PNG)"
                             >
-                              <Printer className="w-3.5 h-3.5 text-brand-600" />
-                              <span>Cetak</span>
+                              <Printer className="w-4.5 h-4.5 text-brand-600" />
                             </button>
                             {userSession.role !== "guru" && (
                               <button
+                                onClick={() => {
+                                  setPhotoUploadSiswaId(siswa.id);
+                                  document.getElementById("single-photo-upload-input")?.click();
+                                }}
+                                className="p-2 hover:bg-purple-50 text-purple-600 hover:text-purple-800 rounded-xl transition-all cursor-pointer border border-transparent hover:border-purple-100"
+                                title="Ubah Foto Profil"
+                              >
+                                <Camera className="w-4.5 h-4.5" />
+                              </button>
+                            )}
+                            {userSession.role !== "guru" && (
+                              <button
                                 onClick={() => handleDeleteSiswa(siswa.id, siswa.nama)}
-                                className="p-2 hover:bg-rose-50 text-rose-500 hover:text-rose-700 rounded-xl transition-all cursor-pointer"
+                                className="p-2 hover:bg-rose-50 text-rose-500 hover:text-rose-700 rounded-xl transition-all cursor-pointer border border-transparent hover:border-rose-100"
                                 title="Hapus Siswa"
                               >
                                 <Trash2 className="w-4.5 h-4.5" />

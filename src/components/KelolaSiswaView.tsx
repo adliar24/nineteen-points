@@ -58,7 +58,6 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
   const [newNis, setNewNis] = useState("");
   const [newNama, setNewNama] = useState("");
   const [newKelas, setNewKelas] = useState("XII IPA 1");
-  const [newPoin, setNewPoin] = useState("100");
   const [addSiswaError, setAddSiswaError] = useState("");
 
   // Import fields
@@ -147,7 +146,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
         nis: newNis,
         nama: newNama,
         kelas: newKelas,
-        total_poin: parseInt(newPoin, 10) || 100,
+        total_poin: 0,
       });
 
       if (error) throw error;
@@ -178,7 +177,6 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
       setNewNis("");
       setNewNama("");
       setNewKelas("XII IPA 1");
-      setNewPoin("100");
       setIsAddSiswaModalOpen(false);
       
       if (authCreated) {
@@ -783,29 +781,16 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-black text-brand-400 uppercase tracking-wider block">Kelas</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="XII IPA 1"
-                      value={newKelas}
-                      onChange={(e) => setNewKelas(e.target.value)}
-                      className="w-full border border-brand-100 rounded-xl p-3 text-xs font-bold text-brand-900 focus:ring-2 focus:ring-brand-500 outline-none bg-brand-50/10"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-black text-brand-400 uppercase tracking-wider block">Skor Awal Poin</label>
-                    <input
-                      type="number"
-                      required
-                      placeholder="100"
-                      value={newPoin}
-                      onChange={(e) => setNewPoin(e.target.value)}
-                      className="w-full border border-brand-100 rounded-xl p-3 text-xs font-bold text-brand-900 focus:ring-2 focus:ring-brand-500 outline-none bg-brand-50/10"
-                    />
-                  </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-brand-400 uppercase tracking-wider block">Kelas</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="XII IPA 1"
+                    value={newKelas}
+                    onChange={(e) => setNewKelas(e.target.value)}
+                    className="w-full border border-brand-100 rounded-xl p-3 text-xs font-bold text-brand-900 focus:ring-2 focus:ring-brand-500 outline-none bg-brand-50/10"
+                  />
                 </div>
 
                 <button

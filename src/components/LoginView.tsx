@@ -62,12 +62,26 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
           };
           onLoginSuccess(session);
         } else {
+          let fotoUrl = profile.foto_url || undefined;
+
+          // For students, also try fetching foto_url from the siswa table (more reliable)
+          if (profile.role === "siswa" && profile.nis) {
+            const { data: siswaData } = await supabase
+              .from("siswa")
+              .select("foto_url")
+              .eq("nis", profile.nis)
+              .single();
+            if (siswaData?.foto_url) {
+              fotoUrl = siswaData.foto_url;
+            }
+          }
+
           const session: UserSession = {
             email: profile.email,
             fullName: profile.nama,
             role: profile.role,
             nis: profile.nis || undefined,
-            foto_url: profile.foto_url || undefined,
+            foto_url: fotoUrl,
           };
           onLoginSuccess(session);
         }

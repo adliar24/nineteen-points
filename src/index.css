@@ -1,0 +1,89 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Poppins", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  
+  --color-brand-50: #f5f3ff;
+  --color-brand-100: #ede9fe;
+  --color-brand-200: #ddd6fe;
+  --color-brand-500: #6d28d9;
+  --color-brand-600: #5b21b6;
+  --color-brand-700: #4c1d95;
+  --color-brand-800: #3b0764;
+  --color-accent-500: #d946ef;
+  --color-accent-600: #c026d3;
+}
+
+/* Glassmorphism scrollbars and global beautiful body background */
+body {
+  background-color: #faf9ff;
+  font-family: var(--font-sans);
+  color: #1e1b4b;
+}
+
+/* Custom gorgeous UI components mimicking the 'Audit' reference */
+.brand-gradient {
+  background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 40%, #c026d3 100%);
+}
+
+.brand-gradient-soft {
+  background: linear-gradient(135deg, #f5f3ff 0%, #edd9ff 100%);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.wave-bg {
+  position: relative;
+  overflow: hidden;
+}
+
+.wave-bg::before {
+  display: none;
+}
+
+.wave-bg-white {
+  position: relative;
+  overflow: hidden;
+}
+
+.wave-bg-white::before {
+  display: none;
+}
+
+.glow-purple {
+  box-shadow: 0 10px 25px -5px rgba(109, 40, 217, 0.15), 0 8px 10px -6px rgba(109, 40, 217, 0.15);
+}
+
+.glow-fuchsia {
+  box-shadow: 0 10px 25px -5px rgba(217, 70, 239, 0.2), 0 8px 10px -6px rgba(217, 70, 239, 0.2);
+}
+
+.card-hover-effect {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.card-hover-effect:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgba(109, 40, 217, 0.1), 0 10px 10px -5px rgba(109, 40, 217, 0.04);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+

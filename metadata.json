@@ -1,0 +1,6 @@
+{
+  "name": "NineTeen Points",
+  "description": "Platform Manajemen Poin Akademik Guru SMA dengan Scanner QR, Generator Kartu, dan Export PDF.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

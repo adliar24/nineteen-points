@@ -1120,7 +1120,9 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                   paginatedSiswa.map((siswa) => {
                     const isSelected = selectedSiswaIds.includes(siswa.id);
                     const isSafe = siswa.total_poin >= 100;
-                    const isWarning = siswa.total_poin >= 50 && siswa.total_poin < 100;
+                    const isWarning = siswa.total_poin > 0 && siswa.total_poin < 100;
+                    const isZero = siswa.total_poin === 0;
+                    const isSanksi = siswa.total_poin < 0;
 
                     return (
                       <tr
@@ -1145,20 +1147,25 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                         </td>
                         <td className="py-4 px-6 text-sm font-semibold text-brand-800">{siswa.kelas}</td>
                         <td className="py-4 px-6 text-center font-mono font-black text-sm">
-                          <span className={siswa.total_poin >= 100 ? "text-emerald-600" : siswa.total_poin >= 50 ? "text-amber-500" : "text-rose-500"}>
+                          <span className={siswa.total_poin >= 100 ? "text-emerald-600" : siswa.total_poin > 0 ? "text-amber-500" : siswa.total_poin === 0 ? "text-slate-400 font-bold" : "text-rose-500"}>
                             {siswa.total_poin} pts
                           </span>
                         </td>
                         <td className="py-4 px-6 text-center">
-                          {isSafe ? (
+                          {isSafe && (
                             <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider border border-emerald-200 shadow-xs">
                               <Check className="w-3 h-3" /> AMAN
                             </span>
-                          ) : isWarning ? (
+                          )}
+                          {isWarning && (
                             <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider border border-amber-200 shadow-xs">
                               <ShieldAlert className="w-3 h-3" /> WASPADA
                             </span>
-                          ) : (
+                          )}
+                          {isZero && (
+                            <span className="text-slate-400 font-bold text-xs px-2.5">-</span>
+                          )}
+                          {isSanksi && (
                             <span className="inline-flex items-center gap-1 bg-rose-50 text-rose-700 px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider border border-rose-200 shadow-xs">
                               <ShieldAlert className="w-3 h-3" /> SANKSI
                             </span>

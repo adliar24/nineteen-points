@@ -271,8 +271,17 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
                 <path d="M0 128C50 110 100 95 145 110C170 120 230 115 290 90V128H0Z" fill="#ffffff" />
               </svg>
 
+              {/* Top Left School Branding */}
+              <div className="absolute top-4.5 left-5 flex items-center gap-2 z-10 text-white pointer-events-none">
+                <img src="/logo.png" className="w-6.5 h-6.5 object-contain" alt="Logo" />
+                <div>
+                  <h4 className="text-[8px] font-black tracking-widest text-white uppercase leading-tight">SMAN 19 BANDUNG</h4>
+                  <p className="text-[6px] text-brand-200 font-bold uppercase tracking-wider font-mono">Student Card</p>
+                </div>
+              </div>
+
               {/* CARD CONTENT LAYER */}
-              <div className="relative z-10 w-full flex-1 flex flex-col justify-between items-center pt-8 pb-3">
+              <div className="relative z-10 w-full flex-1 flex flex-col justify-between items-center pt-16 pb-1">
                 
                 {/* 1. Circular Avatar Logo */}
                 <div className="w-18 h-18 rounded-full border-[3px] border-pink-500 bg-white flex items-center justify-center p-[2.5px] shadow-md shadow-pink-500/10">
@@ -281,12 +290,9 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
                   </div>
                 </div>
 
-                {/* 2. School & Student Info */}
-                <div className="text-center space-y-1 mt-4">
-                  <h4 className="text-[10px] font-black tracking-widest text-[#1e1b4b] uppercase font-sans">SMAN 19 BANDUNG</h4>
-                  <p className="text-[8px] text-brand-400 font-bold uppercase tracking-wider font-mono">Digital Student Card</p>
-                  
-                  <h3 className="text-sm font-black tracking-tight text-[#1e1b4b] mt-3 px-2 line-clamp-1 leading-snug">
+                {/* 2. Student Info */}
+                <div className="text-center space-y-1 mt-3">
+                  <h3 className="text-sm font-black tracking-tight text-[#1e1b4b] px-2 line-clamp-1 leading-snug">
                     {siswaDetail.nama}
                   </h3>
                   <p className="text-[9px] text-[#7c3aed] font-extrabold uppercase tracking-widest">
@@ -472,8 +478,17 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
               <path d="M0 150C58 128 117 111 170 128C200 140 270 134 340 105V150H0Z" fill="#ffffff" />
             </svg>
 
+            {/* Top Left School Branding */}
+            <div className="absolute top-5 left-6 flex items-center gap-2.5 z-10 text-white pointer-events-none">
+              <img src="/logo.png" className="w-8 h-8 object-contain" alt="Logo" />
+              <div>
+                <h4 className="text-[9px] font-black tracking-widest text-white uppercase leading-tight">SMAN 19 BANDUNG</h4>
+                <p className="text-[7px] text-brand-200 font-bold uppercase tracking-wider font-mono">Student Card</p>
+              </div>
+            </div>
+
             {/* CARD CONTENT LAYER */}
-            <div className="relative z-10 w-full flex-1 flex flex-col justify-between items-center pt-10 pb-3">
+            <div className="relative z-10 w-full flex-1 flex flex-col justify-between items-center pt-20 pb-1">
               
               {/* 1. Circular Avatar Logo */}
               <div className="w-22 h-22 rounded-full border-[4px] border-pink-500 bg-white flex items-center justify-center p-[3px] shadow-md shadow-pink-500/10">
@@ -482,12 +497,9 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
                 </div>
               </div>
 
-              {/* 2. School & Student Info */}
-              <div className="text-center space-y-1 mt-4">
-                <h4 className="text-xs font-black tracking-widest text-[#1e1b4b] uppercase font-sans">SMAN 19 BANDUNG</h4>
-                <p className="text-[9px] text-brand-400 font-bold uppercase tracking-wider font-mono">Digital Student Card</p>
-                
-                <h3 className="text-base font-black tracking-tight text-[#1e1b4b] mt-3 px-2 line-clamp-1 leading-snug">
+              {/* 2. Student Info */}
+              <div className="text-center space-y-1 mt-3">
+                <h3 className="text-base font-black tracking-tight text-[#1e1b4b] px-2 line-clamp-1 leading-snug">
                   {siswaDetail.nama}
                 </h3>
                 <p className="text-xs text-[#7c3aed] font-extrabold uppercase tracking-widest">

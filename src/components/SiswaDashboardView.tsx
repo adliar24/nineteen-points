@@ -193,7 +193,7 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
       {activeTab === "siswa_stats" && (
         <div className="space-y-6 animate-fade-in">
           {/* Welcome Banner */}
-          <div className="bg-gradient-to-br from-purple-600 to-violet-700 rounded-3xl p-6 border border-purple-500 shadow-xl shadow-purple-900/20">
+          <div className="bg-gradient-to-br from-brand-800 via-brand-700 to-brand-800 rounded-3xl p-6 border border-brand-600 shadow-xl shadow-brand-900/20">
             {/* MOBILE LAYOUT */}
             <div className="flex md:hidden gap-5">
               <div className="flex-shrink-0">

@@ -211,9 +211,9 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
                   <p className="text-[11px] text-brand-500 font-medium">Pantau poin prestasi dan pelanggaranmu.</p>
                 </div>
                 <div className="flex gap-3">
-                  <div className="bg-brand-50/70 border border-brand-100 rounded-2xl px-4 py-2.5 text-center flex-1">
-                    <span className="text-[9px] font-black text-brand-500 block uppercase tracking-wider">Skor</span>
-                    <span className="text-lg font-black text-brand-900">{siswaDetail.total_poin}</span>
+                  <div className="bg-purple-50/70 border border-purple-100 rounded-2xl px-4 py-2.5 text-center flex-1">
+                    <span className="text-[9px] font-black text-purple-500 block uppercase tracking-wider">Poin</span>
+                    <span className="text-lg font-black text-purple-900">{siswaDetail.total_poin}</span>
                   </div>
                   <div className="bg-emerald-50/70 border border-emerald-100 rounded-2xl px-4 py-2.5 text-center flex-1">
                     <span className="text-[9px] font-black text-emerald-600 block uppercase tracking-wider">Kelas</span>
@@ -243,9 +243,9 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
                 </div>
               </div>
               <div className="flex gap-4">
-                <div className="bg-brand-50/70 border border-brand-100 rounded-2xl px-5 py-3 text-center min-w-[100px]">
-                  <span className="text-[10px] font-black text-brand-500 block uppercase tracking-wider">Total Skor</span>
-                  <span className="text-xl font-black text-brand-900">{siswaDetail.total_poin} pts</span>
+                <div className="bg-purple-50/70 border border-purple-100 rounded-2xl px-5 py-3 text-center min-w-[100px]">
+                  <span className="text-[10px] font-black text-purple-500 block uppercase tracking-wider">Poin</span>
+                  <span className="text-xl font-black text-purple-900">{siswaDetail.total_poin} pts</span>
                 </div>
                 <div className="bg-emerald-50/70 border border-emerald-100 rounded-2xl px-5 py-3 text-center min-w-[100px]">
                   <span className="text-[10px] font-black text-emerald-600 block uppercase tracking-wider">Kelas</span>

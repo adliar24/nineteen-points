@@ -124,9 +124,6 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
   const totalPrestasi = riwayat.filter(r => r.nilai_diberikan > 0).reduce((acc, r) => acc + r.nilai_diberikan, 0);
   const totalPelanggaran = riwayat.filter(r => r.nilai_diberikan < 0).reduce((acc, r) => acc + r.nilai_diberikan, 0);
 
-  const isSafe = siswaDetail.total_poin >= 100;
-  const isWarning = siswaDetail.total_poin >= 50 && siswaDetail.total_poin < 100;
-
   return (
     <div className="space-y-6">
       
@@ -156,81 +153,29 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
           </div>
 
           {/* Stats Summary row */}
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-            <div className="md:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {/* Positive Points Card */}
-              <div className="bg-white rounded-3xl p-6 border border-brand-100 shadow-xl shadow-brand-900/5 flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold flex-shrink-0">
-                  <Award className="w-7 h-7" />
-                </div>
-                <div>
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Akumulasi Prestasi</span>
-                  <span className="text-xl font-black text-emerald-600">+{totalPrestasi} Poin</span>
-                  <p className="text-[10px] text-slate-400 mt-0.5">Poin penghargaan karakter terpuji</p>
-                </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            {/* Positive Points Card */}
+            <div className="bg-white rounded-3xl p-6 border border-brand-100 shadow-xl shadow-brand-900/5 flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold flex-shrink-0">
+                <Award className="w-7 h-7" />
               </div>
-
-              {/* Negative Points Card */}
-              <div className="bg-white rounded-3xl p-6 border border-brand-100 shadow-xl shadow-brand-900/5 flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold flex-shrink-0">
-                  <TrendingUp className="w-7 h-7 rotate-180" />
-                </div>
-                <div>
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Akumulasi Pelanggaran</span>
-                  <span className="text-xl font-black text-rose-600">{totalPelanggaran} Poin</span>
-                  <p className="text-[10px] text-slate-400 mt-0.5">Pengurangan dari perilaku negatif</p>
-                </div>
+              <div>
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Akumulasi Prestasi</span>
+                <span className="text-xl font-black text-emerald-600">+{totalPrestasi} Poin</span>
+                <p className="text-[10px] text-slate-400 mt-0.5">Poin penghargaan karakter terpuji</p>
               </div>
             </div>
 
-            {/* Status meter indicator */}
-            <div className="md:col-span-4">
-              {isSafe ? (
-                <div className="bg-emerald-50/50 border border-emerald-100 rounded-3xl p-6 h-full flex flex-col justify-between space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-black text-emerald-800 uppercase tracking-wider">Status Karakter</span>
-                    <span className="px-2.5 py-1 bg-emerald-500 text-white rounded-xl text-[10px] font-black uppercase tracking-wider border border-emerald-400">
-                      AMAN
-                    </span>
-                  </div>
-                  <div>
-                    <h4 className="text-base font-black text-emerald-950">Kondisi Sangat Baik!</h4>
-                    <p className="text-xs text-emerald-700/80 font-medium leading-relaxed mt-1">
-                      Poin Anda berada dalam batas aman. Pertahankan perilaku terpuji dan patuhi selalu tata tertib sekolah!
-                    </p>
-                  </div>
-                </div>
-              ) : isWarning ? (
-                <div className="bg-amber-50/50 border border-amber-100 rounded-3xl p-6 h-full flex flex-col justify-between space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-black text-amber-800 uppercase tracking-wider">Status Karakter</span>
-                    <span className="px-2.5 py-1 bg-amber-500 text-white rounded-xl text-[10px] font-black uppercase tracking-wider border border-amber-400">
-                      WASPADA
-                    </span>
-                  </div>
-                  <div>
-                    <h4 className="text-base font-black text-amber-950">Harap Perhatikan Perilaku</h4>
-                    <p className="text-xs text-amber-700/80 font-medium leading-relaxed mt-1">
-                      Poin Anda mulai berkurang. Lakukan lebih banyak perilaku positif untuk memulihkan skor poin karakter Anda!
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <div className="bg-rose-50/50 border border-rose-100 rounded-3xl p-6 h-full flex flex-col justify-between space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-black text-rose-800 uppercase tracking-wider">Status Karakter</span>
-                    <span className="px-2.5 py-1 bg-rose-500 text-white rounded-xl text-[10px] font-black uppercase tracking-wider border border-rose-400">
-                      SANKSI
-                    </span>
-                  </div>
-                  <div>
-                    <h4 className="text-base font-black text-rose-950">Memerlukan Tindakan Segera</h4>
-                    <p className="text-xs text-rose-700/80 font-medium leading-relaxed mt-1">
-                      Poin Anda berada di bawah ambang batas aman. Segera hubungi wali kelas atau guru BK untuk proses bimbingan.
-                    </p>
-                  </div>
-                </div>
-              )}
+            {/* Negative Points Card */}
+            <div className="bg-white rounded-3xl p-6 border border-brand-100 shadow-xl shadow-brand-900/5 flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold flex-shrink-0">
+                <TrendingUp className="w-7 h-7 rotate-180" />
+              </div>
+              <div>
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Akumulasi Pelanggaran</span>
+                <span className="text-xl font-black text-rose-600">{totalPelanggaran} Poin</span>
+                <p className="text-[10px] text-slate-400 mt-0.5">Pengurangan dari perilaku negatif</p>
+              </div>
             </div>
           </div>
 

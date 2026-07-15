@@ -122,7 +122,7 @@ export default function App() {
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent pointer-events-none md:hidden" />
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-3 relative z-10">
             <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-              <div className="w-7 h-7 bg-white rounded-lg flex items-center justify-center p-0.5 shadow-xs border border-white/20">
+              <div className="w-7 h-7 bg-white rounded-lg flex items-center justify-center p-0.5 shadow-xs">
                 <img src="/logo.png" className="w-full h-full object-contain" alt="Logo" />
               </div>
               <span className="font-extrabold text-white md:!text-brand-950 text-sm sm:text-base tracking-tight whitespace-nowrap">Portal Siswa SMAN 19</span>
@@ -211,7 +211,7 @@ export default function App() {
         <div className="space-y-6">
           {/* Branding inside Sidebar */}
           <div className="flex items-center gap-2.5 pb-4 border-b border-brand-800/60">
-            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center border border-white/10 shadow-md p-1">
+            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-md p-1">
               <img src="/logo.png" className="w-full h-full object-contain" alt="Logo" />
             </div>
             <div>
@@ -281,7 +281,7 @@ export default function App() {
 
               {/* Branding (Mobile Only) */}
               <div className="flex md:hidden items-center gap-2 sm:gap-2.5">
-                <div className="w-7 h-7 bg-white rounded-lg flex items-center justify-center p-0.5 shadow-xs border border-white/20">
+                <div className="w-7 h-7 bg-white rounded-lg flex items-center justify-center p-0.5 shadow-xs">
                   <img src="/logo.png" className="w-full h-full object-contain" alt="Logo" />
                 </div>
                 <div>
@@ -333,7 +333,7 @@ export default function App() {
                 {/* Header Information */}
                 <div className="p-6 border-b border-brand-800/60 flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center border border-white/10 shadow-md p-1">
+                    <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center shadow-md p-1">
                       <img src="/logo.png" className="w-full h-full object-contain" alt="Logo" />
                     </div>
                     <div>

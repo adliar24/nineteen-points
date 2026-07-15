@@ -883,7 +883,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
             {/* Top Header */}
             <div className="flex items-center justify-between relative z-10 border-b border-white/10 pb-2">
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 bg-white rounded-lg flex items-center justify-center border border-white/20 p-0.5">
+                <div className="w-7 h-7 bg-white rounded-lg flex items-center justify-center p-0.5">
                   <img src="/logo.png" className="w-full h-full object-contain" alt="Logo" />
                 </div>
                 <div>
@@ -946,7 +946,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
             {/* Top Header */}
             <div className="flex items-center justify-between relative z-10 border-b border-white/10 pb-2">
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 bg-white rounded-lg flex items-center justify-center border border-white/20 p-0.5">
+                <div className="w-7 h-7 bg-white rounded-lg flex items-center justify-center p-0.5">
                   <img src="/logo.png" className="w-full h-full object-contain" alt="Logo" />
                 </div>
                 <div>

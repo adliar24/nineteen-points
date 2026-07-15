@@ -1245,30 +1245,30 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => setIsAddSiswaModalOpen(true)}
-              className="flex items-center gap-2 px-5 py-3 brand-gradient text-white rounded-2xl text-sm font-black transition-all shadow-md cursor-pointer"
+              className="flex items-center justify-center gap-2 p-3 md:px-5 md:py-3 brand-gradient text-white rounded-2xl text-sm font-black transition-all shadow-md cursor-pointer"
             >
               <UserPlus className="w-4.5 h-4.5" />
-              Siswa Baru
+              <span className="hidden md:inline">Siswa Baru</span>
             </motion.button>
 
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => setIsImportModalOpen(true)}
-              className="flex items-center gap-2 px-5 py-3 bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-100 rounded-2xl text-sm font-black transition-all cursor-pointer shadow-xs"
+              className="flex items-center justify-center gap-2 p-3 md:px-5 md:py-3 bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-100 rounded-2xl text-sm font-black transition-all cursor-pointer shadow-xs"
             >
               <FileSpreadsheet className="w-4.5 h-4.5 text-brand-600" />
-              Impor Excel
+              <span className="hidden md:inline">Impor Excel</span>
             </motion.button>
 
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => setIsImportPhotoOpen(true)}
-              className="flex items-center gap-2 px-5 py-3 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-100 rounded-2xl text-sm font-black transition-all cursor-pointer shadow-xs"
+              className="flex items-center justify-center gap-2 p-3 md:px-5 md:py-3 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-100 rounded-2xl text-sm font-black transition-all cursor-pointer shadow-xs"
             >
               <Camera className="w-4.5 h-4.5 text-purple-600" />
-              Foto Massal
+              <span className="hidden md:inline">Foto Massal</span>
             </motion.button>
 
             <motion.button
@@ -1276,10 +1276,12 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
               whileTap={{ scale: 0.98 }}
               onClick={handleSyncMissingAccounts}
               disabled={isSyncingAccounts}
-              className="flex items-center gap-2 px-5 py-3 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-100 rounded-2xl text-sm font-black transition-all cursor-pointer shadow-xs disabled:opacity-50"
+              className="flex items-center justify-center gap-2 p-3 md:px-5 md:py-3 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-100 rounded-2xl text-sm font-black transition-all cursor-pointer shadow-xs disabled:opacity-50"
             >
               <Users className={`w-4.5 h-4.5 ${isSyncingAccounts ? 'animate-spin' : 'text-amber-600'}`} />
-              {isSyncingAccounts ? "Menyinkronkan..." : "Sinkron Akun"}
+              <span className="hidden md:inline">
+                {isSyncingAccounts ? "Menyinkronkan..." : "Sinkron Akun"}
+              </span>
             </motion.button>
 
             <motion.button
@@ -1287,10 +1289,13 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
               whileTap={{ scale: 0.98 }}
               disabled={isExporting}
               onClick={exportToZIP}
-              className="flex items-center gap-2 px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-sm font-black transition-all shadow-md cursor-pointer disabled:opacity-55"
+              className="flex items-center justify-center gap-2 p-3 md:px-5 md:py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-sm font-black transition-all shadow-md cursor-pointer disabled:opacity-55"
             >
               <Printer className="w-4.5 h-4.5" />
-              {isExporting ? "Memproses ZIP..." : (selectedSiswaIds.length > 0 ? `Kartu Siswa (${selectedSiswaIds.length})` : "Kartu Siswa")}
+              {selectedSiswaIds.length > 0 && <span className="md:hidden text-[10px] font-black bg-white text-emerald-700 px-1.5 py-0.5 rounded-full">{selectedSiswaIds.length}</span>}
+              <span className="hidden md:inline">
+                {isExporting ? "Memproses ZIP..." : (selectedSiswaIds.length > 0 ? `Kartu Siswa (${selectedSiswaIds.length})` : "Kartu Siswa")}
+              </span>
             </motion.button>
           </div>
         )}

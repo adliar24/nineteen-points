@@ -569,20 +569,20 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setIsImportUserOpen(true)}
-                className="flex items-center gap-2 px-5 py-3 bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-100 rounded-2xl text-sm font-black transition-all cursor-pointer shadow-xs"
+                className="flex items-center justify-center gap-2 p-3 md:px-5 md:py-3 bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-100 rounded-2xl text-sm font-black transition-all cursor-pointer shadow-xs"
               >
                 <FileSpreadsheet className="w-4.5 h-4.5 text-brand-600" />
-                Impor Excel
+                <span className="hidden md:inline">Impor Excel</span>
               </motion.button>
 
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setIsAddUserOpen(true)}
-                className="flex items-center gap-2 px-5 py-3 brand-gradient text-white rounded-2xl text-sm font-black transition-all shadow-md cursor-pointer"
+                className="flex items-center justify-center gap-2 p-3 md:px-5 md:py-3 brand-gradient text-white rounded-2xl text-sm font-black transition-all shadow-md cursor-pointer"
               >
                 <UserPlus className="w-4.5 h-4.5" />
-                Buat Akun Baru
+                <span className="hidden md:inline">Buat Akun Baru</span>
               </motion.button>
             </div>
           </div>

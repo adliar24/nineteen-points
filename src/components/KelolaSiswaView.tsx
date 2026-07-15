@@ -220,7 +220,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
   };
 
   // Get unique classes list
-  const classes = ["Semua", ...Array.from(new Set(siswaList.map((s) => s.kelas)))];
+  const classes = ["Semua", ...Array.from(new Set(siswaList.map((s) => s.kelas))).sort((a: string, b: string) => a.localeCompare(b, 'id'))];
 
   // Filter students
   const filteredSiswa = siswaList.filter((s) => {
@@ -1024,7 +1024,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
       )}
 
 
-      <h2 className="text-xl font-extrabold text-brand-950 tracking-tight">Data Siswa & Kartu</h2>
+      <h2 className="text-xl font-extrabold text-brand-950 tracking-tight">Data Siswa</h2>
 
       {/* SEARCH & CONTROLS BAR */}
       <div className="bg-white p-5 rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -1307,18 +1307,18 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
           </div>
           
           {/* Table Pagination & Actions Footer */}
-          <div className="bg-brand-50/30 p-4 border-t border-brand-100 text-[10px] text-brand-500 font-bold flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="bg-brand-50/30 p-4 border-t border-brand-100 text-sm text-brand-500 font-bold flex flex-col sm:flex-row items-center justify-between gap-3">
             <span>
               Menampilkan {filteredSiswa.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} - {Math.min(currentPage * itemsPerPage, filteredSiswa.length)} dari {filteredSiswa.length} siswa
             </span>
             
             {/* Pagination Controls */}
             {totalPages > 1 && (
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-2">
                 <button
                   disabled={currentPage === 1}
                   onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                  className="px-2.5 py-1 bg-white hover:bg-brand-50 border border-brand-200 rounded-lg text-brand-850 disabled:opacity-50 disabled:hover:bg-white cursor-pointer transition-all"
+                  className="px-4 py-2 bg-white hover:bg-brand-50 border border-brand-200 rounded-xl text-sm font-bold text-brand-850 disabled:opacity-50 disabled:hover:bg-white cursor-pointer transition-all"
                 >
                   &larr; Prev
                 </button>
@@ -1326,7 +1326,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                   <button
                     key={pageNum}
                     onClick={() => setCurrentPage(pageNum)}
-                    className={`px-3 py-1 rounded-lg border text-xs font-black transition-all cursor-pointer ${
+                    className={`px-4 py-2 rounded-xl border text-sm font-black transition-all cursor-pointer ${
                       currentPage === pageNum
                         ? "bg-brand-600 border-brand-600 text-white"
                         : "bg-white hover:bg-brand-50 border-brand-200 text-brand-800"
@@ -1338,7 +1338,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                 <button
                   disabled={currentPage === totalPages}
                   onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                  className="px-2.5 py-1 bg-white hover:bg-brand-50 border border-brand-200 rounded-lg text-brand-850 disabled:opacity-50 disabled:hover:bg-white cursor-pointer transition-all"
+                  className="px-4 py-2 bg-white hover:bg-brand-50 border border-brand-200 rounded-xl text-sm font-bold text-brand-850 disabled:opacity-50 disabled:hover:bg-white cursor-pointer transition-all"
                 >
                   Next &rarr;
                 </button>

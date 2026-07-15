@@ -725,7 +725,10 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
     // 1. Strip extension and clean name
     const cleanFilename = filename.split('.').slice(0, -1).join('.').trim().toLowerCase();
     
-    // 2. Check for numeric sequence of 5 or more digits (like NIS)
+    // 2. Extract name-only by stripping leading/trailing numbers & separators (underscores, hyphens, dots, spaces)
+    const nameOnly = cleanFilename.replace(/^[\d_\-.\s]+/, "").replace(/[\d_\-.\s]+$/, "").trim();
+    
+    // 3. Check for numeric sequence of 5 or more digits (like NIS)
     const digitsMatch = cleanFilename.match(/\d{5,}/);
     if (digitsMatch) {
       const targetNis = digitsMatch[0];
@@ -735,26 +738,29 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
       }
     }
     
-    // 3. Exact matching on name (ignoring casing & non-alphanumeric chars)
-    const cleanFileCleaned = cleanFilename.replace(/[^a-z0-9]/g, "");
-    const exactMatch = siswaList.find(s => s.nama.toLowerCase().replace(/[^a-z0-9]/g, "") === cleanFileCleaned);
-    if (exactMatch) {
-      return { matchedSiswaId: exactMatch.id, status: "matched", similarity: 1.0 };
+    // 4. Exact matching on name (ignoring casing & non-alphanumeric chars) — use nameOnly
+    if (nameOnly) {
+      const cleanNameOnly = nameOnly.replace(/[^a-z0-9]/g, "");
+      const exactMatch = siswaList.find(s => s.nama.toLowerCase().replace(/[^a-z0-9]/g, "") === cleanNameOnly);
+      if (exactMatch) {
+        return { matchedSiswaId: exactMatch.id, status: "matched", similarity: 1.0 };
+      }
     }
     
-    // 4. Fuzzy string similarity matching
+    // 5. Fuzzy string similarity matching — prioritize nameOnly, fallback to full filename
     let bestMatchSiswaId: string | null = null;
     let maxSim = 0;
+    const fuzzySource = nameOnly || cleanFilename;
     
     siswaList.forEach(s => {
-      const sim = calculateSimilarity(cleanFilename, s.nama);
+      const sim = calculateSimilarity(fuzzySource, s.nama);
       if (sim > maxSim) {
         maxSim = sim;
         bestMatchSiswaId = s.id;
       }
     });
     
-    // 5. Determine matching status based on threshold
+    // 6. Determine matching status based on threshold
     if (maxSim >= 0.75) {
       return { matchedSiswaId: bestMatchSiswaId, status: "matched", similarity: maxSim };
     } else if (maxSim >= 0.45) {

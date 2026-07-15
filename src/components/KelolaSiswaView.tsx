@@ -477,7 +477,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
           const canvas = await html2canvas(cardElement, {
             scale: 3, // Premium ultra crisp 3x resolution
             useCORS: true,
-            backgroundColor: "#0b0c10"
+            backgroundColor: "#ffffff"
           });
           const imgData = canvas.toDataURL("image/jpeg", 0.95);
           const link = document.createElement("a");
@@ -939,59 +939,58 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
           <div 
             key={`bulk-render-${siswa.id}`}
             id={`card-render-bulk-${siswa.id}`}
-            className="w-[360px] h-[220px] bg-gradient-to-br from-brand-900 via-brand-850 to-brand-900 text-white rounded-2xl p-4.5 relative overflow-hidden flex flex-col justify-between shadow-2xl border border-brand-950/20 flex-shrink-0"
-            style={{ fontFamily: "'Space Grotesk', 'Inter', sans-serif" }}
+            className="w-[290px] h-[458px] rounded-[32px] bg-white text-brand-950 border border-brand-200 relative overflow-hidden flex flex-col items-center justify-between py-8 px-5 shadow-2xl shadow-brand-950/10 flex-shrink-0"
+            style={{ width: "290px", height: "458px", fontFamily: "'Poppins', 'Space Grotesk', 'Inter', sans-serif" }}
           >
-            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent pointer-events-none" />
-            
-            {/* Top Header */}
-            <div className="flex items-center justify-between relative z-10 border-b border-white/10 pb-2">
-              <div className="flex items-center gap-2">
-                <img src="/logo.png" className="w-6.5 h-6.5 object-contain" alt="Logo" />
-                <div>
-                  <h4 className="text-[10px] font-black tracking-widest text-white uppercase font-sans">SMAN 19 BANDUNG</h4>
-                  <p className="text-[7px] text-brand-200/80 font-medium">Jl. Gatot Subroto No. 64, Bandung</p>
-                </div>
-              </div>
-              <span className="font-sans font-black text-[7px] bg-accent-500/80 text-white px-2 py-0.5 rounded-full tracking-wider uppercase border border-accent-400">
-                Pelajar
-              </span>
-            </div>
+            {/* TOP WAVE DECORATION (SVG) */}
+            <svg className="absolute top-0 inset-x-0 w-full h-32 pointer-events-none" viewBox="0 0 290 128" fill="none" preserveAspectRatio="none">
+              {/* Back Translucent Wave */}
+              <path d="M0 0H290V92C210 128 160 85 110 112C60 138 30 115 0 120Z" fill="#7c3aed" opacity="0.2" />
+              {/* Front Main Wave (Sidebar Purple color #4c1d95) */}
+              <path d="M0 0H290V80C210 112 165 72 115 100C65 128 35 102 0 108Z" fill="#4c1d95" />
+            </svg>
 
-            {/* Middle Data Rows */}
-            <div className="flex justify-between items-center relative z-10 mt-2 flex-1">
-              <div className="space-y-1.5">
-                <div>
-                  <p className="text-[7px] text-brand-300 font-bold uppercase tracking-wider">Nama Lengkap</p>
-                  <p className="text-xs font-black text-white tracking-wide truncate max-w-[190px]">{siswa.nama}</p>
-                </div>
-                <div className="flex gap-4">
-                  <div>
-                    <p className="text-[7px] text-brand-300 font-bold uppercase tracking-wider">NIS</p>
-                    <p className="text-[10px] font-mono font-bold text-white">{siswa.nis}</p>
-                  </div>
-                  <div>
-                    <p className="text-[7px] text-brand-300 font-bold uppercase tracking-wider">Kelas</p>
-                    <p className="text-[10px] font-bold text-white">{siswa.kelas}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* HIGH CONTRAST QR CODE */}
-              <div className="bg-white p-2 rounded-xl flex items-center justify-center shadow-md border border-white/10">
-                <QRCodeSVG 
-                  value={siswa.nis} 
-                  size={70} 
-                  level="M" 
-                  includeMargin={false}
-                />
+            {/* Top Left School Branding */}
+            <div className="absolute top-4.5 left-5 flex items-center gap-2 z-10 text-white pointer-events-none">
+              <img src="/logo.png" className="w-6.5 h-6.5 object-contain" alt="Logo" />
+              <div>
+                <h4 className="text-[8px] font-black tracking-widest text-white uppercase leading-tight">SMAN 19 BANDUNG</h4>
+                <p className="text-[6px] text-brand-200 font-bold uppercase tracking-wider font-mono">Student Card</p>
               </div>
             </div>
 
-            {/* Footer Badge decoration */}
-            <div className="flex justify-between items-center relative z-10 border-t border-white/10 pt-2 text-[6px] font-semibold text-brand-200/60 font-sans">
-              <span>KARTU INTEGRASI KARAKTER SMAN 19</span>
-              <span className="font-black text-accent-400 font-sans tracking-widest uppercase">19 POINTS</span>
+            {/* CARD CONTENT LAYER */}
+            <div className="relative z-10 w-full flex-1 flex flex-col justify-between items-center pt-11 pb-1">
+              
+              {/* 1. 3x4 Portrait Avatar (Pas Foto Style) */}
+              <div className="w-21 h-28 rounded-2xl border-[3px] border-pink-500 bg-white flex items-center justify-center p-[2.5px] shadow-md shadow-pink-500/10 flex-shrink-0">
+                <div className="w-full h-full rounded-xl border border-pink-100 bg-rose-50/50 flex items-center justify-center text-pink-600 font-black text-3xl uppercase tracking-wider">
+                  {siswa.nama.slice(0, 2)}
+                </div>
+              </div>
+
+              {/* 2. Student Info */}
+              <div className="text-center space-y-1 mt-3">
+                <h3 className="text-sm font-black tracking-tight text-[#1e1b4b] px-2 line-clamp-1 leading-snug">
+                  {siswa.nama}
+                </h3>
+                <p className="text-[9px] text-[#7c3aed] font-extrabold uppercase tracking-widest">
+                  NIS: {siswa.nis} &bull; KELAS: {siswa.kelas}
+                </p>
+              </div>
+
+              {/* 3. High quality QR code */}
+              <div className="mt-4 flex flex-col items-center">
+                <div className="bg-white p-2.5 rounded-2xl shadow-lg border border-brand-500/30">
+                  <QRCodeSVG
+                    value={siswa.nis}
+                    size={95}
+                    level="M"
+                    includeMargin={false}
+                    fgColor="#4c1d95"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         ))}
@@ -1000,59 +999,58 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
         {printingSiswa && (
           <div 
             id={`card-render-hidden-${printingSiswa.id}`}
-            className="w-[360px] h-[220px] bg-gradient-to-br from-brand-900 via-brand-850 to-brand-900 text-white rounded-2xl p-4.5 relative overflow-hidden flex flex-col justify-between shadow-2xl border border-brand-950/20 flex-shrink-0"
-            style={{ fontFamily: "'Space Grotesk', 'Inter', sans-serif" }}
+            className="w-[290px] h-[458px] rounded-[32px] bg-white text-brand-950 border border-brand-200 relative overflow-hidden flex flex-col items-center justify-between py-8 px-5 shadow-2xl shadow-brand-950/10 flex-shrink-0"
+            style={{ width: "290px", height: "458px", fontFamily: "'Poppins', 'Space Grotesk', 'Inter', sans-serif" }}
           >
-            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent pointer-events-none" />
-            
-            {/* Top Header */}
-            <div className="flex items-center justify-between relative z-10 border-b border-white/10 pb-2">
-              <div className="flex items-center gap-2">
-                <img src="/logo.png" className="w-6.5 h-6.5 object-contain" alt="Logo" />
-                <div>
-                  <h4 className="text-[10px] font-black tracking-widest text-white uppercase font-sans">SMAN 19 BANDUNG</h4>
-                  <p className="text-[7px] text-brand-200/80 font-medium">Jl. Gatot Subroto No. 64, Bandung</p>
-                </div>
-              </div>
-              <span className="font-sans font-black text-[7px] bg-accent-500/80 text-white px-2 py-0.5 rounded-full tracking-wider uppercase border border-accent-400">
-                Pelajar
-              </span>
-            </div>
+            {/* TOP WAVE DECORATION (SVG) */}
+            <svg className="absolute top-0 inset-x-0 w-full h-32 pointer-events-none" viewBox="0 0 290 128" fill="none" preserveAspectRatio="none">
+              {/* Back Translucent Wave */}
+              <path d="M0 0H290V92C210 128 160 85 110 112C60 138 30 115 0 120Z" fill="#7c3aed" opacity="0.2" />
+              {/* Front Main Wave (Sidebar Purple color #4c1d95) */}
+              <path d="M0 0H290V80C210 112 165 72 115 100C65 128 35 102 0 108Z" fill="#4c1d95" />
+            </svg>
 
-            {/* Middle Data Rows */}
-            <div className="flex justify-between items-center relative z-10 mt-2 flex-1">
-              <div className="space-y-1.5">
-                <div>
-                  <p className="text-[7px] text-brand-300 font-bold uppercase tracking-wider">Nama Lengkap</p>
-                  <p className="text-xs font-black text-white tracking-wide truncate max-w-[190px]">{printingSiswa.nama}</p>
-                </div>
-                <div className="flex gap-4">
-                  <div>
-                    <p className="text-[7px] text-brand-300 font-bold uppercase tracking-wider">NIS</p>
-                    <p className="text-[10px] font-mono font-bold text-white">{printingSiswa.nis}</p>
-                  </div>
-                  <div>
-                    <p className="text-[7px] text-brand-300 font-bold uppercase tracking-wider">Kelas</p>
-                    <p className="text-[10px] font-bold text-white">{printingSiswa.kelas}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* HIGH CONTRAST QR CODE */}
-              <div className="bg-white p-2 rounded-xl flex items-center justify-center shadow-md border border-white/10">
-                <QRCodeSVG 
-                  value={printingSiswa.nis} 
-                  size={70} 
-                  level="M" 
-                  includeMargin={false}
-                />
+            {/* Top Left School Branding */}
+            <div className="absolute top-4.5 left-5 flex items-center gap-2 z-10 text-white pointer-events-none">
+              <img src="/logo.png" className="w-6.5 h-6.5 object-contain" alt="Logo" />
+              <div>
+                <h4 className="text-[8px] font-black tracking-widest text-white uppercase leading-tight">SMAN 19 BANDUNG</h4>
+                <p className="text-[6px] text-brand-200 font-bold uppercase tracking-wider font-mono">Student Card</p>
               </div>
             </div>
 
-            {/* Footer Badge decoration */}
-            <div className="flex justify-between items-center relative z-10 border-t border-white/10 pt-2 text-[6px] font-semibold text-brand-200/60 font-sans">
-              <span>KARTU INTEGRASI KARAKTER SMAN 19</span>
-              <span className="font-black text-accent-400 font-sans tracking-widest uppercase">19 POINTS</span>
+            {/* CARD CONTENT LAYER */}
+            <div className="relative z-10 w-full flex-1 flex flex-col justify-between items-center pt-11 pb-1">
+              
+              {/* 1. 3x4 Portrait Avatar (Pas Foto Style) */}
+              <div className="w-21 h-28 rounded-2xl border-[3px] border-pink-500 bg-white flex items-center justify-center p-[2.5px] shadow-md shadow-pink-500/10 flex-shrink-0">
+                <div className="w-full h-full rounded-xl border border-pink-100 bg-rose-50/50 flex items-center justify-center text-pink-600 font-black text-3xl uppercase tracking-wider">
+                  {printingSiswa.nama.slice(0, 2)}
+                </div>
+              </div>
+
+              {/* 2. Student Info */}
+              <div className="text-center space-y-1 mt-3">
+                <h3 className="text-sm font-black tracking-tight text-[#1e1b4b] px-2 line-clamp-1 leading-snug">
+                  {printingSiswa.nama}
+                </h3>
+                <p className="text-[9px] text-[#7c3aed] font-extrabold uppercase tracking-widest">
+                  NIS: {printingSiswa.nis} &bull; KELAS: {printingSiswa.kelas}
+                </p>
+              </div>
+
+              {/* 3. High quality QR code */}
+              <div className="mt-4 flex flex-col items-center">
+                <div className="bg-white p-2.5 rounded-2xl shadow-lg border border-brand-500/30">
+                  <QRCodeSVG
+                    value={printingSiswa.nis}
+                    size={95}
+                    level="M"
+                    includeMargin={false}
+                    fgColor="#4c1d95"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         )}

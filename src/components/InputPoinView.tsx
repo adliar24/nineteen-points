@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Html5QrcodeScanner } from "html5-qrcode";
+import { Html5Qrcode } from "html5-qrcode";
 import { 
   Camera, 
   Search, 
@@ -39,7 +39,7 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
   const [scanResult, setScanResult] = useState<string | null>(null);
   const [cameraActive, setCameraActive] = useState(false);
   const [scannerError, setScannerError] = useState<string | null>(null);
-  const scannerRef = useRef<Html5QrcodeScanner | null>(null);
+  const scannerRef = useRef<Html5Qrcode | null>(null);
 
   // Manual Search states
   const [manualSearchQuery, setManualSearchQuery] = useState("");
@@ -69,36 +69,51 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
     setSiswaList(await getSiswaList());
   };
 
-  // QR Scanner initialization
+  // QR Scanner initialization (Html5Qrcode core API)
   useEffect(() => {
     if (cameraActive && inputMethod === "qr") {
       setScannerError(null);
       const timer = setTimeout(() => {
         try {
-          const scanner = new Html5QrcodeScanner(
-            "reader-input",
-            { 
-              fps: 10, 
-              qrbox: { width: 250, height: 250 },
-              aspectRatio: 1.0
-            },
-            false
-          );
-
-          scanner.render(onScanSuccess, onScanFailure);
+          const scanner = new Html5Qrcode("reader-input");
           scannerRef.current = scanner;
+
+          scanner.start(
+            { facingMode: "environment" },
+            {
+              fps: 10,
+              qrbox: { width: 250, height: 250 }
+            },
+            onScanSuccess,
+            onScanFailure
+          ).catch((err) => {
+            console.error("Camera start failed", err);
+            setScannerError("Gagal mengaktifkan kamera. Mohon berikan izin kamera pada browser Anda.");
+            setCameraActive(false);
+          });
         } catch (err: any) {
-          console.error("Camera access failed", err);
-          setScannerError("Gagal mengakses kamera. Mohon aktifkan izin kamera atau pilih dari simulator di kanan.");
+          console.error("Camera init failed", err);
+          setScannerError("Gagal mengakses kamera. Mohon aktifkan izin kamera.");
           setCameraActive(false);
         }
-      }, 300);
+      }, 400); // 400ms delay to guarantee reader-input DOM node is painted by React
 
       return () => {
         clearTimeout(timer);
         if (scannerRef.current) {
-          scannerRef.current.clear().catch(err => console.warn(err));
-          scannerRef.current = null;
+          try {
+            if (scannerRef.current.isScanning) {
+              scannerRef.current.stop()
+                .then(() => {
+                  scannerRef.current = null;
+                })
+                .catch(err => console.warn("Failed to stop scanning on cleanup", err));
+            } else {
+              scannerRef.current = null;
+            }
+          } catch (e) {
+            scannerRef.current = null;
+          }
         }
       };
     }
@@ -112,10 +127,30 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
     if (student) {
       setSelectedSiswa(student);
       setSuccessMessage(null);
-      // Turn off camera
+      
+      // Stop scanning and turn off camera
       if (scannerRef.current) {
-        scannerRef.current.clear().catch(err => console.log(err));
-        scannerRef.current = null;
+        try {
+          if (scannerRef.current.isScanning) {
+            scannerRef.current.stop()
+              .then(() => {
+                scannerRef.current = null;
+                setCameraActive(false);
+              })
+              .catch(err => {
+                console.warn(err);
+                scannerRef.current = null;
+                setCameraActive(false);
+              });
+          } else {
+            scannerRef.current = null;
+            setCameraActive(false);
+          }
+        } catch (e) {
+          scannerRef.current = null;
+          setCameraActive(false);
+        }
+      } else {
         setCameraActive(false);
       }
     } else {
@@ -125,7 +160,7 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
   }
 
   function onScanFailure(err: any) {
-    // Ignore frame failure logs
+    // Ignore normal scan failure logs
   }
 
   // Handle tap simulation from right side cards
@@ -134,8 +169,27 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
     setSelectedSiswa(siswa);
     setSuccessMessage(null);
     if (scannerRef.current) {
-      scannerRef.current.clear().catch(err => console.log(err));
-      scannerRef.current = null;
+      try {
+        if (scannerRef.current.isScanning) {
+          scannerRef.current.stop()
+            .then(() => {
+              scannerRef.current = null;
+              setCameraActive(false);
+            })
+            .catch(err => {
+              console.warn(err);
+              scannerRef.current = null;
+              setCameraActive(false);
+            });
+        } else {
+          scannerRef.current = null;
+          setCameraActive(false);
+        }
+      } catch (e) {
+        scannerRef.current = null;
+        setCameraActive(false);
+      }
+    } else {
       setCameraActive(false);
     }
   };

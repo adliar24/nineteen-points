@@ -34,7 +34,7 @@ import ConfirmationModal from "./ConfirmationModal";
 import html2canvas from "html2canvas-pro";
 import jsPDF from "jspdf";
 import * as XLSX from "xlsx";
-import { supabase } from "../supabaseClient";
+import { supabase, supabaseAdminAuth } from "../supabaseClient";
 
 interface KelolaSiswaViewProps {
   userSession: UserSession;
@@ -152,6 +152,26 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
 
       if (error) throw error;
 
+      // Automatically create user auth account
+      let authCreated = true;
+      try {
+        const { error: signUpError } = await supabaseAdminAuth.auth.signUp({
+          email: `${newNis}@sman19.sch.id`,
+          password: "siswa19",
+          options: {
+            data: {
+              fullName: newNama,
+              role: "siswa",
+              nis: newNis
+            }
+          }
+        });
+        if (signUpError) throw signUpError;
+      } catch (authErr: any) {
+        console.error("Gagal mendaftarkan akun login siswa:", authErr);
+        authCreated = false;
+      }
+
       await syncSiswa();
 
       // Reset Form
@@ -160,7 +180,12 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
       setNewKelas("XII IPA 1");
       setNewPoin("100");
       setIsAddSiswaModalOpen(false);
-      showToast(`Siswa "${newNama}" berhasil ditambahkan.`);
+      
+      if (authCreated) {
+        showToast(`Siswa "${newNama}" & akun login berhasil dibuat.`);
+      } else {
+        showToast(`Siswa "${newNama}" disimpan (gagal membuat akun login).`);
+      }
     } catch (err: any) {
       setAddSiswaError("Gagal menambahkan siswa: " + err.message);
     }
@@ -279,11 +304,38 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
           const { error } = await supabase.from("siswa").insert(newSiswaToInsert);
           if (error) throw error;
 
+          // Automatically create auth accounts for all imported students
+          let authFailedCount = 0;
+          for (const s of newSiswaToInsert) {
+            try {
+              const { error: signUpError } = await supabaseAdminAuth.auth.signUp({
+                email: `${s.nis}@sman19.sch.id`,
+                password: "siswa19",
+                options: {
+                  data: {
+                    fullName: s.nama,
+                    role: "siswa",
+                    nis: s.nis
+                  }
+                }
+              });
+              if (signUpError) throw signUpError;
+            } catch (authErr) {
+              console.error(`Gagal membuat akun auth untuk siswa NIS ${s.nis}:`, authErr);
+              authFailedCount++;
+            }
+          }
+
           await syncSiswa();
           setIsImportModalOpen(false);
           // clear input
           e.target.value = "";
-          showToast(`Sukses mengimpor ${addedCount} siswa baru dari file Excel!${duplicateCount > 0 ? ` (${duplicateCount} NIS duplikat dilewati).` : ""}`);
+          
+          if (authFailedCount === 0) {
+            showToast(`Sukses mengimpor ${addedCount} siswa & akun login mereka!${duplicateCount > 0 ? ` (${duplicateCount} NIS duplikat dilewati).` : ""}`);
+          } else {
+            showToast(`Sukses mengimpor ${addedCount} siswa (${addedCount - authFailedCount} akun berhasil, ${authFailedCount} gagal).`);
+          }
         } else {
           setImportError("Tidak ada baris data baru yang valid untuk diimpor. Pastikan NIS unik.");
         }

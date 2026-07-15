@@ -267,8 +267,8 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
               <svg className="absolute top-0 inset-x-0 w-full h-32 pointer-events-none" viewBox="0 0 290 128" fill="none" preserveAspectRatio="none">
                 {/* Back Translucent Wave */}
                 <path d="M0 0H290V92C210 128 160 85 110 112C60 138 30 115 0 120Z" fill="#7c3aed" opacity="0.2" />
-                {/* Front Main Wave */}
-                <path d="M0 0H290V80C210 112 165 72 115 100C65 128 35 102 0 108Z" fill="#1e1b4b" />
+                {/* Front Main Wave (Sidebar Purple color #4c1d95) */}
+                <path d="M0 0H290V80C210 112 165 72 115 100C65 128 35 102 0 108Z" fill="#4c1d95" />
               </svg>
 
               {/* Top Left School Branding */}
@@ -283,9 +283,9 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
               {/* CARD CONTENT LAYER */}
               <div className="relative z-10 w-full flex-1 flex flex-col justify-between items-center pt-16 pb-1">
                 
-                {/* 1. Circular Avatar Logo */}
-                <div className="w-18 h-18 rounded-full border-[3px] border-pink-500 bg-white flex items-center justify-center p-[2.5px] shadow-md shadow-pink-500/10">
-                  <div className="w-full h-full rounded-full border border-pink-100 bg-rose-50/50 flex items-center justify-center text-pink-600 font-black text-xl uppercase tracking-wider">
+                {/* 1. 3x4 Portrait Avatar (Pas Foto Style) */}
+                <div className="w-18 h-24 rounded-2xl border-[3px] border-pink-500 bg-white flex items-center justify-center p-[2.5px] shadow-md shadow-pink-500/10 flex-shrink-0">
+                  <div className="w-full h-full rounded-xl border border-pink-100 bg-rose-50/50 flex items-center justify-center text-pink-600 font-black text-2xl uppercase tracking-wider">
                     {siswaDetail.nama.slice(0, 2)}
                   </div>
                 </div>
@@ -302,18 +302,15 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
 
                 {/* 3. High quality QR code */}
                 <div className="mt-4 flex flex-col items-center">
-                  <div className="bg-white p-2 rounded-2xl shadow-lg border border-slate-100">
+                  <div className="bg-white p-2.5 rounded-2xl shadow-lg border border-brand-500/30">
                     <QRCodeSVG
                       value={siswaDetail.nis}
                       size={95}
                       level="M"
                       includeMargin={false}
-                      fgColor="#1e1b4b"
+                      fgColor="#4c1d95"
                     />
                   </div>
-                  <span className="font-mono tracking-widest text-[8px] text-slate-400 font-bold uppercase mt-3">
-                    www.sman19.sch.id
-                  </span>
                 </div>
               </div>
             </div>
@@ -474,8 +471,8 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
             <svg className="absolute top-0 inset-x-0 w-full h-36 pointer-events-none" viewBox="0 0 340 150" fill="none" preserveAspectRatio="none">
               {/* Back Translucent Wave */}
               <path d="M0 0H340V108C245 150 187 100 128 131C70 162 35 135 0 141Z" fill="#7c3aed" opacity="0.2" />
-              {/* Front Main Wave */}
-              <path d="M0 0H340V94C245 131 193 84 134 117C76 150 41 120 0 127Z" fill="#1e1b4b" />
+              {/* Front Main Wave (Sidebar Purple color #4c1d95) */}
+              <path d="M0 0H340V94C245 131 193 84 134 117C76 150 41 120 0 127Z" fill="#4c1d95" />
             </svg>
 
             {/* Top Left School Branding */}
@@ -490,9 +487,9 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
             {/* CARD CONTENT LAYER */}
             <div className="relative z-10 w-full flex-1 flex flex-col justify-between items-center pt-20 pb-1">
               
-              {/* 1. Circular Avatar Logo */}
-              <div className="w-22 h-22 rounded-full border-[4px] border-pink-500 bg-white flex items-center justify-center p-[3px] shadow-md shadow-pink-500/10">
-                <div className="w-full h-full rounded-full border border-pink-100 bg-rose-50/50 flex items-center justify-center text-pink-600 font-black text-2xl uppercase tracking-wider">
+              {/* 1. 3x4 Portrait Avatar (Pas Foto Style) */}
+              <div className="w-24 h-32 rounded-[24px] border-[4px] border-pink-500 bg-white flex items-center justify-center p-[3px] shadow-md shadow-pink-500/10 flex-shrink-0">
+                <div className="w-full h-full rounded-[18px] border border-pink-100 bg-rose-50/50 flex items-center justify-center text-pink-600 font-black text-3xl uppercase tracking-wider">
                   {siswaDetail.nama.slice(0, 2)}
                 </div>
               </div>
@@ -509,18 +506,15 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
 
               {/* 3. High quality QR code */}
               <div className="mt-4 flex flex-col items-center">
-                <div className="bg-white p-3 rounded-2xl shadow-lg border border-slate-100">
+                <div className="bg-white p-3.5 rounded-2xl shadow-lg border border-brand-500/30">
                   <QRCodeSVG
                     value={siswaDetail.nis}
                     size={110}
                     level="M"
                     includeMargin={false}
-                    fgColor="#1e1b4b"
+                    fgColor="#4c1d95"
                   />
                 </div>
-                <span className="font-mono tracking-widest text-[9px] text-slate-400 font-bold uppercase mt-3">
-                  www.sman19.sch.id
-                </span>
               </div>
             </div>
           </div>

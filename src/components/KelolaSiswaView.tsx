@@ -558,38 +558,40 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
         </div>
 
         {/* Right Actions Bar */}
-        <div className="flex flex-wrap items-center gap-2.5">
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => setIsAddSiswaModalOpen(true)}
-            className="flex items-center gap-2 px-5 py-3 brand-gradient text-white rounded-2xl text-sm font-black transition-all shadow-md cursor-pointer"
-          >
-            <UserPlus className="w-4.5 h-4.5" />
-            Siswa Baru
-          </motion.button>
+        {userSession.role !== "guru" && (
+          <div className="flex flex-wrap items-center gap-2.5">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setIsAddSiswaModalOpen(true)}
+              className="flex items-center gap-2 px-5 py-3 brand-gradient text-white rounded-2xl text-sm font-black transition-all shadow-md cursor-pointer"
+            >
+              <UserPlus className="w-4.5 h-4.5" />
+              Siswa Baru
+            </motion.button>
 
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => setIsImportModalOpen(true)}
-            className="flex items-center gap-2 px-5 py-3 bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-100 rounded-2xl text-sm font-black transition-all cursor-pointer shadow-xs"
-          >
-            <FileSpreadsheet className="w-4.5 h-4.5 text-brand-600" />
-            Impor Excel
-          </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setIsImportModalOpen(true)}
+              className="flex items-center gap-2 px-5 py-3 bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-100 rounded-2xl text-sm font-black transition-all cursor-pointer shadow-xs"
+            >
+              <FileSpreadsheet className="w-4.5 h-4.5 text-brand-600" />
+              Impor Excel
+            </motion.button>
 
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            disabled={isExporting}
-            onClick={exportToJPG}
-            className="flex items-center gap-2 px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-sm font-black transition-all shadow-md cursor-pointer disabled:opacity-55"
-          >
-            <Printer className="w-4.5 h-4.5" />
-            {isExporting ? "Memproses PDF..." : `Cetak ${selectedSiswaIds.length > 0 ? `Terpilih (${selectedSiswaIds.length})` : "Semua"} (PDF)`}
-          </motion.button>
-        </div>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              disabled={isExporting}
+              onClick={exportToJPG}
+              className="flex items-center gap-2 px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-sm font-black transition-all shadow-md cursor-pointer disabled:opacity-55"
+            >
+              <Printer className="w-4.5 h-4.5" />
+              {isExporting ? "Memproses PDF..." : `Cetak ${selectedSiswaIds.length > 0 ? `Terpilih (${selectedSiswaIds.length})` : "Semua"} (PDF)`}
+            </motion.button>
+          </div>
+        )}
       </div>
 
       {/* VIEW RENDER AREAS */}
@@ -605,17 +607,19 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-brand-50/50 border-b border-brand-100/70 text-brand-500 text-xs font-black uppercase tracking-wider">
-                  <th className="py-4 px-6 w-12 text-center">
-                    <input
-                      type="checkbox"
-                      checked={
-                        filteredSiswa.length > 0 &&
-                        filteredSiswa.every((s) => selectedSiswaIds.includes(s.id))
-                      }
-                      onChange={handleSelectAll}
-                      className="w-4 h-4 rounded-lg border-brand-200 text-brand-600 focus:ring-brand-500 cursor-pointer"
-                    />
-                  </th>
+                  {userSession.role !== "guru" && (
+                    <th className="py-4 px-6 w-12 text-center">
+                      <input
+                        type="checkbox"
+                        checked={
+                          filteredSiswa.length > 0 &&
+                          filteredSiswa.every((s) => selectedSiswaIds.includes(s.id))
+                        }
+                        onChange={handleSelectAll}
+                        className="w-4 h-4 rounded-lg border-brand-200 text-brand-600 focus:ring-brand-500 cursor-pointer"
+                      />
+                    </th>
+                  )}
                   <th className="py-4 px-4 font-mono">NIS</th>
                   <th className="py-4 px-6">Nama Lengkap</th>
                   <th className="py-4 px-6">Kelas</th>
@@ -627,7 +631,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
               <tbody className="divide-y divide-brand-100/40">
                 {filteredSiswa.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="text-center py-12 text-slate-400 text-xs font-bold">
+                    <td colSpan={userSession.role === "guru" ? 6 : 7} className="text-center py-12 text-slate-400 text-xs font-bold">
                       Tidak ada siswa yang ditemukan.
                     </td>
                   </tr>
@@ -644,14 +648,16 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                           isSelected ? "bg-brand-50/40" : ""
                         }`}
                       >
-                        <td className="py-4 px-6 text-center">
-                          <input
-                            type="checkbox"
-                            checked={isSelected}
-                            onChange={() => handleSelectSiswa(siswa.id)}
-                            className="w-4 h-4 rounded-lg border-brand-200 text-brand-600 focus:ring-brand-500 cursor-pointer"
-                          />
-                        </td>
+                        {userSession.role !== "guru" && (
+                          <td className="py-4 px-6 text-center">
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => handleSelectSiswa(siswa.id)}
+                              className="w-4 h-4 rounded-lg border-brand-200 text-brand-600 focus:ring-brand-500 cursor-pointer"
+                            />
+                          </td>
+                        )}
                         <td className="py-4 px-4 font-mono font-bold text-sm text-brand-900">{siswa.nis}</td>
                         <td className="py-4 px-6">
                           <div className="font-extrabold text-sm text-brand-950">{siswa.nama}</div>
@@ -686,13 +692,15 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                             >
                               <CreditCard className="w-4 h-4 text-brand-600" />
                             </button>
-                            <button
-                              onClick={() => handleDeleteSiswa(siswa.id, siswa.nama)}
-                              className="p-2 hover:bg-rose-50 text-rose-500 hover:text-rose-700 rounded-xl transition-all cursor-pointer"
-                              title="Hapus Siswa"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+                            {userSession.role !== "guru" && (
+                              <button
+                                onClick={() => handleDeleteSiswa(siswa.id, siswa.nama)}
+                                className="p-2 hover:bg-rose-50 text-rose-500 hover:text-rose-700 rounded-xl transition-all cursor-pointer"
+                                title="Hapus Siswa"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -706,7 +714,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
           {/* Table Footer info */}
           <div className="bg-brand-50/30 p-4 border-t border-brand-100 text-[10px] text-brand-500 font-bold flex items-center justify-between">
             <span>Menampilkan {filteredSiswa.length} dari {siswaList.length} siswa</span>
-            {selectedSiswaIds.length > 0 && (
+            {userSession.role !== "guru" && selectedSiswaIds.length > 0 && (
               <span className="text-brand-600 font-extrabold">{selectedSiswaIds.length} siswa terpilih</span>
             )}
           </div>

@@ -364,7 +364,7 @@ export default function StatsView() {
                       {idx + 1}
                     </span>
                     <div className="min-w-0">
-                      <h4 className="font-extrabold text-xs text-brand-950 truncate leading-none">{siswa.nama}</h4>
+                      <h4 className="font-extrabold text-xs text-brand-950 truncate leading-none uppercase">{siswa.nama}</h4>
                       <p className="text-[9px] text-brand-400 font-semibold mt-1.5">{siswa.kelas}</p>
                     </div>
                   </div>
@@ -384,7 +384,7 @@ export default function StatsView() {
                         {idx + 1}
                       </span>
                       <div className="min-w-0">
-                        <h4 className="font-extrabold text-xs text-brand-950 truncate leading-none">{item.siswa.nama}</h4>
+                        <h4 className="font-extrabold text-xs text-brand-950 truncate leading-none uppercase">{item.siswa.nama}</h4>
                         <p className="text-[9px] text-brand-400 font-semibold mt-1.5">{item.siswa.kelas}</p>
                       </div>
                     </div>

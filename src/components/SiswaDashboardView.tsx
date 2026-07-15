@@ -355,7 +355,7 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
 
               {/* 2. Student Info */}
               <div className="text-center space-y-1 mt-3">
-                <h3 className="text-sm font-black tracking-tight text-[#1e1b4b] px-2 line-clamp-1 leading-snug">
+                <h3 className="text-sm font-black tracking-tight text-[#1e1b4b] px-2 line-clamp-1 leading-snug uppercase">
                   {siswaDetail.nama}
                 </h3>
                 <p className="text-[9px] text-[#7c3aed] font-extrabold uppercase tracking-widest">
@@ -528,7 +528,7 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
 
               {/* 2. Student Info */}
               <div className="text-center space-y-1 mt-3">
-                <h3 className="text-base font-black tracking-tight text-[#1e1b4b] px-2 line-clamp-1 leading-snug">
+                <h3 className="text-base font-black tracking-tight text-[#1e1b4b] px-2 line-clamp-1 leading-snug uppercase">
                   {siswaDetail.nama}
                 </h3>
                 <p className="text-xs text-[#7c3aed] font-extrabold uppercase tracking-widest">

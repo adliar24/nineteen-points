@@ -191,7 +191,7 @@ export default function HistoryView({ onRefreshTrigger, refreshCount }: HistoryV
                         {formatTanggal(log.created_at)}
                       </td>
                       <td className="py-4.5 px-5">
-                        <div className="font-bold text-brand-950">{log.siswa_nama}</div>
+                        <div className="font-bold text-brand-950 uppercase">{log.siswa_nama}</div>
                         <div className="text-xs text-brand-400 font-mono font-bold">NIS: {log.siswa_nis}</div>
                       </td>
                       <td className="py-4.5 px-4 font-black text-brand-600 uppercase">

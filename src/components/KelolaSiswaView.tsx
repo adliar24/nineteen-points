@@ -254,11 +254,13 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
         return;
       }
 
+      const upperNama = newNama.trim().toUpperCase();
+
       const { error } = await supabase.from("siswa").insert({
         nis: newNis,
-        nama: newNama,
+        nama: upperNama,
         kelas: newKelas,
-        total_poin: 0,
+        total_poin: 100,
       });
 
       if (error) throw error;
@@ -271,7 +273,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
           password: "siswa19",
           options: {
             data: {
-              fullName: newNama,
+              fullName: upperNama,
               role: "siswa",
               nis: newNis
             }
@@ -292,9 +294,9 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
       setIsAddSiswaModalOpen(false);
       
       if (authCreated) {
-        showToast(`Siswa "${newNama}" & akun login berhasil dibuat.`);
+        showToast(`Siswa "${upperNama}" & akun login berhasil dibuat.`);
       } else {
-        showToast(`Siswa "${newNama}" disimpan (gagal membuat akun login).`);
+        showToast(`Siswa "${upperNama}" disimpan (gagal membuat akun login).`);
       }
     } catch (err: any) {
       setAddSiswaError("Gagal menambahkan siswa: " + err.message);
@@ -327,11 +329,11 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
   const downloadExcelTemplate = () => {
     try {
       const data = [
-        ["NIS", "Nama Siswa", "Kelas", "Skor Poin"],
-        ["19001", "Ahmad Fauzi", "XII IPA 1", 100],
-        ["19002", "Siti Aminah", "XII IPA 2", 120],
-        ["19003", "Rian Hidayat", "XII IPS 1", 95],
-        ["19004", "Dewi Sartika", "XII IPS 2", 100]
+        ["NIS", "Nama Siswa", "Kelas"],
+        ["19001", "Ahmad Fauzi", "XII IPA 1"],
+        ["19002", "Siti Aminah", "XII IPA 2"],
+        ["19003", "Rian Hidayat", "XII IPS 1"],
+        ["19004", "Dewi Sartika", "XII IPS 2"]
       ];
       
       const worksheet = XLSX.utils.aoa_to_sheet(data);
@@ -342,8 +344,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
       worksheet["!cols"] = [
         { wch: 12 }, // NIS
         { wch: 25 }, // Nama Siswa
-        { wch: 15 }, // Kelas
-        { wch: 12 }  // Skor Poin
+        { wch: 15 }  // Kelas
       ];
 
       XLSX.writeFile(workbook, "TEMPLATE_IMPORT_SISWA_SMAN19.xlsx");
@@ -387,11 +388,9 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
           if (!row || row.length === 0) continue;
 
           const nis = String(row[0] || "").trim();
-          const nama = String(row[1] || "").trim();
+          const nama = String(row[1] || "").trim().toUpperCase(); // Force imported names to UPPERCASE
           const kelas = String(row[2] || "").trim();
-          const pointsRaw = row[3];
-          const poinVal = pointsRaw !== undefined ? parseInt(String(pointsRaw).trim(), 10) : 100;
-          const total_poin = isNaN(poinVal) ? 100 : poinVal;
+          const total_poin = 100; // Default all new students to 100 points initial
 
           if (!nis || !nama || !kelas) continue;
 
@@ -1009,7 +1008,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                         )}
                         <td className="py-4 px-4 font-mono font-bold text-sm text-brand-900">{siswa.nis}</td>
                         <td className="py-4 px-6">
-                          <div className="font-extrabold text-sm text-brand-950">{siswa.nama}</div>
+                          <div className="font-extrabold text-sm text-brand-950 uppercase">{siswa.nama}</div>
                         </td>
                         <td className="py-4 px-6 text-sm font-semibold text-brand-800">{siswa.kelas}</td>
                         <td className="py-4 px-6 text-center font-mono font-black text-sm">

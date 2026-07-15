@@ -259,23 +259,50 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
         return;
       }
 
+      // Fetch all auth users to check for existing registrations
+      const { data: authUsersData, error: authUsersError } = await supabaseAdminAuth.auth.admin.listUsers({
+        page: 1,
+        perPage: 1000
+      });
+      if (authUsersError) throw authUsersError;
+      const authUsers = authUsersData?.users || [];
+
       let createdCount = 0;
       let failCount = 0;
       for (const s of missingStudents) {
+        const email = `${s.nis}@sman19.sch.id`;
         try {
-          const { error } = await supabaseAdminAuth.auth.admin.createUser({
-            email: `${s.nis}@sman19.sch.id`,
-            password: "siswa19",
-            email_confirm: true,
-            user_metadata: { fullName: s.nama, role: "siswa", nis: s.nis }
-          });
-          if (error) throw error;
-          createdCount++;
-        } catch {
+          const existingAuthUser = authUsers.find(u => u.email === email);
+          if (existingAuthUser) {
+            // Re-create the missing profile mapping in the database
+            const { error: profileError } = await supabase
+              .from("profiles")
+              .insert({
+                id: existingAuthUser.id,
+                email: existingAuthUser.email,
+                nama: s.nama,
+                role: "siswa",
+                nis: s.nis
+              });
+            if (profileError) throw profileError;
+            createdCount++;
+          } else {
+            // Create a brand new auth user
+            const { error: createError } = await supabaseAdminAuth.auth.admin.createUser({
+              email: email,
+              password: "siswa19",
+              email_confirm: true,
+              user_metadata: { fullName: s.nama, role: "siswa", nis: s.nis }
+            });
+            if (createError) throw createError;
+            createdCount++;
+          }
+        } catch (error) {
+          console.error(`Gagal menyinkronkan siswa ${s.nama}:`, error);
           failCount++;
         }
       }
-      showToast(`Sinkron akun selesai: ${createdCount} akun dibuat, ${failCount} gagal.`);
+      showToast(`Sinkron akun selesai: ${createdCount} akun disinkronkan, ${failCount} gagal.`);
     } catch (err: any) {
       alert("Gagal sinkronisasi akun: " + err.message);
     } finally {

@@ -18,7 +18,9 @@ import {
   X,
   Pencil,
   Search,
-  ChevronDown
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import { supabase, supabaseAdminAuth } from "../supabaseClient";
 import { Siswa } from "../types";
@@ -788,13 +790,14 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
               </span>
 
               {totalPages > 1 && (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 select-none shrink-0">
                   <button
                     disabled={currentPage === 1}
                     onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    className="px-4 py-2 bg-white hover:bg-brand-50 border border-brand-200 rounded-xl text-sm font-bold text-brand-850 disabled:opacity-50 disabled:hover:bg-white cursor-pointer transition-all"
+                    className="w-9 h-9 flex items-center justify-center bg-white hover:bg-brand-50 border border-brand-200 rounded-xl text-brand-850 disabled:opacity-40 disabled:hover:bg-white cursor-pointer transition-all shrink-0"
+                    title="Halaman Sebelumnya"
                   >
-                    &larr; Prev
+                    <ChevronLeft className="w-4 h-4" />
                   </button>
                   {Array.from({ length: totalPages }, (_, i) => i + 1)
                     .filter(pageNum => pageNum === 1 || pageNum === totalPages || Math.abs(pageNum - currentPage) <= 1)
@@ -807,12 +810,12 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
                     }, [])
                     .map((pageNum, i) => (
                       typeof pageNum === "string" ? (
-                        <span key={`ellipsis-${i}`} className="px-2 text-brand-400">...</span>
+                        <span key={`ellipsis-${i}`} className="w-9 h-9 flex items-center justify-center text-brand-400 font-bold shrink-0">...</span>
                       ) : (
                         <button
                           key={pageNum}
                           onClick={() => setCurrentPage(pageNum)}
-                          className={`px-4 py-2 rounded-xl border text-sm font-black transition-all cursor-pointer ${
+                          className={`w-9 h-9 flex items-center justify-center rounded-xl border text-sm font-black transition-all cursor-pointer shrink-0 ${
                             currentPage === pageNum
                               ? "bg-brand-600 border-brand-600 text-white"
                               : "bg-white hover:bg-brand-50 border-brand-200 text-brand-800"
@@ -825,9 +828,10 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
                   <button
                     disabled={currentPage === totalPages}
                     onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                    className="px-4 py-2 bg-white hover:bg-brand-50 border border-brand-200 rounded-xl text-sm font-bold text-brand-850 disabled:opacity-50 disabled:hover:bg-white cursor-pointer transition-all"
+                    className="w-9 h-9 flex items-center justify-center bg-white hover:bg-brand-50 border border-brand-200 rounded-xl text-brand-850 disabled:opacity-40 disabled:hover:bg-white cursor-pointer transition-all shrink-0"
+                    title="Halaman Berikutnya"
                   >
-                    Next &rarr;
+                    <ChevronRight className="w-4 h-4" />
                   </button>
                 </div>
               )}

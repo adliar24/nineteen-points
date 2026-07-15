@@ -382,16 +382,13 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
                           <button
                             key={siswa.id}
                             onClick={() => handleSelectManualSiswa(siswa)}
-                            className="w-full px-4 py-3 text-left hover:bg-brand-50/50 flex items-center justify-between group transition-colors cursor-pointer"
+                            className="w-full px-4 py-3.5 text-left hover:bg-brand-50/50 flex items-center justify-between group transition-colors cursor-pointer"
                           >
                             <div>
-                              <p className="text-xs font-black text-brand-900 group-hover:text-brand-600 transition-colors">{siswa.nama}</p>
+                              <p className="text-sm font-black text-brand-900 group-hover:text-brand-600 transition-colors">{siswa.nama}</p>
                               <p className="text-[10px] text-brand-400 font-semibold uppercase mt-0.5">{siswa.kelas} &bull; NIS {siswa.nis}</p>
                             </div>
                             <div className="flex items-center gap-2">
-                              <span className="text-[10px] font-mono font-bold bg-brand-50 text-brand-700 px-2.5 py-1 rounded-xl">
-                                {siswa.total_poin} pts
-                              </span>
                               <span className="text-[10px] font-bold text-brand-500 group-hover:translate-x-1 transition-transform">
                                 Pilih &rarr;
                               </span>

@@ -94,6 +94,48 @@ export default function App() {
     setLocalStorage("19points_session", userSession);
   }, [userSession]);
 
+  // Reset image load error state when the photo URL changes
+  useEffect(() => {
+    setHeaderImgFailed(false);
+  }, [userSession?.foto_url]);
+
+  // Fetch latest photo URL from database to ensure header shows the correct photo
+  useEffect(() => {
+    async function loadLatestPhoto() {
+      if (!userSession) return;
+      try {
+        let latestFotoUrl: string | null = null;
+        if (userSession.role === "siswa" && userSession.nis) {
+          const { data, error } = await supabase
+            .from("siswa")
+            .select("foto_url")
+            .eq("nis", userSession.nis)
+            .single();
+          if (!error && data) {
+            latestFotoUrl = data.foto_url;
+          }
+        } else {
+          const { data, error } = await supabase
+            .from("profiles")
+            .select("foto_url")
+            .eq("email", userSession.email)
+            .single();
+          if (!error && data) {
+            latestFotoUrl = data.foto_url;
+          }
+        }
+
+        if (latestFotoUrl !== undefined && latestFotoUrl !== userSession.foto_url) {
+          setUserSession((prev) => (prev ? { ...prev, foto_url: latestFotoUrl } : null));
+        }
+      } catch (err) {
+        console.error("Gagal memperbarui foto profil di header:", err);
+      }
+    }
+
+    loadLatestPhoto();
+  }, [userSession?.nis, userSession?.email]);
+
   useEffect(() => {
     setLocalStorage("19points_active_tab", activeTab);
   }, [activeTab]);

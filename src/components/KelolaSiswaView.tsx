@@ -510,18 +510,6 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
         </div>
       )}
 
-      {/* Main Header & Description */}
-      <div className="bg-white rounded-3xl p-6 border border-brand-100 shadow-xl shadow-brand-900/5 flex flex-col md:flex-row md:items-center justify-between gap-5">
-        <div>
-          <h2 className="text-2xl font-black text-brand-950 flex items-center gap-2.5">
-            <Users className="w-7 h-7 text-brand-600" />
-            Data Siswa & Kartu
-          </h2>
-          <p className="text-xs sm:text-sm font-medium text-brand-500 mt-1 leading-relaxed">
-            Kelola data siswa dan cetak kartu pelajar ber-QR Code.
-          </p>
-        </div>
-      </div>
 
       {/* SEARCH & CONTROLS BAR */}
       <div className="bg-white p-5 rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">

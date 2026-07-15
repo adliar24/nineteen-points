@@ -123,61 +123,10 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
         </div>
       )}
 
-      {/* Modern Compact Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-brand-50">
-        <div>
-          <h2 className="text-2xl font-black text-brand-950 flex items-center gap-2.5">
-            <ListFilter className="w-7 h-7 text-brand-600" />
-            Aturan Baku Poin
-          </h2>
-          <p className="text-xs sm:text-sm font-medium text-brand-500 mt-1 leading-relaxed">
-            Atur bobot poin prestasi (+) dan sanksi (-).
-          </p>
-        </div>
-
-        <motion.button
-          whileHover={{ scale: 1.02, y: -0.5 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => setIsAdding(true)}
-          className="self-start sm:self-center flex items-center gap-2 px-5 py-2.5 brand-gradient text-white text-sm font-black rounded-xl transition-all shadow-md shadow-brand-500/20 cursor-pointer"
-        >
-          <Plus className="w-4.5 h-4.5" />
-          Tambah Aturan
-        </motion.button>
-      </div>
-
-      {/* Live Micro Stats - High density information display */}
-      <div className="grid grid-cols-3 gap-3">
-        <div className="bg-brand-50/50 rounded-xl p-3.5 border border-brand-100/50 flex flex-col justify-center min-h-[70px]">
-          <span className="text-xs font-extrabold text-brand-500 uppercase tracking-wide block">Total Aturan</span>
-          {isLoading ? (
-            <div className="h-5 bg-brand-200/50 rounded-md w-12 mt-2.5 animate-pulse"></div>
-          ) : (
-            <span className="text-base lg:text-lg font-black text-brand-950 mt-1">{totalRules} <span className="text-xs font-bold text-brand-400">item</span></span>
-          )}
-        </div>
-        <div className="bg-emerald-50/40 rounded-xl p-3.5 border border-emerald-100/40 flex flex-col justify-center min-h-[70px]">
-          <span className="text-xs font-extrabold text-emerald-700 uppercase tracking-wide block">Prestasi (+)</span>
-          {isLoading ? (
-            <div className="h-5 bg-emerald-200/40 rounded-md w-12 mt-2.5 animate-pulse"></div>
-          ) : (
-            <span className="text-base lg:text-lg font-black text-emerald-800 mt-1">{rewardRules} <span className="text-xs font-bold text-emerald-500">bobot</span></span>
-          )}
-        </div>
-        <div className="bg-rose-50/40 rounded-xl p-3.5 border border-rose-100/40 flex flex-col justify-center min-h-[70px]">
-          <span className="text-xs font-extrabold text-rose-700 uppercase tracking-wide block">Sanksi (-)</span>
-          {isLoading ? (
-            <div className="h-5 bg-rose-200/40 rounded-md w-12 mt-2.5 animate-pulse"></div>
-          ) : (
-            <span className="text-base lg:text-lg font-black text-rose-800 mt-1">{violationRules} <span className="text-xs font-bold text-rose-500">bobot</span></span>
-          )}
-        </div>
-      </div>
-
       {/* Search & Filter Controls Panel */}
-      <div className="flex flex-col md:flex-row gap-3 justify-between">
+      <div className="flex flex-col md:flex-row gap-3 justify-between items-center mt-2">
         {/* Modern Compact Search Bar */}
-        <div className="relative flex-1 max-w-md">
+        <div className="relative flex-1 max-w-md w-full">
           <Search className="w-4.5 h-4.5 text-brand-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
@@ -197,12 +146,12 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
         </div>
 
         {/* Filter Pills */}
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-1.5 items-center w-full md:w-auto">
           {(["Semua", "Positif", "Negatif"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setFilterType(tab)}
-              className={`px-4 py-2 rounded-lg text-sm font-extrabold border transition-all cursor-pointer ${
+              className={`px-4 py-2 rounded-lg text-xs font-extrabold border transition-all cursor-pointer ${
                 filterType === tab
                   ? "brand-gradient text-white border-transparent shadow-xs"
                   : "bg-brand-50/50 text-brand-700 border-brand-100 hover:bg-brand-100/30"
@@ -211,6 +160,16 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
               {tab === "Semua" ? "Semua" : tab === "Positif" ? "Prestasi (+)" : "Sanksi (-)"}
             </button>
           ))}
+
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setIsAdding(true)}
+            className="flex items-center gap-1.5 px-4 py-2 brand-gradient text-white text-xs font-black rounded-lg transition-all shadow-md cursor-pointer ml-auto md:ml-0"
+          >
+            <Plus className="w-4 h-4" />
+            Tambah Aturan
+          </motion.button>
         </div>
       </div>
 

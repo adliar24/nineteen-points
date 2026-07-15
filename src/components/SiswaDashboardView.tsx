@@ -147,20 +147,12 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
 
     if (activeTab === "siswa_barcode") {
       return (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          <div className="lg:col-span-5 flex flex-col items-center">
-            <SkeletonLoader type="card" />
+        <div className="flex flex-col items-center justify-center space-y-5 py-4">
+          <div className="flex justify-between items-center w-full max-w-[290px] px-1">
+            <div className="h-4 w-28 bg-slate-200 rounded animate-pulse" />
+            <div className="h-4 w-16 bg-slate-200 rounded animate-pulse" />
           </div>
-          <div className="lg:col-span-7 space-y-6">
-            <div className="bg-white p-6 rounded-3xl border border-brand-100 shadow-xl space-y-4">
-              <div className="h-4 w-1/3 bg-slate-200 rounded-md animate-pulse" />
-              <div className="space-y-3">
-                <div className="h-3 w-full bg-slate-200/80 rounded-md animate-pulse" />
-                <div className="h-3 w-5/6 bg-slate-200/80 rounded-md animate-pulse" />
-              </div>
-            </div>
-            <SkeletonLoader type="list" count={2} />
-          </div>
+          <SkeletonLoader type="card" />
         </div>
       );
     }
@@ -309,112 +301,76 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
 
       {/* 2. BARCODE / KARTU TAB */}
       {activeTab === "siswa_barcode" && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start animate-fade-in">
-          {/* Card Showcase Column (5 cols) */}
-          <div className="lg:col-span-5 flex flex-col items-center space-y-5">
-            <div className="flex justify-between items-center w-full max-w-[290px] px-1">
-              <h3 className="text-xs font-black text-brand-950 uppercase tracking-widest">Kartu Pelajar Digital</h3>
-              <button
-                onClick={handleDownloadCard}
-                disabled={isDownloading}
-                className="text-xs font-bold text-brand-600 hover:text-brand-800 flex items-center gap-1.5 transition-colors cursor-pointer"
-              >
-                <Download className="w-4 h-4" />
-                {isDownloading ? "Mengunduh..." : "Download PNG"}
-              </button>
-            </div>
-
-            {/* Portrait digital card: Reference-inspired design */}
-            <div
-              id="student-digital-card-portrait"
-              onClick={() => setIsZoomed(true)}
-              className="w-full max-w-[290px] aspect-[1/1.58] rounded-[32px] bg-white text-brand-950 border border-brand-200 relative overflow-hidden flex flex-col items-center justify-between py-8 px-5 shadow-2xl shadow-brand-950/10 flex-shrink-0 cursor-zoom-in hover:scale-[1.02] transition-transform duration-300"
-              style={{ width: "290px", height: "458px" }}
+        <div className="flex flex-col items-center justify-center space-y-5 py-4 animate-fade-in">
+          {/* Card Showcase Column */}
+          <div className="flex justify-between items-center w-full max-w-[290px] px-1">
+            <h3 className="text-xs font-black text-brand-950 uppercase tracking-widest">Kartu Pelajar Digital</h3>
+            <button
+              onClick={handleDownloadCard}
+              disabled={isDownloading}
+              className="text-xs font-bold text-brand-600 hover:text-brand-800 flex items-center gap-1.5 transition-colors cursor-pointer"
             >
-              {/* TOP WAVE DECORATION (SVG) */}
-              <svg className="absolute top-0 inset-x-0 w-full h-32 pointer-events-none" viewBox="0 0 290 128" fill="none" preserveAspectRatio="none">
-                {/* Back Translucent Wave */}
-                <path d="M0 0H290V92C210 128 160 85 110 112C60 138 30 115 0 120Z" fill="#7c3aed" opacity="0.2" />
-                {/* Front Main Wave (Sidebar Purple color #4c1d95) */}
-                <path d="M0 0H290V80C210 112 165 72 115 100C65 128 35 102 0 108Z" fill="#4c1d95" />
-              </svg>
-
-              {/* Top Left School Branding */}
-              <div className="absolute top-4.5 left-5 flex items-center gap-2 z-10 text-white pointer-events-none">
-                <img src="/logo.png" className="w-6.5 h-6.5 object-contain" alt="Logo" />
-                <div>
-                  <h4 className="text-[8px] font-black tracking-widest text-white uppercase leading-tight">SMAN 19 BANDUNG</h4>
-                  <p className="text-[6px] text-brand-200 font-bold uppercase tracking-wider font-mono">Student Card</p>
-                </div>
-              </div>
-
-              {/* CARD CONTENT LAYER */}
-              <div className="relative z-10 w-full flex-1 flex flex-col justify-between items-center pt-11 pb-1">
-                
-                {/* 1. 3x4 Portrait Avatar (Pas Foto Style) */}
-                <div className="w-21 h-28 rounded-2xl border-[3px] border-pink-500 bg-white flex items-center justify-center p-[2.5px] shadow-md shadow-pink-500/10 flex-shrink-0">
-                  <div className="w-full h-full rounded-xl border border-pink-100 bg-rose-50/50 flex items-center justify-center text-pink-600 font-black text-3xl uppercase tracking-wider">
-                    {siswaDetail.nama.slice(0, 2)}
-                  </div>
-                </div>
-
-                {/* 2. Student Info */}
-                <div className="text-center space-y-1 mt-3">
-                  <h3 className="text-sm font-black tracking-tight text-[#1e1b4b] px-2 line-clamp-1 leading-snug">
-                    {siswaDetail.nama}
-                  </h3>
-                  <p className="text-[9px] text-[#7c3aed] font-extrabold uppercase tracking-widest">
-                    NIS: {siswaDetail.nis} &bull; KELAS: {siswaDetail.kelas}
-                  </p>
-                </div>
-
-                {/* 3. High quality QR code */}
-                <div className="mt-4 flex flex-col items-center">
-                  <div className="bg-white p-2.5 rounded-2xl shadow-lg border border-brand-500/30">
-                    <QRCodeSVG
-                      value={siswaDetail.nis}
-                      size={95}
-                      level="M"
-                      includeMargin={false}
-                      fgColor="#4c1d95"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
+              <Download className="w-4 h-4" />
+              {isDownloading ? "Mengunduh..." : "Download PNG"}
+            </button>
           </div>
 
-          {/* Guide / Instruction Column (7 cols) - Shortened and clean */}
-          <div className="lg:col-span-7 space-y-4">
-            <div className="bg-white p-6 rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 space-y-4">
-              <h3 className="text-sm font-black text-brand-950 uppercase tracking-widest">Informasi Kartu</h3>
-              
-              <div className="space-y-3.5">
-                <div className="flex gap-3">
-                  <div className="w-6 h-6 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center font-bold text-[10.5px] flex-shrink-0">
-                    1
-                  </div>
-                  <p className="text-xs text-brand-600 leading-relaxed font-semibold">
-                    Tunjukkan QR Code ini ke guru untuk mencatat poinmu.
-                  </p>
-                </div>
+          {/* Portrait digital card: Reference-inspired design */}
+          <div
+            id="student-digital-card-portrait"
+            onClick={() => setIsZoomed(true)}
+            className="w-full max-w-[290px] aspect-[1/1.58] rounded-[32px] bg-white text-brand-950 border border-brand-200 relative overflow-hidden flex flex-col items-center justify-between py-8 px-5 shadow-2xl shadow-brand-950/10 flex-shrink-0 cursor-zoom-in hover:scale-[1.02] transition-transform duration-300"
+            style={{ width: "290px", height: "458px" }}
+          >
+            {/* TOP WAVE DECORATION (SVG) */}
+            <svg className="absolute top-0 inset-x-0 w-full h-32 pointer-events-none" viewBox="0 0 290 128" fill="none" preserveAspectRatio="none">
+              {/* Back Translucent Wave */}
+              <path d="M0 0H290V92C210 128 160 85 110 112C60 138 30 115 0 120Z" fill="#7c3aed" opacity="0.2" />
+              {/* Front Main Wave (Sidebar Purple color #4c1d95) */}
+              <path d="M0 0H290V80C210 112 165 72 115 100C65 128 35 102 0 108Z" fill="#4c1d95" />
+            </svg>
 
-                <div className="flex gap-3">
-                  <div className="w-6 h-6 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center font-bold text-[10.5px] flex-shrink-0">
-                    2
-                  </div>
-                  <p className="text-xs text-brand-600 leading-relaxed font-semibold">
-                    Klik **Download PNG** untuk menyimpan kartu di HP.
-                  </p>
-                </div>
+            {/* Top Left School Branding */}
+            <div className="absolute top-4.5 left-5 flex items-center gap-2 z-10 text-white pointer-events-none">
+              <img src="/logo.png" className="w-6.5 h-6.5 object-contain" alt="Logo" />
+              <div>
+                <h4 className="text-[8px] font-black tracking-widest text-white uppercase leading-tight">SMAN 19 BANDUNG</h4>
+                <p className="text-[6px] text-brand-200 font-bold uppercase tracking-wider font-mono">Student Card</p>
               </div>
             </div>
-            
-            <div className="bg-brand-50/40 rounded-3xl p-4.5 border border-brand-100 flex items-center gap-3">
-              <ShieldCheck className="w-5 h-5 text-brand-600 flex-shrink-0" />
-              <p className="text-[11px] text-brand-800 font-bold leading-normal">
-                Kartu ini terhubung langsung dengan sistem poin sekolah.
-              </p>
+
+            {/* CARD CONTENT LAYER */}
+            <div className="relative z-10 w-full flex-1 flex flex-col justify-between items-center pt-11 pb-1">
+              
+              {/* 1. 3x4 Portrait Avatar (Pas Foto Style) */}
+              <div className="w-21 h-28 rounded-2xl border-[3px] border-pink-500 bg-white flex items-center justify-center p-[2.5px] shadow-md shadow-pink-500/10 flex-shrink-0">
+                <div className="w-full h-full rounded-xl border border-pink-100 bg-rose-50/50 flex items-center justify-center text-pink-600 font-black text-3xl uppercase tracking-wider">
+                  {siswaDetail.nama.slice(0, 2)}
+                </div>
+              </div>
+
+              {/* 2. Student Info */}
+              <div className="text-center space-y-1 mt-3">
+                <h3 className="text-sm font-black tracking-tight text-[#1e1b4b] px-2 line-clamp-1 leading-snug">
+                  {siswaDetail.nama}
+                </h3>
+                <p className="text-[9px] text-[#7c3aed] font-extrabold uppercase tracking-widest">
+                  NIS: {siswaDetail.nis} &bull; KELAS: {siswaDetail.kelas}
+                </p>
+              </div>
+
+              {/* 3. High quality QR code */}
+              <div className="mt-4 flex flex-col items-center">
+                <div className="bg-white p-2.5 rounded-2xl shadow-lg border border-brand-500/30">
+                  <QRCodeSVG
+                    value={siswaDetail.nis}
+                    size={95}
+                    level="M"
+                    includeMargin={false}
+                    fgColor="#4c1d95"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>

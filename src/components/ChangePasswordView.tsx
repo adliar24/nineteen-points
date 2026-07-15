@@ -46,10 +46,7 @@ export default function ChangePasswordView() {
   return (
     <div className="max-w-md mx-auto bg-white p-6 md:p-8 rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 space-y-6">
       <div className="space-y-1">
-        <h3 className="text-lg font-black text-brand-950 uppercase tracking-wide">Ubah Password</h3>
-        <p className="text-xs text-brand-500 font-medium leading-relaxed">
-          Ganti password akun Anda secara berkala demi keamanan data.
-        </p>
+        <h3 className="text-sm font-black text-brand-950 uppercase tracking-widest">Ubah Password</h3>
       </div>
 
       {message && (

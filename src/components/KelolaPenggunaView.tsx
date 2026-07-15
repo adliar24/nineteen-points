@@ -370,43 +370,31 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
       ) : (
         <div className="space-y-6 animate-fade-in">
           
-          {/* Header Panel */}
-          <div className="bg-white rounded-3xl p-6 border border-brand-100 shadow-xl shadow-brand-900/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h2 className="text-2xl font-black text-brand-950 flex items-center gap-2.5">
-                <ShieldCheck className="w-7 h-7 text-brand-600" />
-                Registrasi & Akun Pengguna
-              </h2>
-              <p className="text-xs sm:text-sm font-medium text-brand-500 mt-1 leading-relaxed">
-                Registrasi dan kelola akun login Guru/Siswa.
-              </p>
-            </div>
+          {/* Compact Button Actions Row */}
+          <div className="flex justify-end gap-2">
+            <button
+              onClick={loadUsersData}
+              className="p-3 bg-brand-50 text-brand-700 hover:bg-brand-100 rounded-2xl border border-brand-100 flex items-center justify-center transition-colors cursor-pointer"
+              title="Refresh Data"
+            >
+              <RefreshCw className="w-4.5 h-4.5" />
+            </button>
+            
+            <button
+              onClick={() => setIsImportUserOpen(true)}
+              className="px-4 py-3 bg-white hover:bg-brand-50 text-brand-700 font-bold rounded-2xl text-sm border border-brand-200 flex items-center gap-2 cursor-pointer transition-all"
+            >
+              <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+              Impor Excel
+            </button>
 
-            <div className="flex gap-2">
-              <button
-                onClick={loadUsersData}
-                className="p-3 bg-brand-50 text-brand-700 hover:bg-brand-100 rounded-2xl border border-brand-100 flex items-center justify-center transition-colors cursor-pointer"
-                title="Refresh Data"
-              >
-                <RefreshCw className="w-4.5 h-4.5" />
-              </button>
-              
-              <button
-                onClick={() => setIsImportUserOpen(true)}
-                className="px-4 py-3 bg-white hover:bg-brand-50 text-brand-700 font-bold rounded-2xl text-sm border border-brand-200 flex items-center gap-2 cursor-pointer transition-all"
-              >
-                <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
-                Impor Excel
-              </button>
-
-              <button
-                onClick={() => setIsAddUserOpen(true)}
-                className="px-5 py-3 brand-gradient hover:opacity-95 text-white font-bold rounded-2xl text-sm transition-all shadow-md shadow-brand-500/25 flex items-center gap-2 cursor-pointer"
-              >
-                <UserPlus className="w-4 h-4" />
-                Buat Akun Baru
-              </button>
-            </div>
+            <button
+              onClick={() => setIsAddUserOpen(true)}
+              className="px-5 py-3 brand-gradient hover:opacity-95 text-white font-bold rounded-2xl text-sm transition-all shadow-md shadow-brand-500/25 flex items-center gap-2 cursor-pointer"
+            >
+              <UserPlus className="w-4 h-4" />
+              Buat Akun Baru
+            </button>
           </div>
 
           {/* Success / Error Messages */}

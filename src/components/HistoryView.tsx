@@ -87,30 +87,7 @@ export default function HistoryView({ onRefreshTrigger, refreshCount }: HistoryV
   };
 
   return (
-    <div className="bg-white rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 p-6 space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-black text-brand-950 flex items-center gap-2.5">
-            <Calendar className="w-7 h-7 text-brand-600" />
-            Riwayat Poin Siswa
-          </h2>
-          <p className="text-xs sm:text-sm font-medium text-brand-500 mt-1 leading-relaxed">
-            Catatan log prestasi dan sanksi siswa SMAN 19 Bandung.
-          </p>
-        </div>
-
-        <button
-          onClick={async () => {
-            setHistoryList(await getRiwayatList());
-            onRefreshTrigger();
-          }}
-          className="flex items-center gap-2 px-4 py-2.5 border border-brand-100 hover:bg-brand-50 text-brand-700 rounded-xl text-sm font-bold transition-all self-start md:self-auto cursor-pointer"
-        >
-          <RefreshCw className="w-3.5 h-3.5 text-brand-600" />
-          Segarkan
-        </button>
-      </div>
-
+    <div className="bg-white rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 p-6 space-y-4">
       {/* Filter and Sort options bar */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-brand-50/50 p-4.5 rounded-2xl border border-brand-100/40">
         <div className="flex flex-wrap items-center gap-3 flex-1">
@@ -144,6 +121,18 @@ export default function HistoryView({ onRefreshTrigger, refreshCount }: HistoryV
           >
             <ArrowUpDown className="w-3.5 h-3.5 text-brand-500" />
             <span>Urut: {sortOrder === "terbaru" ? "Terbaru" : "Terlama"}</span>
+          </button>
+
+          {/* Segarkan Button */}
+          <button
+            onClick={async () => {
+              setHistoryList(await getRiwayatList());
+              onRefreshTrigger();
+            }}
+            className="flex items-center gap-1.5 px-4 py-3 bg-white border border-brand-100 text-brand-800 hover:bg-brand-50 rounded-xl text-sm font-bold transition-all cursor-pointer shadow-xs"
+          >
+            <RefreshCw className="w-3.5 h-3.5 text-brand-600" />
+            <span>Segarkan</span>
           </button>
         </div>
 

@@ -243,28 +243,12 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
       
       {/* INPUT WORKSPACE (Full Width) */}
-      <div className="lg:col-span-12 space-y-6">
+      <div className="lg:col-span-12 space-y-4">
         
-        {/* Header Block */}
-        <div className="bg-white rounded-3xl p-6 border border-brand-100 shadow-xl shadow-brand-900/5">
-          <h2 className="text-2xl font-black text-brand-950 flex items-center gap-2.5">
-            <Award className="w-7 h-7 text-brand-600" />
-            Pencatatan Poin Siswa
-          </h2>
-          <p className="text-xs sm:text-sm font-medium text-brand-500 mt-1 leading-relaxed">
-            Pencatatan sanksi disiplin atau prestasi siswa via QR Code & pencarian nama.
-          </p>
-
-          {/* Active Teacher Badge */}
-          <div className="bg-brand-50/70 rounded-2xl p-3.5 border border-brand-100/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-brand-900 mt-4 shadow-xs">
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-accent-500 flex-shrink-0" />
-              <span>Petugas: <strong className="font-bold text-brand-900">{userSession.fullName}</strong> <span className="text-brand-500">({userSession.email})</span></span>
-            </div>
-            <span className="font-black bg-brand-600 text-white px-2.5 py-1 rounded-xl text-[9px] uppercase tracking-wider self-start sm:self-auto shadow-xs">
-              Aktif
-            </span>
-          </div>
+        {/* Active Teacher Inline Info */}
+        <div className="flex items-center justify-between text-xs text-brand-500 bg-white px-4 py-2.5 rounded-xl border border-brand-100/60 shadow-xs">
+          <span>Petugas: <strong className="font-bold text-brand-900">{userSession.fullName}</strong> <span className="opacity-70">({userSession.email})</span></span>
+          <span className="text-[10px] font-black text-brand-600 bg-brand-50 px-2.5 py-0.5 rounded-md border border-brand-100 uppercase tracking-wider">Aktif</span>
         </div>
 
         {/* METHOD TAB SELECTOR */}

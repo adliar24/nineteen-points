@@ -206,8 +206,8 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
                 )}
               </div>
               <div className="flex flex-col justify-center flex-1 min-w-0 space-y-3">
-                <div className="space-y-0.5">
-                  <h2 className="text-lg font-black text-brand-900 leading-tight truncate">Halo, {siswaDetail.nama}!</h2>
+                <div className="space-y-0.5 min-w-0">
+                  <h2 className="text-lg font-black text-brand-900 leading-tight break-words">Halo, {siswaDetail.nama}!</h2>
                   <p className="text-[11px] text-brand-500 font-medium">Pantau poin prestasi dan pelanggaranmu.</p>
                 </div>
                 <div className="flex gap-3">

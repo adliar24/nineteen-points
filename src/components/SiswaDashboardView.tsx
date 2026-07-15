@@ -139,7 +139,7 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
                 Halo, {siswaDetail.nama}! <Sparkles className="w-5 h-5 text-amber-500 animate-pulse" />
               </h2>
               <p className="text-xs text-brand-500 font-medium">
-                Selamat datang di Portal Nilai & Karakter Siswa SMAN 19 Bandung. Pantau terus prestasimu!
+                Pantau poin prestasi dan pelanggaranmu di sini.
               </p>
             </div>
             <div className="flex gap-4">
@@ -164,7 +164,7 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
               <div>
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Akumulasi Prestasi</span>
                 <span className="text-xl font-black text-emerald-600">+{totalPrestasi} Poin</span>
-                <p className="text-[10px] text-slate-400 mt-0.5">Poin penghargaan karakter terpuji</p>
+                <p className="text-[10px] text-slate-400 mt-0.5">Poin dari kelakuan baikmu.</p>
               </div>
             </div>
 
@@ -176,7 +176,7 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
               <div>
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Akumulasi Pelanggaran</span>
                 <span className="text-xl font-black text-rose-600">{totalPelanggaran} Poin</span>
-                <p className="text-[10px] text-slate-400 mt-0.5">Pengurangan dari perilaku negatif</p>
+                <p className="text-[10px] text-slate-400 mt-0.5">Poin minus dari melanggar aturan.</p>
               </div>
             </div>
           </div>
@@ -184,7 +184,7 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
           <div className="bg-white rounded-3xl p-6 border border-brand-100 shadow-xl shadow-brand-900/5 space-y-4">
             <h3 className="text-sm font-black text-brand-950 uppercase tracking-widest flex items-center gap-2">
               <Clock className="w-5 h-5 text-brand-600" />
-              Sekilas Riwayat Terakhir
+              Poin Terbaru
             </h3>
             
             <div className="overflow-x-auto">
@@ -228,7 +228,7 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
                   ) : (
                     <tr>
                       <td colSpan={3} className="py-8 text-center text-brand-400 font-bold text-xs">
-                        Belum ada riwayat pencatatan poin.
+                        Belum ada catatan poin.
                       </td>
                     </tr>
                   )}
@@ -331,7 +331,7 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
                     1
                   </div>
                   <p className="text-xs text-brand-600 leading-relaxed font-semibold">
-                    Tunjukkan QR Code pada Guru Piket/Pembina untuk pencatatan poin secara instan.
+                    Tunjukkan QR Code ini ke guru untuk mencatat poinmu.
                   </p>
                 </div>
 
@@ -340,7 +340,7 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
                     2
                   </div>
                   <p className="text-xs text-brand-600 leading-relaxed font-semibold">
-                    Gunakan **Download PNG** untuk menyimpan gambar kartu digital ini langsung di galeri handphone Anda.
+                    Klik **Download PNG** untuk menyimpan kartu di HP.
                   </p>
                 </div>
               </div>
@@ -349,7 +349,7 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
             <div className="bg-brand-50/40 rounded-3xl p-4.5 border border-brand-100 flex items-center gap-3">
               <ShieldCheck className="w-5 h-5 text-brand-600 flex-shrink-0" />
               <p className="text-[11px] text-brand-800 font-bold leading-normal">
-                Format kartu digital ini terintegrasi secara aman dengan sistem poin SMAN 19 Bandung.
+                Kartu ini terhubung langsung dengan sistem poin sekolah.
               </p>
             </div>
           </div>
@@ -367,7 +367,7 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
                 Riwayat Perolehan Poin
               </h3>
               <p className="text-[10px] text-brand-500 font-medium mt-0.5">
-                Catatan kronologis penghargaan prestasi dan sanksi disiplin Anda.
+                Daftar lengkap poin prestasi dan pelanggaranmu.
               </p>
             </div>
             <span className="px-3.5 py-1.5 bg-brand-50 text-brand-700 font-black rounded-xl text-[10px] tracking-wide border border-brand-100 flex-shrink-0">
@@ -440,7 +440,7 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
             ) : (
               <div className="bg-white rounded-3xl p-12 text-center border border-brand-100 shadow-xl shadow-brand-900/5">
                 <p className="text-xs text-slate-400 font-bold">
-                  Belum ada riwayat pencatatan poin. Tetap patuhi tata tertib sekolah!
+                  Belum ada catatan poin. Pertahankan kelakuan baikmu!
                 </p>
               </div>
             )}

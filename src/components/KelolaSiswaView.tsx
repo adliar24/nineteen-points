@@ -1290,7 +1290,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
               className="flex items-center gap-2 px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-sm font-black transition-all shadow-md cursor-pointer disabled:opacity-55"
             >
               <Printer className="w-4.5 h-4.5" />
-              {isExporting ? "Memproses ZIP..." : `Kartu Siswa (${selectedSiswaIds.length > 0 ? selectedSiswaIds.length : "Semua"})`}
+              {isExporting ? "Memproses ZIP..." : (selectedSiswaIds.length > 0 ? `Kartu Siswa (${selectedSiswaIds.length})` : "Kartu Siswa")}
             </motion.button>
           </div>
         )}

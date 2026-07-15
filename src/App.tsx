@@ -285,8 +285,8 @@ export default function App() {
                 initial={{ x: "-100%" }}
                 animate={{ x: 0 }}
                 exit={{ x: "-100%" }}
-                transition={{ type: "spring", damping: 25, stiffness: 220 }}
-                className="relative w-80 max-w-[85vw] bg-gradient-to-b from-brand-800 via-brand-700 to-brand-800 text-white h-full shadow-2xl flex flex-col justify-between border-r border-brand-600 z-10 overflow-y-auto wave-bg rounded-r-[32px]"
+                transition={{ duration: 0.22, ease: "easeOut" }}
+                className="relative w-80 max-w-[85vw] bg-gradient-to-b from-brand-800 via-brand-700 to-brand-800 text-white h-full shadow-2xl flex flex-col justify-between border-r border-brand-600 z-10 overflow-y-auto wave-bg rounded-r-[32px] will-change-transform"
                 onClick={(e) => e.stopPropagation()}
               >
                 {/* Header Information */}
@@ -356,10 +356,11 @@ export default function App() {
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              transition={{ duration: 0.25, ease: "easeInOut" }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15, ease: "linear" }}
+              className="will-change-opacity"
             >
               {activeTab === "stats" && (
                 <StatsView />

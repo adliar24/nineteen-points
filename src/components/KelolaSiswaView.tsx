@@ -69,10 +69,9 @@ export function calculateSimilarity(s1: string, s2: string): number {
 export function compressImage(file: File, maxWidth = 300, maxHeight = 400, quality = 0.75): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const img = new Image();
-    img.src = URL.createObjectURL(file);
+    const objectUrl = URL.createObjectURL(file);
+    img.src = objectUrl;
     img.onload = () => {
-      URL.revokeObjectURL(img.src);
-      
       const targetRatio = maxWidth / maxHeight;
       const canvas = document.createElement("canvas");
       canvas.width = maxWidth;
@@ -80,6 +79,7 @@ export function compressImage(file: File, maxWidth = 300, maxHeight = 400, quali
       
       const ctx = canvas.getContext("2d");
       if (!ctx) {
+        URL.revokeObjectURL(objectUrl);
         reject(new Error("Gagal membuat context canvas"));
         return;
       }
@@ -102,20 +102,24 @@ export function compressImage(file: File, maxWidth = 300, maxHeight = 400, quali
       }
       
       ctx.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, maxWidth, maxHeight);
+      URL.revokeObjectURL(objectUrl);
       
       canvas.toBlob(
         (blob) => {
           if (blob) {
             resolve(blob);
           } else {
-            reject(new Error("Gagal mengompresi gambar"));
+            reject(new Error("Gagal mengompresi gambar ke JPEG"));
           }
         },
         "image/jpeg",
         quality
       );
     };
-    img.onerror = (err) => reject(err);
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error("Gagal membaca file gambar. Pastikan file bukan HEIC/HEIF."));
+    };
   });
 }
 
@@ -943,14 +947,17 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
     setUploadStatusMsg("Mempersiapkan server penyimpanan Supabase...");
     
     try {
-      // Create bucket if not exists
-      const { data: bucketData, error: bucketError } = await supabase.storage.getBucket('profile-photos');
-      if (bucketError || !bucketData) {
-        await supabase.storage.createBucket('profile-photos', {
+      // Ensure bucket exists (don't crash if it already exists)
+      const { error: bucketError } = await supabase.storage.getBucket('profile-photos');
+      if (bucketError) {
+        const { error: createErr } = await supabase.storage.createBucket('profile-photos', {
           public: true,
           allowedMimeTypes: ['image/png', 'image/jpeg', 'image/webp'],
           fileSizeLimit: 10485760
         });
+        if (createErr && !createErr.message?.includes("already exists")) {
+          console.error("Bucket creation error:", createErr);
+        }
       }
       
       let successCount = 0;
@@ -996,9 +1003,14 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
             .update({ foto_url: publicUrl })
             .eq('id', student.id);
             
-          if (dbErr) throw dbErr;
+          if (dbErr) {
+            if (dbErr.message?.includes('foto_url') || dbErr.message?.includes('column')) {
+              throw new Error("Kolom 'foto_url' belum ada di database.");
+            }
+            throw dbErr;
+          }
 
-          // 5. SYNC PHOTO TO PROFILES TABLE (for header avatar & login session)
+          // 5. SYNC PHOTO TO PROFILES TABLE (best-effort)
           await supabase
             .from('profiles')
             .update({ foto_url: publicUrl })
@@ -1043,66 +1055,88 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
     const file = e.target.files?.[0];
     if (!file || !photoUploadSiswaId) return;
 
+    const student = siswaList.find(s => s.id === photoUploadSiswaId);
+    if (!student) {
+      alert("Data siswa tidak ditemukan.");
+      setPhotoUploadSiswaId(null);
+      e.target.value = "";
+      return;
+    }
+
     showToast("Mengompresi & mengunggah foto profil...");
     
     try {
       // 1. COMPRESS VIA CANVAS (300x400 JPG, quality 0.75)
-      const compressedBlob = await compressImage(file, 300, 400, 0.75);
-      const student = siswaList.find(s => s.id === photoUploadSiswaId);
-      const studentNis = student ? student.nis : "profile";
-      const compressedFile = new File([compressedBlob], `${studentNis}.jpg`, { type: "image/jpeg" });
+      let compressedBlob: Blob;
+      try {
+        compressedBlob = await compressImage(file, 300, 400, 0.75);
+      } catch (compressErr: any) {
+        throw new Error("Gagal mengompresi gambar: " + compressErr.message);
+      }
+      const compressedFile = new File([compressedBlob], `${student.nis}.jpg`, { type: "image/jpeg" });
       
-      // Create bucket if not exists
-      const { data: bucketData, error: bucketError } = await supabase.storage.getBucket('profile-photos');
-      if (bucketError || !bucketData) {
-        await supabase.storage.createBucket('profile-photos', {
+      // 2. Ensure bucket exists (don't crash if it already exists)
+      const { error: bucketError } = await supabase.storage.getBucket('profile-photos');
+      if (bucketError) {
+        // Bucket might not exist, try creating it
+        const { error: createErr } = await supabase.storage.createBucket('profile-photos', {
           public: true,
           allowedMimeTypes: ['image/png', 'image/jpeg', 'image/webp'],
           fileSizeLimit: 10485760
         });
+        // If create also fails because bucket already exists, that's fine
+        if (createErr && !createErr.message?.includes("already exists")) {
+          console.error("Bucket creation error:", createErr);
+        }
       }
       
-      // 2. UPLOAD TO SUPABASE STORAGE
-      const fileExt = "jpg";
-      const fileName = `${photoUploadSiswaId}_${Date.now()}.${fileExt}`;
-      const filePath = `${fileName}`;
+      // 3. UPLOAD TO SUPABASE STORAGE
+      const fileName = `${student.id}_${Date.now()}.jpg`;
       
       const { error: uploadErr } = await supabase.storage
         .from('profile-photos')
-        .upload(filePath, compressedFile, {
+        .upload(fileName, compressedFile, {
           cacheControl: '3600',
           upsert: true
         });
         
-      if (uploadErr) throw uploadErr;
+      if (uploadErr) throw new Error("Upload ke storage gagal: " + uploadErr.message);
       
-      // 3. GET ACCESS URL
+      // 4. GET ACCESS URL
       const { data: urlData } = supabase.storage
         .from('profile-photos')
-        .getPublicUrl(filePath);
+        .getPublicUrl(fileName);
         
       const publicUrl = urlData.publicUrl;
       
-      // 4. UPDATE DATABASE COLUMN
+      // 5. UPDATE DATABASE COLUMN
       const { error: dbErr } = await supabase
         .from('siswa')
         .update({ foto_url: publicUrl })
-        .eq('id', photoUploadSiswaId);
+        .eq('id', student.id);
         
-      if (dbErr) throw dbErr;
+      if (dbErr) {
+        // If foto_url column doesn't exist, give a clear message
+        if (dbErr.message?.includes('foto_url') || dbErr.message?.includes('column')) {
+          throw new Error("Kolom 'foto_url' belum ada di database. Jalankan: ALTER TABLE public.siswa ADD COLUMN IF NOT EXISTS foto_url TEXT;");
+        }
+        throw new Error("Gagal update data siswa: " + dbErr.message);
+      }
 
-      // 5. SYNC PHOTO TO PROFILES TABLE (for header avatar & login session)
-      if (student) {
-        await supabase
-          .from('profiles')
-          .update({ foto_url: publicUrl })
-          .eq('nis', student.nis);
+      // 6. SYNC PHOTO TO PROFILES TABLE (best-effort, don't crash if fails)
+      const { error: profileErr } = await supabase
+        .from('profiles')
+        .update({ foto_url: publicUrl })
+        .eq('nis', student.nis);
+      
+      if (profileErr && profileErr.message?.includes('foto_url')) {
+        console.warn("Kolom foto_url belum ada di tabel profiles. Jalankan: ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS foto_url TEXT;");
       }
       
       showToast("Foto profil berhasil diperbarui!");
       await reloadData();
     } catch (err: any) {
-      console.error(err);
+      console.error("Upload foto gagal:", err);
       alert("Gagal mengunggah foto profil: " + err.message);
     } finally {
       setPhotoUploadSiswaId(null);

@@ -21,6 +21,7 @@ import { supabase, supabaseAdminAuth } from "../supabaseClient";
 import { Siswa } from "../types";
 import * as XLSX from "xlsx";
 import KelolaSiswaView from "./KelolaSiswaView";
+import ConfirmationModal from "./ConfirmationModal";
 
 interface Profile {
   id: string;
@@ -64,6 +65,10 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
 
   // Bulk delete state
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  // Delete confirmation modals
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; email: string } | null>(null);
+  const [isBulkDeleteConfirm, setIsBulkDeleteConfirm] = useState(false);
 
   // Edit account state
   const [editingProfile, setEditingProfile] = useState<Profile | null>(null);
@@ -153,15 +158,14 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
 
     try {
       // Create user using secondary admin-auth client to prevent logging out current session
-      const { error: signUpError } = await supabaseAdminAuth.auth.signUp({
+      const { error: signUpError } = await supabaseAdminAuth.auth.admin.createUser({
         email: finalEmail,
         password: finalPassword,
-        options: {
-          data: {
-            fullName: fullName,
-            role: role,
-            nis: role === "siswa" ? selectedNis : null
-          }
+        email_confirm: true,
+        user_metadata: {
+          fullName: fullName,
+          role: role,
+          nis: role === "siswa" ? selectedNis : null
         }
       });
 
@@ -188,10 +192,13 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
   };
 
   // Delete single user
-  const handleForceDeleteUser = async (id: string, emailAddr: string) => {
-    if (!confirm(`Apakah Anda yakin ingin menghapus akun user (${emailAddr})?\nPERHATIAN: Profil akun akan dihapus dari database.`)) {
-      return;
-    }
+  const handleForceDeleteUser = (id: string, emailAddr: string) => {
+    setDeleteTarget({ id, email: emailAddr });
+  };
+
+  const executeDeleteUser = async () => {
+    if (!deleteTarget) return;
+    const { id, email: emailAddr } = deleteTarget;
 
     try {
       const { error } = await supabase
@@ -205,11 +212,13 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
       loadUsersData();
     } catch (err: any) {
       alert(`Gagal menghapus profil: ${err.message}`);
+    } finally {
+      setDeleteTarget(null);
     }
   };
 
   // Bulk delete selected users
-  const handleBulkDelete = async () => {
+  const handleBulkDelete = () => {
     const nonSuperIds = selectedIds.filter(id => {
       const p = profiles.find(pr => pr.id === id);
       return p && p.role !== "super_admin";
@@ -220,9 +229,14 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
       return;
     }
 
-    if (!confirm(`Apakah Anda yakin ingin menghapus ${nonSuperIds.length} akun sekaligus?\nPERHATIAN: Profil akun akan dihapus dari database.`)) {
-      return;
-    }
+    setIsBulkDeleteConfirm(true);
+  };
+
+  const executeBulkDelete = async () => {
+    const nonSuperIds = selectedIds.filter(id => {
+      const p = profiles.find(pr => pr.id === id);
+      return p && p.role !== "super_admin";
+    });
 
     setIsSubmitting(true);
     try {
@@ -239,6 +253,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
       alert(`Gagal menghapus akun: ${err.message}`);
     } finally {
       setIsSubmitting(false);
+      setIsBulkDeleteConfirm(false);
     }
   };
 
@@ -399,15 +414,14 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
           }
 
           try {
-            const { error: signUpError } = await supabaseAdminAuth.auth.signUp({
+            const { error: signUpError } = await supabaseAdminAuth.auth.admin.createUser({
               email: emailVal,
               password: passwordVal,
-              options: {
-                data: {
-                  fullName: name,
-                  role: roleVal,
-                  nis: roleVal === "siswa" ? nisVal : null
-                }
+              email_confirm: true,
+              user_metadata: {
+                fullName: name,
+                role: roleVal,
+                nis: roleVal === "siswa" ? nisVal : null
               }
             });
 
@@ -1045,6 +1059,30 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
 
         </div>
       )}
+
+      {/* CONFIRM DELETE SINGLE USER */}
+      <ConfirmationModal
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={executeDeleteUser}
+        title="Hapus Akun User?"
+        message={`Apakah Anda yakin ingin menghapus akun "${deleteTarget?.email}"? Profil akun akan dihapus dari database.`}
+        confirmText="Ya, Hapus"
+        cancelText="Batal"
+        type="danger"
+      />
+
+      {/* CONFIRM BULK DELETE USERS */}
+      <ConfirmationModal
+        isOpen={isBulkDeleteConfirm}
+        onClose={() => setIsBulkDeleteConfirm(false)}
+        onConfirm={executeBulkDelete}
+        title="Hapus Massal Akun User?"
+        message={`Apakah Anda yakin ingin menghapus ${selectedIds.filter(id => profiles.find(p => p.id === id && p.role !== "super_admin")).length} akun sekaligus? Profil akun akan dihapus dari database.`}
+        confirmText="Ya, Hapus Semua"
+        cancelText="Batal"
+        type="danger"
+      />
 
     </div>
   );

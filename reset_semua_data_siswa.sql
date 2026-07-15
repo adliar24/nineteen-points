@@ -5,8 +5,8 @@
 -- ⚠️ PASTIKAN KAMU SUDAH LOGIN SEBAGAI SUPER_ADMIN SEJALANKAN SCRIPT INI
 -- =========================================================================
 
--- 1. HAPUS SEMUA FOTO PROFIL DARI STORAGE
-DELETE FROM storage.objects WHERE bucket_id = 'profile-photos';
+-- ⚠️ STEP 0: HAPUS FOTO DARI STORAGE (tidak bisa dari SQL!)
+-- Buka Supabase Dashboard → Storage → profile-photos → Centang semua → Hapus
 
 -- 2. HAPUS SEMUA RIWAYAT POIN SISWA
 DELETE FROM public.riwayat_poin;

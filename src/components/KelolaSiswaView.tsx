@@ -254,15 +254,14 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
       for (let i = 0; i < missingStudents.length; i++) {
         const s = missingStudents[i];
         try {
-          const { error: signUpError } = await supabaseAdminAuth.auth.signUp({
+          const { error: signUpError } = await supabaseAdminAuth.auth.admin.createUser({
             email: `${s.nis}@sman19.sch.id`,
             password: "siswa19",
-            options: {
-              data: {
-                fullName: s.nama,
-                role: "siswa",
-                nis: s.nis
-              }
+            email_confirm: true,
+            user_metadata: {
+              fullName: s.nama,
+              role: "siswa",
+              nis: s.nis
             }
           });
           if (signUpError) throw signUpError;
@@ -367,15 +366,14 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
       // Automatically create user auth account
       let authCreated = true;
       try {
-        const { error: signUpError } = await supabaseAdminAuth.auth.signUp({
+        const { error: signUpError } = await supabaseAdminAuth.auth.admin.createUser({
           email: `${newNis}@sman19.sch.id`,
           password: "siswa19",
-          options: {
-            data: {
-              fullName: upperNama,
-              role: "siswa",
-              nis: newNis
-            }
+          email_confirm: true,
+          user_metadata: {
+            fullName: upperNama,
+            role: "siswa",
+            nis: newNis
           }
         });
         if (signUpError) throw signUpError;
@@ -547,15 +545,14 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
             setImportStatusMsg(`Membuat akun (${idx + 1}/${newSiswaToInsert.length}): ${s.nama}...`);
             setImportProgress(Math.round((idx / newSiswaToInsert.length) * 100));
             try {
-              const { error: signUpError } = await supabaseAdminAuth.auth.signUp({
+              const { error: signUpError } = await supabaseAdminAuth.auth.admin.createUser({
                 email: `${s.nis}@sman19.sch.id`,
                 password: "siswa19",
-                options: {
-                  data: {
-                    fullName: s.nama,
-                    role: "siswa",
-                    nis: s.nis
-                  }
+                email_confirm: true,
+                user_metadata: {
+                  fullName: s.nama,
+                  role: "siswa",
+                  nis: s.nis
                 }
               });
               if (signUpError) throw signUpError;
@@ -659,15 +656,14 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
           setImportStatusMsg(`Membuat akun (${idx + 1}/${newSiswaToInsert.length}): ${s.nama}...`);
           setImportProgress(Math.round((idx / newSiswaToInsert.length) * 100));
           try {
-            const { error: signUpError } = await supabaseAdminAuth.auth.signUp({
+            const { error: signUpError } = await supabaseAdminAuth.auth.admin.createUser({
               email: `${s.nis}@sman19.sch.id`,
               password: "siswa19",
-              options: {
-                data: {
-                  fullName: s.nama,
-                  role: "siswa",
-                  nis: s.nis
-                }
+              email_confirm: true,
+              user_metadata: {
+                fullName: s.nama,
+                role: "siswa",
+                nis: s.nis
               }
             });
             if (signUpError) throw signUpError;
@@ -1330,6 +1326,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                       />
                     </th>
                   )}
+                  <th className="py-4 px-4 w-14"></th>
                   <th className="py-4 px-4 font-mono">NIS</th>
                   <th className="py-4 px-6">Nama Lengkap</th>
                   <th className="py-4 px-6">Kelas</th>
@@ -1348,6 +1345,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                         </td>
                       )}
                       <td className="py-4 px-4"><div className="h-4 w-20 bg-slate-200 rounded" /></td>
+                      <td className="py-4 px-4"><div className="h-10 w-10 bg-slate-200 rounded-lg" /></td>
                       <td className="py-4 px-6"><div className="h-4 w-44 bg-slate-200 rounded" /></td>
                       <td className="py-4 px-6"><div className="h-4 w-16 bg-slate-200 rounded" /></td>
                       <td className="py-4 px-6 text-center"><div className="h-4 w-12 bg-slate-200 rounded mx-auto" /></td>
@@ -1357,7 +1355,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                   ))
                 ) : paginatedSiswa.length === 0 ? (
                   <tr>
-                    <td colSpan={userSession.role === "guru" ? 6 : 7} className="text-center py-12 text-slate-400 text-xs font-bold">
+                    <td colSpan={userSession.role === "guru" ? 7 : 8} className="text-center py-12 text-slate-400 text-xs font-bold">
                       Tidak ada siswa yang ditemukan.
                     </td>
                   </tr>
@@ -1386,6 +1384,15 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                             />
                           </td>
                         )}
+                        <td className="py-3 px-4">
+                          {siswa.foto_url ? (
+                            <img src={siswa.foto_url} alt={siswa.nama} className="w-10 h-[53px] rounded-lg object-cover border border-brand-100" />
+                          ) : (
+                            <div className="w-10 h-[53px] rounded-lg bg-brand-100 flex items-center justify-center text-brand-400 text-[10px] font-black uppercase">
+                              {siswa.nama.slice(0, 2)}
+                            </div>
+                          )}
+                        </td>
                         <td className="py-4 px-4 font-mono font-bold text-sm text-brand-900">{siswa.nis}</td>
                         <td className="py-4 px-6">
                           <div className="font-extrabold text-sm text-brand-950 uppercase">{siswa.nama}</div>

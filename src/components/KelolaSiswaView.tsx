@@ -22,7 +22,6 @@ import {
   CreditCard,
   Settings,
   Grid,
-  Users,
   Camera,
   Image
 } from "lucide-react";
@@ -221,64 +220,6 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
     syncSiswa();
     showToast("Data disinkronkan.");
     onRefreshHistory();
-  };
-
-  // Sync missing auth accounts for students
-  const [isSyncingAccounts, setIsSyncingAccounts] = useState(false);
-  const handleSyncAccounts = async () => {
-    setIsSyncingAccounts(true);
-    try {
-      // 1. Get all student NIS
-      const studentNisList = siswaList.map(s => s.nis);
-
-      // 2. Get existing siswa profiles from profiles table
-      const { data: existingProfiles } = await supabase
-        .from("profiles")
-        .select("nis")
-        .eq("role", "siswa");
-
-      const existingNisSet = new Set((existingProfiles || []).map((p: any) => p.nis).filter(Boolean));
-
-      // 3. Find students without accounts
-      const missingStudents = siswaList.filter(s => !existingNisSet.has(s.nis));
-
-      if (missingStudents.length === 0) {
-        showToast("Semua siswa sudah memiliki akun login.");
-        setIsSyncingAccounts(false);
-        return;
-      }
-
-      let createdCount = 0;
-      let failCount = 0;
-
-      for (let i = 0; i < missingStudents.length; i++) {
-        const s = missingStudents[i];
-        try {
-          const { error: signUpError } = await supabaseAdminAuth.auth.admin.createUser({
-            email: `${s.nis}@sman19.sch.id`,
-            password: "siswa19",
-            email_confirm: true,
-            user_metadata: {
-              fullName: s.nama,
-              role: "siswa",
-              nis: s.nis
-            }
-          });
-          if (signUpError) throw signUpError;
-          createdCount++;
-        } catch (err) {
-          console.error(`Gagal sync akun untuk ${s.nama} (NIS: ${s.nis}):`, err);
-          failCount++;
-        }
-      }
-
-      showToast(`Sinkron akun selesai: ${createdCount} akun dibuat, ${failCount} gagal.`);
-    } catch (err: any) {
-      console.error("Gagal sinkronisasi akun:", err);
-      alert("Gagal sinkronisasi akun: " + err.message);
-    } finally {
-      setIsSyncingAccounts(false);
-    }
   };
 
   // Get unique classes list
@@ -1229,17 +1170,6 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
             >
               <FileSpreadsheet className="w-4.5 h-4.5 text-brand-600" />
               Impor Excel
-            </motion.button>
-
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={handleSyncAccounts}
-              disabled={isSyncingAccounts}
-              className="flex items-center gap-2 px-5 py-3 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-100 rounded-2xl text-sm font-black transition-all cursor-pointer shadow-xs disabled:opacity-50"
-            >
-              <Users className={`w-4.5 h-4.5 ${isSyncingAccounts ? 'animate-spin' : 'text-amber-600'}`} />
-              {isSyncingAccounts ? "Menyinkronkan..." : "Sinkron Akun"}
             </motion.button>
 
             <motion.button

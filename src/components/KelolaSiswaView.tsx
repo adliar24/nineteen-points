@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { QRCodeSVG } from "qrcode.react";
+import { createPortal } from "react-dom";
 import { 
   Search, 
   Plus, 
@@ -1550,7 +1551,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
 
       {/* STUDENT DETAIL POPUP */}
       <AnimatePresence>
-        {detailStudent && (
+        {detailStudent && createPortal(
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-brand-950/60 backdrop-blur-xs p-4">
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
@@ -1619,13 +1620,14 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                 )}
               </div>
             </motion.div>
-          </div>
+          </div>,
+          document.body
         )}
       </AnimatePresence>
 
       {/* ADD STUDENT MODAL */}
       <AnimatePresence>
-        {isAddSiswaModalOpen && (
+        {isAddSiswaModalOpen && createPortal(
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-brand-950/60 backdrop-blur-xs p-4">
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
@@ -1694,13 +1696,14 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                 </button>
               </form>
             </motion.div>
-          </div>
+          </div>,
+          document.body
         )}
       </AnimatePresence>
 
       {/* IMPORT EXCEL & CSV MODAL */}
       <AnimatePresence>
-        {isImportModalOpen && (
+        {isImportModalOpen && createPortal(
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-brand-950/60 backdrop-blur-xs p-4">
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
@@ -1814,13 +1817,13 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                 </>
               )}
             </motion.div>
-          </div>
+          </div>,
+          document.body
         )}
       </AnimatePresence>
-
       {/* EXCEL IMPORT PHOTO MODAL */}
       <AnimatePresence>
-        {isImportPhotoOpen && (
+        {isImportPhotoOpen && createPortal(
           <div className="fixed inset-0 bg-brand-950/65 backdrop-blur-xs flex items-center justify-center z-50 p-4">
             <motion.div 
               initial={{ opacity: 0, scale: 0.95 }}
@@ -1905,95 +1908,65 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
 
                 {/* Progress bar info */}
                 {isUploadingPhotos && (
-                  <div className="bg-purple-50/75 border border-purple-200 rounded-2xl p-5 space-y-3">
-                    <div className="flex justify-between items-center text-sm font-bold text-purple-950">
-                      <div className="flex items-center gap-2">
-                        <svg className="animate-spin h-4 w-4 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                        </svg>
-                        <span>{uploadStatusMsg}</span>
-                      </div>
-                      <span className="text-purple-700 tabular-nums">{uploadProgress}%</span>
+                  <div className="bg-brand-50 border border-brand-100 p-4.5 rounded-2xl space-y-3">
+                    <div className="flex justify-between items-center text-xs font-black text-brand-950 uppercase">
+                      <span>{uploadStatusMsg}</span>
+                      <span>{uploadProgress}%</span>
                     </div>
-                    <div className="w-full bg-purple-200 h-3 rounded-full overflow-hidden">
+                    <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden border border-slate-200">
                       <div 
-                        className="bg-purple-600 h-full rounded-full transition-all duration-300 ease-out"
+                        className="bg-brand-600 h-full rounded-full transition-all duration-300"
                         style={{ width: `${uploadProgress}%` }}
                       ></div>
                     </div>
                   </div>
                 )}
 
-                {/* Preview Match List Table */}
+                {/* List of matched items */}
                 {photoMatchItems.length > 0 && (
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <h4 className="text-xs font-black text-brand-900 uppercase tracking-wider">
-                        Pratinjau Hasil Pemetaan ({photoMatchItems.length} Berkas)
-                      </h4>
-                      <button
-                        onClick={() => setPhotoMatchItems([])}
-                        disabled={isUploadingPhotos}
-                        className="text-[10px] text-rose-600 hover:text-rose-800 font-bold underline cursor-pointer"
-                      >
-                        Reset Daftar
-                      </button>
-                    </div>
-
-                    <div className="border border-brand-100 rounded-2xl overflow-hidden shadow-xs">
-                      <div className="max-h-[300px] overflow-y-auto">
+                  <div className="space-y-2 border-t pt-4 border-brand-50 flex-1 flex flex-col min-h-0">
+                    <h5 className="text-xs font-black text-brand-950 uppercase">Hasil Pemetaan Foto ({photoMatchItems.length} File)</h5>
+                    <div className="border border-brand-100 rounded-2xl overflow-hidden flex-1 min-h-0 flex flex-col">
+                      <div className="overflow-x-auto overflow-y-auto max-h-[350px]">
                         <table className="w-full text-left border-collapse text-xs">
                           <thead>
-                            <tr className="bg-brand-50/60 text-brand-800 font-extrabold uppercase text-[10px] border-b border-brand-100">
-                              <th className="py-2.5 px-4">Nama File</th>
-                              <th className="py-2.5 px-4 text-center">Foto</th>
-                              <th className="py-2.5 px-4">Hasil Auto-Match</th>
-                              <th className="py-2.5 px-4 text-center">Status</th>
-                              <th className="py-2.5 px-4">Koreksi Manual</th>
+                            <tr className="bg-brand-50/40 border-b border-brand-100 text-brand-500 font-black uppercase tracking-wider text-[10px]">
+                              <th className="py-3 px-4">Nama File</th>
+                              <th className="py-3 px-4">Tinjau Foto</th>
+                              <th className="py-3 px-4">Siswa Terpetakan</th>
+                              <th className="py-3 px-4 text-center">Status</th>
+                              <th className="py-3 px-4">Ubah Pemetaan</th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-brand-50 text-brand-950 font-semibold bg-white">
+                          <tbody className="divide-y divide-brand-50 text-brand-900 font-semibold">
                             {photoMatchItems.map((item) => {
-                              const sMatch = siswaList.find(s => s.id === item.matchedSiswaId);
+                              const std = siswaList.find(s => s.id === item.matchedSiswaId);
                               return (
-                                <tr key={item.id} className="hover:bg-slate-50/50">
-                                  <td className="py-3 px-4 font-mono text-[10px] text-brand-600 max-w-[150px] truncate" title={item.file.name}>
+                                <tr key={item.id} className="hover:bg-brand-50/10 transition-colors">
+                                  <td className="py-3 px-4 font-mono text-[10px] text-slate-500 truncate max-w-[150px]" title={item.file.name}>
                                     {item.file.name}
                                   </td>
-                                  <td className="py-3 px-4 text-center">
+                                  <td className="py-3 px-4">
                                     <img 
                                       src={item.previewUrl} 
-                                      className="w-9 h-11 object-cover border border-brand-100 rounded-lg mx-auto shadow-xs" 
                                       alt="preview" 
+                                      className="w-9 h-12 rounded-lg object-cover border border-brand-100"
                                     />
                                   </td>
                                   <td className="py-3 px-4">
-                                    {sMatch ? (
-                                      <div>
-                                        <p className="font-extrabold text-brand-950">{sMatch.nama}</p>
-                                        <p className="text-[10px] text-brand-400 mt-0.5">Kelas {sMatch.kelas} &bull; NIS {sMatch.nis}</p>
+                                    {std ? (
+                                      <div className="text-xs">
+                                        <div className="font-extrabold text-brand-950 uppercase">{std.nama}</div>
+                                        <div className="text-[9px] text-brand-400 font-bold mt-0.5">NIS: {std.nis} &bull; Kelas: {std.kelas}</div>
                                       </div>
                                     ) : (
                                       <span className="text-slate-400 italic">Belum terpetakan</span>
                                     )}
                                   </td>
                                   <td className="py-3 px-4 text-center">
-                                    {item.status === "matched" && (
-                                      <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full text-[9px] font-black uppercase">
-                                        Cocok
-                                      </span>
-                                    )}
-                                    {item.status === "suggested" && (
-                                      <span className="px-2.5 py-1 bg-amber-50 text-amber-700 rounded-full text-[9px] font-black uppercase">
-                                        Rekomendasi
-                                      </span>
-                                    )}
-                                    {item.status === "nomatch" && (
-                                      <span className="px-2.5 py-1 bg-rose-50 text-rose-700 rounded-full text-[9px] font-black uppercase">
-                                        Gagal
-                                      </span>
-                                    )}
+                                    {item.status === "matched" && <span className="px-2 py-1 bg-emerald-50 text-emerald-700 rounded-md text-[9px] font-black uppercase">Cocok</span>}
+                                    {item.status === "suggested" && <span className="px-2 py-1 bg-amber-50 text-amber-700 rounded-md text-[9px] font-black uppercase">Saran</span>}
+                                    {item.status === "nomatch" && <span className="px-2 py-1 bg-rose-50 text-rose-700 rounded-md text-[9px] font-black uppercase">Gagal</span>}
                                   </td>
                                   <td className="py-3 px-4">
                                     <select
@@ -2001,22 +1974,16 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                                       onChange={(e) => {
                                         const val = e.target.value;
                                         setPhotoMatchItems(prev => prev.map(p => 
-                                          p.id === item.id 
-                                            ? { ...p, matchedSiswaId: val === "" ? null : val, status: val === "" ? "nomatch" : "matched" } 
-                                            : p
+                                          p.id === item.id ? { ...p, matchedSiswaId: val === "" ? null : val, status: val === "" ? "nomatch" : "matched" } : p
                                         ));
                                       }}
                                       disabled={isUploadingPhotos}
-                                      className="w-full text-[11px] bg-slate-50 border border-slate-200 rounded-xl p-2 font-bold outline-none text-brand-900 focus:bg-white cursor-pointer"
+                                      className="w-36 text-[10px] bg-slate-50 border border-slate-200 rounded-lg p-1.5 font-bold outline-none text-brand-900 cursor-pointer"
                                     >
-                                      <option value="">-- Pilih Siswa Manual --</option>
-                                      {[...siswaList]
-                                        .sort((a, b) => a.nama.localeCompare(b.nama))
-                                        .map(s => (
-                                          <option key={s.id} value={s.id}>
-                                            {s.nama} ({s.kelas}) - {s.nis}
-                                          </option>
-                                        ))}
+                                      <option value="">-- Pilih Manual --</option>
+                                      {[...siswaList].sort((a,b) => a.nama.localeCompare(b.nama)).map(s => (
+                                        <option key={s.id} value={s.id}>{s.nama} ({s.kelas})</option>
+                                      ))}
                                     </select>
                                   </td>
                                 </tr>
@@ -2053,7 +2020,8 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                 </button>
               </div>
             </motion.div>
-          </div>
+          </div>,
+          document.body
         )}
       </AnimatePresence>
 

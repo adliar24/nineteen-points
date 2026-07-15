@@ -1,6 +1,7 @@
 import React from "react";
 import { X, AlertTriangle, LogOut, Trash2, HelpCircle } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { createPortal } from "react-dom";
 
 interface ConfirmationModalProps {
   isOpen: boolean;
@@ -66,7 +67,7 @@ export default function ConfirmationModal({
 
   return (
     <AnimatePresence>
-      {isOpen && (
+      {isOpen && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Backdrop blur with motion */}
           <motion.div
@@ -132,7 +133,8 @@ export default function ConfirmationModal({
               </motion.button>
             </div>
           </motion.div>
-        </div>
+        </div>,
+        document.body
       )}
     </AnimatePresence>
   );

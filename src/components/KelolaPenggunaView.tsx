@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { createPortal } from "react-dom";
 import { 
   Users, 
   UserPlus, 
@@ -835,7 +836,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
         </AnimatePresence>
 
         {/* CREATE MANUAL USER MODAL */}
-        {isAddUserOpen && (
+        {isAddUserOpen && createPortal(
           <div className="fixed inset-0 bg-brand-950/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-3xl p-6 w-full max-w-md border border-brand-100 shadow-2xl space-y-4 animate-fade-in">
               <div className="flex justify-between items-center border-b pb-3 border-brand-50">
@@ -853,41 +854,30 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
 
               <form onSubmit={handleCreateUser} className="space-y-4">
                 <div className="space-y-1">
-                  <label className="text-xs font-black text-brand-900 uppercase block">Peran Sistem (Role)</label>
+                  <label className="text-xs font-black text-brand-900 uppercase block">Pilih Peran Pengguna</label>
                   <div className="grid grid-cols-3 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => { setRole("guru"); setSelectedNis(""); setEmail(""); setPassword(""); }}
-                      className={`py-2 px-1 text-center text-xs font-bold rounded-xl border transition-all cursor-pointer ${
-                        role === "guru"
-                          ? "bg-brand-50 text-brand-700 border-brand-300"
-                          : "border-brand-100 text-brand-500 hover:bg-brand-50/50"
-                      }`}
-                    >
-                      Guru
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => { setRole("siswa"); setEmail(""); setPassword(""); }}
-                      className={`py-2 px-1 text-center text-xs font-bold rounded-xl border transition-all cursor-pointer ${
-                        role === "siswa"
-                          ? "bg-brand-50 text-brand-700 border-brand-300"
-                          : "border-brand-100 text-brand-500 hover:bg-brand-50/50"
-                      }`}
-                    >
-                      Siswa
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => { setRole("piket"); setSelectedNis(""); setEmail(""); setPassword(""); }}
-                      className={`py-2 px-1 text-center text-xs font-bold rounded-xl border transition-all cursor-pointer ${
-                        role === "piket"
-                          ? "bg-brand-50 text-brand-700 border-brand-300"
-                          : "border-brand-100 text-brand-500 hover:bg-brand-50/50"
-                      }`}
-                    >
-                      Piket
-                    </button>
+                    {(["guru", "siswa", "piket"] as const).map((r) => (
+                      <button
+                        key={r}
+                        type="button"
+                        onClick={() => {
+                          setRole(r);
+                          setErrorMsg("");
+                          setFullName("");
+                          setEmail("");
+                          setPassword("");
+                          setSelectedNis("");
+                          setNip("");
+                        }}
+                        className={`py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                          role === r
+                            ? "bg-brand-600 border-brand-600 text-white shadow-md"
+                            : "bg-white border-brand-100 text-brand-600 hover:bg-brand-50"
+                        }`}
+                      >
+                        {r === "guru" ? "Guru" : r === "siswa" ? "Siswa" : "Piket"}
+                      </button>
+                    ))}
                   </div>
                 </div>
 
@@ -1022,11 +1012,12 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
                 </div>
               </form>
             </div>
-          </div>
+          </div>,
+          document.body
         )}
 
         {/* EDIT ACCOUNT MODAL */}
-        {editingProfile && (
+        {editingProfile && createPortal(
           <div className="fixed inset-0 bg-brand-950/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-3xl p-6 w-full max-w-md border border-brand-100 shadow-2xl space-y-4 animate-fade-in">
               <div className="flex justify-between items-center border-b pb-3 border-brand-50">
@@ -1105,11 +1096,12 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
                 </div>
               </form>
             </div>
-          </div>
+          </div>,
+          document.body
         )}
 
         {/* EXCEL IMPORT USER ACCOUNTS MODAL */}
-        {isImportUserOpen && (
+        {isImportUserOpen && createPortal(
           <div className="fixed inset-0 bg-brand-950/65 backdrop-blur-xs flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-3xl p-6 w-full max-w-md border border-brand-100 shadow-2xl space-y-4 animate-fade-in">
               <div className="flex justify-between items-center border-b pb-3 border-brand-50">
@@ -1179,7 +1171,8 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
                 </button>
               </div>
             </div>
-          </div>
+          </div>,
+          document.body
         )}
 
         </div>

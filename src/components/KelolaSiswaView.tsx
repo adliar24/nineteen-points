@@ -153,6 +153,16 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
   }
   const [photoMatchItems, setPhotoMatchItems] = useState<PhotoMatchItem[]>([]);
 
+  // Pagination & Bulk Delete states
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  const [isBulkDeleteConfirm, setIsBulkDeleteConfirm] = useState(false);
+
+  // Reset pagination on search or class filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedKelas]);
+
   // New Student fields
   const [newNis, setNewNis] = useState("");
   const [newNama, setNewNama] = useState("");
@@ -214,6 +224,26 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
     const matchesClass = selectedKelas === "Semua" || s.kelas === selectedKelas;
     return matchesSearch && matchesClass;
   });
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredSiswa.length / itemsPerPage);
+  const paginatedSiswa = filteredSiswa.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  
+  const renderPageNumbers = () => {
+    const pageNumbers = [];
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+      pageNumbers.push(i);
+    }
+    return pageNumbers;
+  };
 
   // Selection Checkboxes
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -322,6 +352,29 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
       showToast(`Siswa "${nama}" telah dihapus.`);
     } catch (err: any) {
       alert("Gagal menghapus siswa: " + err.message);
+    }
+  };
+
+  // Bulk Delete Selected Students
+  const handleDeleteSelected = () => {
+    setIsBulkDeleteConfirm(true);
+  };
+
+  const executeDeleteSelected = async () => {
+    try {
+      const { error } = await supabase
+        .from("siswa")
+        .delete()
+        .in("id", selectedSiswaIds);
+        
+      if (error) throw error;
+      
+      await syncSiswa();
+      const count = selectedSiswaIds.length;
+      setSelectedSiswaIds([]);
+      showToast(`Sukses menghapus ${count} data siswa terpilih.`);
+    } catch (err: any) {
+      alert("Gagal menghapus data siswa: " + err.message);
     }
   };
 
@@ -553,8 +606,8 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
     }, 150);
   };
 
-  // Export Cards in bulk as JPG images sequentially
-  const exportToJPG = async () => {
+  // Export Cards in bulk as a ZIP package containing high-res JPG images
+  const exportToZIP = async () => {
     const targets = selectedSiswaIds.length > 0 ? selectedSiswaIds : filteredSiswa.map(s => s.id);
     if (targets.length === 0) {
       alert("Pilih siswa terlebih dahulu untuk dicetak kartunya.");
@@ -562,9 +615,12 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
     }
 
     setIsExporting(true);
-    showToast(`Mengekspor ${targets.length} Kartu Pelajar ke JPG...`);
+    showToast(`Mengekspor ${targets.length} Kartu Ujian ke ZIP...`);
 
     try {
+      const JSZip = (await import("jszip")).default;
+      const zip = new JSZip();
+      
       for (let i = 0; i < targets.length; i++) {
         const studentId = targets[i];
         const studentObj = siswaList.find(s => s.id === studentId);
@@ -577,22 +633,26 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
             useCORS: true,
             backgroundColor: "#ffffff"
           });
-          const imgData = canvas.toDataURL("image/jpeg", 0.95);
-          const link = document.createElement("a");
-          link.download = `KARTU_PELAJAR_SMAN19_${studentObj.nama.toUpperCase().replace(/\s+/g, "_")}.jpg`;
-          link.href = imgData;
-          link.click();
           
-          // Slight delay between downloads to prevent browser blocking
-          if (targets.length > 1) {
-            await new Promise((resolve) => setTimeout(resolve, 250));
-          }
+          const imgDataUrl = canvas.toDataURL("image/jpeg", 0.92);
+          const base64Data = imgDataUrl.split(',')[1];
+          const filename = `KARTU_UJIAN_SMAN19_${studentObj.nis}_${studentObj.nama.toUpperCase().replace(/\s+/g, "_")}.jpg`;
+          
+          zip.file(filename, base64Data, { base64: true });
         }
       }
-      showToast("Ekspor semua kartu pelajar selesai!");
+      
+      const zipContent = await zip.generateAsync({ type: "blob" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(zipContent);
+      link.download = `KARTU_UJIAN_SMAN19_${Date.now()}.zip`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+      
+      showToast("Unduh ZIP kartu ujian selesai!");
     } catch (error) {
-      console.error("Export to JPG failed", error);
-      alert("Gagal mengekspor kartu ke JPG. Silakan coba lagi.");
+      console.error("Export to ZIP failed", error);
+      alert("Gagal mengekspor kartu ke ZIP. Silakan coba lagi.");
     } finally {
       setIsExporting(false);
     }
@@ -916,11 +976,11 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               disabled={isExporting}
-              onClick={exportToJPG}
+              onClick={exportToZIP}
               className="flex items-center gap-2 px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-sm font-black transition-all shadow-md cursor-pointer disabled:opacity-55"
             >
               <Printer className="w-4.5 h-4.5" />
-              {isExporting ? "Memproses PDF..." : `Cetak ${selectedSiswaIds.length > 0 ? `Terpilih (${selectedSiswaIds.length})` : "Semua"} (PDF)`}
+              {isExporting ? "Memproses ZIP..." : `Cetak Kartu Ujian (${selectedSiswaIds.length > 0 ? selectedSiswaIds.length : "Semua"})`}
             </motion.button>
           </div>
         )}
@@ -977,14 +1037,14 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                       <td className="py-4 px-6 text-right"><div className="h-4.5 w-24 bg-slate-200 rounded-xl ml-auto" /></td>
                     </tr>
                   ))
-                ) : filteredSiswa.length === 0 ? (
+                ) : paginatedSiswa.length === 0 ? (
                   <tr>
                     <td colSpan={userSession.role === "guru" ? 6 : 7} className="text-center py-12 text-slate-400 text-xs font-bold">
                       Tidak ada siswa yang ditemukan.
                     </td>
                   </tr>
                 ) : (
-                  filteredSiswa.map((siswa) => {
+                  paginatedSiswa.map((siswa) => {
                     const isSelected = selectedSiswaIds.includes(siswa.id);
                     const isSafe = siswa.total_poin >= 100;
                     const isWarning = siswa.total_poin >= 50 && siswa.total_poin < 100;
@@ -1032,13 +1092,14 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                           )}
                         </td>
                         <td className="py-4 px-6 text-right whitespace-nowrap">
-                          <div className="flex items-center justify-end gap-1">
+                          <div className="flex items-center justify-end gap-2">
                             <button
                               onClick={() => handleDownloadSingleCard(siswa)}
-                              className="p-2 hover:bg-brand-50 text-brand-600 hover:text-brand-800 rounded-xl transition-all cursor-pointer"
-                              title="Unduh Kartu (PNG)"
+                              className="px-2.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-100 rounded-xl text-[10px] font-extrabold uppercase transition-all flex items-center gap-1 cursor-pointer"
+                              title="Cetak Kartu Ujian (PNG)"
                             >
-                              <CreditCard className="w-4 h-4 text-brand-600" />
+                              <Printer className="w-3.5 h-3.5 text-brand-600" />
+                              <span>Cetak</span>
                             </button>
                             {userSession.role !== "guru" && (
                               <button
@@ -1046,7 +1107,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                                 className="p-2 hover:bg-rose-50 text-rose-500 hover:text-rose-700 rounded-xl transition-all cursor-pointer"
                                 title="Hapus Siswa"
                               >
-                                <Trash2 className="w-4 h-4" />
+                                <Trash2 className="w-4.5 h-4.5" />
                               </button>
                             )}
                           </div>
@@ -1059,11 +1120,56 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
             </table>
           </div>
           
-          {/* Table Footer info */}
-          <div className="bg-brand-50/30 p-4 border-t border-brand-100 text-[10px] text-brand-500 font-bold flex items-center justify-between">
-            <span>Menampilkan {filteredSiswa.length} dari {siswaList.length} siswa</span>
+          {/* Table Pagination & Actions Footer */}
+          <div className="bg-brand-50/30 p-4 border-t border-brand-100 text-[10px] text-brand-500 font-bold flex flex-col sm:flex-row items-center justify-between gap-3">
+            <span>
+              Menampilkan {filteredSiswa.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} - {Math.min(currentPage * itemsPerPage, filteredSiswa.length)} dari {filteredSiswa.length} siswa
+            </span>
+            
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex items-center gap-1.5">
+                <button
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  className="px-2.5 py-1 bg-white hover:bg-brand-50 border border-brand-200 rounded-lg text-brand-850 disabled:opacity-50 disabled:hover:bg-white cursor-pointer transition-all"
+                >
+                  &larr; Prev
+                </button>
+                {renderPageNumbers().map((pageNum) => (
+                  <button
+                    key={pageNum}
+                    onClick={() => setCurrentPage(pageNum)}
+                    className={`px-3 py-1 rounded-lg border text-xs font-black transition-all cursor-pointer ${
+                      currentPage === pageNum
+                        ? "bg-brand-600 border-brand-600 text-white"
+                        : "bg-white hover:bg-brand-50 border-brand-200 text-brand-800"
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                ))}
+                <button
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  className="px-2.5 py-1 bg-white hover:bg-brand-50 border border-brand-200 rounded-lg text-brand-850 disabled:opacity-50 disabled:hover:bg-white cursor-pointer transition-all"
+                >
+                  Next &rarr;
+                </button>
+              </div>
+            )}
+            
             {userSession.role !== "guru" && selectedSiswaIds.length > 0 && (
-              <span className="text-brand-600 font-extrabold">{selectedSiswaIds.length} siswa terpilih</span>
+              <div className="flex items-center gap-3">
+                <span className="text-brand-600 font-extrabold">{selectedSiswaIds.length} siswa terpilih</span>
+                <button
+                  onClick={handleDeleteSelected}
+                  className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 rounded-xl text-[10px] font-black uppercase flex items-center gap-1.5 cursor-pointer transition-colors animate-fade-in"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  Hapus Terpilih
+                </button>
+              </div>
             )}
           </div>
         </motion.div>
@@ -1082,6 +1188,21 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
         title="Hapus Data Siswa?"
         message={`Apakah Anda yakin ingin menghapus data "${siswaToDelete?.nama}" secara permanen? Semua riwayat absensi & sanksi miliknya akan ikut terhapus.`}
         confirmText="Ya, Hapus"
+        cancelText="Batal"
+        type="danger"
+      />
+
+      {/* CONFIRM BULK DELETE MODAL */}
+      <ConfirmationModal
+        isOpen={isBulkDeleteConfirm}
+        onClose={() => setIsBulkDeleteConfirm(false)}
+        onConfirm={() => {
+          executeDeleteSelected();
+          setIsBulkDeleteConfirm(false);
+        }}
+        title="Hapus Massal Data Siswa?"
+        message={`Apakah Anda yakin ingin menghapus ${selectedSiswaIds.length} data siswa terpilih secara permanen? Semua akun login, riwayat absensi & sanksi milik mereka akan ikut terhapus.`}
+        confirmText="Ya, Hapus Semua"
         cancelText="Batal"
         type="danger"
       />

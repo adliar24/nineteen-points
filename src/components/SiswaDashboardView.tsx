@@ -103,23 +103,79 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
   };
 
   if (isLoading) {
-    return (
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        <div className="lg:col-span-5 flex flex-col items-center">
-          <SkeletonLoader type="card" />
-        </div>
-        <div className="lg:col-span-7 space-y-6">
-          <div className="bg-white p-6 rounded-3xl border border-brand-100 shadow-xl space-y-4">
-            <div className="h-4 w-1/3 bg-slate-200 rounded-md animate-pulse" />
-            <div className="space-y-3">
-              <div className="h-3 w-full bg-slate-200/80 rounded-md animate-pulse" />
-              <div className="h-3 w-5/6 bg-slate-200/80 rounded-md animate-pulse" />
+    if (activeTab === "siswa_stats") {
+      return (
+        <div className="space-y-6">
+          {/* Welcome Banner Skeleton */}
+          <div className="bg-white rounded-3xl p-6 border border-brand-100 shadow-xl shadow-brand-900/5 flex flex-col md:flex-row md:items-center justify-between gap-6 animate-pulse">
+            <div className="space-y-2 flex-1">
+              <div className="h-6 w-1/3 bg-slate-200 rounded-md" />
+              <div className="h-3.5 w-1/4 bg-slate-200 rounded-md" />
+            </div>
+            <div className="flex gap-4">
+              <div className="bg-slate-100 rounded-2xl w-24 h-14" />
+              <div className="bg-slate-100 rounded-2xl w-24 h-14" />
             </div>
           </div>
-          <SkeletonLoader type="list" count={3} />
+
+          {/* Stats Summary row */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="bg-white rounded-3xl p-6 border border-brand-100 shadow-xl h-24 animate-pulse flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-slate-200" />
+              <div className="space-y-2 flex-1">
+                <div className="h-3 w-20 bg-slate-200 rounded-md" />
+                <div className="h-5 w-32 bg-slate-200 rounded-md" />
+              </div>
+            </div>
+            <div className="bg-white rounded-3xl p-6 border border-brand-100 shadow-xl h-24 animate-pulse flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-slate-200" />
+              <div className="space-y-2 flex-1">
+                <div className="h-3 w-20 bg-slate-200 rounded-md" />
+                <div className="h-5 w-32 bg-slate-200 rounded-md" />
+              </div>
+            </div>
+          </div>
+
+          {/* Recent points table skeleton */}
+          <div className="bg-white rounded-3xl p-6 border border-brand-100 shadow-xl space-y-4">
+            <div className="h-4 w-1/4 bg-slate-200 rounded-md animate-pulse" />
+            <SkeletonLoader type="table" count={3} />
+          </div>
         </div>
-      </div>
-    );
+      );
+    }
+
+    if (activeTab === "siswa_barcode") {
+      return (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          <div className="lg:col-span-5 flex flex-col items-center">
+            <SkeletonLoader type="card" />
+          </div>
+          <div className="lg:col-span-7 space-y-6">
+            <div className="bg-white p-6 rounded-3xl border border-brand-100 shadow-xl space-y-4">
+              <div className="h-4 w-1/3 bg-slate-200 rounded-md animate-pulse" />
+              <div className="space-y-3">
+                <div className="h-3 w-full bg-slate-200/80 rounded-md animate-pulse" />
+                <div className="h-3 w-5/6 bg-slate-200/80 rounded-md animate-pulse" />
+              </div>
+            </div>
+            <SkeletonLoader type="list" count={2} />
+          </div>
+        </div>
+      );
+    }
+
+    if (activeTab === "siswa_history") {
+      return (
+        <div className="space-y-6">
+          <div className="bg-white p-6 rounded-3xl border border-brand-100 shadow-xl space-y-2 animate-pulse">
+            <div className="h-5 w-1/4 bg-slate-200 rounded-md" />
+            <div className="h-3 w-1/3 bg-slate-200 rounded-md" />
+          </div>
+          <SkeletonLoader type="list" count={4} />
+        </div>
+      );
+    }
   }
 
   if (!siswaDetail) {

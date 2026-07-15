@@ -1554,8 +1554,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
       />
 
       {/* STUDENT DETAIL POPUP */}
-      <AnimatePresence>
-        {detailStudent && createPortal(
+      {detailStudent && createPortal(
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-brand-950/60 backdrop-blur-xs p-4">
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
@@ -1627,11 +1626,9 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
           </div>,
           document.body
         )}
-      </AnimatePresence>
 
       {/* ADD STUDENT MODAL */}
-      <AnimatePresence>
-        {isAddSiswaModalOpen && createPortal(
+      {isAddSiswaModalOpen && createPortal(
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-brand-950/60 backdrop-blur-xs p-4">
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
@@ -1703,11 +1700,9 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
           </div>,
           document.body
         )}
-      </AnimatePresence>
 
       {/* IMPORT EXCEL & CSV MODAL */}
-      <AnimatePresence>
-        {isImportModalOpen && createPortal(
+      {isImportModalOpen && createPortal(
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-brand-950/60 backdrop-blur-xs p-4">
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
@@ -1824,10 +1819,8 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
           </div>,
           document.body
         )}
-      </AnimatePresence>
       {/* EXCEL IMPORT PHOTO MODAL */}
-      <AnimatePresence>
-        {isImportPhotoOpen && createPortal(
+      {isImportPhotoOpen && createPortal(
           <div className="fixed inset-0 bg-brand-950/65 backdrop-blur-xs flex items-center justify-center z-50 p-4">
             <motion.div 
               initial={{ opacity: 0, scale: 0.95 }}
@@ -2027,7 +2020,6 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
           </div>,
           document.body
         )}
-      </AnimatePresence>
 
       {/* OFF-SCREEN CARD RENDERERS (Hidden from view, used purely by html2canvas for PDF and PNG downloads) */}
       <div className="absolute top-[-9999px] left-[-9999px] pointer-events-none overflow-hidden">

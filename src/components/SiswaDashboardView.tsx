@@ -265,10 +265,10 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
             >
               {/* TOP WAVE DECORATION (SVG) */}
               <svg className="absolute top-0 inset-x-0 w-full h-32 pointer-events-none" viewBox="0 0 290 128" fill="none" preserveAspectRatio="none">
-                {/* Deep purple base */}
-                <path d="M0 0H290V90C230 115 170 120 145 110C100 95 50 110 0 95V0Z" fill="#1e1b4b" />
-                {/* Bottom curve white cover */}
-                <path d="M0 128C50 110 100 95 145 110C170 120 230 115 290 90V128H0Z" fill="#ffffff" />
+                {/* Back Translucent Wave */}
+                <path d="M0 0H290V92C210 128 160 85 110 112C60 138 30 115 0 120Z" fill="#7c3aed" opacity="0.2" />
+                {/* Front Main Wave */}
+                <path d="M0 0H290V80C210 112 165 72 115 100C65 128 35 102 0 108Z" fill="#1e1b4b" />
               </svg>
 
               {/* Top Left School Branding */}
@@ -472,10 +472,10 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
           >
             {/* TOP WAVE DECORATION (SVG) */}
             <svg className="absolute top-0 inset-x-0 w-full h-36 pointer-events-none" viewBox="0 0 340 150" fill="none" preserveAspectRatio="none">
-              {/* Deep purple base */}
-              <path d="M0 0H340V105C270 134 200 140 170 128C117 111 58 128 0 111V0Z" fill="#1e1b4b" />
-              {/* Bottom curve white cover */}
-              <path d="M0 150C58 128 117 111 170 128C200 140 270 134 340 105V150H0Z" fill="#ffffff" />
+              {/* Back Translucent Wave */}
+              <path d="M0 0H340V108C245 150 187 100 128 131C70 162 35 135 0 141Z" fill="#7c3aed" opacity="0.2" />
+              {/* Front Main Wave */}
+              <path d="M0 0H340V94C245 131 193 84 134 117C76 150 41 120 0 127Z" fill="#1e1b4b" />
             </svg>
 
             {/* Top Left School Branding */}

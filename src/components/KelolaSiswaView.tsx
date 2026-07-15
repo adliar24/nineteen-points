@@ -511,6 +511,8 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
       )}
 
 
+      <h2 className="text-xl font-extrabold text-brand-950 tracking-tight">Data Siswa & Kartu</h2>
+
       {/* SEARCH & CONTROLS BAR */}
       <div className="bg-white p-5 rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         

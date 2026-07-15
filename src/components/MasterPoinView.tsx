@@ -123,6 +123,8 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
         </div>
       )}
 
+      <h2 className="text-xl font-extrabold text-brand-950 tracking-tight">Aturan Baku Poin</h2>
+
       {/* Search & Filter Controls Panel */}
       <div className="flex flex-col md:flex-row gap-3 justify-between items-center mt-2">
         {/* Modern Compact Search Bar */}

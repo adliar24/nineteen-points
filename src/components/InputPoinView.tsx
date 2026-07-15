@@ -245,6 +245,8 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
       {/* INPUT WORKSPACE (Full Width) */}
       <div className="lg:col-span-12 space-y-4">
         
+        <h2 className="text-xl font-extrabold text-brand-950 tracking-tight">Pencatatan Poin Siswa</h2>
+        
         {/* Active Teacher Inline Info */}
         <div className="flex items-center justify-between text-xs text-brand-500 bg-white px-4 py-2.5 rounded-xl border border-brand-100/60 shadow-xs">
           <span>Petugas: <strong className="font-bold text-brand-900">{userSession.fullName}</strong> <span className="opacity-70">({userSession.email})</span></span>

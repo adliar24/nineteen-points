@@ -371,7 +371,9 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
         <div className="space-y-6 animate-fade-in">
           
           {/* Compact Button Actions Row */}
-          <div className="flex justify-end gap-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <h2 className="text-xl font-extrabold text-brand-950 tracking-tight">Registrasi & Akun Pengguna</h2>
+            <div className="flex gap-2 justify-end">
             <button
               onClick={loadUsersData}
               className="p-3 bg-brand-50 text-brand-700 hover:bg-brand-100 rounded-2xl border border-brand-100 flex items-center justify-center transition-colors cursor-pointer"
@@ -396,6 +398,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
               Buat Akun Baru
             </button>
           </div>
+        </div>
 
           {/* Success / Error Messages */}
           {successMsg && (

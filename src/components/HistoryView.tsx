@@ -88,6 +88,7 @@ export default function HistoryView({ onRefreshTrigger, refreshCount }: HistoryV
 
   return (
     <div className="bg-white rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 p-6 space-y-4">
+      <h2 className="text-xl font-extrabold text-brand-950 tracking-tight">Riwayat Poin Siswa</h2>
       {/* Filter and Sort options bar */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-brand-50/50 p-4.5 rounded-2xl border border-brand-100/40">
         <div className="flex flex-wrap items-center gap-3 flex-1">

@@ -267,28 +267,8 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
               <svg className="absolute top-0 inset-x-0 w-full h-32 pointer-events-none" viewBox="0 0 290 128" fill="none" preserveAspectRatio="none">
                 {/* Deep purple base */}
                 <path d="M0 0H290V90C230 115 170 120 145 110C100 95 50 110 0 95V0Z" fill="#1e1b4b" />
-                {/* Left corner accent - magenta */}
-                <path d="M0 0C60 0 80 40 40 70C20 85 0 75 0 75V0Z" fill="#db2777" opacity="0.8" />
-                {/* Left corner inner - violet */}
-                <path d="M0 0C45 0 60 30 30 50C15 60 0 55 0 55V0Z" fill="#7c3aed" />
-                {/* Right corner accent - magenta */}
-                <path d="M290 0C230 0 210 40 250 70C270 85 290 75 290 75V0Z" fill="#db2777" opacity="0.8" />
-                {/* Right corner inner - violet */}
-                <path d="M290 0C245 0 230 30 260 50C275 60 290 55 290 55V0Z" fill="#7c3aed" />
                 {/* Bottom curve white cover */}
                 <path d="M0 128C50 110 100 95 145 110C170 120 230 115 290 90V128H0Z" fill="#ffffff" />
-              </svg>
-
-              {/* BOTTOM WAVE DECORATION (SVG) */}
-              <svg className="absolute bottom-0 inset-x-0 w-full h-16 pointer-events-none" viewBox="0 0 290 64" fill="none" preserveAspectRatio="none">
-                {/* White top cover to start the curve */}
-                <path d="M0 0C50 15 100 25 145 15C190 5 240 15 290 0V64H0V0Z" fill="#ffffff" />
-                {/* Deep purple base */}
-                <path d="M0 15C50 30 100 35 145 25C190 15 240 30 290 15V64H0V15Z" fill="#1e1b4b" />
-                {/* Magenta/pink accent layer */}
-                <path d="M0 25C60 40 100 40 145 32C190 24 230 40 290 25V64H0V25Z" fill="#db2777" opacity="0.85" />
-                {/* Light purple/violet layer */}
-                <path d="M0 35C45 45 90 48 145 42C200 36 245 48 290 35V64H0V35Z" fill="#7c3aed" />
               </svg>
 
               {/* CARD CONTENT LAYER */}
@@ -488,28 +468,8 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
             <svg className="absolute top-0 inset-x-0 w-full h-36 pointer-events-none" viewBox="0 0 340 150" fill="none" preserveAspectRatio="none">
               {/* Deep purple base */}
               <path d="M0 0H340V105C270 134 200 140 170 128C117 111 58 128 0 111V0Z" fill="#1e1b4b" />
-              {/* Left corner accent - magenta */}
-              <path d="M0 0C70 0 94 46 47 81C23 99 0 87 0 87V0Z" fill="#db2777" opacity="0.8" />
-              {/* Left corner inner - violet */}
-              <path d="M0 0C53 0 70 35 35 58C17 70 0 64 0 64V0Z" fill="#7c3aed" />
-              {/* Right corner accent - magenta */}
-              <path d="M340 0C270 0 246 46 293 81C317 99 340 87 340 87V0Z" fill="#db2777" opacity="0.8" />
-              {/* Right corner inner - violet */}
-              <path d="M340 0C287 0 270 35 305 58C323 70 340 64 340 64V0Z" fill="#7c3aed" />
               {/* Bottom curve white cover */}
               <path d="M0 150C58 128 117 111 170 128C200 140 270 134 340 105V150H0Z" fill="#ffffff" />
-            </svg>
-
-            {/* BOTTOM WAVE DECORATION (SVG) */}
-            <svg className="absolute bottom-0 inset-x-0 w-full h-20 pointer-events-none" viewBox="0 0 340 75" fill="none" preserveAspectRatio="none">
-              {/* White top cover to start the curve */}
-              <path d="M0 0C58 17 117 29 170 17C223 5 282 17 340 0V75H0V0Z" fill="#ffffff" />
-              {/* Deep purple base */}
-              <path d="M0 17C58 35 117 41 170 29C223 17 282 35 340 17V75H0V17Z" fill="#1e1b4b" />
-              {/* Magenta/pink accent layer */}
-              <path d="M0 29C70 46 117 46 170 37C223 28 270 46 340 29V75H0V29Z" fill="#db2777" opacity="0.85" />
-              {/* Light purple/violet layer */}
-              <path d="M0 41C53 52 105 56 170 49C235 42 287 56 340 41V75H0V41Z" fill="#7c3aed" />
             </svg>
 
             {/* CARD CONTENT LAYER */}

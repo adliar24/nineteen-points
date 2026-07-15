@@ -319,7 +319,7 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
           <div
             id="student-digital-card-portrait"
             onClick={() => setIsZoomed(true)}
-            className="w-full max-w-[290px] aspect-[1/1.58] rounded-[32px] bg-white text-brand-950 border border-brand-200 relative overflow-hidden flex flex-col items-center justify-between py-8 px-5 shadow-2xl shadow-brand-950/10 flex-shrink-0 cursor-zoom-in hover:scale-[1.02] transition-transform duration-300"
+            className="w-full max-w-[290px] aspect-[1/1.58] rounded-none bg-white text-brand-950 border border-brand-200 relative overflow-hidden flex flex-col items-center justify-between py-8 px-5 shadow-2xl shadow-brand-950/10 flex-shrink-0 cursor-zoom-in hover:scale-[1.02] transition-transform duration-300"
             style={{ width: "290px", height: "458px" }}
           >
             {/* TOP WAVE DECORATION (SVG) */}
@@ -487,7 +487,7 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
 
           {/* Scaled-up Card: Reference-inspired design */}
           <div 
-            className="w-full max-w-[340px] sm:max-w-[360px] aspect-[1/1.58] rounded-[36px] bg-white text-brand-950 border border-brand-200 shadow-2xl relative flex flex-col items-center justify-between py-10 px-6 cursor-default animate-fade-in overflow-hidden"
+            className="w-full max-w-[340px] sm:max-w-[360px] aspect-[1/1.58] rounded-none bg-white text-brand-950 border border-brand-200 shadow-2xl relative flex flex-col items-center justify-between py-10 px-6 cursor-default animate-fade-in overflow-hidden"
             style={{ width: "340px", height: "537px" }}
             onClick={(e) => e.stopPropagation()}
           >

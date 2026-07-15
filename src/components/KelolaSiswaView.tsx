@@ -939,7 +939,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
           <div 
             key={`bulk-render-${siswa.id}`}
             id={`card-render-bulk-${siswa.id}`}
-            className="w-[290px] h-[458px] rounded-[32px] bg-white text-brand-950 border border-brand-200 relative overflow-hidden flex flex-col items-center justify-between py-8 px-5 shadow-2xl shadow-brand-950/10 flex-shrink-0"
+            className="w-[290px] h-[458px] rounded-none bg-white text-brand-950 border border-brand-200 relative overflow-hidden flex flex-col items-center justify-between py-8 px-5 shadow-2xl shadow-brand-950/10 flex-shrink-0"
             style={{ width: "290px", height: "458px", fontFamily: "'Poppins', 'Space Grotesk', 'Inter', sans-serif" }}
           >
             {/* TOP WAVE DECORATION (SVG) */}
@@ -999,7 +999,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
         {printingSiswa && (
           <div 
             id={`card-render-hidden-${printingSiswa.id}`}
-            className="w-[290px] h-[458px] rounded-[32px] bg-white text-brand-950 border border-brand-200 relative overflow-hidden flex flex-col items-center justify-between py-8 px-5 shadow-2xl shadow-brand-950/10 flex-shrink-0"
+            className="w-[290px] h-[458px] rounded-none bg-white text-brand-950 border border-brand-200 relative overflow-hidden flex flex-col items-center justify-between py-8 px-5 shadow-2xl shadow-brand-950/10 flex-shrink-0"
             style={{ width: "290px", height: "458px", fontFamily: "'Poppins', 'Space Grotesk', 'Inter', sans-serif" }}
           >
             {/* TOP WAVE DECORATION (SVG) */}

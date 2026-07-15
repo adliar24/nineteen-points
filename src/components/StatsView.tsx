@@ -225,7 +225,7 @@ export default function StatsView() {
           <div>
             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Total Log</span>
             <span className="text-3xl font-black text-brand-950 block mt-1">{totalLogs}</span>
-            <span className="text-[10px] font-bold text-amber-600 mt-1 block">Riwayat Transaksi</span>
+            <span className="text-[10px] font-bold text-amber-600 mt-1 block">Pencatatan Poin</span>
           </div>
           <div className="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
             <Calendar className="w-7 h-7" />

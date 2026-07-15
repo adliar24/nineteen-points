@@ -1273,13 +1273,13 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                       />
                     </th>
                   )}
-                  <th className="py-4 px-4 w-16 min-w-[64px]"></th>
-                  <th className="py-4 px-4 font-mono">NIS</th>
-                  <th className="py-4 px-6">Nama Lengkap</th>
-                  <th className="py-4 px-6">Kelas</th>
-                  <th className="py-4 px-6 text-center">Skor Poin</th>
-                  <th className="py-4 px-6 text-center">Status</th>
-                  <th className="py-4 px-6 text-right">Aksi</th>
+                  <th className="py-4 px-4 w-[64px]"></th>
+                  <th className="py-4 px-4 w-[100px] font-mono">NIS</th>
+                  <th className="py-4 px-6 w-[280px]">Nama Lengkap</th>
+                  <th className="py-4 px-6 w-[120px]">Kelas</th>
+                  <th className="py-4 px-6 w-[100px] text-center">Skor Poin</th>
+                  <th className="py-4 px-6 w-[110px] text-center">Status</th>
+                  <th className="py-4 px-6 w-[120px] text-right">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-brand-100/40">
@@ -1341,8 +1341,8 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                           )}
                         </td>
                         <td className="py-4 px-4 font-mono font-bold text-sm text-brand-900">{siswa.nis}</td>
-                        <td className="py-4 px-6 whitespace-nowrap">
-                          <div className="font-extrabold text-sm text-brand-950 uppercase">{siswa.nama}</div>
+                        <td className="py-4 px-6 overflow-hidden whitespace-nowrap">
+                          <div className="font-extrabold text-sm text-brand-950 uppercase truncate">{siswa.nama}</div>
                         </td>
                         <td className="py-4 px-6 text-sm font-semibold text-brand-800">{siswa.kelas}</td>
                         <td className="py-4 px-6 text-center font-mono font-black text-sm">

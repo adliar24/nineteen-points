@@ -256,64 +256,78 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
               </button>
             </div>
 
-            {/* Portrait digital card: Purple Header & White Body */}
+            {/* Portrait digital card: Reference-inspired design */}
             <div
               id="student-digital-card-portrait"
               onClick={() => setIsZoomed(true)}
-              className="w-full max-w-[290px] aspect-[1/1.58] rounded-[32px] bg-white text-brand-950 border border-brand-200 relative overflow-hidden flex flex-col justify-between shadow-2xl shadow-brand-950/10 flex-shrink-0 cursor-zoom-in hover:scale-[1.02] transition-transform duration-300"
+              className="w-full max-w-[290px] aspect-[1/1.58] rounded-[32px] bg-white text-brand-950 border border-brand-200 relative overflow-hidden flex flex-col items-center justify-between py-8 px-5 shadow-2xl shadow-brand-950/10 flex-shrink-0 cursor-zoom-in hover:scale-[1.02] transition-transform duration-300"
               style={{ width: "290px", height: "458px" }}
             >
-              {/* TOP HEADER: Solid Purple */}
-              <div className="bg-brand-900 text-white px-6 py-5 flex items-center gap-2.5 relative z-10 border-b border-brand-800">
-                <img src="/logo.png" className="w-8 h-8 object-contain" alt="Logo" />
-                <div>
-                  <h4 className="text-[10px] font-black tracking-widest text-white uppercase font-sans leading-tight">SMAN 19 BANDUNG</h4>
-                  <p className="text-[8px] text-brand-200 font-bold uppercase tracking-wider mt-0.5 font-mono">Digital Student Card</p>
-                </div>
-              </div>
+              {/* TOP WAVE DECORATION (SVG) */}
+              <svg className="absolute top-0 inset-x-0 w-full h-32 pointer-events-none" viewBox="0 0 290 128" fill="none" preserveAspectRatio="none">
+                {/* Deep purple base */}
+                <path d="M0 0H290V90C230 115 170 120 145 110C100 95 50 110 0 95V0Z" fill="#1e1b4b" />
+                {/* Left corner accent - magenta */}
+                <path d="M0 0C60 0 80 40 40 70C20 85 0 75 0 75V0Z" fill="#db2777" opacity="0.8" />
+                {/* Left corner inner - violet */}
+                <path d="M0 0C45 0 60 30 30 50C15 60 0 55 0 55V0Z" fill="#7c3aed" />
+                {/* Right corner accent - magenta */}
+                <path d="M290 0C230 0 210 40 250 70C270 85 290 75 290 75V0Z" fill="#db2777" opacity="0.8" />
+                {/* Right corner inner - violet */}
+                <path d="M290 0C245 0 230 30 260 50C275 60 290 55 290 55V0Z" fill="#7c3aed" />
+                {/* Bottom curve white cover */}
+                <path d="M0 128C50 110 100 95 145 110C170 120 230 115 290 90V128H0Z" fill="#ffffff" />
+              </svg>
 
-              {/* CARD BODY: Solid White */}
-              <div className="flex-1 px-6 py-5 flex flex-col justify-between bg-white relative">
-                {/* Middle block: Student avatar initial & detail */}
-                <div className="flex flex-col items-center justify-center space-y-3.5 my-auto relative z-10">
-                  {/* Avatar with initial letter */}
-                  <div className="w-18 h-18 rounded-full bg-gradient-to-tr from-brand-600 via-brand-500 to-brand-600 p-[2.5px] shadow-md shadow-brand-500/10">
-                    <div className="w-full h-full rounded-full bg-brand-50 flex items-center justify-center font-black text-xl uppercase tracking-wider text-brand-900">
-                      {siswaDetail.nama.slice(0, 2)}
-                    </div>
+              {/* BOTTOM WAVE DECORATION (SVG) */}
+              <svg className="absolute bottom-0 inset-x-0 w-full h-16 pointer-events-none" viewBox="0 0 290 64" fill="none" preserveAspectRatio="none">
+                {/* White top cover to start the curve */}
+                <path d="M0 0C50 15 100 25 145 15C190 5 240 15 290 0V64H0V0Z" fill="#ffffff" />
+                {/* Deep purple base */}
+                <path d="M0 15C50 30 100 35 145 25C190 15 240 30 290 15V64H0V15Z" fill="#1e1b4b" />
+                {/* Magenta/pink accent layer */}
+                <path d="M0 25C60 40 100 40 145 32C190 24 230 40 290 25V64H0V25Z" fill="#db2777" opacity="0.85" />
+                {/* Light purple/violet layer */}
+                <path d="M0 35C45 45 90 48 145 42C200 36 245 48 290 35V64H0V35Z" fill="#7c3aed" />
+              </svg>
+
+              {/* CARD CONTENT LAYER */}
+              <div className="relative z-10 w-full flex-1 flex flex-col justify-between items-center pt-8 pb-3">
+                
+                {/* 1. Circular Avatar Logo */}
+                <div className="w-18 h-18 rounded-full border-[3px] border-pink-500 bg-white flex items-center justify-center p-[2.5px] shadow-md shadow-pink-500/10">
+                  <div className="w-full h-full rounded-full border border-pink-100 bg-rose-50/50 flex items-center justify-center text-pink-600 font-black text-xl uppercase tracking-wider">
+                    {siswaDetail.nama.slice(0, 2)}
                   </div>
-
-                  {/* Name & Class info */}
-                  <div className="text-center space-y-1">
-                    <span className="text-[7px] bg-brand-900 text-white px-2.5 py-0.5 rounded-full uppercase font-black tracking-widest inline-block mb-0.5">
-                      PELAJAR
-                    </span>
-                    <h3 className="text-base font-black tracking-tight text-brand-950 px-2 line-clamp-1">
-                      {siswaDetail.nama}
-                    </h3>
-                    <div className="flex items-center justify-center gap-2 text-[9px] text-brand-600 font-bold font-mono">
-                      <span>NIS: {siswaDetail.nis}</span>
-                      <span className="w-1 h-1 bg-brand-200 rounded-full" />
-                      <span>KELAS: {siswaDetail.kelas}</span>
-                    </div>
-                  </div>
                 </div>
 
-                {/* Bottom block: High quality QR code */}
-                <div className="flex flex-col items-center justify-center space-y-3.5 relative z-10 border-t border-brand-100 pt-4">
-                  <div className="bg-white p-2 rounded-2xl shadow-md border border-brand-100">
+                {/* 2. School & Student Info */}
+                <div className="text-center space-y-1 mt-4">
+                  <h4 className="text-[10px] font-black tracking-widest text-[#1e1b4b] uppercase font-sans">SMAN 19 BANDUNG</h4>
+                  <p className="text-[8px] text-brand-400 font-bold uppercase tracking-wider font-mono">Digital Student Card</p>
+                  
+                  <h3 className="text-sm font-black tracking-tight text-[#1e1b4b] mt-3 px-2 line-clamp-1 leading-snug">
+                    {siswaDetail.nama}
+                  </h3>
+                  <p className="text-[9px] text-[#7c3aed] font-extrabold uppercase tracking-widest">
+                    NIS: {siswaDetail.nis} &bull; KELAS: {siswaDetail.kelas}
+                  </p>
+                </div>
+
+                {/* 3. High quality QR code */}
+                <div className="mt-4 flex flex-col items-center">
+                  <div className="bg-white p-2 rounded-2xl shadow-lg border border-slate-100">
                     <QRCodeSVG
                       value={siswaDetail.nis}
-                      size={90}
+                      size={95}
                       level="M"
                       includeMargin={false}
+                      fgColor="#1e1b4b"
                     />
                   </div>
-                  
-                  <div className="flex items-center gap-1 text-[8px] text-brand-400 font-bold uppercase tracking-widest">
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-                    <span>KARTU DIGITAL TERVERIFIKASI</span>
-                  </div>
+                  <span className="font-mono tracking-widest text-[8px] text-slate-400 font-bold uppercase mt-3">
+                    www.sman19.sch.id
+                  </span>
                 </div>
               </div>
             </div>
@@ -464,63 +478,77 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
             <X className="w-6 h-6" />
           </button>
 
-          {/* Scaled-up Card: Purple Header & White Body */}
+          {/* Scaled-up Card: Reference-inspired design */}
           <div 
-            className="w-full max-w-[340px] sm:max-w-[360px] aspect-[1/1.58] rounded-[36px] bg-white text-brand-950 border border-brand-200 shadow-2xl relative flex flex-col justify-between cursor-default animate-fade-in overflow-hidden"
+            className="w-full max-w-[340px] sm:max-w-[360px] aspect-[1/1.58] rounded-[36px] bg-white text-brand-950 border border-brand-200 shadow-2xl relative flex flex-col items-center justify-between py-10 px-6 cursor-default animate-fade-in overflow-hidden"
             style={{ width: "340px", height: "537px" }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* TOP HEADER: Solid Purple */}
-            <div className="bg-brand-900 text-white px-7 py-6 flex items-center gap-3 relative z-10 border-b border-brand-850">
-              <img src="/logo.png" className="w-9 h-9 object-contain" alt="Logo" />
-              <div>
-                <h4 className="text-xs font-black tracking-widest text-white uppercase font-sans leading-tight">SMAN 19 BANDUNG</h4>
-                <p className="text-[9px] text-brand-200 font-bold uppercase tracking-wider mt-0.5 font-mono">Digital Student Card</p>
-              </div>
-            </div>
+            {/* TOP WAVE DECORATION (SVG) */}
+            <svg className="absolute top-0 inset-x-0 w-full h-36 pointer-events-none" viewBox="0 0 340 150" fill="none" preserveAspectRatio="none">
+              {/* Deep purple base */}
+              <path d="M0 0H340V105C270 134 200 140 170 128C117 111 58 128 0 111V0Z" fill="#1e1b4b" />
+              {/* Left corner accent - magenta */}
+              <path d="M0 0C70 0 94 46 47 81C23 99 0 87 0 87V0Z" fill="#db2777" opacity="0.8" />
+              {/* Left corner inner - violet */}
+              <path d="M0 0C53 0 70 35 35 58C17 70 0 64 0 64V0Z" fill="#7c3aed" />
+              {/* Right corner accent - magenta */}
+              <path d="M340 0C270 0 246 46 293 81C317 99 340 87 340 87V0Z" fill="#db2777" opacity="0.8" />
+              {/* Right corner inner - violet */}
+              <path d="M340 0C287 0 270 35 305 58C323 70 340 64 340 64V0Z" fill="#7c3aed" />
+              {/* Bottom curve white cover */}
+              <path d="M0 150C58 128 117 111 170 128C200 140 270 134 340 105V150H0Z" fill="#ffffff" />
+            </svg>
 
-            {/* CARD BODY: Solid White */}
-            <div className="flex-1 px-7 py-6 flex flex-col justify-between bg-white relative">
-              {/* Middle block: Student avatar initial & detail */}
-              <div className="flex flex-col items-center justify-center space-y-4 my-auto relative z-10">
-                {/* Avatar with initial letter */}
-                <div className="w-22 h-22 rounded-full bg-gradient-to-tr from-brand-600 via-brand-500 to-brand-600 p-[3px] shadow-lg shadow-brand-500/10">
-                  <div className="w-full h-full rounded-full bg-brand-50 flex items-center justify-center font-black text-2xl uppercase tracking-wider text-brand-900">
-                    {siswaDetail.nama.slice(0, 2)}
-                  </div>
+            {/* BOTTOM WAVE DECORATION (SVG) */}
+            <svg className="absolute bottom-0 inset-x-0 w-full h-20 pointer-events-none" viewBox="0 0 340 75" fill="none" preserveAspectRatio="none">
+              {/* White top cover to start the curve */}
+              <path d="M0 0C58 17 117 29 170 17C223 5 282 17 340 0V75H0V0Z" fill="#ffffff" />
+              {/* Deep purple base */}
+              <path d="M0 17C58 35 117 41 170 29C223 17 282 35 340 17V75H0V17Z" fill="#1e1b4b" />
+              {/* Magenta/pink accent layer */}
+              <path d="M0 29C70 46 117 46 170 37C223 28 270 46 340 29V75H0V29Z" fill="#db2777" opacity="0.85" />
+              {/* Light purple/violet layer */}
+              <path d="M0 41C53 52 105 56 170 49C235 42 287 56 340 41V75H0V41Z" fill="#7c3aed" />
+            </svg>
+
+            {/* CARD CONTENT LAYER */}
+            <div className="relative z-10 w-full flex-1 flex flex-col justify-between items-center pt-10 pb-3">
+              
+              {/* 1. Circular Avatar Logo */}
+              <div className="w-22 h-22 rounded-full border-[4px] border-pink-500 bg-white flex items-center justify-center p-[3px] shadow-md shadow-pink-500/10">
+                <div className="w-full h-full rounded-full border border-pink-100 bg-rose-50/50 flex items-center justify-center text-pink-600 font-black text-2xl uppercase tracking-wider">
+                  {siswaDetail.nama.slice(0, 2)}
                 </div>
-
-                {/* Name & Class info */}
-                <div className="text-center space-y-1">
-                  <span className="text-[8px] bg-brand-900 text-white px-3 py-0.5 rounded-full uppercase font-black tracking-widest inline-block mb-1">
-                    PELAJAR
-                  </span>
-                  <h3 className="text-lg font-black tracking-tight text-white px-2 line-clamp-1">
-                    {siswaDetail.nama}
-                  </h3>
-                  <div className="flex items-center justify-center gap-2 text-xs text-brand-600 font-bold font-mono">
-                    <span>NIS: {siswaDetail.nis}</span>
-                    <span className="w-1.5 h-1.5 bg-brand-200 rounded-full" />
-                    <span>KELAS: {siswaDetail.kelas}</span>
-                  </div>
-                </div>
               </div>
 
-              {/* Bottom block: High quality QR code */}
-              <div className="flex flex-col items-center justify-center space-y-4 relative z-10 border-t border-brand-100 pt-4.5">
-                <div className="bg-white p-3 rounded-2xl shadow-md border border-brand-100">
+              {/* 2. School & Student Info */}
+              <div className="text-center space-y-1 mt-4">
+                <h4 className="text-xs font-black tracking-widest text-[#1e1b4b] uppercase font-sans">SMAN 19 BANDUNG</h4>
+                <p className="text-[9px] text-brand-400 font-bold uppercase tracking-wider font-mono">Digital Student Card</p>
+                
+                <h3 className="text-base font-black tracking-tight text-[#1e1b4b] mt-3 px-2 line-clamp-1 leading-snug">
+                  {siswaDetail.nama}
+                </h3>
+                <p className="text-xs text-[#7c3aed] font-extrabold uppercase tracking-widest">
+                  NIS: {siswaDetail.nis} &bull; KELAS: {siswaDetail.kelas}
+                </p>
+              </div>
+
+              {/* 3. High quality QR code */}
+              <div className="mt-4 flex flex-col items-center">
+                <div className="bg-white p-3 rounded-2xl shadow-lg border border-slate-100">
                   <QRCodeSVG
                     value={siswaDetail.nis}
                     size={110}
                     level="M"
                     includeMargin={false}
+                    fgColor="#1e1b4b"
                   />
                 </div>
-                
-                <div className="flex items-center gap-1.5 text-[9px] text-brand-400 font-bold uppercase tracking-widest">
-                  <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                  <span>KARTU DIGITAL TERVERIFIKASI</span>
-                </div>
+                <span className="font-mono tracking-widest text-[9px] text-slate-400 font-bold uppercase mt-3">
+                  www.sman19.sch.id
+                </span>
               </div>
             </div>
           </div>

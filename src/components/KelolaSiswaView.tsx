@@ -1273,7 +1273,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                       />
                     </th>
                   )}
-                  <th className="py-4 px-4 w-14"></th>
+                  <th className="py-4 px-4 w-16 min-w-[64px]"></th>
                   <th className="py-4 px-4 font-mono">NIS</th>
                   <th className="py-4 px-6">Nama Lengkap</th>
                   <th className="py-4 px-6">Kelas</th>
@@ -1331,17 +1331,17 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                             />
                           </td>
                         )}
-                        <td className="py-3 px-4">
+                        <td className="py-3 px-4 min-w-[64px]">
                           {siswa.foto_url ? (
-                            <img src={siswa.foto_url} alt={siswa.nama} className="w-10 h-[53px] rounded-lg object-cover border border-brand-100" />
+                            <img src={siswa.foto_url} alt={siswa.nama} className="w-10 h-[53px] rounded-lg object-cover border border-brand-100 shrink-0" />
                           ) : (
-                            <div className="w-10 h-[53px] rounded-lg bg-brand-100 flex items-center justify-center text-brand-400 text-[10px] font-black uppercase">
+                            <div className="w-10 h-[53px] rounded-lg bg-brand-100 flex items-center justify-center text-brand-400 text-[10px] font-black uppercase shrink-0">
                               {siswa.nama.slice(0, 2)}
                             </div>
                           )}
                         </td>
                         <td className="py-4 px-4 font-mono font-bold text-sm text-brand-900">{siswa.nis}</td>
-                        <td className="py-4 px-6">
+                        <td className="py-4 px-6 whitespace-nowrap">
                           <div className="font-extrabold text-sm text-brand-950 uppercase">{siswa.nama}</div>
                         </td>
                         <td className="py-4 px-6 text-sm font-semibold text-brand-800">{siswa.kelas}</td>

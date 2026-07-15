@@ -12,7 +12,8 @@ import {
   AlertCircle,
   School,
   Sparkles,
-  Check
+  Check,
+  X
 } from "lucide-react";
 import { UserSession, RiwayatPoin, Siswa } from "../types";
 import { supabase } from "../supabaseClient";
@@ -28,6 +29,7 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
   const [riwayat, setRiwayat] = useState<RiwayatPoin[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isZoomed, setIsZoomed] = useState(false);
 
   useEffect(() => {
     async function loadStudentData() {
@@ -257,7 +259,8 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
             {/* Portrait digital card: White & Purple Theme */}
             <div
               id="student-digital-card-portrait"
-              className="w-full max-w-[290px] aspect-[1/1.58] rounded-[32px] bg-gradient-to-b from-[#f5f3ff] via-white to-[#f5f3ff] text-brand-950 p-6 border border-brand-200 relative overflow-hidden flex flex-col justify-between shadow-2xl shadow-brand-950/10 flex-shrink-0"
+              onClick={() => setIsZoomed(true)}
+              className="w-full max-w-[290px] aspect-[1/1.58] rounded-[32px] bg-gradient-to-b from-[#f5f3ff] via-white to-[#f5f3ff] text-brand-950 p-6 border border-brand-200 relative overflow-hidden flex flex-col justify-between shadow-2xl shadow-brand-950/10 flex-shrink-0 cursor-zoom-in hover:scale-[1.02] transition-transform duration-300"
               style={{ width: "290px", height: "458px" }}
             >
               {/* Decorative mesh gradients in purple/fuchsia */}
@@ -425,6 +428,92 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+
+      {/* Lightbox / Zoom Modal */}
+      {isZoomed && (
+        <div 
+          className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-brand-950/80 backdrop-blur-md p-4 animate-fade-in cursor-zoom-out"
+          onClick={() => setIsZoomed(false)}
+        >
+          {/* Close button at top right */}
+          <button 
+            className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 border border-white/10 hover:border-white/20 text-white rounded-full transition-all cursor-pointer z-10"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsZoomed(false);
+            }}
+          >
+            <X className="w-6 h-6" />
+          </button>
+
+          {/* Scaled-up Card */}
+          <div 
+            className="w-full max-w-[340px] sm:max-w-[360px] aspect-[1/1.58] rounded-[36px] bg-gradient-to-b from-[#f5f3ff] via-white to-[#f5f3ff] text-brand-950 p-7 border border-brand-200 shadow-2xl relative flex flex-col justify-between cursor-default animate-fade-in"
+            style={{ width: "340px", height: "537px" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Decorative mesh gradients in purple/fuchsia */}
+            <div className="absolute top-0 inset-x-0 h-48 bg-gradient-to-b from-brand-100/40 to-transparent filter blur-xl pointer-events-none" />
+            <div className="absolute bottom-0 right-0 w-48 h-48 bg-accent-500/5 rounded-full filter blur-2xl pointer-events-none" />
+            
+            {/* Header block: School name & logo */}
+            <div className="flex items-center gap-3 border-b border-brand-200/50 pb-4.5 relative z-10">
+              <img src="/logo.png" className="w-9 h-9 object-contain" alt="Logo" />
+              <div>
+                <h4 className="text-xs font-black tracking-widest text-brand-900 uppercase font-sans leading-tight">SMAN 19 BANDUNG</h4>
+                <p className="text-[9px] text-brand-500/80 font-bold uppercase tracking-wider mt-0.5">NineTeen Points Card</p>
+              </div>
+            </div>
+
+            {/* Middle block: Student avatar initial & detail */}
+            <div className="flex flex-col items-center justify-center space-y-5 my-auto relative z-10">
+              {/* Avatar with initial letter */}
+              <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-brand-600 via-accent-500 to-brand-500 p-[3.5px] shadow-md shadow-brand-500/15">
+                <div className="w-full h-full rounded-full bg-brand-50 flex items-center justify-center font-black text-3xl uppercase tracking-wider text-brand-850">
+                  {siswaDetail.nama.slice(0, 2)}
+                </div>
+              </div>
+
+              {/* Name & Class info */}
+              <div className="text-center space-y-1">
+                <span className="text-[8px] bg-brand-600 text-white px-3 py-0.5 rounded-full uppercase font-black tracking-widest inline-block mb-1">
+                  PELAJAR
+                </span>
+                <h3 className="text-lg font-black tracking-tight text-brand-950 px-2 line-clamp-1">
+                  {siswaDetail.nama}
+                </h3>
+                <div className="flex items-center justify-center gap-2.5 text-xs text-brand-700 font-bold font-mono">
+                  <span>NIS: {siswaDetail.nis}</span>
+                  <span className="w-1.5 h-1.5 bg-brand-200 rounded-full" />
+                  <span>KELAS: {siswaDetail.kelas}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom block: High quality QR code */}
+            <div className="flex flex-col items-center justify-center space-y-4 relative z-10 border-t border-brand-200/50 pt-4.5">
+              <div className="bg-white p-3 rounded-2xl shadow-md border border-brand-100">
+                <QRCodeSVG
+                  value={siswaDetail.nis}
+                  size={120}
+                  level="M"
+                  includeMargin={false}
+                />
+              </div>
+              
+              <div className="flex items-center gap-1.5 text-[9px] text-brand-500/70 font-bold uppercase tracking-widest">
+                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                <span>KARTU INTEGRASI DIGITAL TERVERIFIKASI</span>
+              </div>
+            </div>
+          </div>
+          
+          {/* Close hint */}
+          <p className="text-xs text-white/50 font-medium mt-4 select-none">
+            Klik di mana saja untuk menutup
+          </p>
         </div>
       )}
 

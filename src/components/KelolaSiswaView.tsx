@@ -1006,7 +1006,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                         </td>
                         <td className="py-4 px-4 font-mono font-bold text-sm text-brand-900">{siswa.nis}</td>
                         <td className="py-4 px-6 overflow-hidden whitespace-nowrap">
-                          <div className="font-extrabold text-sm text-brand-950 uppercase truncate">{toSentenceCase(siswa.nama)}</div>
+                          <div className="font-extrabold text-sm text-brand-950 truncate">{toSentenceCase(siswa.nama)}</div>
                         </td>
                         <td className="py-4 px-6 text-sm font-semibold text-brand-800">{siswa.kelas}</td>
                         <td className="py-4 px-6 text-center font-mono font-black text-sm">
@@ -1176,7 +1176,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                   </div>
                 )}
 
-                <h3 className="text-base font-extrabold text-brand-950 uppercase">{toSentenceCase(detailStudent.nama)}</h3>
+                <h3 className="text-base font-extrabold text-brand-950">{toSentenceCase(detailStudent.nama)}</h3>
                 <div className="mt-2 space-y-1 text-xs font-semibold text-brand-600">
                   <p><span className="font-black text-brand-400 uppercase">NIS:</span> {detailStudent.nis}</p>
                   <p><span className="font-black text-brand-400 uppercase">Kelas:</span> {detailStudent.kelas}</p>

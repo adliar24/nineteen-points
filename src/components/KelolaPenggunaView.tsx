@@ -1052,7 +1052,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
                               </div>
                             </div>
                           </td>
-                          <td className="py-4 px-6 font-extrabold text-sm text-brand-950 uppercase">{toSentenceCase(p.nama)}</td>
+                          <td className="py-4 px-6 font-extrabold text-sm text-brand-950">{toSentenceCase(p.nama)}</td>
                           <td className="py-4 px-6 font-mono font-bold text-sm text-brand-900">
                             {p.email.split("@")[0]}
                           </td>
@@ -1709,7 +1709,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
                                   <td className="py-3 px-4">
                                     {prof ? (
                                       <div className="text-xs">
-                                        <div className="font-extrabold text-brand-950 uppercase">{toSentenceCase(prof.nama)}</div>
+                                        <div className="font-extrabold text-brand-950">{toSentenceCase(prof.nama)}</div>
                                         <div className="text-[9px] text-brand-400 font-bold mt-0.5">{prof.email.split("@")[0]} &bull; {prof.role}</div>
                                       </div>
                                     ) : (

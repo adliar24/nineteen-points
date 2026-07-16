@@ -236,7 +236,7 @@ export default function HistoryView({ onRefreshTrigger, refreshCount, userSessio
                             </div>
                           )}
                           <div>
-                            <div className="font-bold text-brand-950 uppercase">{toSentenceCase(log.siswa_nama || "")}</div>
+                            <div className="font-bold text-brand-950">{toSentenceCase(log.siswa_nama || "")}</div>
                             <div className="text-xs text-brand-400 font-mono font-bold">NIS: {log.siswa_nis}</div>
                           </div>
                         </div>

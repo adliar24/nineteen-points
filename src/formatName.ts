@@ -4,13 +4,31 @@
  * e.g. "AHMAD FAUZI" → "Ahmad Fauzi"
  * e.g. "DRA. SITI NURHALIZA, M.PD." → "Dra. Siti Nurhaliza, M.Pd."
  */
+
+const SIMPLE_TITLES = new Set([
+  "dr", "prof", "ir", "hj", "h", "dra", "drs", "mm", "mh", "sp", "st",
+]);
+
+const COMPOUND_TITLES = new Set([
+  "s.pd", "m.pd", "m.si", "s.kom", "s.t", "s.e", "s.ag", "s.p",
+  "m.a", "ph.d", "dr.h.c",
+]);
+
+function isTitleWord(word: string): boolean {
+  const stripped = word.replace(/[.,;:]+$/g, "");
+  if (SIMPLE_TITLES.has(stripped.toLowerCase())) return true;
+  if (COMPOUND_TITLES.has(stripped.toLowerCase())) return true;
+  return false;
+}
+
 export function toSentenceCase(name: string): string {
   if (!name) return name;
-  const titleRegex = /^(Dr|Prof|Ir|Hj|H|Dra|Sp|St|M|S|A|B|Ph|S\.Pd|M\.Pd|M\.Si|S\.Kom|S\.T|S\.E|S\.Ag|S\.P|Dr\.h\.c|Drs|Dra|MM|MH|M\.A|Ph\.D)\.?$/i;
 
-  return name.split(/\s+/).map((word) => {
-    const clean = word.replace(/[.,;:]/g, "");
-    if (titleRegex.test(clean)) return word;
-    return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-  }).join(" ");
+  return name
+    .split(/\s+/)
+    .map((word) => {
+      if (isTitleWord(word)) return word;
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    })
+    .join(" ");
 }

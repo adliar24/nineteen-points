@@ -462,6 +462,7 @@ export default function App() {
                 <HistoryView
                   onRefreshTrigger={() => setHistoryRefreshCount((c) => c + 1)}
                   refreshCount={historyRefreshCount}
+                  userSession={userSession}
                 />
               )}
 

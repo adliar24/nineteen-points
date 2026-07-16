@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Search, Calendar, User, Trash2, ArrowUpDown, ShieldCheck, RefreshCw, Undo2, CheckSquare } from "lucide-react";
-import { RiwayatPoin } from "../types";
-import { getRiwayatList, deleteRiwayat } from "../dbStore";
+import { Search, Calendar, User, Trash2, ArrowUpDown, ShieldCheck, RefreshCw, Undo2, CheckSquare, Pencil, X } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+import { createPortal } from "react-dom";
+import { RiwayatPoin, UserSession } from "../types";
+import { getRiwayatList, deleteRiwayat, updateRiwayat, getMasterPoinList } from "../dbStore";
 import ConfirmationModal from "./ConfirmationModal";
 
 import SkeletonLoader from "./SkeletonLoader";
@@ -9,22 +11,33 @@ import SkeletonLoader from "./SkeletonLoader";
 interface HistoryViewProps {
   onRefreshTrigger: () => void;
   refreshCount: number;
+  userSession: UserSession;
 }
 
-export default function HistoryView({ onRefreshTrigger, refreshCount }: HistoryViewProps) {
+export default function HistoryView({ onRefreshTrigger, refreshCount, userSession }: HistoryViewProps) {
   const [historyList, setHistoryList] = useState<RiwayatPoin[]>([]);
+  const [masterPoinNames, setMasterPoinNames] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterType, setFilterType] = useState("Semua"); // Semua, Positif, Negatif
+  const [filterType, setFilterType] = useState("Semua");
   const [sortOrder, setSortOrder] = useState<"terbaru" | "terlama">("terbaru");
   const [revertTarget, setRevertTarget] = useState<{ id: string; namaSiswa: string; nilai: number; namaPoin: string } | null>(null);
+  const [editTarget, setEditTarget] = useState<RiwayatPoin | null>(null);
+  const [editNamaPoin, setEditNamaPoin] = useState("");
+  const [editNilai, setEditNilai] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Reload logs when requested or when refreshCount changes
+  const isAdmin = userSession.role === "super_admin";
+
   useEffect(() => {
     async function load() {
       setIsLoading(true);
       try {
-        setHistoryList(await getRiwayatList());
+        const [riwayat, masterPoin] = await Promise.all([
+          getRiwayatList(),
+          getMasterPoinList()
+        ]);
+        setHistoryList(riwayat);
+        setMasterPoinNames(new Set(masterPoin.map(mp => mp.nama_poin)));
       } catch (err) {
         console.error("Gagal memuat riwayat:", err);
       }
@@ -32,6 +45,14 @@ export default function HistoryView({ onRefreshTrigger, refreshCount }: HistoryV
     }
     load();
   }, [refreshCount]);
+
+  const isCustomPoint = (namaPoin: string) => !masterPoinNames.has(namaPoin);
+
+  const canRevert = (log: RiwayatPoin) => {
+    if (isAdmin) return true;
+    if (userSession.role === "guru" && log.guru_email === userSession.fullName) return true;
+    return false;
+  };
 
   const handleRevert = (id: string, namaSiswa: string, nilai: number, namaPoin: string) => {
     setRevertTarget({ id, namaSiswa, nilai, namaPoin });
@@ -41,13 +62,31 @@ export default function HistoryView({ onRefreshTrigger, refreshCount }: HistoryV
     try {
       await deleteRiwayat(id);
       setHistoryList(await getRiwayatList());
-      onRefreshTrigger(); // trigger updates in other views
+      onRefreshTrigger();
     } catch (err: any) {
       alert("Gagal membatalkan riwayat poin: " + err.message);
     }
   };
 
-  // Filter logs
+  const handleEdit = (log: RiwayatPoin) => {
+    setEditTarget(log);
+    setEditNamaPoin(log.nama_poin);
+    setEditNilai(log.nilai_diberikan);
+  };
+
+  const executeEdit = async () => {
+    if (!editTarget) return;
+    try {
+      const nilai = Math.abs(editNilai) * (editTarget.nilai_diberikan >= 0 ? 1 : -1);
+      await updateRiwayat(editTarget.id, editTarget.siswa_id, editNamaPoin, nilai, editTarget.guru_email);
+      setHistoryList(await getRiwayatList());
+      onRefreshTrigger();
+      setEditTarget(null);
+    } catch (err: any) {
+      alert("Gagal mengubah poin: " + err.message);
+    }
+  };
+
   const filteredLogs = historyList.filter((log) => {
     const matchesSearch =
       (log.siswa_nama || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -63,14 +102,12 @@ export default function HistoryView({ onRefreshTrigger, refreshCount }: HistoryV
     return matchesSearch && matchesType;
   });
 
-  // Sort logs
   const sortedLogs = [...filteredLogs].sort((a, b) => {
     const dateA = new Date(a.created_at).getTime();
     const dateB = new Date(b.created_at).getTime();
     return sortOrder === "terbaru" ? dateB - dateA : dateA - dateB;
   });
 
-  // Formatter helper
   const formatTanggal = (isoString: string) => {
     try {
       const date = new Date(isoString);
@@ -89,10 +126,8 @@ export default function HistoryView({ onRefreshTrigger, refreshCount }: HistoryV
   return (
     <div className="bg-white rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 p-6 space-y-4">
       <h2 className="text-xl font-extrabold text-brand-950 tracking-tight">Riwayat Poin Siswa</h2>
-      {/* Filter and Sort options bar */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-brand-50/50 p-4.5 rounded-2xl border border-brand-100/40">
         <div className="flex flex-wrap items-center gap-3 flex-1">
-          {/* Search Logs */}
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-3.5 top-3.5 text-brand-500/50 w-4.5 h-4.5" />
             <input
@@ -104,7 +139,6 @@ export default function HistoryView({ onRefreshTrigger, refreshCount }: HistoryV
             />
           </div>
 
-          {/* Filter Type */}
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
@@ -115,7 +149,6 @@ export default function HistoryView({ onRefreshTrigger, refreshCount }: HistoryV
             <option value="Negatif">Pelanggaran (-)</option>
           </select>
 
-          {/* Sort Order */}
           <button
             onClick={() => setSortOrder(sortOrder === "terbaru" ? "terlama" : "terbaru")}
             className="flex items-center gap-1.5 px-3 py-3 bg-white border border-brand-100 text-brand-800 rounded-xl text-sm font-bold transition-all cursor-pointer shadow-xs hover:bg-brand-50"
@@ -125,7 +158,6 @@ export default function HistoryView({ onRefreshTrigger, refreshCount }: HistoryV
             <span className="hidden sm:inline">Urut: {sortOrder === "terbaru" ? "Terbaru" : "Terlama"}</span>
           </button>
 
-          {/* Segarkan Button */}
           <button
             onClick={async () => {
               setHistoryList(await getRiwayatList());
@@ -144,7 +176,6 @@ export default function HistoryView({ onRefreshTrigger, refreshCount }: HistoryV
         </div>
       </div>
 
-      {/* History table */}
       <div className="border border-brand-100 rounded-2xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
@@ -187,6 +218,8 @@ export default function HistoryView({ onRefreshTrigger, refreshCount }: HistoryV
               ) : (
                 sortedLogs.map((log) => {
                   const isPositive = log.nilai_diberikan > 0;
+                  const canEditThis = canRevert(log) && isCustomPoint(log.nama_poin);
+                  const canRevertThis = canRevert(log);
                   return (
                     <tr key={log.id} className="hover:bg-brand-50/10 transition-colors">
                       <td className="py-4.5 px-5 text-brand-500/80 font-medium whitespace-nowrap text-xs">
@@ -199,8 +232,13 @@ export default function HistoryView({ onRefreshTrigger, refreshCount }: HistoryV
                       <td className="py-4.5 px-4 font-black text-brand-600 uppercase">
                         {log.siswa_kelas}
                       </td>
-                      <td className="py-4.5 px-5 font-bold max-w-[200px] truncate text-sm" title={log.nama_poin}>
-                        {log.nama_poin}
+                      <td className="py-4.5 px-5 font-bold max-w-[200px] text-sm" title={log.nama_poin}>
+                        <span className="truncate block">{log.nama_poin}</span>
+                        {isCustomPoint(log.nama_poin) && (
+                          <span className="text-[9px] font-black uppercase tracking-wider text-amber-500 bg-amber-50 px-1.5 py-0.5 rounded-md border border-amber-100 inline-block mt-1">
+                            Kustom
+                          </span>
+                        )}
                       </td>
                       <td className="py-4.5 px-4 text-center">
                         <span
@@ -220,21 +258,35 @@ export default function HistoryView({ onRefreshTrigger, refreshCount }: HistoryV
                         </div>
                       </td>
                       <td className="py-4.5 px-5 text-right">
-                        <button
-                          onClick={() =>
-                            handleRevert(
-                              log.id,
-                              log.siswa_nama || "Siswa",
-                              log.nilai_diberikan,
-                              log.nama_poin
-                            )
-                          }
-                          className="text-rose-600 hover:text-rose-800 hover:bg-rose-50 text-sm font-bold px-3 py-1.5 rounded-xl transition-all inline-flex items-center gap-1 cursor-pointer border border-transparent hover:border-rose-100 shadow-xs"
-                          title="Batalkan Poin (Revert)"
-                        >
-                          <Undo2 className="w-3.5 h-3.5" />
-                          Batalkan
-                        </button>
+                        <div className="flex items-center justify-end gap-1.5">
+                          {canEditThis && (
+                            <button
+                              onClick={() => handleEdit(log)}
+                              className="text-brand-600 hover:text-brand-800 hover:bg-brand-50 text-sm font-bold px-2.5 py-1.5 rounded-xl transition-all inline-flex items-center gap-1 cursor-pointer border border-transparent hover:border-brand-100 shadow-xs"
+                              title="Ubah Poin Kustom"
+                            >
+                              <Pencil className="w-3.5 h-3.5" />
+                              <span className="hidden xl:inline">Ubah</span>
+                            </button>
+                          )}
+                          {canRevertThis && (
+                            <button
+                              onClick={() =>
+                                handleRevert(
+                                  log.id,
+                                  log.siswa_nama || "Siswa",
+                                  log.nilai_diberikan,
+                                  log.nama_poin
+                                )
+                              }
+                              className="text-rose-600 hover:text-rose-800 hover:bg-rose-50 text-sm font-bold px-2.5 py-1.5 rounded-xl transition-all inline-flex items-center gap-1 cursor-pointer border border-transparent hover:border-rose-100 shadow-xs"
+                              title="Batalkan Poin (Revert)"
+                            >
+                              <Undo2 className="w-3.5 h-3.5" />
+                              <span className="hidden xl:inline">Batalkan</span>
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );
@@ -260,6 +312,86 @@ export default function HistoryView({ onRefreshTrigger, refreshCount }: HistoryV
         cancelText="Batal"
         type="warning"
       />
+
+      {/* Edit Custom Point Modal */}
+      {createPortal(
+        <AnimatePresence>
+          {editTarget && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 z-50 flex items-center justify-center bg-brand-950/60 backdrop-blur-xs p-4"
+              onClick={() => setEditTarget(null)}
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 15 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                className="bg-white rounded-3xl shadow-2xl border border-brand-100 p-6 max-w-sm w-full space-y-5 relative z-10"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex justify-between items-start">
+                  <h4 className="text-lg font-black text-brand-950">Ubah Poin Kustom</h4>
+                  <button
+                    onClick={() => setEditTarget(null)}
+                    className="p-2 hover:bg-brand-50 text-brand-400 hover:text-brand-700 rounded-xl transition-all cursor-pointer"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-brand-700 uppercase tracking-wider block">
+                    Deskripsi Poin
+                  </label>
+                  <input
+                    type="text"
+                    value={editNamaPoin}
+                    onChange={(e) => setEditNamaPoin(e.target.value)}
+                    className="block w-full px-4 py-3 border border-brand-100 rounded-2xl bg-brand-50/30 text-brand-900 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all text-sm font-medium"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-brand-700 uppercase tracking-wider block">
+                    Nilai Poin (tanda tetap: {editNilai >= 0 ? "positif +" : "negatif -"})
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={Math.abs(editNilai)}
+                    onChange={(e) => {
+                      const abs = Math.abs(Number(e.target.value)) || 0;
+                      setEditNilai(editTarget.nilai_diberikan >= 0 ? abs : -abs);
+                    }}
+                    className="block w-full px-4 py-3 border border-brand-100 rounded-2xl bg-brand-50/30 text-brand-900 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all text-sm font-medium"
+                  />
+                </div>
+
+                <div className="flex gap-2.5">
+                  <button
+                    onClick={() => setEditTarget(null)}
+                    className="flex-1 py-3 bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-200 rounded-2xl text-sm font-black transition-all cursor-pointer"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    onClick={executeEdit}
+                    disabled={!editNamaPoin.trim()}
+                    className="flex-1 py-3 bg-brand-600 hover:bg-brand-700 text-white rounded-2xl text-sm font-black transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Simpan Perubahan
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </div>
   );
 }

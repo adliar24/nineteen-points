@@ -151,3 +151,36 @@ export const deleteRiwayat = async (riwayatId: string): Promise<void> => {
     throw error;
   }
 };
+
+export const updateRiwayat = async (
+  riwayatId: string,
+  siswaId: string,
+  namaPoin: string,
+  nilaiDiberikan: number,
+  guruEmail: string
+): Promise<void> => {
+  // Delete old entry (trigger reverts points) then insert new entry (trigger adds points)
+  const { error: deleteError } = await supabase
+    .from("riwayat_poin")
+    .delete()
+    .eq("id", riwayatId);
+
+  if (deleteError) {
+    console.error("Error deleting old riwayat for update:", deleteError);
+    throw deleteError;
+  }
+
+  const { error: insertError } = await supabase
+    .from("riwayat_poin")
+    .insert({
+      siswa_id: siswaId,
+      nilai_diberikan: nilaiDiberikan,
+      nama_poin: namaPoin,
+      guru_email: guruEmail
+    });
+
+  if (insertError) {
+    console.error("Error inserting updated riwayat:", insertError);
+    throw insertError;
+  }
+};

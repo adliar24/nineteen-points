@@ -257,7 +257,7 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
 
     try {
       // Write to DB
-      await addRiwayat(selectedSiswa.id, name, value, userSession.email);
+      await addRiwayat(selectedSiswa.id, name, value, userSession.fullName);
       onRefreshHistory();
 
       // Success state

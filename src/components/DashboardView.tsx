@@ -145,7 +145,7 @@ export default function DashboardView({ userSession, onNavigate, onRefreshHistor
 
     // Assign to all selected students
     selectedSiswaIds.forEach((siswaId) => {
-      addRiwayat(siswaId, name, value, userSession.email);
+      addRiwayat(siswaId, name, value, userSession.fullName);
     });
 
     // Reset states
@@ -188,7 +188,7 @@ export default function DashboardView({ userSession, onNavigate, onRefreshHistor
       value = selected.nilai_poin;
     }
 
-    await addRiwayat(selectedSingleSiswa.id, name, value, userSession.email);
+    await addRiwayat(selectedSingleSiswa.id, name, value, userSession.fullName);
 
     setSiswaList(await getSiswaList());
     setIsSinglePointModalOpen(false);

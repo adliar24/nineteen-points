@@ -137,7 +137,7 @@ export default function QRScannerView({ userSession, onRefreshHistory }: QRScann
       value = selected.nilai_poin;
     }
 
-    addRiwayat(scannedSiswa.id, name, value, userSession.email);
+    addRiwayat(scannedSiswa.id, name, value, userSession.fullName);
     onRefreshHistory();
 
     // Show success banner

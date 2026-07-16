@@ -393,21 +393,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
       }
       const compressedFile = new File([compressedBlob], `${profile.id}.jpg`, { type: "image/jpeg" });
 
-      // 2. Ensure bucket exists
-      setUploadProgress(30);
-      const { error: bucketError } = await supabase.storage.getBucket('profile-photos');
-      if (bucketError) {
-        const { error: createErr } = await supabase.storage.createBucket('profile-photos', {
-          public: true,
-          allowedMimeTypes: ['image/png', 'image/jpeg', 'image/webp'],
-          fileSizeLimit: 10485760
-        });
-        if (createErr && !createErr.message?.includes("already exists")) {
-          console.error("Bucket creation error:", createErr);
-        }
-      }
-
-      // 3. UPLOAD
+      // 2. UPLOAD
       setUploadProgress(50);
       const fileName = `${profile.id}_${Date.now()}.jpg`;
       const { error: uploadErr } = await supabase.storage
@@ -585,13 +571,6 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
     setUploadProgress(1);
     setUploadStatusMsg("Mempersiapkan server...");
     try {
-      const { error: bucketError } = await supabase.storage.getBucket('profile-photos');
-      if (bucketError) {
-        const { error: createErr } = await supabase.storage.createBucket('profile-photos', {
-          public: true, allowedMimeTypes: ['image/png', 'image/jpeg', 'image/webp'], fileSizeLimit: 10485760
-        });
-        if (createErr && !createErr.message?.includes("already exists")) console.error("Bucket error:", createErr);
-      }
       let successCount = 0, failCount = 0;
       for (let i = 0; i < itemsToUpload.length; i++) {
         const item = itemsToUpload[i];

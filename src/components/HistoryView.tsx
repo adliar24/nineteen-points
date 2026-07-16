@@ -118,10 +118,11 @@ export default function HistoryView({ onRefreshTrigger, refreshCount }: HistoryV
           {/* Sort Order */}
           <button
             onClick={() => setSortOrder(sortOrder === "terbaru" ? "terlama" : "terbaru")}
-            className="flex items-center gap-1.5 px-4 py-3 bg-white border border-brand-100 text-brand-800 rounded-xl text-sm font-bold transition-all cursor-pointer shadow-xs hover:bg-brand-50"
+            className="flex items-center gap-1.5 px-3 py-3 bg-white border border-brand-100 text-brand-800 rounded-xl text-sm font-bold transition-all cursor-pointer shadow-xs hover:bg-brand-50"
+            title={`Urut: ${sortOrder === "terbaru" ? "Terbaru" : "Terlama"}`}
           >
             <ArrowUpDown className="w-3.5 h-3.5 text-brand-500" />
-            <span>Urut: {sortOrder === "terbaru" ? "Terbaru" : "Terlama"}</span>
+            <span className="hidden sm:inline">Urut: {sortOrder === "terbaru" ? "Terbaru" : "Terlama"}</span>
           </button>
 
           {/* Segarkan Button */}
@@ -130,10 +131,11 @@ export default function HistoryView({ onRefreshTrigger, refreshCount }: HistoryV
               setHistoryList(await getRiwayatList());
               onRefreshTrigger();
             }}
-            className="flex items-center gap-1.5 px-4 py-3 bg-white border border-brand-100 text-brand-800 hover:bg-brand-50 rounded-xl text-sm font-bold transition-all cursor-pointer shadow-xs"
+            className="flex items-center gap-1.5 px-3 py-3 bg-white border border-brand-100 text-brand-800 hover:bg-brand-50 rounded-xl text-sm font-bold transition-all cursor-pointer shadow-xs"
+            title="Segarkan"
           >
             <RefreshCw className="w-3.5 h-3.5 text-brand-600" />
-            <span>Segarkan</span>
+            <span className="hidden sm:inline">Segarkan</span>
           </button>
         </div>
 

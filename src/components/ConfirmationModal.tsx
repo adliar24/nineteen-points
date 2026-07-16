@@ -6,7 +6,7 @@ import { createPortal } from "react-dom";
 interface ConfirmationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: () => void;
+  onConfirm: () => void | Promise<void>;
   title: string;
   message: string;
   confirmText?: string;
@@ -68,7 +68,7 @@ export default function ConfirmationModal({
   return (
     <AnimatePresence>
       {isOpen && createPortal(
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           {/* Backdrop blur with motion */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -123,8 +123,8 @@ export default function ConfirmationModal({
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => {
-                  onConfirm();
+                onClick={async () => {
+                  await onConfirm();
                   onClose();
                 }}
                 className={`flex-1 py-3 px-4 rounded-xl text-sm font-semibold transition-colors focus:outline-none cursor-pointer ${theme.confirmBtn}`}

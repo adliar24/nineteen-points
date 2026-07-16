@@ -462,7 +462,11 @@ export default function App() {
         isOpen={isLogoutConfirmOpen}
         onClose={() => setIsLogoutConfirmOpen(false)}
         onConfirm={async () => {
-          await supabase.auth.signOut();
+          try {
+            await supabase.auth.signOut();
+          } catch (e) {
+            console.error("Logout error:", e);
+          }
           setUserSession(null);
           setActiveTab("stats");
           setIsLogoutConfirmOpen(false);

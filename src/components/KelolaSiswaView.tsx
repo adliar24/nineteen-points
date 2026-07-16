@@ -274,7 +274,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
       let createdCount = 0;
       let failCount = 0;
       for (const s of missingStudents) {
-        const email = `${s.nis}@sman19.sch.id`;
+        const email = `${s.nis}@auth.local`;
         try {
           const existingAuthUser = authUsers.find(u => u.email === email);
           if (existingAuthUser) {
@@ -386,7 +386,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
       let authCreated = true;
       try {
         const { error: signUpError } = await supabaseAdminAuth.auth.admin.createUser({
-          email: `${newNis}@sman19.sch.id`,
+          email: `${newNis}@auth.local`,
           password: "siswa19",
           email_confirm: true,
           user_metadata: {
@@ -565,7 +565,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
             setImportProgress(Math.round((idx / newSiswaToInsert.length) * 100));
             try {
               const { error: signUpError } = await supabaseAdminAuth.auth.admin.createUser({
-                email: `${s.nis}@sman19.sch.id`,
+                email: `${s.nis}@auth.local`,
                 password: "siswa19",
                 email_confirm: true,
                 user_metadata: {
@@ -676,7 +676,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
           setImportProgress(Math.round((idx / newSiswaToInsert.length) * 100));
           try {
             const { error: signUpError } = await supabaseAdminAuth.auth.admin.createUser({
-              email: `${s.nis}@sman19.sch.id`,
+              email: `${s.nis}@auth.local`,
               password: "siswa19",
               email_confirm: true,
               user_metadata: {

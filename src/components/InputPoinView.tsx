@@ -303,7 +303,7 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
         
         {/* Active Teacher Inline Info */}
         <div className="flex items-center justify-between text-xs text-brand-500 bg-white px-4 py-2.5 rounded-xl border border-brand-100/60 shadow-xs">
-          <span>Petugas: <strong className="font-bold text-brand-900">{userSession.fullName}</strong> <span className="opacity-70">({userSession.email.endsWith("@sman19.sch.id") ? userSession.email.split("@")[0] : userSession.email})</span></span>
+          <span>Petugas: <strong className="font-bold text-brand-900">{userSession.fullName}</strong> <span className="opacity-70">({userSession.email.endsWith("@auth.local") ? userSession.email.split("@")[0] : userSession.email})</span></span>
           <span className="text-[10px] font-black text-brand-600 bg-brand-50 px-2.5 py-0.5 rounded-md border border-brand-100 uppercase tracking-wider">Aktif</span>
         </div>
 

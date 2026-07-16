@@ -137,7 +137,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
         setErrorMsg("Nama Lengkap wajib diisi.");
         return;
       }
-      finalEmail = `${selectedNis}@sman19.sch.id`;
+      finalEmail = `${selectedNis}@auth.local`;
       finalPassword = "siswa19";
     } else if (role === "guru") {
       if (!nip) {
@@ -148,7 +148,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
         setErrorMsg("Nama Lengkap wajib diisi.");
         return;
       }
-      finalEmail = `${nip}@sman19.sch.id`;
+      finalEmail = `${nip}@auth.local`;
       finalPassword = "guru19*";
     } else {
       // Piket
@@ -278,7 +278,8 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
   // Open edit modal
   const openEditModal = (p: Profile) => {
     setEditingProfile(p);
-    setEditEmail(p.email);
+    // Strip @auth.local suffix for display — show only NIS/NIP/username
+    setEditEmail(p.email.replace("@auth.local", ""));
     setEditNama(p.nama);
     setEditPassword("");
   };
@@ -290,10 +291,15 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
     setIsEditing(true);
 
     try {
+      // Re-add @auth.local suffix for siswa/guru auth email
+      const fullEmail = (editingProfile.role === "siswa" || editingProfile.role === "guru")
+        ? `${editEmail.trim()}@auth.local`
+        : editEmail.trim();
+
       // Update auth user email and password via admin client
       const updates: any = {};
-      if (editEmail !== editingProfile.email) {
-        updates.email = editEmail;
+      if (fullEmail !== editingProfile.email) {
+        updates.email = fullEmail;
       }
       if (editPassword) {
         updates.password = editPassword;
@@ -311,13 +317,13 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
       if (editNama !== editingProfile.nama) {
         const { error: profileErr } = await supabase
           .from("profiles")
-          .update({ nama: editNama, email: editEmail })
+          .update({ nama: editNama, email: fullEmail })
           .eq("id", editingProfile.id);
         if (profileErr) throw new Error("Gagal update profil: " + profileErr.message);
-      } else if (editEmail !== editingProfile.email) {
+      } else if (fullEmail !== editingProfile.email) {
         const { error: profileErr } = await supabase
           .from("profiles")
-          .update({ email: editEmail })
+          .update({ email: fullEmail })
           .eq("id", editingProfile.id);
         if (profileErr) throw new Error("Gagal update email profil: " + profileErr.message);
       }
@@ -401,17 +407,13 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
           // Auto-generate credentials based on role
           if (roleVal === "siswa") {
             if (!nisVal) continue;
-            if (!emailVal || !emailVal.includes("@")) {
-              emailVal = `${nisVal}@sman19.sch.id`;
-            }
+            emailVal = `${nisVal}@auth.local`;
             if (!passwordVal) {
               passwordVal = "siswa19";
             }
           } else if (roleVal === "guru") {
-            if (!emailVal || !emailVal.includes("@")) {
-              const parsedNip = emailVal || "guru";
-              emailVal = `${parsedNip}@sman19.sch.id`;
-            }
+            const nipFromExcel = emailVal || "guru";
+            emailVal = `${nipFromExcel}@auth.local`;
             if (!passwordVal) {
               passwordVal = "guru19*";
             }
@@ -685,7 +687,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
                           </td>
                           <td className="py-4 px-6 font-extrabold text-sm text-brand-950 uppercase">{p.nama}</td>
                           <td className="py-4 px-6 font-mono font-bold text-sm text-brand-900">
-                            {p.email.endsWith("@sman19.sch.id") ? p.email.split("@")[0] : p.email}
+                            {p.email.endsWith("@auth.local") ? p.email.split("@")[0] : p.email}
                           </td>
                           <td className="py-4 px-6">
                             <span 
@@ -1005,17 +1007,23 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-black text-brand-900 uppercase block">Email / Username Login</label>
+                  <label className="text-xs font-black text-brand-900 uppercase block">
+                    {(editingProfile?.role === "siswa" || editingProfile?.role === "guru") ? "Username (Login)" : "Email / Username Login"}
+                  </label>
                   <div className="relative">
                     <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-brand-400" />
                     <input
-                      type="email"
+                      type="text"
                       required
                       value={editEmail}
                       onChange={(e) => setEditEmail(e.target.value)}
-                      className="w-full border border-brand-100 rounded-xl py-2.5 pl-10 pr-4 text-sm font-semibold focus:ring-1 focus:ring-brand-500 outline-none text-brand-900 bg-brand-50/20"
+                      readOnly={editingProfile?.role === "siswa" || editingProfile?.role === "guru"}
+                      className={`w-full border border-brand-100 rounded-xl py-2.5 pl-10 pr-4 text-sm font-semibold focus:ring-1 focus:ring-brand-500 outline-none text-brand-900 bg-brand-50/20${(editingProfile?.role === "siswa" || editingProfile?.role === "guru") ? " opacity-75 cursor-not-allowed" : ""}`}
                     />
                   </div>
+                  {(editingProfile?.role === "siswa" || editingProfile?.role === "guru") && (
+                    <p className="text-[10px] text-brand-400 font-medium">Username tidak dapat diubah.</p>
+                  )}
                 </div>
 
                 <div className="space-y-1">

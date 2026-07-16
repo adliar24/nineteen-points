@@ -1002,7 +1002,6 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
                     <th className="py-4 px-6">Nama Lengkap</th>
                     <th className="py-4 px-6">Username / Email</th>
                     <th className="py-4 px-6">Peran (Role)</th>
-                    <th className="py-4 px-6">Tautan NIS Murid</th>
                     <th className="py-4 px-6 text-right">Aksi</th>
                   </tr>
                 </thead>
@@ -1015,13 +1014,12 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
                         <td className="py-4 px-6"><div className="h-4 w-36 bg-slate-200 rounded" /></td>
                         <td className="py-4 px-6"><div className="h-4 w-48 bg-slate-200 rounded" /></td>
                         <td className="py-4 px-6"><div className="h-5 w-16 bg-slate-200 rounded-lg" /></td>
-                        <td className="py-4 px-6"><div className="h-4 w-20 bg-slate-200 rounded" /></td>
                         <td className="py-4 px-6 text-right"><div className="h-7 w-16 bg-slate-200 rounded-xl ml-auto" /></td>
                       </tr>
                     ))
                   ) : paginatedProfiles.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="py-12 text-center text-slate-400 text-xs font-bold">
+                      <td colSpan={6} className="py-12 text-center text-slate-400 text-xs font-bold">
                         Tidak ada akun yang ditemukan.
                       </td>
                     </tr>
@@ -1091,15 +1089,6 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
                             >
                               {p.role === "super_admin" ? "SUPER ADMIN" : p.role.replace("_", " ")}
                             </span>
-                          </td>
-                          <td className="py-4 px-6 font-mono text-brand-700 text-sm">
-                            {p.nis ? (
-                              <span className="bg-brand-50 px-2 py-0.5 rounded-lg border border-brand-100 text-xs font-bold">
-                                {p.nis}
-                              </span>
-                            ) : (
-                              <span className="text-brand-300 text-xs">-</span>
-                            )}
                           </td>
                           <td className="py-4 px-6 text-right whitespace-nowrap">
                             {!isSuper && (

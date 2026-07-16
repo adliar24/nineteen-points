@@ -278,8 +278,8 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
   // Open edit modal
   const openEditModal = (p: Profile) => {
     setEditingProfile(p);
-    // Strip @auth.local suffix for display — show only NIS/NIP/username
-    setEditEmail(p.email.replace("@auth.local", ""));
+    // Strip any email suffix for display — show only NIS/NIP/username
+    setEditEmail(p.email.split("@")[0]);
     setEditNama(p.nama);
     setEditPassword("");
   };
@@ -687,7 +687,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
                           </td>
                           <td className="py-4 px-6 font-extrabold text-sm text-brand-950 uppercase">{p.nama}</td>
                           <td className="py-4 px-6 font-mono font-bold text-sm text-brand-900">
-                            {p.email.endsWith("@auth.local") ? p.email.split("@")[0] : p.email}
+                            {p.email.split("@")[0]}
                           </td>
                           <td className="py-4 px-6">
                             <span 

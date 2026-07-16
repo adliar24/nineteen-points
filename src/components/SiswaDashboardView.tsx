@@ -481,7 +481,7 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
                           </span>
                           <span className="hidden sm:inline w-1 h-1 bg-slate-300 rounded-full" />
                           <span className="truncate">
-                            Dicatat: {record.guru_email.endsWith("@auth.local") ? record.guru_email.split("@")[0] : record.guru_email}
+                            Dicatat: {record.guru_email.split("@")[0]}
                           </span>
                         </div>
                       </div>

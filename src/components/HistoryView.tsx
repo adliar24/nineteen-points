@@ -214,7 +214,7 @@ export default function HistoryView({ onRefreshTrigger, refreshCount }: HistoryV
                       <td className="py-4.5 px-5">
                         <div className="flex items-center gap-1.5 text-brand-700 font-bold text-xs">
                           <ShieldCheck className="w-3.5 h-3.5 text-brand-500" />
-                          <span>{log.guru_email.endsWith("@auth.local") ? log.guru_email.split("@")[0] : log.guru_email}</span>
+                          <span>{log.guru_email.split("@")[0]}</span>
                         </div>
                       </td>
                       <td className="py-4.5 px-5 text-right">

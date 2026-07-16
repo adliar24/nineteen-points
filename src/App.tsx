@@ -172,7 +172,7 @@ export default function App() {
           setActiveTab("input");
         }
       } else if (userSession.role === "guru") {
-        if (!["input", "students", "change_password"].includes(activeTab)) {
+        if (!["input", "students", "history", "change_password"].includes(activeTab)) {
           setActiveTab("input");
         }
       } else {
@@ -209,6 +209,7 @@ export default function App() {
     navItems = [
       { id: "input", label: "Input Poin", icon: ClipboardCheck, description: "Catat via QR atau pencarian" },
       { id: "students", label: "Data Murid", icon: Users, description: "Lihat database & kartu pelajar" },
+      { id: "history", label: "Riwayat Poin", icon: Calendar, description: "Audit trail pencatatan" },
     ];
   } else if (userSession.role === "super_admin") {
     navItems.push({

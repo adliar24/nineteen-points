@@ -214,6 +214,48 @@ export default function App() {
 
   return (
     <>
+    {/* Top Banner/Header — outside motion.div so fixed positioning is relative to viewport */}
+    <header className="bg-gradient-to-r from-brand-800 via-brand-700 to-brand-800 md:!bg-none md:!bg-transparent text-white md:text-[#1e1b4b] fixed top-0 left-0 md:left-68 right-0 z-[50] flex-shrink-0 shadow-xl shadow-brand-900/15 md:shadow-none wave-bg md:wave-bg-none md:border-b md:border-brand-100/50">
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent pointer-events-none md:hidden" />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-3 relative z-10">
+        
+        {/* Left Side: Mobile Menu + Branding */}
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          {/* Mobile hamburger menu toggle */}
+          <div className="flex md:hidden flex-shrink-0">
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="p-2 -ml-2 text-white hover:text-brand-200 transition-colors cursor-pointer"
+              aria-label="Menu"
+            >
+              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
+
+        </div>
+
+        {/* Right profile header info */}
+        <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3 bg-brand-950/40 md:bg-brand-50/70 pl-2 sm:pl-4 pr-1.5 py-1.5 rounded-2xl border border-white/10 md:border-brand-100 shadow-xs">
+            <div className="text-right">
+              <p className="text-[11px] md:text-xs font-bold text-white md:!text-[#1e1b4b] tracking-wide whitespace-nowrap">{userSession.fullName}</p>
+              <div className="flex items-center justify-end gap-1 text-[9px] md:text-[10px] text-brand-200 md:!text-slate-500 font-extrabold uppercase tracking-widest mt-0.5">
+                <ShieldCheck className="w-2.5 h-2.5 text-accent-500" />
+                <span>{userSession.role === "siswa" ? "murid" : userSession.role.replace("_", " ")}</span>
+              </div>
+            </div>
+            {(userSession.foto_url && !headerImgFailed) ? (
+              <img src={userSession.foto_url} onError={() => setHeaderImgFailed(true)} className="w-9 h-12 sm:w-10 sm:h-[53px] rounded-xl object-cover border border-white/30 md:border-brand-200/50 shadow-md flex-shrink-0" alt="Avatar" />
+            ) : (
+              <div className="w-9 h-12 sm:w-10 sm:h-[53px] rounded-xl bg-gradient-to-tr from-accent-500 to-amber-400 border border-white/30 md:border-brand-200/50 flex items-center justify-center font-bold text-xs uppercase text-white shadow-md relative flex-shrink-0">
+                {userSession.fullName.slice(0, 2)}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </header>
+
     <motion.div
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
@@ -272,50 +314,8 @@ export default function App() {
       </nav>
 
       {/* Main Workspace Area (Right side) */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-y-auto h-screen">
+      <div className="flex-1 flex flex-col min-w-0 overflow-y-auto h-screen pt-20">
         
-        {/* Top Banner/Header */}
-        <header className="bg-gradient-to-r from-brand-800 via-brand-700 to-brand-800 md:!bg-none md:!bg-transparent text-white md:text-[#1e1b4b] fixed top-0 left-0 md:left-68 right-0 z-[50] flex-shrink-0 shadow-xl shadow-brand-900/15 md:shadow-none wave-bg md:wave-bg-none md:border-b md:border-brand-100/50">
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent pointer-events-none md:hidden" />
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-3 relative z-10">
-            
-            {/* Left Side: Mobile Menu + Branding */}
-            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-              {/* Mobile hamburger menu toggle */}
-              <div className="flex md:hidden flex-shrink-0">
-                <button
-                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                  className="p-2 -ml-2 text-white hover:text-brand-200 transition-colors cursor-pointer"
-                  aria-label="Menu"
-                >
-                  {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-                </button>
-              </div>
-
-            </div>
-
-            {/* Right profile header info */}
-            <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
-              <div className="flex items-center gap-2 sm:gap-3 bg-brand-950/40 md:bg-brand-50/70 pl-2 sm:pl-4 pr-1.5 py-1.5 rounded-2xl border border-white/10 md:border-brand-100 shadow-xs">
-                <div className="text-right">
-                  <p className="text-[11px] md:text-xs font-bold text-white md:!text-[#1e1b4b] tracking-wide whitespace-nowrap">{userSession.fullName}</p>
-                  <div className="flex items-center justify-end gap-1 text-[9px] md:text-[10px] text-brand-200 md:!text-slate-500 font-extrabold uppercase tracking-widest mt-0.5">
-                    <ShieldCheck className="w-2.5 h-2.5 text-accent-500" />
-                    <span>{userSession.role === "siswa" ? "murid" : userSession.role.replace("_", " ")}</span>
-                  </div>
-                </div>
-                {(userSession.foto_url && !headerImgFailed) ? (
-                  <img src={userSession.foto_url} onError={() => setHeaderImgFailed(true)} className="w-9 h-12 sm:w-10 sm:h-[53px] rounded-xl object-cover border border-white/30 md:border-brand-200/50 shadow-md flex-shrink-0" alt="Avatar" />
-                ) : (
-                  <div className="w-9 h-12 sm:w-10 sm:h-[53px] rounded-xl bg-gradient-to-tr from-accent-500 to-amber-400 border border-white/30 md:border-brand-200/50 flex items-center justify-center font-bold text-xs uppercase text-white shadow-md relative flex-shrink-0">
-                    {userSession.fullName.slice(0, 2)}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </header>
-
         {/* Mobile Navigation Drawer Overlay (Only active on mobile when menu toggled) */}
         <AnimatePresence>
           {mobileMenuOpen && (
@@ -400,7 +400,7 @@ export default function App() {
         </AnimatePresence>
 
         {/* Dynamic View Panel */}
-        <main className="flex-1 p-6 md:p-8 pt-20 max-w-7xl w-full mx-auto">
+        <main className="flex-1 p-6 md:p-8 max-w-7xl w-full mx-auto">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}

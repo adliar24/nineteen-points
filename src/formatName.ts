@@ -24,6 +24,8 @@ const TITLE_MAP: Record<string, string[]> = {
   "M.Pd":  ["m.pd", "M.PD", "M.pd", "mpd", "MPD", "Mpd"],
   "M.Si":  ["m.si", "M.SI", "M.si", "msi", "MSI", "Msi"],
   "S.Kom": ["s.kom", "S.KOM", "S.kom", "skom", "SKOM", "Skom"],
+  "S.Si":  ["s.si", "S.SI", "S.si", "ssi", "SSI", "Ssi"],
+  "S.Th.I":["s.th.i", "S.TH.I", "S.Th.i", "sth.i", "STH.I"],
   "S.T":   ["s.t", "S.T", "St", "ST"],
   "S.E":   ["s.e", "S.E", "Se", "SE"],
   "S.Ag":  ["s.ag", "S.AG", "S.ag", "sag", "SAG", "Sag"],

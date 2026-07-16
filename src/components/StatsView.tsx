@@ -32,12 +32,17 @@ import {
 
 import SkeletonLoader from "./SkeletonLoader";
 
+type ChartTab = "kelas" | "siswa" | "hari";
+
+const DAY_NAMES = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+
 export default function StatsView() {
   const [siswaList, setSiswaList] = useState<Siswa[]>([]);
   const [riwayatList, setRiwayatList] = useState<RiwayatPoin[]>([]);
   const [masterPoin, setMasterPoin] = useState<MasterPoin[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeRankTab, setActiveRankTab] = useState<"prestasi" | "sanksi" | "kasus">("prestasi");
+  const [activeChartTab, setActiveChartTab] = useState<ChartTab>("kelas");
 
   useEffect(() => {
     async function loadData() {
@@ -61,26 +66,13 @@ export default function StatsView() {
     return (
       <div className="space-y-6">
         <h2 className="text-xl font-extrabold text-brand-950 tracking-tight">Statistik Karakter Murid</h2>
-
-        {/* Metric Cards Skeleton */}
         <SkeletonLoader type="metrics" />
-
-        {/* Charts & Rankings Row Skeleton */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Charts (Left Column) */}
-          <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white p-5 rounded-3xl border border-brand-100/60 h-[280px] animate-pulse flex flex-col justify-between">
-              <div className="h-4 w-1/3 bg-slate-200 rounded-md" />
-              <div className="h-44 w-full bg-slate-100 rounded-2xl" />
-            </div>
-            <div className="bg-white p-5 rounded-3xl border border-brand-100/60 h-[280px] animate-pulse flex flex-col justify-between">
-              <div className="h-4 w-1/3 bg-slate-200 rounded-md" />
-              <div className="h-44 w-full bg-slate-100 rounded-2xl" />
-            </div>
+          <div className="lg:col-span-8 bg-white p-5 rounded-3xl border border-brand-100/60 h-[380px] animate-pulse flex flex-col justify-between">
+            <div className="h-4 w-1/3 bg-slate-200 rounded-md" />
+            <div className="h-44 w-full bg-slate-100 rounded-2xl" />
           </div>
-
-          {/* Tabbed Rankings Card (Right Column) */}
-          <div className="lg:col-span-4 bg-white p-5 rounded-3xl border border-brand-100/60 h-[280px] animate-pulse flex flex-col justify-between">
+          <div className="lg:col-span-4 bg-white p-5 rounded-3xl border border-brand-100/60 h-[380px] animate-pulse flex flex-col justify-between">
             <div className="flex gap-2 border-b border-brand-50 pb-3">
               <div className="h-6 w-16 bg-slate-200 rounded-lg" />
               <div className="h-6 w-16 bg-slate-200 rounded-lg" />
@@ -109,7 +101,12 @@ export default function StatsView() {
     .filter(r => r.nilai_diberikan < 0)
     .reduce((sum, r) => sum + Math.abs(r.nilai_diberikan), 0);
 
-  // 2. Class Distributions (Average points per class)
+  // 2. Top 5 Students by Achievement
+  const topAchievers = [...siswaList]
+    .sort((a, b) => b.total_poin - a.total_poin)
+    .slice(0, 5);
+
+  // 3. Class Chart Data (Top 5 by average points)
   const classGroups: { [key: string]: { total: number; count: number } } = {};
   siswaList.forEach(s => {
     if (!classGroups[s.kelas]) {
@@ -119,18 +116,48 @@ export default function StatsView() {
     classGroups[s.kelas].count += 1;
   });
 
-  const classChartData = Object.keys(classGroups).map(className => ({
-    name: className,
-    "Rata-rata Poin": Math.round(classGroups[className].total / classGroups[className].count),
-    "Jumlah Murid": classGroups[className].count
-  }));
-
-  // 3. Top 5 Students by Achievement (Highest total_poin)
-  const topAchievers = [...siswaList]
-    .sort((a, b) => b.total_poin - a.total_poin)
+  const classChartData = Object.keys(classGroups)
+    .map(className => ({
+      name: className,
+      "Rata-rata Poin": Math.round(classGroups[className].total / classGroups[className].count),
+      "Jumlah Murid": classGroups[className].count
+    }))
+    .sort((a, b) => b["Rata-rata Poin"] - a["Rata-rata Poin"])
     .slice(0, 5);
 
-  // 4. Top 5 Students by Violations (Calculated from history of negative points)
+  // 3. Student Chart Data (Top 5 by total points)
+  const studentChartData = [...siswaList]
+    .sort((a, b) => b.total_poin - a.total_poin)
+    .slice(0, 5)
+    .map(s => ({
+      name: s.nama.length > 15 ? s.nama.slice(0, 15) + "..." : s.nama,
+      fullName: s.nama,
+      "Total Poin": s.total_poin,
+      Kelas: s.kelas
+    }));
+
+  // 4. Day Chart Data (Average points per day of week)
+  const dayGroups: { [key: string]: { total: number; count: number } } = {};
+  DAY_NAMES.forEach(d => { dayGroups[d] = { total: 0, count: 0 }; });
+  riwayatList.forEach(r => {
+    const date = new Date(r.tanggal);
+    const dayName = DAY_NAMES[date.getDay()];
+    dayGroups[dayName].total += r.nilai_diberikan;
+    dayGroups[dayName].count += 1;
+  });
+
+  // Only show days that have data, sorted by total, top 5
+  const dayChartData = DAY_NAMES
+    .filter(d => dayGroups[d].count > 0)
+    .map(d => ({
+      name: d,
+      "Rata-rata Poin": dayGroups[d].count > 0 ? Math.round(dayGroups[d].total / dayGroups[d].count) : 0,
+      "Jumlah Log": dayGroups[d].count
+    }))
+    .sort((a, b) => b["Rata-rata Poin"] - a["Rata-rata Poin"])
+    .slice(0, 5);
+
+  // 5. Top 5 Students by Violations
   const studentViolationSums: { [key: string]: { siswa: Siswa; sum: number } } = {};
   siswaList.forEach(s => {
     studentViolationSums[s.id] = { siswa: s, sum: 0 };
@@ -147,7 +174,7 @@ export default function StatsView() {
     .sort((a, b) => b.sum - a.sum)
     .slice(0, 5);
 
-  // 5. Popular Rules (Most frequent in history)
+  // 6. Popular Rules (Top 5)
   const ruleCounts: { [key: string]: { name: string; count: number; value: number } } = {};
   riwayatList.forEach(r => {
     if (!ruleCounts[r.nama_poin]) {
@@ -166,21 +193,37 @@ export default function StatsView() {
       Tipe: item.value > 0 ? "Penghargaan" : "Pelanggaran"
     }));
 
-  // 6. Pie Chart of Positive vs Negative logs count
+  // 7. Pie Chart of Positive vs Negative logs count
   const logTypeDistribution = [
     { name: "Penghargaan (+)", value: riwayatList.filter(r => r.nilai_diberikan > 0).length, color: "#10b981" },
     { name: "Pelanggaran (-)", value: riwayatList.filter(r => r.nilai_diberikan < 0).length, color: "#f43f5e" }
   ].filter(d => d.value > 0);
 
+  // Chart tab config
+  const chartTabs: { key: ChartTab; label: string; icon: React.ReactNode }[] = [
+    { key: "kelas", label: "Kelas", icon: <BarChart2 className="w-3.5 h-3.5" /> },
+    { key: "siswa", label: "Siswa", icon: <Users className="w-3.5 h-3.5" /> },
+    { key: "hari", label: "Hari", icon: <Calendar className="w-3.5 h-3.5" /> },
+  ];
+
+  const getActiveChartData = () => {
+    switch (activeChartTab) {
+      case "kelas": return { data: classChartData, dataKey: "Rata-rata Poin", color: "#6d28d9", label: "Rata-rata Poin per Kelas (Top 5)" };
+      case "siswa": return { data: studentChartData, dataKey: "Total Poin", color: "#0891b2", label: "Total Poin per Siswa (Top 5)" };
+      case "hari": return { data: dayChartData, dataKey: "Rata-rata Poin", color: "#d97706", label: "Rata-rata Poin per Hari (Top 5)" };
+    }
+  };
+
+  const activeChart = getActiveChartData();
+
   return (
     <div className="space-y-6 animate-fade-in font-sans">
       
-      {/* Page Title (Simple text, no board, no border, no icon) */}
+      {/* Page Title */}
       <h2 className="text-xl font-extrabold text-brand-950 tracking-tight">Statistik Karakter Murid</h2>
 
-      {/* 2. LARGE METRIC CARDS */}
+      {/* METRIC CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Total Siswa */}
         <div className="bg-white p-5 rounded-3xl border border-brand-100/60 shadow-md shadow-brand-900/5 flex items-center justify-between">
           <div>
             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Total Murid</span>
@@ -192,7 +235,6 @@ export default function StatsView() {
           </div>
         </div>
 
-        {/* Total Apresiasi */}
         <div className="bg-white p-5 rounded-3xl border border-brand-100/60 shadow-md shadow-brand-900/5 flex items-center justify-between">
           <div>
             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Apresiasi (+)</span>
@@ -204,7 +246,6 @@ export default function StatsView() {
           </div>
         </div>
 
-        {/* Total Sanksi */}
         <div className="bg-white p-5 rounded-3xl border border-brand-100/60 shadow-md shadow-brand-900/5 flex items-center justify-between">
           <div>
             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Sanksi (-)</span>
@@ -216,7 +257,6 @@ export default function StatsView() {
           </div>
         </div>
 
-        {/* Total Logs */}
         <div className="bg-white p-5 rounded-3xl border border-brand-100/60 shadow-md shadow-brand-900/5 flex items-center justify-between">
           <div>
             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Total Log</span>
@@ -229,49 +269,79 @@ export default function StatsView() {
         </div>
       </div>
 
-      {/* 3. CHARTS & RANKINGS (Side-by-Side Row - Spacious Version) */}
+      {/* CHARTS & RANKINGS */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        {/* LEFT AREA: Charts */}
-        <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Chart 1: Rata-rata Poin Kelas */}
-          <div className="bg-white p-5 rounded-3xl border border-brand-100/60 shadow-md shadow-brand-900/5 flex flex-col justify-between h-[280px]">
-            <div className="flex items-center justify-between mb-2 flex-shrink-0">
-              <h3 className="text-sm font-black text-brand-950 flex items-center gap-1.5">
-                <BarChart2 className="w-4.5 h-4.5 text-brand-600" />
-                Rata-rata Poin Kelas
-              </h3>
+        {/* LEFT: Big Chart with Selector */}
+        <div className="lg:col-span-8 space-y-6">
+          {/* Main Chart Card */}
+          <div className="bg-white p-5 rounded-3xl border border-brand-100/60 shadow-md shadow-brand-900/5 flex flex-col h-[380px]">
+            {/* Chart Selector Tabs */}
+            <div className="flex items-center gap-2 mb-4 flex-shrink-0 border-b border-brand-50 pb-3">
+              {chartTabs.map(tab => (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveChartTab(tab.key)}
+                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all cursor-pointer border ${
+                    activeChartTab === tab.key
+                      ? "bg-brand-600 border-brand-600 text-white shadow-md shadow-brand-500/20"
+                      : "bg-slate-50 text-slate-500 border-transparent hover:bg-slate-100"
+                  }`}
+                >
+                  {tab.icon}
+                  {tab.label}
+                </button>
+              ))}
             </div>
+
+            {/* Chart Title */}
+            <h3 className="text-sm font-black text-brand-950 flex items-center gap-1.5 mb-3 flex-shrink-0">
+              <BarChart2 className="w-4.5 h-4.5 text-brand-600" />
+              {activeChart.label}
+            </h3>
+
+            {/* Chart Area */}
             <div className="flex-1 min-h-0 w-full">
-              {classChartData.length > 0 ? (
+              {activeChart.data.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={classChartData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+                  <BarChart data={activeChart.data as any[]} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                    <XAxis dataKey="name" stroke="#64748b" fontSize={9} fontWeight="bold" tickLine={false} />
+                    <XAxis 
+                      dataKey="name" 
+                      stroke="#64748b" 
+                      fontSize={10} 
+                      fontWeight="bold" 
+                      tickLine={false}
+                      interval={0}
+                      angle={-15}
+                      textAnchor="end"
+                      height={40}
+                    />
                     <YAxis stroke="#64748b" fontSize={9} fontWeight="bold" tickLine={false} />
-                    <Tooltip contentStyle={{ fontSize: 10, borderRadius: 12, fontWeight: "bold" }} />
-                    <Bar dataKey="Rata-rata Poin" fill="#6d28d9" radius={[5, 5, 0, 0]} barSize={24} />
+                    <Tooltip 
+                      contentStyle={{ fontSize: 11, borderRadius: 12, fontWeight: "bold", border: "1px solid #e2e8f0" }}
+                      cursor={{ fill: "rgba(109, 40, 217, 0.04)" }}
+                    />
+                    <Bar dataKey={activeChart.dataKey} fill={activeChart.color} radius={[6, 6, 0, 0]} barSize={32} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
                 <div className="h-full flex items-center justify-center text-xs text-brand-400 font-bold">
-                  Belum ada data.
+                  Belum ada data untuk kategori ini.
                 </div>
               )}
             </div>
           </div>
 
-          {/* Chart 2: Distribusi Jenis Poin */}
-          <div className="bg-white p-5 rounded-3xl border border-brand-100/60 shadow-md shadow-brand-900/5 flex flex-col justify-between h-[280px]">
-            <div className="flex items-center justify-between mb-2 flex-shrink-0">
-              <h3 className="text-sm font-black text-brand-950 flex items-center gap-1.5">
-                <PieIcon className="w-4.5 h-4.5 text-brand-600" />
-                Proporsi Log Poin
-              </h3>
-            </div>
+          {/* Pie Chart Row */}
+          <div className="bg-white p-5 rounded-3xl border border-brand-100/60 shadow-md shadow-brand-900/5 flex flex-col">
+            <h3 className="text-sm font-black text-brand-950 flex items-center gap-1.5 mb-4 flex-shrink-0">
+              <PieIcon className="w-4.5 h-4.5 text-brand-600" />
+              Proporsi Log Poin
+            </h3>
             
-            <div className="flex-1 min-h-0 flex items-center justify-between gap-4">
-              <div className="flex-shrink-0 w-32 h-32">
+            <div className="flex items-center justify-center gap-8 flex-wrap">
+              <div className="flex-shrink-0 w-44 h-44">
                 {logTypeDistribution.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -279,8 +349,8 @@ export default function StatsView() {
                         data={logTypeDistribution}
                         cx="50%"
                         cy="50%"
-                        innerRadius={24}
-                        outerRadius={46}
+                        innerRadius={28}
+                        outerRadius={54}
                         paddingAngle={5}
                         dataKey="value"
                       >
@@ -288,7 +358,7 @@ export default function StatsView() {
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
-                      <Tooltip contentStyle={{ fontSize: 10, borderRadius: 12, fontWeight: "bold" }} />
+                      <Tooltip contentStyle={{ fontSize: 11, borderRadius: 12, fontWeight: "bold" }} />
                     </PieChart>
                   </ResponsiveContainer>
                 ) : (
@@ -298,14 +368,14 @@ export default function StatsView() {
                 )}
               </div>
               
-              <div className="flex-1 space-y-2.5">
+              <div className="flex-1 min-w-[180px] space-y-3">
                 {logTypeDistribution.map((item, index) => (
-                  <div key={index} className="flex items-center justify-between p-2 rounded-2xl border border-brand-50 bg-brand-50/15">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }}></span>
+                  <div key={index} className="flex items-center justify-between p-3 rounded-2xl border border-brand-50 bg-brand-50/15">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }}></span>
                       <span className="text-xs font-black text-brand-850 truncate">{item.name}</span>
                     </div>
-                    <span className="font-mono text-xs font-black text-brand-950 flex-shrink-0">{item.value}x</span>
+                    <span className="font-mono text-sm font-black text-brand-950 flex-shrink-0">{item.value}x</span>
                   </div>
                 ))}
               </div>
@@ -313,9 +383,8 @@ export default function StatsView() {
           </div>
         </div>
 
-        {/* RIGHT AREA: Tabbed Rankings (Spacious Tabbed List) */}
-        <div className="lg:col-span-4 bg-white p-5 rounded-3xl border border-brand-100/60 shadow-md shadow-brand-900/5 flex flex-col justify-between h-[280px] min-h-[280px]">
-          {/* Header Tab Bar */}
+        {/* RIGHT: Tabbed Rankings */}
+        <div className="lg:col-span-4 bg-white p-5 rounded-3xl border border-brand-100/60 shadow-md shadow-brand-900/5 flex flex-col h-[380px] min-h-[380px]">
           <div className="flex border-b border-brand-50 pb-2.5 flex-shrink-0 gap-1.5 overflow-x-auto scrollbar-none">
             <button
               onClick={() => setActiveRankTab("prestasi")}
@@ -349,8 +418,7 @@ export default function StatsView() {
             </button>
           </div>
 
-          {/* Active Tab Content (Scroll list inside) */}
-          <div className="flex-1 overflow-y-auto mt-3 space-y-2 scrollbar-thin pr-0.5 max-h-[190px]">
+          <div className="flex-1 overflow-y-auto mt-3 space-y-2 scrollbar-thin pr-0.5 max-h-[310px]">
             {activeRankTab === "prestasi" && (
               topAchievers.map((siswa, idx) => (
                 <div key={siswa.id} className="flex items-center justify-between p-2.5 bg-brand-50/15 hover:bg-brand-50/30 rounded-2xl border border-brand-100/20 transition-all">

@@ -54,6 +54,8 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [toastMsg, setToastMsg] = useState("");
+  const [toastType, setToastType] = useState<"success" | "error" | "loading">("success");
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   // Form Fields for user creation
   const [email, setEmail] = useState("");
@@ -95,9 +97,12 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
     loadUsersData();
   }, []);
 
-  const showToast = (msg: string) => {
+  const showToast = (msg: string, type: "success" | "error" | "loading" = "success") => {
     setToastMsg(msg);
-    setTimeout(() => setToastMsg(""), 4000);
+    setToastType(type);
+    if (type !== "loading") {
+      setTimeout(() => setToastMsg(""), 4000);
+    }
   };
 
   async function loadUsersData() {
@@ -357,10 +362,12 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
       return;
     }
 
-    showToast("Mengompresi & mengunggah foto...");
+    showToast("Mengunggah foto...", "loading");
+    setUploadProgress(0);
 
     try {
       // 1. COMPRESS
+      setUploadProgress(15);
       let compressedBlob: Blob;
       try {
         compressedBlob = await compressImage(file, 300, 400, 0.75);
@@ -370,6 +377,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
       const compressedFile = new File([compressedBlob], `${profile.id}.jpg`, { type: "image/jpeg" });
 
       // 2. Ensure bucket exists
+      setUploadProgress(30);
       const { error: bucketError } = await supabase.storage.getBucket('profile-photos');
       if (bucketError) {
         const { error: createErr } = await supabase.storage.createBucket('profile-photos', {
@@ -383,6 +391,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
       }
 
       // 3. UPLOAD
+      setUploadProgress(50);
       const fileName = `${profile.id}_${Date.now()}.jpg`;
       const { error: uploadErr } = await supabase.storage
         .from('profile-photos')
@@ -394,6 +403,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
       if (uploadErr) throw new Error("Upload ke storage gagal: " + uploadErr.message);
 
       // 4. GET PUBLIC URL
+      setUploadProgress(75);
       const { data: urlData } = supabase.storage
         .from('profile-photos')
         .getPublicUrl(fileName);
@@ -401,6 +411,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
       const publicUrl = urlData.publicUrl;
 
       // 5. UPDATE PROFILES TABLE
+      setUploadProgress(90);
       const { error: dbErr } = await supabase
         .from('profiles')
         .update({ foto_url: publicUrl })
@@ -413,13 +424,15 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
         throw new Error("Gagal update data profil: " + dbErr.message);
       }
 
-      showToast("Foto profil berhasil diperbarui!");
+      setUploadProgress(100);
+      showToast("Foto profil berhasil diperbarui!", "success");
       loadUsersData();
     } catch (err: any) {
       console.error("Upload foto gagal:", err);
-      alert("Gagal mengunggah foto profil: " + err.message);
+      showToast("Gagal unggah foto: " + err.message, "error");
     } finally {
       setPhotoUploadProfileId(null);
+      setUploadProgress(0);
       e.target.value = "";
     }
   };
@@ -584,10 +597,28 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ type: "spring", stiffness: 400, damping: 25 }}
-            className="fixed bottom-6 right-6 z-50 bg-brand-950 text-white px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-2 border border-brand-800"
+            className={`fixed bottom-6 right-6 z-50 px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-2 border ${
+              toastType === "success"
+                ? "bg-emerald-600 text-white border-emerald-500"
+                : toastType === "error"
+                ? "bg-rose-600 text-white border-rose-500"
+                : "bg-slate-800 text-white border-slate-700"
+            }`}
           >
-            <Check className="w-4 h-4 text-emerald-400 bg-emerald-500/10 p-0.5 rounded-full" />
+            {toastType === "success" && <Check className="w-4 h-4 text-emerald-200" />}
+            {toastType === "error" && <AlertCircle className="w-4 h-4 text-rose-200" />}
+            {toastType === "loading" && <div className="w-4 h-4 border-2 border-slate-400 border-t-white rounded-full animate-spin" />}
             <span className="text-xs font-bold tracking-wide">{toastMsg}</span>
+            {toastType === "loading" && uploadProgress > 0 && (
+              <div className="w-20 h-1.5 bg-slate-600 rounded-full overflow-hidden ml-1">
+                <motion.div
+                  className="h-full bg-emerald-400 rounded-full"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${uploadProgress}%` }}
+                  transition={{ duration: 0.3 }}
+                />
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

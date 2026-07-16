@@ -1,44 +1,42 @@
 /**
  * Convert ALL CAPS name to Sentence Case while normalizing academic titles.
- * e.g. "HENDRA WIJAYA, S.PD." → "Hendra Wijaya, S.Pd."
- * e.g. "AHMAD FAUZI" → "Ahmad Fauzi"
- * e.g. "DRA. SITI NURHALIZA, M.PD." → "Dra. Siti Nurhaliza, M.Pd."
- * e.g. "S.pd." → "S.Pd."
+ * Input format doesn't matter — always normalizes to correct form.
+ *
+ * "HENDRA WIJAYA, S.PD."  → "Hendra Wijaya, S.Pd."
+ * "S.pd.i."               → "S.Pd.I."
+ * "s.th.i"                → "S.Th.I"
  */
 
-// Normalized form → raw input pattern
+// Normalized title → dotless variants for matching
 const TITLE_MAP: Record<string, string[]> = {
-  // Simple titles (first letter capital, rest lowercase)
-  "Dr":    ["dr", "DR", "Dr."],
-  "Prof":  ["prof", "PROF", "Prof."],
-  "Ir":    ["ir", "IR", "Ir."],
-  "Hj":    ["hj", "HJ", "Hj."],
-  "H":     ["h", "H."],
-  "Dra":   ["dra", "DRA", "Dra."],
-  "Drs":   ["drs", "DRS", "Drs."],
-  "Mm":    ["mm", "MM", "Mm."],
-  "Mh":    ["mh", "MH", "Mh."],
-
-  // Compound titles (each segment: first letter uppercase, rest lowercase)
-  "S.Pd":  ["s.pd", "S.PD", "S.pd", "spd", "SPD", "Spd"],
-  "S.Pd.I":["s.pd.i", "S.PD.I", "S.Pd.i", "spd.i", "SPD.I", "S.pdi"],
-  "M.Pd":  ["m.pd", "M.PD", "M.pd", "mpd", "MPD", "Mpd"],
-  "M.Si":  ["m.si", "M.SI", "M.si", "msi", "MSI", "Msi"],
-  "S.Kom": ["s.kom", "S.KOM", "S.kom", "skom", "SKOM", "Skom"],
-  "S.Si":  ["s.si", "S.SI", "S.si", "ssi", "SSI", "Ssi"],
-  "S.Th.I":["s.th.i", "S.TH.I", "S.Th.i", "sth.i", "STH.I"],
-  "S.T":   ["s.t", "S.T", "St", "ST"],
-  "S.E":   ["s.e", "S.E", "Se", "SE"],
-  "S.Ag":  ["s.ag", "S.AG", "S.ag", "sag", "SAG", "Sag"],
-  "S.S":   ["s.s", "S.S", "Ss", "SS"],
-  "S.P":   ["s.p", "S.P", "Sp", "SP"],
-  "M.A":   ["m.a", "M.A", "Ma", "MA"],
-  "M.M":   ["m.m", "M.M", "Mm", "MM"],
-  "Ph.D":  ["ph.d", "PH.D", "Ph.d", "Ph.D", "phd", "PHD"],
-  "Dr.h.c":["dr.h.c", "DR.H.C"],
+  "Dr":      ["dr"],
+  "Prof":    ["prof"],
+  "Ir":      ["ir"],
+  "Hj":      ["hj"],
+  "H":       ["h"],
+  "Dra":     ["dra"],
+  "Drs":     ["drs"],
+  "Mm":      ["mm"],
+  "Mh":      ["mh"],
+  "S.Pd":    ["spd"],
+  "S.Pd.I":  ["spdi"],
+  "M.Pd":    ["mpd"],
+  "M.Si":    ["msi"],
+  "S.Kom":   ["skom"],
+  "S.Si":    ["ssi"],
+  "S.Th.I":  ["sth.i", "sthi"],
+  "S.T":     ["st"],
+  "S.E":     ["se"],
+  "S.Ag":    ["sag"],
+  "S.S":     ["ss"],
+  "S.P":     ["sp"],
+  "M.A":     ["ma"],
+  "M.M":     ["mm2"],
+  "Ph.D":    ["phd"],
+  "Dr.h.c":  ["drh.c", "drhc"],
 };
 
-// Build lookup: lowercase input → normalized form
+// Build: dotless+lowercase → normalized form
 const titleLookup = new Map<string, string>();
 for (const [normalized, variants] of Object.entries(TITLE_MAP)) {
   for (const v of variants) {
@@ -46,12 +44,23 @@ for (const [normalized, variants] of Object.entries(TITLE_MAP)) {
   }
 }
 
-function formatTitleWord(word: string): string {
-  // Strip trailing punctuation (comma, period, etc.) for matching
+// "Mm" appears in both "Mm" (simple) and "M.M" → M.M wins since it was added after
+// Override: "mm" → "M.M" (more specific)
+titleLookup.set("mm", "M.M");
+
+function normalizeTitleWord(word: string): string {
   const trailing = word.match(/[.,;:]+$/)?.[0] ?? "";
   const stripped = word.slice(0, word.length - trailing.length);
-  const normalized = titleLookup.get(stripped.toLowerCase());
+  const dotless = stripped.replace(/\./g, "").toLowerCase();
+  const normalized = titleLookup.get(dotless);
   return normalized ? normalized + trailing : word;
+}
+
+function isTitleWord(word: string): boolean {
+  const trailing = word.match(/[.,;:]+$/)?.[0] ?? "";
+  const stripped = word.slice(0, word.length - trailing.length);
+  const dotless = stripped.replace(/\./g, "").toLowerCase();
+  return titleLookup.has(dotless);
 }
 
 export function toSentenceCase(name: string): string {
@@ -60,13 +69,7 @@ export function toSentenceCase(name: string): string {
   return name
     .split(/\s+/)
     .map((word) => {
-      // Check if this word is a known title
-      const trailing = word.match(/[.,;:]+$/)?.[0] ?? "";
-      const stripped = word.slice(0, word.length - trailing.length);
-      if (titleLookup.has(stripped.toLowerCase())) {
-        return formatTitleWord(word);
-      }
-      // Regular word: sentence case
+      if (isTitleWord(word)) return normalizeTitleWord(word);
       return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
     })
     .join(" ");

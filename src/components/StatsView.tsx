@@ -135,7 +135,7 @@ export default function StatsView() {
   const dayGroups: { [key: string]: { total: number; count: number } } = {};
   DAY_NAMES.forEach(d => { dayGroups[d] = { total: 0, count: 0 }; });
   riwayatList.forEach(r => {
-    const date = new Date(r.tanggal);
+    const date = new Date(r.created_at);
     const dayName = DAY_NAMES[date.getDay()];
     dayGroups[dayName].total += r.nilai_diberikan;
     dayGroups[dayName].count += 1;

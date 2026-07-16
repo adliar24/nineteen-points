@@ -494,7 +494,7 @@ export default function App() {
       </div>
     </div>
 
-    {/* Confirmation Modal for Log Out (rendered outside to avoid transform containment) */}
+    {/* Confirmation Modal for Log Out */}
     <ConfirmationModal
       isOpen={isLogoutConfirmOpen}
       onClose={() => setIsLogoutConfirmOpen(false)}

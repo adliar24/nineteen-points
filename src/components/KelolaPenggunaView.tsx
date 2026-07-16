@@ -1201,30 +1201,24 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
               <form onSubmit={handleCreateUser} className="space-y-4">
                 <div className="space-y-1">
                   <label className="text-xs font-black text-brand-900 uppercase block">Pilih Peran Pengguna</label>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                    {(["guru", "kepala_sekolah", "siswa", "piket"] as const).map((r) => (
-                      <button
-                        key={r}
-                        type="button"
-                        onClick={() => {
-                          setRole(r);
-                          setErrorMsg("");
-                          setFullName("");
-                          setEmail("");
-                          setPassword("");
-                          setSelectedNis("");
-                          setNip("");
-                        }}
-                        className={`py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
-                          role === r
-                            ? "bg-brand-600 border-brand-600 text-white shadow-md"
-                            : "bg-white border-brand-100 text-brand-600 hover:bg-brand-50"
-                        }`}
-                      >
-                        {r === "guru" ? "Guru" : r === "kepala_sekolah" ? "Kepala Sekolah" : r === "siswa" ? "Murid" : "Piket"}
-                      </button>
-                    ))}
-                  </div>
+                  <select
+                    value={role}
+                    onChange={(e) => {
+                      setRole(e.target.value as "guru" | "kepala_sekolah" | "siswa" | "piket");
+                      setErrorMsg("");
+                      setFullName("");
+                      setEmail("");
+                      setPassword("");
+                      setSelectedNis("");
+                      setNip("");
+                    }}
+                    className="w-full border border-brand-100 rounded-xl py-2.5 px-3 text-sm font-bold text-brand-800 outline-none focus:ring-1 focus:ring-brand-500 bg-white cursor-pointer"
+                  >
+                    <option value="guru">Guru</option>
+                    <option value="kepala_sekolah">Kepala Sekolah</option>
+                    <option value="siswa">Murid</option>
+                    <option value="piket">Piket</option>
+                  </select>
                 </div>
 
                 {role === "piket" && (

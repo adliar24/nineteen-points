@@ -9,7 +9,7 @@ import {
   School,
   LogOut,
   Users,
-  Camera,
+  ClipboardCheck,
   Calendar,
   Settings,
   Menu,
@@ -173,7 +173,7 @@ export default function App() {
   // Construct Dynamic Nav Items based on user role
   let navItems = [
     { id: "stats", label: "Statistik Poin", icon: TrendingUp, description: "Ikhtisar & analisis grafik" },
-    { id: "input", label: "Input Poin", icon: Camera, description: "Catat via QR atau pencarian" },
+    { id: "input", label: "Input Poin", icon: ClipboardCheck, description: "Catat via QR atau pencarian" },
     { id: "students", label: "Kelola Murid", icon: Users, description: "Database & kartu pelajar" },
     { id: "history", label: "Riwayat Poin", icon: Calendar, description: "Audit trail pencatatan" },
     { id: "rules", label: "Pengaturan Poin", icon: Settings, description: "Atur sanksi & prestasi" },
@@ -181,12 +181,12 @@ export default function App() {
 
   if (userSession.role === "piket") {
     navItems = [
-      { id: "input", label: "Input Poin", icon: Camera, description: "Catat via QR atau pencarian" },
+      { id: "input", label: "Input Poin", icon: ClipboardCheck, description: "Catat via QR atau pencarian" },
       { id: "history", label: "Riwayat Poin", icon: Calendar, description: "Audit trail pencatatan" },
     ];
   } else if (userSession.role === "guru") {
     navItems = [
-      { id: "input", label: "Input Poin", icon: Camera, description: "Catat via QR atau pencarian" },
+      { id: "input", label: "Input Poin", icon: ClipboardCheck, description: "Catat via QR atau pencarian" },
       { id: "students", label: "Data Murid", icon: Users, description: "Lihat database & kartu pelajar" },
     ];
   } else if (userSession.role === "super_admin") {

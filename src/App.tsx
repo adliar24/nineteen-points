@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   School,
@@ -76,6 +76,27 @@ export default function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
   const [headerImgFailed, setHeaderImgFailed] = useState(false);
+
+  // Sidebar sliding indicator
+  const navRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
+  const [indicatorStyle, setIndicatorStyle] = useState({ top: 0, height: 0, opacity: 0 });
+
+  const updateIndicator = useCallback(() => {
+    const activeBtn = navRefs.current.get(activeTab);
+    if (activeBtn) {
+      setIndicatorStyle({
+        top: activeBtn.offsetTop,
+        height: activeBtn.offsetHeight,
+        opacity: 1,
+      });
+    }
+  }, [activeTab]);
+
+  useEffect(() => {
+    updateIndicator();
+    window.addEventListener("resize", updateIndicator);
+    return () => window.removeEventListener("resize", updateIndicator);
+  }, [updateIndicator]);
 
   // Disable background scrolling when mobile menu is open
   useEffect(() => {
@@ -277,18 +298,30 @@ export default function App() {
           </div>
           
           <div className="space-y-1 relative">
+            {/* Sliding Indicator */}
+            <motion.div
+              className="absolute left-0 right-0 bg-white rounded-2xl shadow-md shadow-brand-950/10 border border-white z-0"
+              animate={{
+                top: indicatorStyle.top,
+                height: indicatorStyle.height,
+                opacity: indicatorStyle.opacity,
+              }}
+              transition={{ type: "spring", stiffness: 350, damping: 30 }}
+            />
+
             {navItems.map((item) => {
               const IconComponent = item.icon;
               const isActive = activeTab === item.id;
               return (
                 <button
                   key={item.id}
+                  ref={(el) => { if (el) navRefs.current.set(item.id, el); }}
                   onClick={() => setActiveTab(item.id)}
-                  className={`w-full text-left px-4 py-3.5 rounded-2xl flex items-center gap-3 transition-all relative overflow-hidden group cursor-pointer ${
-                    isActive ? "text-brand-800 font-bold bg-white shadow-md shadow-brand-950/10 border border-white" : "text-brand-200/85 hover:text-white hover:bg-white/5"
+                  className={`w-full text-left px-4 py-3.5 rounded-2xl flex items-center gap-3 transition-colors relative z-10 cursor-pointer ${
+                    isActive ? "text-brand-800 font-bold" : "text-brand-200/85 hover:text-white"
                   }`}
                 >
-                  <IconComponent className={`w-4.5 h-4.5 flex-shrink-0 ${isActive ? "text-brand-600" : "text-brand-300 group-hover:text-white transition-colors"}`} />
+                  <IconComponent className={`w-4.5 h-4.5 flex-shrink-0 transition-colors ${isActive ? "text-brand-600" : "text-brand-300 group-hover:text-white"}`} />
                   <span className="text-sm font-bold tracking-wide">{item.label}</span>
                 </button>
               );
@@ -401,11 +434,10 @@ export default function App() {
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15, ease: "linear" }}
-              className="will-change-opacity"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
             >
               {activeTab === "stats" && (
                 <StatsView />

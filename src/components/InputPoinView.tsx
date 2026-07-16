@@ -294,7 +294,7 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
   const classes = ["Semua", ...Array.from(new Set(siswaList.map(s => s.kelas)))];
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 pb-8">
       
       {/* INPUT WORKSPACE (Full Width) */}
       <div className="lg:col-span-12 space-y-4">

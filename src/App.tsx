@@ -430,7 +430,7 @@ export default function App() {
         </AnimatePresence>
 
         {/* Dynamic View Panel */}
-        <main className="flex-1 p-6 pb-16 md:p-8 md:pb-12 max-w-7xl w-full mx-auto">
+        <main className="flex-1 p-6 pb-24 md:p-8 md:pb-16 max-w-7xl w-full mx-auto">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}

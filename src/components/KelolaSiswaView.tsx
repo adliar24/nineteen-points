@@ -1160,7 +1160,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-8">
       {/* Hidden input for single student profile photo upload */}
       <input
         type="file"

@@ -479,7 +479,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
   const roleList = ["Semua", "super_admin", "guru", "siswa", "piket"];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-8">
       
       {/* Toast */}
       <AnimatePresence>

@@ -187,7 +187,7 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
   const totalPelanggaran = riwayat.filter(r => r.nilai_diberikan < 0).reduce((acc, r) => acc + r.nilai_diberikan, 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-8">
       
       {/* 1. STATISTIK TAB */}
       {activeTab === "siswa_stats" && (

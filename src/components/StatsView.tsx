@@ -206,7 +206,7 @@ export default function StatsView() {
   const activeChart = getActiveChartData();
 
   return (
-    <div className="space-y-6 animate-fade-in font-sans">
+    <div className="space-y-6 pb-8 animate-fade-in font-sans">
       
       {/* Page Title */}
       <h2 className="text-xl font-extrabold text-brand-950 tracking-tight">Statistik Karakter Murid</h2>

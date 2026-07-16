@@ -6,7 +6,7 @@ import { createPortal } from "react-dom";
 interface ConfirmationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: () => void | Promise<void>;
+  onConfirm: () => void;
   title: string;
   message: string;
   confirmText?: string;
@@ -123,8 +123,8 @@ export default function ConfirmationModal({
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={async () => {
-                  await onConfirm();
+                onClick={() => {
+                  onConfirm();
                   onClose();
                 }}
                 className={`flex-1 py-3 px-4 rounded-xl text-sm font-semibold transition-colors focus:outline-none cursor-pointer ${theme.confirmBtn}`}

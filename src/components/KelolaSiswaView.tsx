@@ -1332,7 +1332,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
           exit={{ opacity: 0, y: -10 }}
           className="bg-white rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 overflow-hidden"
         >
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto min-h-[520px]">
             <table className="w-full text-left border-collapse table-fixed">
               <thead>
                 <tr className="bg-brand-50/50 border-b border-brand-100/70 text-brand-500 text-xs font-black uppercase tracking-wider">
@@ -1470,8 +1470,8 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
           
           {/* Table Pagination & Actions Footer */}
           <div className="bg-brand-50/30 p-4 border-t border-brand-100 text-sm text-brand-500 font-bold flex flex-col sm:flex-row items-center justify-between gap-3">
-            <span>
-              Menampilkan {filteredSiswa.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} - {Math.min(currentPage * itemsPerPage, filteredSiswa.length)} dari {filteredSiswa.length} murid
+            <span className="whitespace-nowrap tabular-nums">
+              Menampilkan {filteredSiswa.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0}–{Math.min(currentPage * itemsPerPage, filteredSiswa.length)} dari {filteredSiswa.length} murid
             </span>
             
             {/* Pagination Controls */}
@@ -1986,11 +1986,11 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                                         <option key={s.id} value={s.id}>{s.nama} ({s.kelas})</option>
                                       ))}
                                     </select>
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
+                        </td>
+                      </tr>
+                    );
+                  })}
+              </tbody>
                         </table>
                       </div>
                     </div>

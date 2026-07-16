@@ -385,7 +385,7 @@ export default function App() {
                     whileTap={{ scale: 0.98 }}
                     onClick={() => {
                       setMobileMenuOpen(false);
-                      handleLogout();
+                      setTimeout(() => handleLogout(), 300);
                     }}
                     className="w-full py-3.5 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/25 hover:border-rose-500/40 rounded-2xl text-rose-300 hover:text-rose-100 text-base font-bold flex items-center justify-center gap-2 transition-all cursor-pointer"
                   >
@@ -461,15 +461,11 @@ export default function App() {
       <ConfirmationModal
         isOpen={isLogoutConfirmOpen}
         onClose={() => setIsLogoutConfirmOpen(false)}
-        onConfirm={async () => {
-          try {
-            await supabase.auth.signOut();
-          } catch (e) {
-            console.error("Logout error:", e);
-          }
+        onConfirm={() => {
           setUserSession(null);
           setActiveTab("stats");
           setIsLogoutConfirmOpen(false);
+          supabase.auth.signOut().catch((e) => console.error("Background signOut error:", e));
         }}
         title="Keluar dari Aplikasi?"
         message="Apakah Anda yakin ingin keluar dari sistem NineTeen Points?"

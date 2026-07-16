@@ -666,7 +666,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
             exit={{ opacity: 0, y: -10 }}
             className="bg-white rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 overflow-hidden"
           >
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto min-h-[620px]">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-brand-50/50 border-b border-brand-100/70 text-brand-500 text-xs font-black uppercase tracking-wider">
@@ -785,8 +785,8 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
 
             {/* Pagination Footer */}
             <div className="bg-brand-50/30 p-4 border-t border-brand-100 text-sm text-brand-500 font-bold flex flex-col sm:flex-row items-center justify-between gap-3">
-              <span>
-                Menampilkan {filteredProfiles.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} - {Math.min(currentPage * itemsPerPage, filteredProfiles.length)} dari {filteredProfiles.length} akun
+              <span className="whitespace-nowrap tabular-nums">
+                Menampilkan {filteredProfiles.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0}–{Math.min(currentPage * itemsPerPage, filteredProfiles.length)} dari {filteredProfiles.length} akun
               </span>
 
               {totalPages > 1 && (

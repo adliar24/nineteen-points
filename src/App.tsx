@@ -214,11 +214,8 @@ export default function App() {
 
   return (
     <>
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-      className="min-h-screen bg-[#faf9ff] text-[#1e1b4b] flex flex-row font-sans w-full"
+    <div
+      className="min-h-screen bg-[#faf9ff] text-[#1e1b4b] flex flex-row font-sans w-full animate-[fadeIn_0.6s_ease-out]"
     >
       
       {/* Navigation Sidebar (Desktop - Very Left Edge) */}
@@ -272,10 +269,10 @@ export default function App() {
       </nav>
 
       {/* Main Workspace Area (Right side) */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-y-auto h-screen pt-20">
+      <div className="flex-1 flex flex-col min-w-0 overflow-y-auto h-screen">
         
         {/* Top Banner/Header */}
-        <header className="bg-gradient-to-r from-brand-800 via-brand-700 to-brand-800 md:!bg-none md:!bg-transparent text-white md:text-[#1e1b4b] fixed top-0 left-0 md:left-68 right-0 h-20 z-[50] flex-shrink-0 shadow-xl shadow-brand-900/15 md:shadow-none wave-bg md:wave-bg-none md:border-b md:border-brand-100/50">
+        <header className="bg-gradient-to-r from-brand-800 via-brand-700 to-brand-800 md:!bg-none md:!bg-transparent text-white md:text-[#1e1b4b] sticky top-0 z-[50] flex-shrink-0 shadow-xl shadow-brand-900/15 md:shadow-none wave-bg md:wave-bg-none md:border-b md:border-brand-100/50">
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent pointer-events-none md:hidden" />
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-3 relative z-10">
             
@@ -457,9 +454,9 @@ export default function App() {
           </AnimatePresence>
         </main>
       </div>
-    </motion.div>
+    </div>
 
-    {/* Confirmation Modal for Log Out (rendered outside motion.div to avoid transform containment) */}
+    {/* Confirmation Modal for Log Out (rendered outside to avoid transform containment) */}
     <ConfirmationModal
       isOpen={isLogoutConfirmOpen}
       onClose={() => setIsLogoutConfirmOpen(false)}

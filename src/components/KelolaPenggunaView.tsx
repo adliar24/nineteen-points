@@ -169,7 +169,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
       finalPassword = "siswa19";
     } else if (role === "guru" || role === "kepala_sekolah") {
       if (!nip) {
-        setErrorMsg(`NIP wajib diisi untuk ${role === "kepala_sekolah" ? "Kepala Sekolah" : "Guru"}.`);
+        setErrorMsg(`Username (NIP) wajib diisi untuk ${role === "kepala_sekolah" ? "Kepala Sekolah" : "Guru"}.`);
         return;
       }
       if (!fullName) {
@@ -177,7 +177,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
         return;
       }
       finalEmail = `${nip}@sman19.sch.id`;
-      finalPassword = "guru19*";
+      finalPassword = password.trim() || "guru19*";
     } else {
       // Piket
       if (!email || !password || !fullName) {
@@ -1257,17 +1257,38 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
                 )}
 
                 {(role === "guru" || role === "kepala_sekolah") && (
-                  <div className="space-y-1 animate-slide-up">
-                    <label className="text-xs font-black text-brand-900 uppercase block">Nomor NIP</label>
-                    <input
-                      type="text"
-                      required
-                      value={nip}
-                      onChange={(e) => setNip(e.target.value)}
-                      placeholder="Contoh: 19761102"
-                      className="w-full border border-brand-100 rounded-xl py-2.5 px-3 text-sm font-semibold focus:ring-1 focus:ring-brand-500 outline-none text-brand-900 bg-brand-50/20"
-                    />
-                  </div>
+                  <>
+                    <div className="space-y-1 animate-slide-up">
+                      <label className="text-xs font-black text-brand-900 uppercase block">Username (NIP)</label>
+                      <div className="relative">
+                        <User className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-brand-400" />
+                        <input
+                          type="text"
+                          required
+                          value={nip}
+                          onChange={(e) => setNip(e.target.value)}
+                          placeholder="Contoh: 19761102"
+                          className="w-full border border-brand-100 rounded-xl py-2.5 pl-10 pr-4 text-sm font-semibold focus:ring-1 focus:ring-brand-500 outline-none text-brand-900 bg-brand-50/20"
+                        />
+                      </div>
+                      <p className="text-[10px] text-brand-400 font-medium">Login sebagai: <strong className="text-brand-600">{nip || "[NIP]"}@sman19.sch.id</strong></p>
+                    </div>
+
+                    <div className="space-y-1 animate-slide-up">
+                      <label className="text-xs font-black text-brand-900 uppercase block">Password</label>
+                      <div className="relative">
+                        <Key className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-brand-400" />
+                        <input
+                          type="text"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          placeholder="Kosongkan untuk default: guru19*"
+                          className="w-full border border-brand-100 rounded-xl py-2.5 pl-10 pr-4 text-sm font-semibold focus:ring-1 focus:ring-brand-500 outline-none text-brand-900 bg-brand-50/20"
+                        />
+                      </div>
+                      <p className="text-[10px] text-brand-400 font-medium">Kosongkan untuk menggunakan password default <strong className="text-brand-600">guru19*</strong></p>
+                    </div>
+                  </>
                 )}
 
                 {role === "siswa" && (
@@ -1327,10 +1348,17 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
                   </>
                 )}
 
-                {(role === "guru" || role === "kepala_sekolah" || role === "siswa") && (
+                {(role === "guru" || role === "kepala_sekolah") && (
                   <div className="text-[10px] font-bold text-brand-500 bg-brand-50/60 border border-brand-100/50 p-3 rounded-2xl space-y-1 animate-slide-up leading-relaxed">
-                    <div><strong className="text-brand-900 font-extrabold">Username (Login):</strong> {role === "siswa" ? (selectedNis || "[NIS Murid]") : (nip || "[NIP]")}</div>
-                    <div><strong className="text-brand-900 font-extrabold">Password:</strong> {role === "siswa" ? "siswa19" : "guru19*"}</div>
+                    <div><strong className="text-brand-900 font-extrabold">Username (Login):</strong> {(nip || "[NIS/NIP]") + "@sman19.sch.id"}</div>
+                    <div><strong className="text-brand-900 font-extrabold">Password:</strong> {password.trim() || "guru19*"}</div>
+                  </div>
+                )}
+
+                {role === "siswa" && (
+                  <div className="text-[10px] font-bold text-brand-500 bg-brand-50/60 border border-brand-100/50 p-3 rounded-2xl space-y-1 animate-slide-up leading-relaxed">
+                    <div><strong className="text-brand-900 font-extrabold">Username (Login):</strong> {(selectedNis || "[NIS Murid]") + "@sman19.sch.id"}</div>
+                    <div><strong className="text-brand-900 font-extrabold">Password:</strong> siswa19</div>
                   </div>
                 )}
 

@@ -29,6 +29,7 @@ import {
   ChevronLeft,
   ChevronRight
 } from "lucide-react";
+import { getVisiblePages } from "../pagination";
 interface UserSessionProps { // dummy, we just need types import
 }
 import { Siswa, UserSession } from "../types";
@@ -1476,7 +1477,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
             
             {/* Pagination Controls */}
             {totalPages > 1 && (
-              <div className="flex items-center gap-1 sm:gap-1.5 select-none shrink-0 overflow-x-auto max-w-full">
+              <div className="flex items-center gap-1 sm:gap-1.5 select-none shrink-0">
                 <button
                   disabled={currentPage === 1}
                   onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
@@ -1485,32 +1486,23 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1)
-                  .filter(pageNum => pageNum === 1 || pageNum === totalPages || Math.abs(pageNum - currentPage) <= 1)
-                  .reduce<(number | string)[]>((acc, pageNum, i, arr) => {
-                    if (i > 0 && typeof arr[i - 1] === "number" && (pageNum as number) - (arr[i - 1] as number) > 1) {
-                      acc.push("...");
-                    }
-                    acc.push(pageNum);
-                    return acc;
-                  }, [])
-                  .map((pageNum, i) => (
-                    typeof pageNum === "string" ? (
-                      <span key={`ellipsis-${i}`} className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center text-brand-400 font-bold shrink-0">...</span>
-                    ) : (
-                      <button
-                        key={pageNum}
-                        onClick={() => setCurrentPage(pageNum)}
-                        className={`w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-xl border text-sm font-black transition-all cursor-pointer shrink-0 ${
-                          currentPage === pageNum
-                            ? "bg-brand-600 border-brand-600 text-white"
-                            : "bg-white hover:bg-brand-50 border-brand-200 text-brand-800"
-                        }`}
-                      >
-                        {pageNum}
-                      </button>
-                    )
-                  ))}
+                {getVisiblePages(totalPages, currentPage, 5).map((pageNum, i) => (
+                  typeof pageNum === "string" ? (
+                    <span key={`ellipsis-${i}`} className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center text-brand-400 font-bold shrink-0">...</span>
+                  ) : (
+                    <button
+                      key={pageNum}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-xl border text-sm font-black transition-all cursor-pointer shrink-0 ${
+                        currentPage === pageNum
+                          ? "bg-brand-600 border-brand-600 text-white"
+                          : "bg-white hover:bg-brand-50 border-brand-200 text-brand-800"
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  )
+                ))}
                 <button
                   disabled={currentPage === totalPages}
                   onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}

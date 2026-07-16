@@ -823,7 +823,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
         </div>
 
         {/* Right Actions Bar */}
-        {userSession.role !== "guru" && (
+        {!["guru", "kepala_sekolah"].includes(userSession.role) && (
           <div className="flex flex-wrap items-center gap-2.5">
             <motion.button
               whileHover={{ scale: 1.02 }}
@@ -877,7 +877,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
 
       {/* BULK ACTIONS BANNER */}
       <AnimatePresence>
-        {userSession.role !== "guru" && selectedSiswaIds.length > 0 && (
+        {!["guru", "kepala_sekolah"].includes(userSession.role) && selectedSiswaIds.length > 0 && (
           <motion.div
             initial={{ height: 0, opacity: 0, y: -10 }}
             animate={{ height: "auto", opacity: 1, y: 0 }}
@@ -922,7 +922,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
             <table className="w-full text-left border-collapse table-fixed">
               <thead>
                 <tr className="bg-brand-50/50 border-b border-brand-100/70 text-brand-500 text-xs font-black uppercase tracking-wider">
-                  {userSession.role !== "guru" && (
+                  {!["guru", "kepala_sekolah"].includes(userSession.role) && (
                     <th className="py-4 px-6 w-12 text-center">
                       <input
                         type="checkbox"
@@ -948,7 +948,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                 {isLoading ? (
                   Array.from({ length: 5 }).map((_, idx) => (
                     <tr key={idx} className="animate-pulse">
-                      {userSession.role !== "guru" && (
+                      {!["guru", "kepala_sekolah"].includes(userSession.role) && (
                         <td className="py-4 px-6 text-center">
                           <div className="h-4 w-4 bg-slate-200 rounded mx-auto" />
                         </td>
@@ -964,7 +964,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                   ))
                 ) : paginatedSiswa.length === 0 ? (
                   <tr>
-                    <td colSpan={userSession.role === "guru" ? 7 : 8} className="text-center py-12 text-slate-400 text-xs font-bold">
+                    <td colSpan={["guru", "kepala_sekolah"].includes(userSession.role) ? 7 : 8} className="text-center py-12 text-slate-400 text-xs font-bold">
                       Tidak ada murid yang ditemukan.
                     </td>
                   </tr>
@@ -984,7 +984,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                             isSelected ? "bg-brand-50/40" : ""
                           }`}
                         >
-                        {userSession.role !== "guru" && (
+                        {!["guru", "kepala_sekolah"].includes(userSession.role) && (
                           <td className="py-4 px-6 text-center" onClick={(e) => e.stopPropagation()}>
                             <input
                               type="checkbox"
@@ -1035,7 +1035,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                         </td>
                         <td className="py-4 px-6 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                           <div className="flex items-center justify-end gap-1.5">
-                            {userSession.role !== "guru" && (
+                            {!["guru", "kepala_sekolah"].includes(userSession.role) && (
                               <button
                                 onClick={() => handleDeleteSiswa(siswa.id, siswa.nama)}
                                 className="p-2 hover:bg-rose-50 text-rose-500 hover:text-rose-700 rounded-xl transition-all cursor-pointer border border-transparent hover:border-rose-100"

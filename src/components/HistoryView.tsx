@@ -50,7 +50,7 @@ export default function HistoryView({ onRefreshTrigger, refreshCount, userSessio
 
   const canRevert = (log: RiwayatPoin) => {
     if (isAdmin) return true;
-    if (userSession.role === "guru" && log.guru_email === userSession.fullName) return true;
+    if ((userSession.role === "guru" || userSession.role === "kepala_sekolah") && log.guru_email === userSession.fullName) return true;
     return false;
   };
 

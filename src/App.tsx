@@ -76,6 +76,7 @@ export default function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
   const [headerImgFailed, setHeaderImgFailed] = useState(false);
+  const [showProfilePopup, setShowProfilePopup] = useState(false);
 
   // Sidebar sliding indicator
   const navRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
@@ -171,7 +172,7 @@ export default function App() {
         if (!["input", "history", "change_password"].includes(activeTab)) {
           setActiveTab("input");
         }
-      } else if (userSession.role === "guru") {
+      } else if (userSession.role === "guru" || userSession.role === "kepala_sekolah") {
         if (!["input", "students", "history", "change_password"].includes(activeTab)) {
           setActiveTab("input");
         }
@@ -205,7 +206,7 @@ export default function App() {
       { id: "input", label: "Input Poin", icon: ClipboardCheck, description: "Catat via QR atau pencarian" },
       { id: "history", label: "Riwayat Poin", icon: Calendar, description: "Audit trail pencatatan" },
     ];
-  } else if (userSession.role === "guru") {
+  } else if (userSession.role === "guru" || userSession.role === "kepala_sekolah") {
     navItems = [
       { id: "input", label: "Input Poin", icon: ClipboardCheck, description: "Catat via QR atau pencarian" },
       { id: "students", label: "Data Murid", icon: Users, description: "Lihat database & kartu pelajar" },
@@ -262,7 +263,10 @@ export default function App() {
 
           {/* Right profile header info */}
           <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
-            <div className="flex items-center gap-2 sm:gap-3 bg-brand-950/40 md:bg-brand-50/70 pl-2 sm:pl-4 pr-1.5 py-1.5 rounded-2xl border border-white/10 md:border-brand-100 shadow-xs">
+            <button
+              onClick={() => setShowProfilePopup(true)}
+              className="flex items-center gap-2 sm:gap-3 bg-brand-950/40 md:bg-brand-50/70 pl-2 sm:pl-4 pr-1.5 py-1.5 rounded-2xl border border-white/10 md:border-brand-100 shadow-xs hover:shadow-md transition-all cursor-pointer"
+            >
               <div className="text-right">
                 <p className="text-[11px] md:text-xs font-bold text-white md:!text-[#1e1b4b] tracking-wide whitespace-nowrap">{userSession.fullName}</p>
                 <div className="flex items-center justify-end gap-1 text-[9px] md:text-[10px] text-brand-200 md:!text-slate-500 font-extrabold uppercase tracking-widest mt-0.5">
@@ -277,7 +281,7 @@ export default function App() {
                   {userSession.fullName.slice(0, 2)}
                 </div>
               )}
-            </div>
+            </button>
           </div>
         </div>
       </header>
@@ -506,6 +510,77 @@ export default function App() {
       cancelText="Batal"
       type="warning"
     />
+
+    {/* Profile Detail Popup */}
+    <AnimatePresence>
+      {showProfilePopup && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center p-4" style={{ pointerEvents: 'auto' }}>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 bg-brand-950/60 backdrop-blur-sm"
+            onClick={() => setShowProfilePopup(false)}
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.92, y: 16 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.92, y: 16 }}
+            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+            className="relative bg-white rounded-3xl shadow-2xl border border-brand-100 w-full max-w-sm p-8 text-center z-10"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <button
+              onClick={() => setShowProfilePopup(false)}
+              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Photo */}
+            <div className="flex justify-center mb-5">
+              {userSession.foto_url && !headerImgFailed ? (
+                <img
+                  src={userSession.foto_url}
+                  onError={() => setHeaderImgFailed(true)}
+                  className="w-[180px] h-[240px] rounded-2xl object-cover border-2 border-brand-100 shadow-lg"
+                  alt={userSession.fullName}
+                />
+              ) : (
+                <div className="w-[180px] h-[240px] rounded-2xl bg-gradient-to-tr from-accent-500 to-amber-400 border-2 border-brand-100 flex items-center justify-center shadow-lg">
+                  <span className="text-white font-black text-4xl uppercase tracking-tight">
+                    {userSession.fullName.slice(0, 2)}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Name */}
+            <h2 className="text-lg font-black text-brand-950 mb-2">{userSession.fullName}</h2>
+
+            {/* Role Badge */}
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-50 border border-brand-100 text-brand-700 text-xs font-bold uppercase tracking-wide mb-5">
+              <ShieldCheck className="w-3.5 h-3.5" />
+              {userSession.role === "siswa" ? "Murid" : userSession.role.replace("_", " ")}
+            </span>
+
+            {/* Identifier */}
+            <div className="bg-brand-50/70 border border-brand-100 rounded-2xl p-4">
+              <p className="text-[10px] text-brand-400 font-bold uppercase tracking-widest mb-1">
+                {userSession.role === "siswa" ? "NIS" : userSession.role === "piket" ? "Email" : "NIP"}
+              </p>
+              <p className="text-base font-black text-brand-900 tracking-wide">
+                {userSession.role === "siswa"
+                  ? userSession.nis || userSession.email.split("@")[0]
+                  : userSession.email.split("@")[0]}
+              </p>
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
     </>
   );
 }

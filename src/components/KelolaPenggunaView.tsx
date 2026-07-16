@@ -71,7 +71,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
-  const [role, setRole] = useState<"guru" | "siswa" | "piket">("guru");
+  const [role, setRole] = useState<"guru" | "kepala_sekolah" | "siswa" | "piket">("guru");
   const [selectedNis, setSelectedNis] = useState("");
   const [nip, setNip] = useState("");
 
@@ -167,9 +167,9 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
       }
       finalEmail = `${selectedNis}@sman19.sch.id`;
       finalPassword = "siswa19";
-    } else if (role === "guru") {
+    } else if (role === "guru" || role === "kepala_sekolah") {
       if (!nip) {
-        setErrorMsg("NIP wajib diisi untuk Guru.");
+        setErrorMsg(`NIP wajib diisi untuk ${role === "kepala_sekolah" ? "Kepala Sekolah" : "Guru"}.`);
         return;
       }
       if (!fullName) {
@@ -320,7 +320,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
 
     try {
       // Re-add @sman19.sch.id suffix for siswa/guru auth email
-      const fullEmail = (editingProfile.role === "siswa" || editingProfile.role === "guru")
+      const fullEmail = (editingProfile.role === "siswa" || editingProfile.role === "guru" || editingProfile.role === "kepala_sekolah")
         ? `${editEmail.trim()}@sman19.sch.id`
         : editEmail.trim();
 
@@ -654,10 +654,11 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
   const downloadUserTemplate = () => {
     try {
       const data = [
-        ["Nama Lengkap", "Username (NIS/NIP)", "Role (guru/siswa/piket)", "Password (opsional)"],
+        ["Nama Lengkap", "Username (NIS/NIP)", "Role (guru/kepala_sekolah/siswa/piket)", "Password (opsional)"],
         ["Hendra Wijaya, M.Si.", "19761102", "guru", ""],
         ["Ahmad Fauzi", "19001", "siswa", ""],
-        ["Petugas Piket 1", "piket1@contoh.com", "piket", "password123"]
+        ["Petugas Piket 1", "piket1@contoh.com", "piket", "password123"],
+        ["Dra. Siti Nurhaliza, M.Pd.", "19780101", "kepala_sekolah", ""]
       ];
       
       const worksheet = XLSX.utils.aoa_to_sheet(data);
@@ -713,7 +714,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
           const passwordVal = String(row[3] || "").trim();
 
           if (!name || !username || !roleVal) continue;
-          if (roleVal !== "guru" && roleVal !== "siswa" && roleVal !== "piket") continue;
+          if (roleVal !== "guru" && roleVal !== "siswa" && roleVal !== "piket" && roleVal !== "kepala_sekolah") continue;
 
           let emailVal = "";
           let finalPassword = "";
@@ -723,7 +724,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
             emailVal = `${username}@sman19.sch.id`;
             nisVal = username;
             finalPassword = passwordVal || "siswa19";
-          } else if (roleVal === "guru") {
+          } else if (roleVal === "guru" || roleVal === "kepala_sekolah") {
             emailVal = `${username}@sman19.sch.id`;
             finalPassword = passwordVal || "guru19*";
           } else if (roleVal === "piket") {
@@ -788,7 +789,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
   const totalPages = Math.ceil(filteredProfiles.length / itemsPerPage);
   const paginatedProfiles = filteredProfiles.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  const roleList = ["Semua", "super_admin", "guru", "siswa", "piket"];
+  const roleList = ["Semua", "super_admin", "kepala_sekolah", "guru", "siswa", "piket"];
 
   return (
     <div className="space-y-6 pb-8">
@@ -859,7 +860,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
                 >
                   {roleList.map((r) => (
                     <option key={r} value={r}>
-                      {r === "Semua" ? "Semua Role" : r === "super_admin" ? "Super Admin" : r.charAt(0).toUpperCase() + r.slice(1)}
+                      {r === "Semua" ? "Semua Role" : r === "super_admin" ? "Super Admin" : r === "kepala_sekolah" ? "Kepala Sekolah" : r.charAt(0).toUpperCase() + r.slice(1)}
                     </option>
                   ))}
                 </select>
@@ -1026,7 +1027,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
                   ) : (
                     paginatedProfiles.map((p) => {
                       const isSuper = p.role === "super_admin";
-                      const isGuru = p.role === "guru";
+                      const isGuru = p.role === "guru" || p.role === "kepala_sekolah";
                       const isSelected = selectedIds.includes(p.id);
                       return (
                         <tr key={p.id} className={`hover:bg-brand-50/20 transition-colors ${isSelected ? "bg-brand-50/40" : ""}`}>
@@ -1087,7 +1088,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
                                   : "bg-emerald-50 text-emerald-700 border-emerald-200"
                               }`}
                             >
-                              {p.role === "super_admin" ? "SUPER ADMIN" : p.role.replace("_", " ")}
+                              {p.role === "super_admin" ? "SUPER ADMIN" : p.role === "kepala_sekolah" ? "KEPALA SEKOLAH" : p.role.replace("_", " ")}
                             </span>
                           </td>
                           <td className="py-4 px-6 text-right whitespace-nowrap">
@@ -1200,8 +1201,8 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
               <form onSubmit={handleCreateUser} className="space-y-4">
                 <div className="space-y-1">
                   <label className="text-xs font-black text-brand-900 uppercase block">Pilih Peran Pengguna</label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {(["guru", "siswa", "piket"] as const).map((r) => (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {(["guru", "kepala_sekolah", "siswa", "piket"] as const).map((r) => (
                       <button
                         key={r}
                         type="button"
@@ -1220,7 +1221,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
                             : "bg-white border-brand-100 text-brand-600 hover:bg-brand-50"
                         }`}
                       >
-                        {r === "guru" ? "Guru" : r === "siswa" ? "Murid" : "Piket"}
+                        {r === "guru" ? "Guru" : r === "kepala_sekolah" ? "Kepala Sekolah" : r === "siswa" ? "Murid" : "Piket"}
                       </button>
                     ))}
                   </div>
@@ -1243,7 +1244,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
                   </div>
                 )}
 
-                {(role === "guru" || role === "siswa") && (
+                {(role === "guru" || role === "kepala_sekolah" || role === "siswa") && (
                   <div className="space-y-1 animate-slide-up">
                     <label className="text-xs font-black text-brand-900 uppercase block">Nama Lengkap</label>
                     <div className="relative">
@@ -1254,16 +1255,16 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
                         disabled={role === "siswa"}
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
-                        placeholder={role === "siswa" ? "Pilih Murid terlebih dahulu" : "Nama Lengkap Guru & Gelar"}
+                        placeholder={role === "siswa" ? "Pilih Murid terlebih dahulu" : role === "kepala_sekolah" ? "Nama Lengkap Kepala Sekolah & Gelar" : "Nama Lengkap Guru & Gelar"}
                         className="w-full border border-brand-100 rounded-xl py-2.5 pl-10 pr-4 text-sm font-semibold focus:ring-1 focus:ring-brand-500 outline-none text-brand-900 bg-brand-50/20 disabled:opacity-75"
                       />
                     </div>
                   </div>
                 )}
 
-                {role === "guru" && (
+                {(role === "guru" || role === "kepala_sekolah") && (
                   <div className="space-y-1 animate-slide-up">
-                    <label className="text-xs font-black text-brand-900 uppercase block">Nomor NIP Guru</label>
+                    <label className="text-xs font-black text-brand-900 uppercase block">Nomor NIP</label>
                     <input
                       type="text"
                       required
@@ -1332,9 +1333,9 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
                   </>
                 )}
 
-                {(role === "guru" || role === "siswa") && (
+                {(role === "guru" || role === "kepala_sekolah" || role === "siswa") && (
                   <div className="text-[10px] font-bold text-brand-500 bg-brand-50/60 border border-brand-100/50 p-3 rounded-2xl space-y-1 animate-slide-up leading-relaxed">
-                    <div><strong className="text-brand-900 font-extrabold">Username (Login):</strong> {role === "siswa" ? (selectedNis || "[NIS Murid]") : (nip || "[NIP Guru]")}</div>
+                    <div><strong className="text-brand-900 font-extrabold">Username (Login):</strong> {role === "siswa" ? (selectedNis || "[NIS Murid]") : (nip || "[NIP]")}</div>
                     <div><strong className="text-brand-900 font-extrabold">Password:</strong> {role === "siswa" ? "siswa19" : "guru19*"}</div>
                   </div>
                 )}
@@ -1412,7 +1413,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
 
                 <div className="space-y-1">
                   <label className="text-xs font-black text-brand-900 uppercase block">
-                    {(editingProfile?.role === "siswa" || editingProfile?.role === "guru") ? "Username (Login)" : "Email / Username Login"}
+                    {(editingProfile?.role === "siswa" || editingProfile?.role === "guru" || editingProfile?.role === "kepala_sekolah") ? "Username (Login)" : "Email / Username Login"}
                   </label>
                   <div className="relative">
                     <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-brand-400" />
@@ -1421,11 +1422,11 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
                       required
                       value={editEmail}
                       onChange={(e) => setEditEmail(e.target.value)}
-                      readOnly={editingProfile?.role === "siswa" || editingProfile?.role === "guru"}
-                      className={`w-full border border-brand-100 rounded-xl py-2.5 pl-10 pr-4 text-sm font-semibold focus:ring-1 focus:ring-brand-500 outline-none text-brand-900 bg-brand-50/20${(editingProfile?.role === "siswa" || editingProfile?.role === "guru") ? " opacity-75 cursor-not-allowed" : ""}`}
+                      readOnly={editingProfile?.role === "siswa" || editingProfile?.role === "guru" || editingProfile?.role === "kepala_sekolah"}
+                      className={`w-full border border-brand-100 rounded-xl py-2.5 pl-10 pr-4 text-sm font-semibold focus:ring-1 focus:ring-brand-500 outline-none text-brand-900 bg-brand-50/20${(editingProfile?.role === "siswa" || editingProfile?.role === "guru" || editingProfile?.role === "kepala_sekolah") ? " opacity-75 cursor-not-allowed" : ""}`}
                     />
                   </div>
-                  {(editingProfile?.role === "siswa" || editingProfile?.role === "guru") && (
+                  {(editingProfile?.role === "siswa" || editingProfile?.role === "guru" || editingProfile?.role === "kepala_sekolah") && (
                     <p className="text-[10px] text-brand-400 font-medium">Username tidak dapat diubah.</p>
                   )}
                 </div>
@@ -1504,7 +1505,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
 
               <div className="space-y-4">
                 <p className="text-xs text-brand-500 leading-relaxed font-medium">
-                  Unggah file Excel berisi data akun. Kolom Username diisi NIS (untuk siswa) atau NIP (untuk guru). Sistem akan otomatis membuat email login <strong className="text-brand-700">@sman19.sch.id</strong>.
+                  Unggah file Excel berisi data akun. Kolom Username diisi NIS (untuk siswa) atau NIP (untuk guru/kepala sekolah). Sistem akan otomatis membuat email login <strong className="text-brand-700">@sman19.sch.id</strong>.
                 </p>
 
                 <div className="bg-brand-50/70 border border-brand-100 rounded-2xl p-4 flex items-center justify-between gap-3">

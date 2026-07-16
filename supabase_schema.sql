@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   email TEXT NOT NULL,
   nama TEXT NOT NULL,
-  role TEXT NOT NULL CHECK (role IN ('super_admin', 'guru', 'siswa')),
+  role TEXT NOT NULL CHECK (role IN ('super_admin', 'kepala_sekolah', 'guru', 'siswa', 'piket')),
   nis TEXT REFERENCES public.siswa(nis) ON DELETE SET NULL,
   foto_url TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL

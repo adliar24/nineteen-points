@@ -7,7 +7,6 @@ import {
   Users, 
   Calendar, 
   BarChart2,
-  PieChart as PieIcon,
   Sparkles
 } from "lucide-react";
 import { 
@@ -23,11 +22,7 @@ import {
   XAxis, 
   YAxis, 
   CartesianGrid, 
-  Tooltip, 
-  Legend, 
-  PieChart, 
-  Pie, 
-  Cell 
+  Tooltip 
 } from "recharts";
 
 import SkeletonLoader from "./SkeletonLoader";
@@ -193,12 +188,6 @@ export default function StatsView() {
       Tipe: item.value > 0 ? "Penghargaan" : "Pelanggaran"
     }));
 
-  // 7. Pie Chart of Positive vs Negative logs count
-  const logTypeDistribution = [
-    { name: "Penghargaan (+)", value: riwayatList.filter(r => r.nilai_diberikan > 0).length, color: "#10b981" },
-    { name: "Pelanggaran (-)", value: riwayatList.filter(r => r.nilai_diberikan < 0).length, color: "#f43f5e" }
-  ].filter(d => d.value > 0);
-
   // Chart tab config
   const chartTabs: { key: ChartTab; label: string; icon: React.ReactNode }[] = [
     { key: "kelas", label: "Kelas", icon: <BarChart2 className="w-3.5 h-3.5" /> },
@@ -330,55 +319,6 @@ export default function StatsView() {
                   Belum ada data untuk kategori ini.
                 </div>
               )}
-            </div>
-          </div>
-
-          {/* Pie Chart Row */}
-          <div className="bg-white p-5 rounded-3xl border border-brand-100/60 shadow-md shadow-brand-900/5 flex flex-col">
-            <h3 className="text-sm font-black text-brand-950 flex items-center gap-1.5 mb-4 flex-shrink-0">
-              <PieIcon className="w-4.5 h-4.5 text-brand-600" />
-              Proporsi Log Poin
-            </h3>
-            
-            <div className="flex items-center justify-center gap-8 flex-wrap">
-              <div className="flex-shrink-0 w-44 h-44">
-                {logTypeDistribution.length > 0 ? (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={logTypeDistribution}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={28}
-                        outerRadius={54}
-                        paddingAngle={5}
-                        dataKey="value"
-                      >
-                        {logTypeDistribution.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip contentStyle={{ fontSize: 11, borderRadius: 12, fontWeight: "bold" }} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="h-full flex items-center justify-center text-xs text-brand-400 font-bold">
-                    Belum ada data.
-                  </div>
-                )}
-              </div>
-              
-              <div className="flex-1 min-w-[180px] space-y-3">
-                {logTypeDistribution.map((item, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 rounded-2xl border border-brand-50 bg-brand-50/15">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }}></span>
-                      <span className="text-xs font-black text-brand-850 truncate">{item.name}</span>
-                    </div>
-                    <span className="font-mono text-sm font-black text-brand-950 flex-shrink-0">{item.value}x</span>
-                  </div>
-                ))}
-              </div>
             </div>
           </div>
         </div>

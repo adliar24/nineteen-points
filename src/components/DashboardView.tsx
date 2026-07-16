@@ -24,6 +24,7 @@ import {
   addRiwayat
 } from "../dbStore";
 import ConfirmationModal from "./ConfirmationModal";
+import { toSentenceCase } from "../formatName";
 
 interface DashboardViewProps {
   userSession: UserSession;
@@ -533,7 +534,7 @@ export default function DashboardView({ userSession, onNavigate, onRefreshHistor
                           <div className="w-8.5 h-8.5 rounded-xl bg-brand-100 text-brand-700 font-extrabold text-xs flex items-center justify-center shadow-inner uppercase">
                             {siswa.nama.slice(0, 2)}
                           </div>
-                          <span>{siswa.nama}</span>
+                           <span>{toSentenceCase(siswa.nama)}</span>
                         </div>
                       </td>
                       <td className="py-4.5 px-6 text-xs text-brand-700 font-bold uppercase tracking-wider">
@@ -717,7 +718,7 @@ export default function DashboardView({ userSession, onNavigate, onRefreshHistor
             <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
               <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
                 <Award className="w-5 h-5 text-zinc-800" />
-                Catat Poin: {selectedSingleSiswa.nama}
+                Catat Poin: {toSentenceCase(selectedSingleSiswa.nama)}
               </h3>
               <button
                 onClick={() => {
@@ -1006,7 +1007,7 @@ export default function DashboardView({ userSession, onNavigate, onRefreshHistor
           }
         }}
         title="Hapus Profil Siswa?"
-        message={`Apakah Anda yakin ingin menghapus data siswa "${siswaToDelete?.nama}"? Semua riwayat poin yang sudah tercatat akan tetap tersimpan di database log, namun profil siswa ini akan dihapus permanen.`}
+        message={`Apakah Anda yakin ingin menghapus data siswa "${siswaToDelete?.nama ? toSentenceCase(siswaToDelete.nama) : ""}"? Semua riwayat poin yang sudah tercatat akan tetap tersimpan di database log, namun profil siswa ini akan dihapus permanen.`}
         confirmText="Ya, Hapus"
         cancelText="Batal"
         type="danger"

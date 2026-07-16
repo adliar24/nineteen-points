@@ -6,6 +6,7 @@ import { Siswa } from "../types";
 import { getSiswaList } from "../dbStore";
 import html2canvas from "html2canvas-pro";
 import jsPDF from "jspdf";
+import { toSentenceCase } from "../formatName";
 
 export default function CardGeneratorView() {
   const [siswaList, setSiswaList] = useState<Siswa[]>(getSiswaList());
@@ -246,7 +247,7 @@ export default function CardGeneratorView() {
                   <div className="space-y-2 flex-1 min-w-0">
                     <div className="space-y-0.5">
                       <p className="text-[6.5px] text-accent-400 font-extrabold uppercase tracking-widest">NAMA PELAJAR</p>
-                      <h5 className="text-[13px] font-black tracking-tight truncate text-white">{siswa.nama}</h5>
+                      <h5 className="text-[13px] font-black tracking-tight truncate text-white">{toSentenceCase(siswa.nama)}</h5>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <div>

@@ -40,6 +40,7 @@ import ConfirmationModal from "./ConfirmationModal";
 import html2canvas from "html2canvas-pro";
 import jsPDF from "jspdf";
 import * as XLSX from "xlsx";
+import { toSentenceCase } from "../formatName";
 import { supabase, supabaseAdminAuth } from "../supabaseClient";
 
 // Client-side Image Compression using Canvas (outputs 3:4 aspect-ratio JPEG blob)
@@ -673,7 +674,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
 
   // Download individual student card as high-res PNG image
   const handleDownloadSingleCard = async (siswa: Siswa) => {
-    showToast(`Menyiapkan Kartu QR untuk ${siswa.nama}...`);
+    showToast(`Menyiapkan Kartu QR untuk ${toSentenceCase(siswa.nama)}...`);
     setPrintingSiswa(siswa);
     
     // Give state a tick to update the DOM
@@ -691,7 +692,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
           link.download = `KARTU_PELAJAR_SMAN19_${siswa.nama.toUpperCase().replace(/\s+/g, "_")}.png`;
           link.href = imgData;
           link.click();
-          showToast(`Kartu ${siswa.nama} sukses diunduh!`);
+          showToast(`Kartu ${toSentenceCase(siswa.nama)} sukses diunduh!`);
         } catch (error) {
           console.error("Gagal merender kartu:", error);
           alert("Gagal mengunduh kartu. Silakan coba lagi.");
@@ -1005,7 +1006,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                         </td>
                         <td className="py-4 px-4 font-mono font-bold text-sm text-brand-900">{siswa.nis}</td>
                         <td className="py-4 px-6 overflow-hidden whitespace-nowrap">
-                          <div className="font-extrabold text-sm text-brand-950 uppercase truncate">{siswa.nama}</div>
+                          <div className="font-extrabold text-sm text-brand-950 uppercase truncate">{toSentenceCase(siswa.nama)}</div>
                         </td>
                         <td className="py-4 px-6 text-sm font-semibold text-brand-800">{siswa.kelas}</td>
                         <td className="py-4 px-6 text-center font-mono font-black text-sm">
@@ -1113,7 +1114,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
           }
         }}
         title="Hapus Data Murid?"
-        message={`Apakah Anda yakin ingin menghapus data "${siswaToDelete?.nama}" secara permanen? Semua riwayat absensi & sanksi miliknya akan ikut terhapus.`}
+        message={`Apakah Anda yakin ingin menghapus data "${siswaToDelete?.nama ? toSentenceCase(siswaToDelete.nama) : ""}" secara permanen? Semua riwayat absensi & sanksi miliknya akan ikut terhapus.`}
         confirmText="Ya, Hapus"
         cancelText="Batal"
         type="danger"
@@ -1175,7 +1176,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                   </div>
                 )}
 
-                <h3 className="text-base font-extrabold text-brand-950 uppercase">{detailStudent.nama}</h3>
+                <h3 className="text-base font-extrabold text-brand-950 uppercase">{toSentenceCase(detailStudent.nama)}</h3>
                 <div className="mt-2 space-y-1 text-xs font-semibold text-brand-600">
                   <p><span className="font-black text-brand-400 uppercase">NIS:</span> {detailStudent.nis}</p>
                   <p><span className="font-black text-brand-400 uppercase">Kelas:</span> {detailStudent.kelas}</p>
@@ -1470,7 +1471,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                 {/* 2. Student Info */}
                 <div className="text-center space-y-1 mt-3">
                   <h3 className="text-sm font-black tracking-tight text-[#1e1b4b] px-2 line-clamp-1 leading-snug">
-                    {siswa.nama}
+                    {toSentenceCase(siswa.nama)}
                   </h3>
                   <p className="text-[9px] text-[#7c3aed] font-extrabold uppercase tracking-widest">
                     NIS: {siswa.nis} &bull; KELAS: {siswa.kelas}
@@ -1535,7 +1536,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
               {/* 2. Student Info */}
               <div className="text-center space-y-1 mt-3">
                 <h3 className="text-sm font-black tracking-tight text-[#1e1b4b] px-2 line-clamp-1 leading-snug">
-                  {printingSiswa.nama}
+                  {toSentenceCase(printingSiswa.nama)}
                 </h3>
                 <p className="text-[9px] text-[#7c3aed] font-extrabold uppercase tracking-widest">
                   NIS: {printingSiswa.nis} &bull; KELAS: {printingSiswa.kelas}

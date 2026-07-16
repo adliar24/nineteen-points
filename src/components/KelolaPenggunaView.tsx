@@ -28,6 +28,7 @@ import { supabase, supabaseAdminAuth } from "../supabaseClient";
 import { Siswa } from "../types";
 import * as XLSX from "xlsx";
 import ConfirmationModal from "./ConfirmationModal";
+import { toSentenceCase } from "../formatName";
 
 interface Profile {
   id: string;
@@ -205,7 +206,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
 
       if (signUpError) throw signUpError;
 
-      setSuccessMsg(`Akun "${fullName}" berhasil dibuat sebagai ${role.toUpperCase()}!`);
+      setSuccessMsg(`Akun "${toSentenceCase(fullName)}" berhasil dibuat sebagai ${role.toUpperCase()}!`);
       
       // Reset form
       setEmail("");
@@ -576,7 +577,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
         const item = itemsToUpload[i];
         const profile = profiles.find(p => p.id === item.matchedProfileId);
         if (!profile) continue;
-        setUploadStatusMsg(`${profile.nama} (${i + 1}/${itemsToUpload.length})...`);
+        setUploadStatusMsg(`${toSentenceCase(profile.nama)} (${i + 1}/${itemsToUpload.length})...`);
         setUploadProgress(Math.round(((i + 1) / itemsToUpload.length) * 100));
         try {
           const compressedBlob = await compressImage(item.file, 300, 400, 0.75);
@@ -1051,7 +1052,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
                               </div>
                             </div>
                           </td>
-                          <td className="py-4 px-6 font-extrabold text-sm text-brand-950 uppercase">{p.nama}</td>
+                          <td className="py-4 px-6 font-extrabold text-sm text-brand-950 uppercase">{toSentenceCase(p.nama)}</td>
                           <td className="py-4 px-6 font-mono font-bold text-sm text-brand-900">
                             {p.email.split("@")[0]}
                           </td>
@@ -1708,7 +1709,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
                                   <td className="py-3 px-4">
                                     {prof ? (
                                       <div className="text-xs">
-                                        <div className="font-extrabold text-brand-950 uppercase">{prof.nama}</div>
+                                        <div className="font-extrabold text-brand-950 uppercase">{toSentenceCase(prof.nama)}</div>
                                         <div className="text-[9px] text-brand-400 font-bold mt-0.5">{prof.email.split("@")[0]} &bull; {prof.role}</div>
                                       </div>
                                     ) : (
@@ -1734,7 +1735,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
                                     >
                                       <option value="">-- Pilih Manual --</option>
                                       {[...profiles].sort((a,b) => a.nama.localeCompare(b.nama)).map(p => (
-                                        <option key={p.id} value={p.id}>{p.nama} ({p.role})</option>
+                                        <option key={p.id} value={p.id}>{toSentenceCase(p.nama)} ({p.role})</option>
                                       ))}
                                     </select>
                                   </td>
@@ -1808,7 +1809,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
         onClose={() => setPhotoDeleteTarget(null)}
         onConfirm={handleDeletePhoto}
         title="Hapus Foto Profil?"
-        message={`Yakin ingin menghapus foto profil "${photoDeleteTarget?.nama}"?`}
+        message={`Yakin ingin menghapus foto profil "${photoDeleteTarget?.nama ? toSentenceCase(photoDeleteTarget.nama) : ""}"?`}
         confirmText="Ya, Hapus"
         cancelText="Batal"
         type="danger"

@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { RiwayatPoin, UserSession } from "../types";
 import { getRiwayatList, deleteRiwayat, updateRiwayat, getMasterPoinList } from "../dbStore";
 import ConfirmationModal from "./ConfirmationModal";
+import { toSentenceCase } from "../formatName";
 
 import SkeletonLoader from "./SkeletonLoader";
 
@@ -235,7 +236,7 @@ export default function HistoryView({ onRefreshTrigger, refreshCount, userSessio
                             </div>
                           )}
                           <div>
-                            <div className="font-bold text-brand-950 uppercase">{log.siswa_nama}</div>
+                            <div className="font-bold text-brand-950 uppercase">{toSentenceCase(log.siswa_nama || "")}</div>
                             <div className="text-xs text-brand-400 font-mono font-bold">NIS: {log.siswa_nis}</div>
                           </div>
                         </div>
@@ -318,7 +319,7 @@ export default function HistoryView({ onRefreshTrigger, refreshCount, userSessio
           }
         }}
         title="Batalkan Catatan Poin?"
-        message={`Apakah Anda yakin ingin membatalkan pemberian poin ini? Siswa "${revertTarget?.namaSiswa}" akan mendapatkan penyesuaian poin kembali sebesar ${revertTarget ? (revertTarget.nilai > 0 ? `-${revertTarget.nilai}` : `+${Math.abs(revertTarget.nilai)}`) : ""} poin.`}
+        message={`Apakah Anda yakin ingin membatalkan pemberian poin ini? Siswa "${toSentenceCase(revertTarget?.namaSiswa || "")}" akan mendapatkan penyesuaian poin kembali sebesar ${revertTarget ? (revertTarget.nilai > 0 ? `-${revertTarget.nilai}` : `+${Math.abs(revertTarget.nilai)}`) : ""} poin.`}
         confirmText="Ya, Batalkan"
         cancelText="Batal"
         type="warning"

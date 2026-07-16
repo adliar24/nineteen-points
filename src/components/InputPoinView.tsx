@@ -440,7 +440,7 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
                             className="w-full px-4 py-3.5 text-left hover:bg-brand-50/50 flex items-center justify-between group transition-colors cursor-pointer"
                           >
                             <div>
-                              <p className="text-sm font-black text-brand-900 group-hover:text-brand-600 transition-colors uppercase">{siswa.nama}</p>
+                              <p className="text-sm font-black text-brand-900 group-hover:text-brand-600 transition-colors uppercase">{toSentenceCase(siswa.nama)}</p>
                               <p className="text-[10px] text-brand-400 font-semibold uppercase mt-0.5">{siswa.kelas} &bull; NIS {siswa.nis}</p>
                             </div>
                             <div className="flex items-center gap-2">

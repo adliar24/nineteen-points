@@ -408,7 +408,7 @@ export default function QRScannerView({ userSession, onRefreshHistory }: QRScann
                     NIS: {siswa.nis}
                   </p>
                   <p className="text-sm font-black text-white group-hover:text-white transition-colors">
-                    {siswa.nama}
+                    {toSentenceCase(siswa.nama)}
                   </p>
                   <p className="text-[10px] text-brand-100/80 font-bold uppercase tracking-wider">Kelas: {siswa.kelas}</p>
                 </div>

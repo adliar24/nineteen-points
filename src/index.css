@@ -24,6 +24,11 @@
 }
 
 /* Glassmorphism scrollbars and global beautiful body background */
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
 body {
   background-color: #faf9ff;
   font-family: var(--font-sans);

@@ -215,7 +215,7 @@ export default function App() {
   return (
     <>
     <div
-      className="min-h-screen bg-[#faf9ff] text-[#1e1b4b] flex flex-row font-sans w-full animate-[fadeIn_0.6s_ease-out]"
+      className="h-screen bg-[#faf9ff] text-[#1e1b4b] flex flex-row font-sans w-full animate-[fadeIn_0.6s_ease-out]"
     >
       
       {/* Navigation Sidebar (Desktop - Very Left Edge) */}

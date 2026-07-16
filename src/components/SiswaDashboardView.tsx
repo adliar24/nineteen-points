@@ -19,6 +19,7 @@ import { UserSession, RiwayatPoin, Siswa } from "../types";
 import { supabase } from "../supabaseClient";
 import html2canvas from "html2canvas-pro";
 import SkeletonLoader from "./SkeletonLoader";
+import { toSentenceCase } from "../formatName";
 
 interface SiswaDashboardViewProps {
   userSession: UserSession;
@@ -207,7 +208,7 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
               </div>
               <div className="flex flex-col justify-center flex-1 min-w-0 space-y-3">
                 <div className="space-y-0.5 min-w-0">
-                  <h2 className="text-lg font-black text-white leading-tight break-words">Halo, {siswaDetail.nama}!</h2>
+                  <h2 className="text-lg font-black text-white leading-tight break-words">Halo, {toSentenceCase(siswaDetail.nama)}!</h2>
                   <p className="text-[11px] text-purple-100 font-medium">Pantau poin prestasi dan pelanggaranmu.</p>
                 </div>
                 <div className="flex gap-3">
@@ -235,7 +236,7 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
                 )}
                 <div className="space-y-1">
                   <h2 className="text-2xl font-black text-white flex items-center gap-2">
-                    Halo, {siswaDetail.nama}! <Sparkles className="w-5 h-5 text-amber-300 animate-pulse" />
+                    Halo, {toSentenceCase(siswaDetail.nama)}! <Sparkles className="w-5 h-5 text-amber-300 animate-pulse" />
                   </h2>
                   <p className="text-xs text-purple-100 font-medium">
                     Pantau poin prestasi dan pelanggaranmu di sini.

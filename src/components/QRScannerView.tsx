@@ -4,6 +4,7 @@ import { Html5QrcodeScanner } from "html5-qrcode";
 import { Camera, AlertCircle, Check, Award, Search, Users, Zap, X, ShieldCheck } from "lucide-react";
 import { Siswa, MasterPoin, UserSession } from "../types";
 import { getSiswaList, getMasterPoinList, addRiwayat } from "../dbStore";
+import { toSentenceCase } from "../formatName";
 
 interface QRScannerViewProps {
   userSession: UserSession;
@@ -185,7 +186,7 @@ export default function QRScannerView({ userSession, onRefreshHistory }: QRScann
         <div className="bg-brand-50/70 rounded-2xl p-3.5 border border-brand-100/60 flex items-center justify-between text-xs text-brand-900 shadow-xs">
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-5 h-5 text-accent-500" />
-            <span>Petugas Aktif: <strong className="font-bold text-brand-900">{userSession.fullName}</strong> <span className="text-brand-500">({userSession.email})</span></span>
+            <span>Petugas Aktif: <strong className="font-bold text-brand-900">{toSentenceCase(userSession.fullName)}</strong> <span className="text-brand-500">({userSession.email})</span></span>
           </div>
           <span className="font-black bg-brand-600 text-white px-2.5 py-1 rounded-xl text-[9px] uppercase tracking-wider shadow-sm">
             TERVERIFIKASI

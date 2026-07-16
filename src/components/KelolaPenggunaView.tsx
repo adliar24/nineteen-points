@@ -103,7 +103,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
   async function loadUsersData() {
     setIsLoading(true);
     try {
-      const { data: profilesData, error: profilesError } = await supabase
+      const { data: profilesData, error: profilesError } = await supabaseAdminAuth
         .from("profiles")
         .select("*")
         .order("created_at", { ascending: false });
@@ -111,7 +111,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
       if (profilesError) throw profilesError;
       setProfiles(profilesData || []);
 
-      const { data: siswaData, error: siswaError } = await supabase
+      const { data: siswaData, error: siswaError } = await supabaseAdminAuth
         .from("siswa")
         .select("*")
         .order("nama", { ascending: true });
@@ -428,9 +428,10 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
   const downloadUserTemplate = () => {
     try {
       const data = [
-        ["Nama Lengkap", "Email", "Password", "Role (guru/siswa)", "NIS (jika siswa)"],
-        ["Hendra Wijaya, M.Si.", "hendra@sma19.sch.id", "password123", "guru", ""],
-        ["Ahmad Fauzi", "fauzi@siswa.sma19.sch.id", "siswa123", "siswa", "19001"]
+        ["Nama Lengkap", "Username (NIS/NIP)", "Role (guru/siswa/piket)", "Password (opsional)"],
+        ["Hendra Wijaya, M.Si.", "19761102", "guru", ""],
+        ["Ahmad Fauzi", "19001", "siswa", ""],
+        ["Petugas Piket 1", "piket1@contoh.com", "piket", "password123"]
       ];
       
       const worksheet = XLSX.utils.aoa_to_sheet(data);
@@ -439,10 +440,9 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
       
       worksheet["!cols"] = [
         { wch: 25 },
-        { wch: 25 },
-        { wch: 15 },
-        { wch: 15 },
-        { wch: 15 }
+        { wch: 22 },
+        { wch: 20 },
+        { wch: 18 }
       ];
 
       XLSX.writeFile(workbook, "TEMPLATE_IMPORT_AKUN_SMAN19.xlsx");
@@ -482,40 +482,40 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
           if (!row || row.length === 0) continue;
 
           const name = String(row[0] || "").trim();
-          let emailVal = String(row[1] || "").trim();
-          let passwordVal = String(row[2] || "").trim();
-          const roleVal = String(row[3] || "").trim().toLowerCase();
-          const nisVal = row[4] ? String(row[4]).trim() : null;
+          const username = String(row[1] || "").trim();
+          const roleVal = String(row[2] || "").trim().toLowerCase();
+          const passwordVal = String(row[3] || "").trim();
 
-          if (!name || !roleVal) continue;
+          if (!name || !username || !roleVal) continue;
           if (roleVal !== "guru" && roleVal !== "siswa" && roleVal !== "piket") continue;
 
-          // Auto-generate credentials based on role
+          let emailVal = "";
+          let finalPassword = "";
+          let nisVal = null;
+
           if (roleVal === "siswa") {
-            if (!nisVal) continue;
-            emailVal = `${nisVal}@sman19.sch.id`;
-            if (!passwordVal) {
-              passwordVal = "siswa19";
-            }
+            emailVal = `${username}@sman19.sch.id`;
+            nisVal = username;
+            finalPassword = passwordVal || "siswa19";
           } else if (roleVal === "guru") {
-            const nipFromExcel = emailVal || "guru";
-            emailVal = `${nipFromExcel}@sman19.sch.id`;
-            if (!passwordVal) {
-              passwordVal = "guru19*";
-            }
+            emailVal = `${username}@sman19.sch.id`;
+            finalPassword = passwordVal || "guru19*";
           } else if (roleVal === "piket") {
-            if (!emailVal || !passwordVal) continue;
+            if (!username.includes("@")) continue;
+            emailVal = username;
+            if (!passwordVal) continue;
+            finalPassword = passwordVal;
           }
 
           try {
             const { error: signUpError } = await supabaseAdminAuth.auth.admin.createUser({
               email: emailVal,
-              password: passwordVal,
+              password: finalPassword,
               email_confirm: true,
               user_metadata: {
                 fullName: name,
                 role: roleVal,
-                nis: roleVal === "siswa" ? nisVal : null
+                nis: nisVal
               }
             });
 
@@ -1267,7 +1267,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
 
               <div className="space-y-4">
                 <p className="text-xs text-brand-500 leading-relaxed font-medium">
-                  Unggah file Excel Anda yang berisi data akun Guru dan Murid. Gunakan format tabel yang sesuai agar registrasi berjalan lancar.
+                  Unggah file Excel berisi data akun. Kolom Username diisi NIS (untuk siswa) atau NIP (untuk guru). Sistem akan otomatis membuat email login <strong className="text-brand-700">@sman19.sch.id</strong>.
                 </p>
 
                 <div className="bg-brand-50/70 border border-brand-100 rounded-2xl p-4 flex items-center justify-between gap-3">

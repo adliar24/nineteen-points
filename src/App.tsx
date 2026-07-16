@@ -17,7 +17,9 @@ import {
   ShieldCheck,
   Award,
   TrendingUp,
-  CreditCard
+  CreditCard,
+  GraduationCap,
+  Shield
 } from "lucide-react";
 import { UserSession } from "./types";
 import { getLocalStorage, setLocalStorage } from "./dbStore";
@@ -31,7 +33,8 @@ import KelolaSiswaView from "./components/KelolaSiswaView";
 import HistoryView from "./components/HistoryView";
 import MasterPoinView from "./components/MasterPoinView";
 import SiswaDashboardView from "./components/SiswaDashboardView";
-import KelolaPenggunaView from "./components/KelolaPenggunaView";
+import KelolaGuruView from "./components/KelolaGuruView";
+import KelolaPiketView from "./components/KelolaPiketView";
 import ChangePasswordView from "./components/ChangePasswordView";
 import ConfirmationModal from "./components/ConfirmationModal";
 
@@ -176,7 +179,7 @@ export default function App() {
           setActiveTab("input");
         }
       } else {
-        if (!["stats", "input", "students", "history", "rules", "users", "change_password"].includes(activeTab)) {
+        if (!["stats", "input", "students", "history", "rules", "kelola_guru", "kelola_piket", "change_password"].includes(activeTab)) {
           setActiveTab("stats");
         }
       }
@@ -213,10 +216,16 @@ export default function App() {
     ];
   } else if (userSession.role === "super_admin") {
     navItems.push({
-      id: "users",
-      label: "Kelola Akun",
-      icon: ShieldCheck,
-      description: "Atur akun guru & murid"
+      id: "kelola_guru",
+      label: "Kelola Guru",
+      icon: GraduationCap,
+      description: "Atur akun & foto guru"
+    });
+    navItems.push({
+      id: "kelola_piket",
+      label: "Kelola Piket",
+      icon: Shield,
+      description: "Atur akun & foto piket"
     });
   } else if (userSession.role === "siswa") {
     navItems = [
@@ -470,8 +479,15 @@ export default function App() {
                 <MasterPoinView onRefreshTrigger={() => setHistoryRefreshCount((c) => c + 1)} />
               )}
 
-              {activeTab === "users" && userSession.role === "super_admin" && (
-                <KelolaPenggunaView
+              {activeTab === "kelola_guru" && userSession.role === "super_admin" && (
+                <KelolaGuruView
+                  userSession={userSession}
+                  onRefreshHistory={() => setHistoryRefreshCount((c) => c + 1)}
+                />
+              )}
+
+              {activeTab === "kelola_piket" && userSession.role === "super_admin" && (
+                <KelolaPiketView
                   userSession={userSession}
                   onRefreshHistory={() => setHistoryRefreshCount((c) => c + 1)}
                 />

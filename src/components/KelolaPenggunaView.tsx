@@ -18,8 +18,10 @@ import {
   Search,
   ChevronDown,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Camera
 } from "lucide-react";
+import { compressImage } from "./KelolaSiswaView";
 import { getVisiblePages } from "../pagination";
 import { supabase, supabaseAdminAuth } from "../supabaseClient";
 import { Siswa } from "../types";
@@ -32,6 +34,7 @@ interface Profile {
   nama: string;
   role: string;
   nis: string | null;
+  foto_url: string | null;
   created_at: string;
 }
 
@@ -84,6 +87,9 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
   const [editPassword, setEditPassword] = useState("");
   const [editNama, setEditNama] = useState("");
   const [isEditing, setIsEditing] = useState(false);
+
+  // Photo upload state
+  const [photoUploadProfileId, setPhotoUploadProfileId] = useState<string | null>(null);
 
   useEffect(() => {
     loadUsersData();
@@ -338,6 +344,86 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
     }
   };
 
+  // Handle profile photo upload for guru/piket
+  const handleProfilePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !photoUploadProfileId) return;
+
+    const profile = profiles.find(p => p.id === photoUploadProfileId);
+    if (!profile) {
+      alert("Data profil tidak ditemukan.");
+      setPhotoUploadProfileId(null);
+      e.target.value = "";
+      return;
+    }
+
+    showToast("Mengompresi & mengunggah foto...");
+
+    try {
+      // 1. COMPRESS
+      let compressedBlob: Blob;
+      try {
+        compressedBlob = await compressImage(file, 300, 400, 0.75);
+      } catch (compressErr: any) {
+        throw new Error("Gagal mengompresi gambar: " + compressErr.message);
+      }
+      const compressedFile = new File([compressedBlob], `${profile.id}.jpg`, { type: "image/jpeg" });
+
+      // 2. Ensure bucket exists
+      const { error: bucketError } = await supabase.storage.getBucket('profile-photos');
+      if (bucketError) {
+        const { error: createErr } = await supabase.storage.createBucket('profile-photos', {
+          public: true,
+          allowedMimeTypes: ['image/png', 'image/jpeg', 'image/webp'],
+          fileSizeLimit: 10485760
+        });
+        if (createErr && !createErr.message?.includes("already exists")) {
+          console.error("Bucket creation error:", createErr);
+        }
+      }
+
+      // 3. UPLOAD
+      const fileName = `${profile.id}_${Date.now()}.jpg`;
+      const { error: uploadErr } = await supabase.storage
+        .from('profile-photos')
+        .upload(fileName, compressedFile, {
+          cacheControl: '3600',
+          upsert: true
+        });
+
+      if (uploadErr) throw new Error("Upload ke storage gagal: " + uploadErr.message);
+
+      // 4. GET PUBLIC URL
+      const { data: urlData } = supabase.storage
+        .from('profile-photos')
+        .getPublicUrl(fileName);
+
+      const publicUrl = urlData.publicUrl;
+
+      // 5. UPDATE PROFILES TABLE
+      const { error: dbErr } = await supabase
+        .from('profiles')
+        .update({ foto_url: publicUrl })
+        .eq('id', profile.id);
+
+      if (dbErr) {
+        if (dbErr.message?.includes('foto_url') || dbErr.message?.includes('column')) {
+          throw new Error("Kolom 'foto_url' belum ada di database. Jalankan: ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS foto_url TEXT;");
+        }
+        throw new Error("Gagal update data profil: " + dbErr.message);
+      }
+
+      showToast("Foto profil berhasil diperbarui!");
+      loadUsersData();
+    } catch (err: any) {
+      console.error("Upload foto gagal:", err);
+      alert("Gagal mengunggah foto profil: " + err.message);
+    } finally {
+      setPhotoUploadProfileId(null);
+      e.target.value = "";
+    }
+  };
+
   // Download Excel Template for importing accounts
   const downloadUserTemplate = () => {
     try {
@@ -481,6 +567,15 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
   return (
     <div className="space-y-6 pb-8">
       
+      {/* Hidden file input for profile photo upload */}
+      <input
+        type="file"
+        id="profile-photo-upload-input"
+        accept="image/*"
+        className="hidden"
+        onChange={handleProfilePhotoChange}
+      />
+
       {/* Toast */}
       <AnimatePresence>
         {toastMsg && (
@@ -641,7 +736,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-brand-50/50 border-b border-brand-100/70 text-brand-500 text-xs font-black uppercase tracking-wider">
-                    <th className="py-4 px-6 w-12 text-center">
+                    <th className="py-4 px-4 w-12 text-center">
                       <input
                         type="checkbox"
                         checked={allSelectableSelected}
@@ -649,6 +744,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
                         className="w-4 h-4 rounded-lg border-brand-200 text-brand-600 focus:ring-brand-500 cursor-pointer"
                       />
                     </th>
+                    <th className="py-4 px-4">Foto</th>
                     <th className="py-4 px-6">Nama Lengkap</th>
                     <th className="py-4 px-6">Username / Email</th>
                     <th className="py-4 px-6">Peran (Role)</th>
@@ -661,7 +757,8 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
                   {isLoading ? (
                     Array.from({ length: 5 }).map((_, idx) => (
                       <tr key={idx} className="animate-pulse">
-                        <td className="py-4 px-6 text-center"><div className="h-4 w-4 bg-slate-200 rounded mx-auto" /></td>
+                        <td className="py-4 px-4 text-center"><div className="h-4 w-4 bg-slate-200 rounded mx-auto" /></td>
+                        <td className="py-4 px-4"><div className="h-10 w-10 bg-slate-200 rounded-full" /></td>
                         <td className="py-4 px-6"><div className="h-4 w-36 bg-slate-200 rounded" /></td>
                         <td className="py-4 px-6"><div className="h-4 w-48 bg-slate-200 rounded" /></td>
                         <td className="py-4 px-6"><div className="h-5 w-16 bg-slate-200 rounded-lg" /></td>
@@ -672,7 +769,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
                     ))
                   ) : paginatedProfiles.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="py-12 text-center text-slate-400 text-xs font-bold">
+                      <td colSpan={8} className="py-12 text-center text-slate-400 text-xs font-bold">
                         Tidak ada akun yang ditemukan.
                       </td>
                     </tr>
@@ -683,7 +780,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
                       const isSelected = selectedIds.includes(p.id);
                       return (
                         <tr key={p.id} className={`hover:bg-brand-50/20 transition-colors ${isSelected ? "bg-brand-50/40" : ""}`}>
-                          <td className="py-4 px-6 text-center">
+                          <td className="py-4 px-4 text-center">
                             {!isSuper && (
                               <input
                                 type="checkbox"
@@ -691,6 +788,36 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
                                 onChange={() => toggleSelect(p.id)}
                                 className="w-4 h-4 rounded-lg border-brand-200 text-brand-600 focus:ring-brand-500 cursor-pointer"
                               />
+                            )}
+                          </td>
+                          <td className="py-4 px-4">
+                            {(isGuru || p.role === "piket") ? (
+                              <div className="relative group">
+                                {p.foto_url ? (
+                                  <img
+                                    src={p.foto_url}
+                                    alt={p.nama}
+                                    className="w-10 h-10 rounded-full object-cover border-2 border-brand-100"
+                                  />
+                                ) : (
+                                  <div className="w-10 h-10 rounded-full bg-brand-100 flex items-center justify-center border-2 border-brand-200">
+                                    <span className="text-xs font-black text-brand-500">
+                                      {p.nama.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()}
+                                    </span>
+                                  </div>
+                                )}
+                                <label
+                                  htmlFor="profile-photo-upload-input"
+                                  className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer transition-opacity"
+                                  onClick={() => setPhotoUploadProfileId(p.id)}
+                                >
+                                  <Camera className="w-4 h-4 text-white" />
+                                </label>
+                              </div>
+                            ) : (
+                              <div className="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center border-2 border-purple-200">
+                                <ShieldCheck className="w-4 h-4 text-purple-500" />
+                              </div>
                             )}
                           </td>
                           <td className="py-4 px-6 font-extrabold text-sm text-brand-950 uppercase">{p.nama}</td>

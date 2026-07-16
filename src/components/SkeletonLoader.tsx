@@ -8,7 +8,7 @@ interface SkeletonProps {
 export default function SkeletonLoader({ type, count = 3 }: SkeletonProps) {
   if (type === "metrics") {
     return (
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 animate-pulse">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 animate-pulse">
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="bg-white p-5 rounded-3xl border border-brand-100/60 space-y-3">
             <div className="w-8 h-8 rounded-xl bg-slate-200" />
@@ -22,23 +22,25 @@ export default function SkeletonLoader({ type, count = 3 }: SkeletonProps) {
 
   if (type === "table") {
     return (
-      <div className="bg-white rounded-3xl border border-brand-100/60 p-6 space-y-4 animate-pulse">
-        {/* Table header */}
-        <div className="flex gap-4 border-b border-brand-50 pb-4">
-          <div className="h-4 w-1/4 bg-slate-200 rounded-md" />
-          <div className="h-4 w-1/4 bg-slate-200 rounded-md" />
-          <div className="h-4 w-1/4 bg-slate-200 rounded-md" />
-          <div className="h-4 w-1/4 bg-slate-200 rounded-md" />
-        </div>
-        {/* Table rows */}
-        {Array.from({ length: count }).map((_, i) => (
-          <div key={i} className="flex gap-4 py-2 border-b border-brand-50/50 last:border-0">
-            <div className="h-4 w-1/4 bg-slate-200/80 rounded-md" />
-            <div className="h-4 w-1/4 bg-slate-200/80 rounded-md" />
-            <div className="h-4 w-1/4 bg-slate-200/80 rounded-md" />
-            <div className="h-4 w-1/4 bg-slate-200/80 rounded-md" />
-          </div>
-        ))}
+      <div className="bg-white rounded-3xl border border-brand-100/60 overflow-hidden animate-pulse">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="bg-brand-50/40 border-b border-brand-100">
+              <th className="py-3 px-4"><div className="h-3 w-24 bg-slate-200 rounded-md" /></th>
+              <th className="py-3 px-4"><div className="h-3 w-24 bg-slate-200 rounded-md" /></th>
+              <th className="py-3 px-4"><div className="h-3 w-24 bg-slate-200 rounded-md" /></th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-brand-50">
+            {Array.from({ length: count }).map((_, i) => (
+              <tr key={i}>
+                <td className="py-3.5 px-4"><div className="h-3.5 w-28 bg-slate-100 rounded-md" /></td>
+                <td className="py-3.5 px-4"><div className="h-3.5 w-36 bg-slate-100 rounded-md" /></td>
+                <td className="py-3.5 px-4 text-center"><div className="h-5 w-10 bg-slate-100 rounded-full mx-auto" /></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     );
   }

@@ -21,6 +21,7 @@ const TITLE_MAP: Record<string, string[]> = {
 
   // Compound titles (each segment: first letter uppercase, rest lowercase)
   "S.Pd":  ["s.pd", "S.PD", "S.pd", "spd", "SPD", "Spd"],
+  "S.Pd.I":["s.pd.i", "S.PD.I", "S.Pd.i", "spd.i", "SPD.I", "S.pdi"],
   "M.Pd":  ["m.pd", "M.PD", "M.pd", "mpd", "MPD", "Mpd"],
   "M.Si":  ["m.si", "M.SI", "M.si", "msi", "MSI", "Msi"],
   "S.Kom": ["s.kom", "S.KOM", "S.kom", "skom", "SKOM", "Skom"],
@@ -29,6 +30,7 @@ const TITLE_MAP: Record<string, string[]> = {
   "S.T":   ["s.t", "S.T", "St", "ST"],
   "S.E":   ["s.e", "S.E", "Se", "SE"],
   "S.Ag":  ["s.ag", "S.AG", "S.ag", "sag", "SAG", "Sag"],
+  "S.S":   ["s.s", "S.S", "Ss", "SS"],
   "S.P":   ["s.p", "S.P", "Sp", "SP"],
   "M.A":   ["m.a", "M.A", "Ma", "MA"],
   "M.M":   ["m.m", "M.M", "Mm", "MM"],

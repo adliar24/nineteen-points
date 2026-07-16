@@ -213,6 +213,7 @@ export default function App() {
   });
 
   return (
+    <>
     <motion.div
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
@@ -456,23 +457,24 @@ export default function App() {
           </AnimatePresence>
         </main>
       </div>
-
-      {/* Confirmation Modal for Log Out */}
-      <ConfirmationModal
-        isOpen={isLogoutConfirmOpen}
-        onClose={() => setIsLogoutConfirmOpen(false)}
-        onConfirm={() => {
-          setUserSession(null);
-          setActiveTab("stats");
-          setIsLogoutConfirmOpen(false);
-          supabase.auth.signOut().catch((e) => console.error("Background signOut error:", e));
-        }}
-        title="Keluar dari Aplikasi?"
-        message="Apakah Anda yakin ingin keluar dari sistem NineTeen Points?"
-        confirmText="Ya, Keluar"
-        cancelText="Batal"
-        type="warning"
-      />
     </motion.div>
+
+    {/* Confirmation Modal for Log Out (rendered outside motion.div to avoid transform containment) */}
+    <ConfirmationModal
+      isOpen={isLogoutConfirmOpen}
+      onClose={() => setIsLogoutConfirmOpen(false)}
+      onConfirm={() => {
+        setUserSession(null);
+        setActiveTab("stats");
+        setIsLogoutConfirmOpen(false);
+        supabase.auth.signOut().catch((e) => console.error("Background signOut error:", e));
+      }}
+      title="Keluar dari Aplikasi?"
+      message="Apakah Anda yakin ingin keluar dari sistem NineTeen Points?"
+      confirmText="Ya, Keluar"
+      cancelText="Batal"
+      type="warning"
+    />
+    </>
   );
 }

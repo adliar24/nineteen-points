@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { Plus, Trash2, ListFilter, Sparkles, X, Search } from "lucide-react";
 import { MasterPoin } from "../types";
 import { getMasterPoinList } from "../dbStore";
@@ -116,12 +116,20 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
 
   return (
     <div className="bg-white rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 p-5 sm:p-6 space-y-5">
-      {toastMsg && (
-        <div className="fixed bottom-6 right-6 z-50 bg-brand-950 text-white px-5 py-3.5 rounded-2xl shadow-2xl flex items-center gap-2.5 border border-brand-800">
-          <Sparkles className="w-5 h-5 text-accent-500" />
-          <span className="text-sm font-bold tracking-wide">{toastMsg}</span>
-        </div>
-      )}
+      <AnimatePresence>
+        {toastMsg && (
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+            className="fixed bottom-6 right-6 z-50 bg-brand-950 text-white px-5 py-3.5 rounded-2xl shadow-2xl flex items-center gap-2.5 border border-brand-800"
+          >
+            <Sparkles className="w-5 h-5 text-accent-500" />
+            <span className="text-sm font-bold tracking-wide">{toastMsg}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <h2 className="text-xl font-extrabold text-brand-950 tracking-tight">Aturan Baku Poin</h2>
 

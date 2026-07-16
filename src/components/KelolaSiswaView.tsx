@@ -1170,12 +1170,20 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
         onChange={handleSinglePhotoChange}
       />
       {/* Toast */}
-      {toastMessage && (
-        <div className="fixed bottom-5 right-5 z-50 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 animate-bounce border border-slate-700">
-          <Sparkles className="w-5 h-5 text-accent-400" />
-          <span className="text-sm font-medium">{toastMessage}</span>
-        </div>
-      )}
+      <AnimatePresence>
+        {toastMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+            className="fixed bottom-5 right-5 z-50 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 border border-slate-700"
+          >
+            <Sparkles className="w-5 h-5 text-accent-400" />
+            <span className="text-sm font-medium">{toastMessage}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
 
       <h2 className="text-xl font-extrabold text-brand-950 tracking-tight">Data Murid</h2>
@@ -1550,14 +1558,24 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
       />
 
       {/* STUDENT DETAIL POPUP */}
-      {detailStudent && createPortal(
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-brand-950/60 backdrop-blur-xs p-4">
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white rounded-3xl shadow-2xl border border-brand-100 p-6 max-w-sm w-full space-y-5"
-            >
+      {createPortal(
+        <AnimatePresence>
+          {detailStudent && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-brand-950/60 backdrop-blur-xs p-4">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
+                className="fixed inset-0"
+              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 15 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                className="bg-white rounded-3xl shadow-2xl border border-brand-100 p-6 max-w-sm w-full space-y-5 relative z-10"
+              >
               <div className="flex justify-between items-start">
                 <h4 className="text-lg font-black text-brand-950">Detail Murid</h4>
                 <button
@@ -1618,20 +1636,32 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                   </button>
                 )}
               </div>
-            </motion.div>
-          </div>,
-          document.body
-        )}
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
       {/* ADD STUDENT MODAL */}
-      {isAddSiswaModalOpen && createPortal(
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-brand-950/60 backdrop-blur-xs p-4">
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white rounded-3xl shadow-2xl border border-brand-150 p-6 max-w-md w-full space-y-5"
-            >
+      {createPortal(
+        <AnimatePresence>
+          {isAddSiswaModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-brand-950/60 backdrop-blur-xs p-4">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
+                className="fixed inset-0"
+              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 15 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                className="bg-white rounded-3xl shadow-2xl border border-brand-150 p-6 max-w-md w-full space-y-5 relative z-10"
+              >
               <div className="flex justify-between items-center">
                 <h4 className="text-lg font-black text-brand-950">Tambah Murid Baru SMAN 19</h4>
                 <button
@@ -1692,20 +1722,32 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                   Simpan
                 </button>
               </form>
-            </motion.div>
-          </div>,
-          document.body
-        )}
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
       {/* IMPORT EXCEL & CSV MODAL */}
-      {isImportModalOpen && createPortal(
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-brand-950/60 backdrop-blur-xs p-4">
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white rounded-3xl shadow-2xl border border-brand-150 p-6 max-w-lg w-full space-y-5"
-            >
+      {createPortal(
+        <AnimatePresence>
+          {isImportModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-brand-950/60 backdrop-blur-xs p-4">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
+                className="fixed inset-0"
+              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 15 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                className="bg-white rounded-3xl shadow-2xl border border-brand-150 p-6 max-w-lg w-full space-y-5 relative z-10"
+              >
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
                   <FileSpreadsheet className="w-5 h-5 text-brand-600" />
@@ -1811,19 +1853,31 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                   </details>
                 </>
               )}
-            </motion.div>
-          </div>,
-          document.body
-        )}
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
       {/* EXCEL IMPORT PHOTO MODAL */}
-      {isImportPhotoOpen && createPortal(
-          <div className="fixed inset-0 bg-brand-950/65 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white rounded-3xl p-6 w-full max-w-4xl max-h-[85vh] border border-brand-100 shadow-2xl flex flex-col"
-            >
+      {createPortal(
+        <AnimatePresence>
+          {isImportPhotoOpen && (
+            <div className="fixed inset-0 bg-brand-950/65 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
+                className="fixed inset-0"
+              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 15 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                className="bg-white rounded-3xl p-6 w-full max-w-4xl max-h-[85vh] border border-brand-100 shadow-2xl flex flex-col relative z-10"
+              >
               {/* Header */}
               <div className="flex justify-between items-center border-b pb-4 border-brand-50 flex-shrink-0">
                 <div>
@@ -2012,10 +2066,12 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
                   {isUploadingPhotos ? "Mengunggah..." : `Konfirmasi & Unggah (${photoMatchItems.filter(item => item.matchedSiswaId !== null).length} Foto)`}
                 </button>
               </div>
-            </motion.div>
-          </div>,
-          document.body
-        )}
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
       {/* OFF-SCREEN CARD RENDERERS (Hidden from view, used purely by html2canvas for PDF and PNG downloads) */}
       <div className="absolute top-[-9999px] left-[-9999px] pointer-events-none overflow-hidden">

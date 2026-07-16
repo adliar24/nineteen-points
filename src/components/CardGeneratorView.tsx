@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { QRCodeSVG } from "qrcode.react";
 import { Download, Users, Printer, FileText, Check, Sparkles, School, ShieldAlert } from "lucide-react";
 import { Siswa } from "../types";
@@ -122,12 +122,20 @@ export default function CardGeneratorView() {
   return (
     <div className="space-y-8">
       {/* Toast Feedback */}
-      {successMsg && (
-        <div className="fixed bottom-6 right-6 z-50 bg-brand-950 text-white px-5 py-3.5 rounded-2xl shadow-2xl flex items-center gap-3 animate-bounce border border-brand-800">
-          <Sparkles className="w-5 h-5 text-accent-500" />
-          <span className="text-xs font-extrabold tracking-wide uppercase">{successMsg}</span>
-        </div>
-      )}
+      <AnimatePresence>
+        {successMsg && (
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+            className="fixed bottom-6 right-6 z-50 bg-brand-950 text-white px-5 py-3.5 rounded-2xl shadow-2xl flex items-center gap-3 border border-brand-800"
+          >
+            <Sparkles className="w-5 h-5 text-accent-500" />
+            <span className="text-xs font-extrabold tracking-wide uppercase">{successMsg}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Control Panel - redesigned to match gorgeous card layout */}
       <div className="bg-white p-6 rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 space-y-4">

@@ -482,12 +482,20 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
     <div className="space-y-6">
       
       {/* Toast */}
-      {toastMsg && (
-        <div className="fixed bottom-6 right-6 z-50 bg-brand-950 text-white px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-2 border border-brand-800 animate-bounce">
-          <Check className="w-4 h-4 text-emerald-400 bg-emerald-500/10 p-0.5 rounded-full" />
-          <span className="text-xs font-bold tracking-wide">{toastMsg}</span>
-        </div>
-      )}
+      <AnimatePresence>
+        {toastMsg && (
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+            className="fixed bottom-6 right-6 z-50 bg-brand-950 text-white px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-2 border border-brand-800"
+          >
+            <Check className="w-4 h-4 text-emerald-400 bg-emerald-500/10 p-0.5 rounded-full" />
+            <span className="text-xs font-bold tracking-wide">{toastMsg}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Header Actions Bar — matching Data Siswa layout */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -794,9 +802,24 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
         </AnimatePresence>
 
         {/* CREATE MANUAL USER MODAL */}
-        {isAddUserOpen && createPortal(
-          <div className="fixed inset-0 bg-brand-950/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-3xl p-6 w-full max-w-md border border-brand-100 shadow-2xl space-y-4 animate-fade-in">
+        {createPortal(
+          <AnimatePresence>
+            {isAddUserOpen && (
+              <div className="fixed inset-0 bg-brand-950/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                  className="fixed inset-0"
+                />
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: 15 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  className="bg-white rounded-3xl p-6 w-full max-w-md border border-brand-100 shadow-2xl space-y-4 relative z-10"
+                >
               <div className="flex justify-between items-center border-b pb-3 border-brand-50">
                 <h3 className="text-base font-extrabold text-brand-950 flex items-center gap-2">
                   <UserPlus className="w-5 h-5 text-brand-600" />
@@ -969,15 +992,32 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
                   </button>
                 </div>
               </form>
-            </div>
-          </div>,
+                </motion.div>
+              </div>
+            )}
+          </AnimatePresence>,
           document.body
         )}
 
         {/* EDIT ACCOUNT MODAL */}
-        {editingProfile && createPortal(
-          <div className="fixed inset-0 bg-brand-950/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-3xl p-6 w-full max-w-md border border-brand-100 shadow-2xl space-y-4 animate-fade-in">
+        {createPortal(
+          <AnimatePresence>
+            {editingProfile && (
+              <div className="fixed inset-0 bg-brand-950/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                  className="fixed inset-0"
+                />
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: 15 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  className="bg-white rounded-3xl p-6 w-full max-w-md border border-brand-100 shadow-2xl space-y-4 relative z-10"
+                >
               <div className="flex justify-between items-center border-b pb-3 border-brand-50">
                 <h3 className="text-base font-extrabold text-brand-950 flex items-center gap-2">
                   <Pencil className="w-5 h-5 text-brand-600" />
@@ -1059,15 +1099,32 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
                   </button>
                 </div>
               </form>
-            </div>
-          </div>,
+                </motion.div>
+              </div>
+            )}
+          </AnimatePresence>,
           document.body
         )}
 
         {/* EXCEL IMPORT USER ACCOUNTS MODAL */}
-        {isImportUserOpen && createPortal(
-          <div className="fixed inset-0 bg-brand-950/65 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-3xl p-6 w-full max-w-md border border-brand-100 shadow-2xl space-y-4 animate-fade-in">
+        {createPortal(
+          <AnimatePresence>
+            {isImportUserOpen && (
+              <div className="fixed inset-0 bg-brand-950/65 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                  className="fixed inset-0"
+                />
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: 15 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  className="bg-white rounded-3xl p-6 w-full max-w-md border border-brand-100 shadow-2xl space-y-4 relative z-10"
+                >
               <div className="flex justify-between items-center border-b pb-3 border-brand-50">
                 <h3 className="text-base font-extrabold text-brand-950 flex items-center gap-2">
                   <FileSpreadsheet className="w-5 h-5 text-emerald-600" />
@@ -1134,8 +1191,10 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
                   Tutup
                 </button>
               </div>
-            </div>
-          </div>,
+                </motion.div>
+              </div>
+            )}
+          </AnimatePresence>,
           document.body
         )}
 

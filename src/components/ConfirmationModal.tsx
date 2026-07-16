@@ -1,6 +1,6 @@
 import React from "react";
 import { X, AlertTriangle, LogOut, Trash2 } from "lucide-react";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { createPortal } from "react-dom";
 
 interface ConfirmationModalProps {
@@ -24,8 +24,6 @@ export default function ConfirmationModal({
   cancelText = "Batal",
   type = "info",
 }: ConfirmationModalProps) {
-  if (!isOpen) return null;
-
   const getIcon = () => {
     switch (type) {
       case "danger":
@@ -67,61 +65,70 @@ export default function ConfirmationModal({
   const theme = getThemeClasses();
 
   return createPortal(
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      <div
-        onClick={onClose}
-        className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm"
-      />
-
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 15 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ type: "spring", duration: 0.4 }}
-        className="bg-white rounded-2xl shadow-2xl border border-slate-100 w-full max-w-md p-6 z-10 overflow-hidden relative"
-      >
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1.5 hover:bg-slate-100 rounded-xl transition-all cursor-pointer"
-        >
-          <X className="w-5 h-5" />
-        </button>
-
-        <div className="flex flex-col items-center text-center mt-2">
-          <div className={`p-3.5 rounded-2xl mb-4 ${theme.iconBg} flex items-center justify-center`}>
-            {getIcon()}
-          </div>
-          <h3 className="text-lg font-bold text-slate-900 tracking-tight">
-            {title}
-          </h3>
-          <p className="text-sm text-slate-500 mt-2.5 leading-relaxed">
-            {message}
-          </p>
-        </div>
-
-        <div className="flex gap-3 mt-6">
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
             onClick={onClose}
-            className="flex-1 py-3 px-4 border border-slate-200 hover:bg-slate-50 rounded-xl text-sm font-semibold text-slate-700 transition-colors focus:outline-none cursor-pointer"
-          >
-            {cancelText}
-          </motion.button>
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm"
+          />
 
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => {
-              onConfirm();
-              onClose();
-            }}
-            className={`flex-1 py-3 px-4 rounded-xl text-sm font-semibold transition-colors focus:outline-none cursor-pointer ${theme.confirmBtn}`}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 15 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+            className="bg-white rounded-2xl shadow-2xl border border-slate-100 w-full max-w-md p-6 z-10 overflow-hidden relative"
           >
-            {confirmText}
-          </motion.button>
+            <button
+              onClick={onClose}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1.5 hover:bg-slate-100 rounded-xl transition-all cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex flex-col items-center text-center mt-2">
+              <div className={`p-3.5 rounded-2xl mb-4 ${theme.iconBg} flex items-center justify-center`}>
+                {getIcon()}
+              </div>
+              <h3 className="text-lg font-bold text-slate-900 tracking-tight">
+                {title}
+              </h3>
+              <p className="text-sm text-slate-500 mt-2.5 leading-relaxed">
+                {message}
+              </p>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={onClose}
+                className="flex-1 py-3 px-4 border border-slate-200 hover:bg-slate-50 rounded-xl text-sm font-semibold text-slate-700 transition-colors focus:outline-none cursor-pointer"
+              >
+                {cancelText}
+              </motion.button>
+
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => {
+                  onConfirm();
+                  onClose();
+                }}
+                className={`flex-1 py-3 px-4 rounded-xl text-sm font-semibold transition-colors focus:outline-none cursor-pointer ${theme.confirmBtn}`}
+              >
+                {confirmText}
+              </motion.button>
+            </div>
+          </motion.div>
         </div>
-      </motion.div>
-    </div>,
+      )}
+    </AnimatePresence>,
     document.body
   );
 }

@@ -81,7 +81,8 @@ export const getRiwayatList = async (): Promise<RiwayatPoin[]> => {
       siswa (
         nis,
         nama,
-        kelas
+        kelas,
+        foto_url
       )
     `)
     .order("created_at", { ascending: false });
@@ -98,6 +99,7 @@ export const getRiwayatList = async (): Promise<RiwayatPoin[]> => {
     siswa_nama: row.siswa?.nama || "Tidak Dikenal",
     siswa_kelas: row.siswa?.kelas || "-",
     siswa_nis: row.siswa?.nis || "-",
+    siswa_foto_url: row.siswa?.foto_url || null,
     nama_poin: row.nama_poin,
     nilai_diberikan: row.nilai_diberikan,
     guru_email: row.guru_email,

@@ -19,6 +19,7 @@ export interface RiwayatPoin {
   siswa_nama?: string;
   siswa_kelas?: string;
   siswa_nis?: string;
+  siswa_foto_url?: string | null;
   nama_poin: string;
   nilai_diberikan: number;
   guru_email: string;

@@ -226,8 +226,19 @@ export default function HistoryView({ onRefreshTrigger, refreshCount, userSessio
                         {formatTanggal(log.created_at)}
                       </td>
                       <td className="py-4.5 px-5">
-                        <div className="font-bold text-brand-950 uppercase">{log.siswa_nama}</div>
-                        <div className="text-xs text-brand-400 font-mono font-bold">NIS: {log.siswa_nis}</div>
+                        <div className="flex items-center gap-3">
+                          {log.siswa_foto_url ? (
+                            <img src={log.siswa_foto_url} alt={log.siswa_nama} className="w-9 h-12 rounded-lg object-cover border border-brand-100 shrink-0" />
+                          ) : (
+                            <div className="w-9 h-12 rounded-lg bg-brand-100 flex items-center justify-center text-brand-400 text-[10px] font-black uppercase shrink-0">
+                              {(log.siswa_nama || "?").slice(0, 2)}
+                            </div>
+                          )}
+                          <div>
+                            <div className="font-bold text-brand-950 uppercase">{log.siswa_nama}</div>
+                            <div className="text-xs text-brand-400 font-mono font-bold">NIS: {log.siswa_nis}</div>
+                          </div>
+                        </div>
                       </td>
                       <td className="py-4.5 px-4 font-black text-brand-600 uppercase">
                         {log.siswa_kelas}

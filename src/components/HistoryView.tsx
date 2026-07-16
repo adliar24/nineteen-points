@@ -145,7 +145,7 @@ export default function HistoryView({ onRefreshTrigger, refreshCount, userSessio
             onChange={(e) => setFilterType(e.target.value)}
             className="p-3 bg-white border border-brand-100 rounded-xl text-sm font-bold text-brand-800 focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-xs cursor-pointer animate-fade-in"
           >
-            <option value="Semua">Semua Jenis</option>
+            <option value="Semua">Semua</option>
             <option value="Positif">Prestasi (+)</option>
             <option value="Negatif">Pelanggaran (-)</option>
           </select>

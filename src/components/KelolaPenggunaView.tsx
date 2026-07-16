@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { createPortal } from "react-dom";
 import { 
-  Users, 
   UserPlus, 
   ShieldCheck, 
   Mail, 
@@ -14,7 +13,6 @@ import {
   RefreshCw,
   FileSpreadsheet,
   Download,
-  Database,
   X,
   Pencil,
   Search,
@@ -26,7 +24,6 @@ import { getVisiblePages } from "../pagination";
 import { supabase, supabaseAdminAuth } from "../supabaseClient";
 import { Siswa } from "../types";
 import * as XLSX from "xlsx";
-import KelolaSiswaView from "./KelolaSiswaView";
 import ConfirmationModal from "./ConfirmationModal";
 
 interface Profile {
@@ -44,8 +41,7 @@ interface KelolaPenggunaViewProps {
 }
 
 export default function KelolaPenggunaView({ userSession, onRefreshHistory }: KelolaPenggunaViewProps) {
-  // Tab selector: "accounts" for User Accounts (profiles), "students" for Student Directory
-  const [dbTab, setDbTab] = useState<"accounts" | "students">("accounts");
+
 
   // Accounts state
   const [profiles, setProfiles] = useState<Profile[]>([]);
@@ -90,10 +86,8 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
-    if (dbTab === "accounts") {
-      loadUsersData();
-    }
-  }, [dbTab]);
+    loadUsersData();
+  }, []);
 
   const showToast = (msg: string) => {
     setToastMsg(msg);
@@ -493,54 +487,20 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
         </div>
       )}
 
-      {/* Main Tab Controls */}
-      <div className="bg-white rounded-2xl p-1.5 border border-brand-100/60 flex gap-2 max-w-md">
-        <button
-          onClick={() => setDbTab("accounts")}
-          className={`flex-1 py-2.5 text-sm font-bold rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
-            dbTab === "accounts"
-              ? "bg-brand-600 text-white shadow-md"
-              : "text-brand-600 hover:bg-brand-50"
-          }`}
-        >
-          <Database className="w-4 h-4" />
-          Kelola Akun Login
-        </button>
-        <button
-          onClick={() => setDbTab("students")}
-          className={`flex-1 py-2.5 text-sm font-bold rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
-            dbTab === "students"
-              ? "bg-brand-600 text-white shadow-md"
-              : "text-brand-600 hover:bg-brand-50"
-          }`}
-        >
-          <Users className="w-4 h-4" />
-          Kelola Data Murid
-        </button>
-      </div>
-
-      {/* CONDITIONAL RENDER BY TAB */}
-      {dbTab === "students" ? (
-        <div className="animate-fade-in">
-          <KelolaSiswaView userSession={userSession} onRefreshHistory={onRefreshHistory} />
-        </div>
-      ) : (
-        <div className="space-y-5 animate-fade-in">
-          
-          {/* Header Actions Bar — matching Data Siswa layout */}
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            {/* Left: Search + Filter */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 flex-1">
-              <div className="relative flex-1 max-w-sm">
-                <Search className="w-4 h-4 text-brand-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  placeholder="Cari nama, email, atau NIS..."
-                  value={searchQuery}
-                  onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-                  className="w-full pl-10 pr-4 py-3 bg-white border border-brand-100 rounded-2xl text-xs font-bold text-brand-900 placeholder:text-brand-300 focus:ring-2 focus:ring-brand-500 outline-none transition-all"
-                />
-              </div>
+      {/* Header Actions Bar — matching Data Siswa layout */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        {/* Left: Search + Filter */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 flex-1">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="w-4 h-4 text-brand-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Cari nama, email, atau NIS..."
+              value={searchQuery}
+              onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+              className="w-full pl-10 pr-4 py-3 bg-white border border-brand-100 rounded-2xl text-xs font-bold text-brand-900 placeholder:text-brand-300 focus:ring-2 focus:ring-brand-500 outline-none transition-all"
+            />
+          </div>
 
               <div className="relative">
                 <select
@@ -1170,9 +1130,6 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
           </div>,
           document.body
         )}
-
-        </div>
-      )}
 
       {/* CONFIRM DELETE SINGLE USER */}
       <ConfirmationModal

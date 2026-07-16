@@ -137,7 +137,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
         setErrorMsg("Nama Lengkap wajib diisi.");
         return;
       }
-      finalEmail = `${selectedNis}@auth.local`;
+      finalEmail = `${selectedNis}@sman19.sch.id`;
       finalPassword = "siswa19";
     } else if (role === "guru") {
       if (!nip) {
@@ -148,7 +148,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
         setErrorMsg("Nama Lengkap wajib diisi.");
         return;
       }
-      finalEmail = `${nip}@auth.local`;
+      finalEmail = `${nip}@sman19.sch.id`;
       finalPassword = "guru19*";
     } else {
       // Piket
@@ -291,9 +291,9 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
     setIsEditing(true);
 
     try {
-      // Re-add @auth.local suffix for siswa/guru auth email
+      // Re-add @sman19.sch.id suffix for siswa/guru auth email
       const fullEmail = (editingProfile.role === "siswa" || editingProfile.role === "guru")
-        ? `${editEmail.trim()}@auth.local`
+        ? `${editEmail.trim()}@sman19.sch.id`
         : editEmail.trim();
 
       // Update auth user email and password via admin client
@@ -407,13 +407,13 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
           // Auto-generate credentials based on role
           if (roleVal === "siswa") {
             if (!nisVal) continue;
-            emailVal = `${nisVal}@auth.local`;
+            emailVal = `${nisVal}@sman19.sch.id`;
             if (!passwordVal) {
               passwordVal = "siswa19";
             }
           } else if (roleVal === "guru") {
             const nipFromExcel = emailVal || "guru";
-            emailVal = `${nipFromExcel}@auth.local`;
+            emailVal = `${nipFromExcel}@sman19.sch.id`;
             if (!passwordVal) {
               passwordVal = "guru19*";
             }

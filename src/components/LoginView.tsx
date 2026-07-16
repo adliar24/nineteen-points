@@ -27,7 +27,7 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
 
     let loginEmail = email.trim();
     if (!loginEmail.includes("@")) {
-      loginEmail = `${loginEmail}@auth.local`;
+      loginEmail = `${loginEmail}@sman19.sch.id`;
     }
 
     try {

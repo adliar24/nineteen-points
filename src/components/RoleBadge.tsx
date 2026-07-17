@@ -1,3 +1,5 @@
+import React from "react";
+
 interface RoleBadgeProps {
   role: string;
   className?: string;
@@ -11,7 +13,7 @@ const ROLE_STYLES: Record<string, { bg: string; text: string; border: string; la
   siswa:            { bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-200", label: "SISWA" },
 };
 
-export default function RoleBadge({ role, className = "" }: RoleBadgeProps) {
+export default React.memo(function RoleBadge({ role, className = "" }: RoleBadgeProps) {
   const style = ROLE_STYLES[role] || ROLE_STYLES.siswa;
   return (
     <span
@@ -20,4 +22,4 @@ export default function RoleBadge({ role, className = "" }: RoleBadgeProps) {
       {style.label}
     </span>
   );
-}
+});

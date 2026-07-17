@@ -12,12 +12,12 @@ export default defineConfig(() => {
     build: {
       rollupOptions: {
         output: {
-          manualChunks: {
-            vendor: ["react", "react-dom"],
-            charts: ["recharts"],
-            motion: ["motion"],
-            supabase: ["@supabase/supabase-js"],
-            xlsx: ["xlsx"],
+          manualChunks(id) {
+            if (id.includes('node_modules/react-dom') || id.includes('node_modules/react/')) return 'vendor-react';
+            if (id.includes('node_modules/recharts')) return 'charts';
+            if (id.includes('node_modules/motion')) return 'motion';
+            if (id.includes('node_modules/@supabase')) return 'supabase';
+            if (id.includes('node_modules/xlsx')) return 'xlsx';
           }
         }
       }

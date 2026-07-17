@@ -34,3 +34,13 @@ export interface UserSession {
   nis?: string;
   foto_url?: string | null;
 }
+
+export interface Profile {
+  id: string;
+  email: string;
+  nama: string;
+  role: string;
+  nis: string | null;
+  foto_url: string | null;
+  created_at: string;
+}

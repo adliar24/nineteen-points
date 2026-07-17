@@ -5,7 +5,7 @@ interface SkeletonProps {
   count?: number;
 }
 
-export default function SkeletonLoader({ type, count = 3 }: SkeletonProps) {
+export default React.memo(function SkeletonLoader({ type, count = 3 }: SkeletonProps) {
   if (type === "metrics") {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 animate-pulse">
@@ -83,4 +83,4 @@ export default function SkeletonLoader({ type, count = 3 }: SkeletonProps) {
   }
 
   return null;
-}
+});

@@ -14,7 +14,7 @@ interface ConfirmationModalProps {
   type?: "danger" | "warning" | "info" | "success";
 }
 
-export default function ConfirmationModal({
+export default React.memo(function ConfirmationModal({
   isOpen,
   onClose,
   onConfirm,
@@ -131,4 +131,4 @@ export default function ConfirmationModal({
     </AnimatePresence>,
     document.body
   );
-}
+});

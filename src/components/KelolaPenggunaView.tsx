@@ -832,11 +832,11 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
             />
           </div>
 
-              <div className="relative">
+              <div className="relative w-full sm:w-auto">
                 <select
                   value={roleFilter}
                   onChange={(e) => { setRoleFilter(e.target.value); setCurrentPage(1); }}
-                  className="appearance-none pl-4 pr-10 py-3 bg-white border border-brand-100 rounded-2xl text-xs font-bold text-brand-800 focus:ring-2 focus:ring-brand-500 outline-none cursor-pointer transition-all"
+                  className="w-full appearance-none pl-4 pr-10 py-3 bg-white border border-brand-100 rounded-2xl text-xs font-bold text-brand-800 focus:ring-2 focus:ring-brand-500 outline-none cursor-pointer transition-all"
                 >
                   {roleList.map((r) => (
                     <option key={r} value={r}>

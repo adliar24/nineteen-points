@@ -143,7 +143,7 @@ export default function HistoryView({ onRefreshTrigger, refreshCount, userSessio
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
-            className="p-3 bg-white border border-brand-100 rounded-xl text-sm font-bold text-brand-800 focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-xs cursor-pointer animate-fade-in"
+            className="px-3 py-2 sm:p-3 bg-white border border-brand-100 rounded-xl text-xs sm:text-sm font-bold text-brand-800 focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-xs cursor-pointer animate-fade-in max-w-[120px] sm:max-w-none"
           >
             <option value="Semua">Semua</option>
             <option value="Positif">Prestasi (+)</option>

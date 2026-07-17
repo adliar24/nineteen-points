@@ -65,15 +65,27 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
   });
 
   // Date filters
-  const [filterType, setFilterType] = useState<"hari_ini" | "bulan_ini" | "kustom">("hari_ini");
+  const [filterType, setFilterType] = useState<"hari_ini" | "minggu_ini" | "bulan_ini" | "semua" | "kustom">("hari_ini");
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [customStart, setCustomStart] = useState(() => new Date().toISOString().slice(0, 10));
   const [customEnd, setCustomEnd] = useState(() => new Date().toISOString().slice(0, 10));
 
   // Compute actual date range for query
   const dateRange = useMemo(() => {
+    const todayStr = new Date().toISOString().slice(0, 10);
     if (filterType === "hari_ini") {
-      return { start: selectedDate, end: selectedDate };
+      return { start: todayStr, end: todayStr };
+    } else if (filterType === "minggu_ini") {
+      const today = new Date();
+      const day = today.getDay();
+      const diff = today.getDate() - day + (day === 0 ? -6 : 1);
+      const monday = new Date(today.setDate(diff));
+      const sunday = new Date(monday);
+      sunday.setDate(monday.getDate() + 6);
+      return {
+        start: monday.toISOString().slice(0, 10),
+        end: sunday.toISOString().slice(0, 10)
+      };
     } else if (filterType === "bulan_ini") {
       const now = new Date();
       const y = now.getFullYear();
@@ -81,10 +93,12 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
       const start = new Date(y, m, 1).toISOString().slice(0, 10);
       const end = new Date(y, m + 1, 0).toISOString().slice(0, 10);
       return { start, end };
-    } else {
+    } else if (filterType === "kustom") {
       return { start: customStart, end: customEnd };
+    } else { // "semua"
+      return { start: "1970-01-01", end: "9999-12-31" };
     }
-  }, [filterType, selectedDate, customStart, customEnd]);
+  }, [filterType, customStart, customEnd]);
 
   // Query attendance logs for range
   const { data: rawKehadiranList = [], isLoading: loadingKehadiran, refetch: refetchKehadiran } = useQuery({
@@ -1035,7 +1049,7 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
               </div>
 
               {/* Period Quick Select Buttons */}
-              <div className="flex bg-brand-50/70 border border-brand-100 p-1 rounded-xl w-full md:w-auto">
+              <div className="flex bg-brand-50/70 border border-brand-100 p-1 rounded-xl w-full md:w-auto overflow-x-auto scrollbar-none">
                 <button
                   onClick={() => setFilterType("hari_ini")}
                   className={`flex-1 md:flex-initial px-4 py-2 text-[10px] font-black uppercase tracking-wider rounded-lg cursor-pointer transition-all ${
@@ -1045,6 +1059,16 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
                   }`}
                 >
                   Hari Ini
+                </button>
+                <button
+                  onClick={() => setFilterType("minggu_ini")}
+                  className={`flex-1 md:flex-initial px-4 py-2 text-[10px] font-black uppercase tracking-wider rounded-lg cursor-pointer transition-all ${
+                    filterType === "minggu_ini"
+                      ? "bg-white text-brand-900 shadow-xs border border-brand-100/50"
+                      : "text-slate-400 hover:text-slate-600"
+                  }`}
+                >
+                  Minggu Ini
                 </button>
                 <button
                   onClick={() => setFilterType("bulan_ini")}
@@ -1057,6 +1081,16 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
                   Bulan Ini
                 </button>
                 <button
+                  onClick={() => setFilterType("semua")}
+                  className={`flex-1 md:flex-initial px-4 py-2 text-[10px] font-black uppercase tracking-wider rounded-lg cursor-pointer transition-all ${
+                    filterType === "semua"
+                      ? "bg-white text-brand-900 shadow-xs border border-brand-100/50"
+                      : "text-slate-400 hover:text-slate-600"
+                  }`}
+                >
+                  Semua
+                </button>
+                <button
                   onClick={() => setFilterType("kustom")}
                   className={`flex-1 md:flex-initial px-4 py-2 text-[10px] font-black uppercase tracking-wider rounded-lg cursor-pointer transition-all ${
                     filterType === "kustom"
@@ -1064,60 +1098,55 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
                       : "text-slate-400 hover:text-slate-600"
                   }`}
                 >
-                  Kustom Range
+                  Filter Baru
                 </button>
               </div>
             </div>
 
-            {/* Date Picker Range Inputs */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-brand-50 pt-4">
-              
-              {/* If Hari Ini filter */}
-              {filterType === "hari_ini" && (
-                <div className="flex flex-col gap-1 md:col-span-3">
-                  <label className="text-[10px] font-black text-brand-400 uppercase tracking-widest">Pilih Tanggal</label>
+            {/* Date Picker Range Inputs (only when Filter Baru is active) */}
+            {filterType === "kustom" && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-brand-50 pt-4">
+                <div className="flex flex-col gap-1">
+                  <label className="text-[10px] font-black text-brand-400 uppercase tracking-widest">Tanggal Awal</label>
                   <input
                     type="date"
-                    value={selectedDate}
-                    onChange={(e) => setSelectedDate(e.target.value)}
-                    className="border border-brand-100 rounded-xl p-3 text-xs font-bold text-brand-800 bg-white outline-none w-full md:max-w-xs"
+                    value={customStart}
+                    onChange={(e) => setCustomStart(e.target.value)}
+                    className="border border-brand-100 rounded-xl p-3 text-xs font-bold text-brand-800 bg-white outline-none"
                   />
                 </div>
-              )}
-
-              {/* If Bulan Ini */}
-              {filterType === "bulan_ini" && (
-                <div className="md:col-span-3 bg-brand-50/50 border border-brand-100 rounded-2xl p-3 flex items-center gap-2">
-                  <Calendar className="w-4.5 h-4.5 text-brand-600" />
-                  <span className="text-xs font-bold text-brand-800">
-                    Menampilkan periode: <strong>{dateRange.start}</strong> s/d <strong>{dateRange.end}</strong> (Bulan ini)
-                  </span>
+                <div className="flex flex-col gap-1">
+                  <label className="text-[10px] font-black text-brand-400 uppercase tracking-widest">Tanggal Akhir</label>
+                  <input
+                    type="date"
+                    value={customEnd}
+                    onChange={(e) => setCustomEnd(e.target.value)}
+                    className="border border-brand-100 rounded-xl p-3 text-xs font-bold text-brand-800 bg-white outline-none"
+                  />
                 </div>
-              )}
+              </div>
+            )}
 
-              {/* If Kustom */}
-              {filterType === "kustom" && (
-                <>
-                  <div className="flex flex-col gap-1">
-                    <label className="text-[10px] font-black text-brand-400 uppercase tracking-widest">Tanggal Awal</label>
-                    <input
-                      type="date"
-                      value={customStart}
-                      onChange={(e) => setCustomStart(e.target.value)}
-                      className="border border-brand-100 rounded-xl p-3 text-xs font-bold text-brand-800 bg-white outline-none"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <label className="text-[10px] font-black text-brand-400 uppercase tracking-widest">Tanggal Akhir</label>
-                    <input
-                      type="date"
-                      value={customEnd}
-                      onChange={(e) => setCustomEnd(e.target.value)}
-                      className="border border-brand-100 rounded-xl p-3 text-xs font-bold text-brand-800 bg-white outline-none"
-                    />
-                  </div>
-                </>
-              )}
+            {/* Date Range Info Banner */}
+            <div className="bg-brand-50/40 border border-brand-100/50 rounded-2xl p-4 flex items-center gap-3">
+              <Calendar className="w-5 h-5 text-brand-600" />
+              <div className="text-xs font-semibold text-brand-800">
+                {filterType === "hari_ini" && (
+                  <span>Menampilkan data absensi hari ini: <strong>{dateRange.start}</strong></span>
+                )}
+                {filterType === "minggu_ini" && (
+                  <span>Menampilkan data absensi minggu ini: <strong>{dateRange.start}</strong> s/d <strong>{dateRange.end}</strong></span>
+                )}
+                {filterType === "bulan_ini" && (
+                  <span>Menampilkan data absensi bulan ini: <strong>{dateRange.start}</strong> s/d <strong>{dateRange.end}</strong></span>
+                )}
+                {filterType === "kustom" && (
+                  <span>Menampilkan data absensi periode kustom: <strong>{dateRange.start}</strong> s/d <strong>{dateRange.end}</strong></span>
+                )}
+                {filterType === "semua" && (
+                  <span>Menampilkan <strong>Semua Riwayat Absensi</strong> yang tercatat di database.</span>
+                )}
+              </div>
             </div>
 
             {/* Sub-Filters: Search name & class filter */}

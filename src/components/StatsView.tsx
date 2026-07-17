@@ -57,33 +57,6 @@ export default function StatsView() {
     loadData();
   }, []);
 
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <h2 className="text-xl font-extrabold text-brand-950 tracking-tight">Statistik Karakter Murid</h2>
-        <SkeletonLoader type="metrics" />
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-8 bg-white p-5 rounded-3xl border border-brand-100/60 h-[380px] animate-pulse flex flex-col justify-between">
-            <div className="h-4 w-1/3 bg-slate-200 rounded-md" />
-            <div className="h-44 w-full bg-slate-100 rounded-2xl" />
-          </div>
-          <div className="lg:col-span-4 bg-white p-5 rounded-3xl border border-brand-100/60 h-[380px] animate-pulse flex flex-col justify-between">
-            <div className="flex gap-2 border-b border-brand-50 pb-3">
-              <div className="h-6 w-16 bg-slate-200 rounded-lg" />
-              <div className="h-6 w-16 bg-slate-200 rounded-lg" />
-              <div className="h-6 w-16 bg-slate-200 rounded-lg" />
-            </div>
-            <div className="flex-1 space-y-3 mt-3">
-              <div className="h-8 w-full bg-slate-100 rounded-xl" />
-              <div className="h-8 w-full bg-slate-100 rounded-xl" />
-              <div className="h-8 w-full bg-slate-100 rounded-xl" />
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   // 1. Metric Calculations
   const totalSiswa = siswaList.length;
   const totalLogs = riwayatList.length;
@@ -204,6 +177,33 @@ export default function StatsView() {
       case "hari": return { data: dayChartData, dataKey: "Rata-rata Poin", color: "#d97706", label: "Rata-rata Poin per Hari (Top 5)" };
     }
   }, [activeChartTab, classChartData, studentChartData, dayChartData]);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <h2 className="text-xl font-extrabold text-brand-950 tracking-tight">Statistik Karakter Murid</h2>
+        <SkeletonLoader type="metrics" />
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="lg:col-span-8 bg-white p-5 rounded-3xl border border-brand-100/60 h-[380px] animate-pulse flex flex-col justify-between">
+            <div className="h-4 w-1/3 bg-slate-200 rounded-md" />
+            <div className="h-44 w-full bg-slate-100 rounded-2xl" />
+          </div>
+          <div className="lg:col-span-4 bg-white p-5 rounded-3xl border border-brand-100/60 h-[380px] animate-pulse flex flex-col justify-between">
+            <div className="flex gap-2 border-b border-brand-50 pb-3">
+              <div className="h-6 w-16 bg-slate-200 rounded-lg" />
+              <div className="h-6 w-16 bg-slate-200 rounded-lg" />
+              <div className="h-6 w-16 bg-slate-200 rounded-lg" />
+            </div>
+            <div className="flex-1 space-y-3 mt-3">
+              <div className="h-8 w-full bg-slate-100 rounded-xl" />
+              <div className="h-8 w-full bg-slate-100 rounded-xl" />
+              <div className="h-8 w-full bg-slate-100 rounded-xl" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 pb-8 animate-fade-in font-sans">

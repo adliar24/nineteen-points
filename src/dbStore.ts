@@ -69,6 +69,91 @@ export const saveMasterPoinList = async (poin: MasterPoin[]): Promise<void> => {
   }
 };
 
+// --- SERVER-SIDE PAGINATION ---
+
+export interface PaginatedRiwayatParams {
+  page: number;
+  limit: number;
+  search?: string;
+  filterType?: "Semua" | "Positif" | "Negatif";
+  sortOrder?: "terbaru" | "terlama";
+}
+
+export interface PaginatedRiwayatResult {
+  data: RiwayatPoin[];
+  totalCount: number;
+  totalPages: number;
+}
+
+export const getRiwayatListPaginated = async (params: PaginatedRiwayatParams): Promise<PaginatedRiwayatResult> => {
+  const { page, limit, search = "", filterType = "Semua", sortOrder = "terbaru" } = params;
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
+
+  let query = supabase
+    .from("riwayat_poin")
+    .select(`
+      id,
+      siswa_id,
+      nilai_diberikan,
+      nama_poin,
+      guru_email,
+      created_at,
+      semester,
+      siswa (
+        nis,
+        nama,
+        kelas,
+        foto_url
+      )
+    `, { count: "exact" });
+
+  // Server-side search: match on siswa.nama, siswa.nis, nama_poin, guru_email
+  if (search) {
+    const pattern = `%${search}%`;
+    query = query.or(`nama_poin.ilike.${pattern},guru_email.ilike.${pattern},siswa.nama.ilike.${pattern},siswa.nis.ilike.${pattern}`);
+  }
+
+  // Server-side filter on nilai_diberikan
+  if (filterType === "Positif") {
+    query = query.gt("nilai_diberikan", 0);
+  } else if (filterType === "Negatif") {
+    query = query.lt("nilai_diberikan", 0);
+  }
+
+  // Server-side sort
+  query = query.order("created_at", { ascending: sortOrder === "terlama" });
+
+  // Pagination
+  query = query.range(from, to);
+
+  const { data, error, count } = await query;
+
+  if (error) {
+    console.error("Error fetching paginated riwayat:", error);
+    return { data: [], totalCount: 0, totalPages: 0 };
+  }
+
+  const totalCount = count || 0;
+  const totalPages = Math.ceil(totalCount / limit);
+
+  const mapped = (data || []).map((row: any) => ({
+    id: row.id,
+    siswa_id: row.siswa_id,
+    siswa_nama: row.siswa?.nama || "Tidak Dikenal",
+    siswa_kelas: row.siswa?.kelas || "-",
+    siswa_nis: row.siswa?.nis || "-",
+    siswa_foto_url: row.siswa?.foto_url || null,
+    nama_poin: row.nama_poin,
+    nilai_diberikan: row.nilai_diberikan,
+    guru_email: row.guru_email,
+    created_at: row.created_at,
+    semester: row.semester || "2025/2026 Ganjil",
+  }));
+
+  return { data: mapped, totalCount, totalPages };
+};
+
 export const getRiwayatList = async (): Promise<RiwayatPoin[]> => {
   const { data, error } = await supabase
     .from("riwayat_poin")

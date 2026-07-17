@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { 
   Award, 
   AlertTriangle, 
@@ -6,12 +6,13 @@ import {
   Calendar, 
   BarChart2
 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { 
   getSiswaList, 
   getRiwayatList, 
   getMasterPoinList 
 } from "../dbStore";
-import { Siswa, RiwayatPoin, MasterPoin } from "../types";
+import { Siswa } from "../types";
 import { 
   ResponsiveContainer, 
   BarChart, 
@@ -30,32 +31,23 @@ type ChartTab = "kelas" | "siswa" | "hari";
 const DAY_NAMES = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
 
 export default function StatsView() {
-  const [siswaList, setSiswaList] = useState<Siswa[]>([]);
-  const [riwayatList, setRiwayatList] = useState<RiwayatPoin[]>([]);
-  const [masterPoin, setMasterPoin] = useState<MasterPoin[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [activeRankTab, setActiveRankTab] = useState<"prestasi" | "sanksi" | "kasus">("prestasi");
   const [activeChartTab, setActiveChartTab] = useState<ChartTab>("kelas");
 
-  useEffect(() => {
-    async function loadData() {
-      setIsLoading(true);
-      try {
-        const [siswa, riwayat, master] = await Promise.all([
-          getSiswaList(),
-          getRiwayatList(),
-          getMasterPoinList()
-        ]);
-        setSiswaList(siswa);
-        setRiwayatList(riwayat);
-        setMasterPoin(master);
-      } catch (err) {
-        console.error("Gagal memuat statistik:", err);
-      }
-      setIsLoading(false);
-    }
-    loadData();
-  }, []);
+  const { data: siswaList = [], isLoading: loadingSiswa } = useQuery({
+    queryKey: ["siswa"],
+    queryFn: getSiswaList,
+  });
+  const { data: riwayatList = [], isLoading: loadingRiwayat } = useQuery({
+    queryKey: ["riwayat"],
+    queryFn: getRiwayatList,
+  });
+  const { data: masterPoin = [], isLoading: loadingMaster } = useQuery({
+    queryKey: ["masterPoin"],
+    queryFn: getMasterPoinList,
+  });
+
+  const isLoading = loadingSiswa || loadingRiwayat || loadingMaster;
 
   // 1. Metric Calculations
   const totalSiswa = siswaList.length;

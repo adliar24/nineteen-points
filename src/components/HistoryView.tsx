@@ -1,14 +1,14 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { Search, Calendar, User, Trash2, ArrowUpDown, ShieldCheck, RefreshCw, Undo2, CheckSquare, Pencil, X, ChevronLeft, ChevronRight } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Search, ArrowUpDown, ShieldCheck, RefreshCw, Undo2, Pencil, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { createPortal } from "react-dom";
+import { useQuery } from "@tanstack/react-query";
 import { RiwayatPoin, UserSession } from "../types";
-import { getRiwayatList, deleteRiwayat, updateRiwayat, getMasterPoinList } from "../dbStore";
+import { getRiwayatListPaginated, deleteRiwayat, updateRiwayat, getMasterPoinList } from "../dbStore";
+import { queryClient } from "../queryClient";
 import { getVisiblePages } from "../pagination";
 import ConfirmationModal from "./ConfirmationModal";
 import { toSentenceCase } from "../formatName";
-
-import SkeletonLoader from "./SkeletonLoader";
 
 interface HistoryViewProps {
   onRefreshTrigger: () => void;
@@ -16,39 +16,45 @@ interface HistoryViewProps {
   userSession: UserSession;
 }
 
+const ITEMS_PER_PAGE = 15;
+
 export default function HistoryView({ onRefreshTrigger, refreshCount, userSession }: HistoryViewProps) {
-  const [historyList, setHistoryList] = useState<RiwayatPoin[]>([]);
-  const [masterPoinNames, setMasterPoinNames] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterType, setFilterType] = useState("Semua");
+  const [filterType, setFilterType] = useState<"Semua" | "Positif" | "Negatif">("Semua");
   const [sortOrder, setSortOrder] = useState<"terbaru" | "terlama">("terbaru");
   const [revertTarget, setRevertTarget] = useState<{ id: string; namaSiswa: string; nilai: number; namaPoin: string } | null>(null);
   const [editTarget, setEditTarget] = useState<RiwayatPoin | null>(null);
   const [editNamaPoin, setEditNamaPoin] = useState("");
   const [editNilai, setEditNilai] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 15;
 
   const isAdmin = userSession.role === "super_admin";
 
+  const { data: masterPoin = [] } = useQuery({
+    queryKey: ["masterPoin"],
+    queryFn: getMasterPoinList,
+  });
+  const masterPoinNames = new Set(masterPoin.map(mp => mp.nama_poin));
+
+  const { data: paginatedResult, isLoading } = useQuery({
+    queryKey: ["riwayat", "paginated", currentPage, searchQuery, filterType, sortOrder, refreshCount],
+    queryFn: () => getRiwayatListPaginated({
+      page: currentPage,
+      limit: ITEMS_PER_PAGE,
+      search: searchQuery,
+      filterType,
+      sortOrder,
+    }),
+  });
+
+  const historyList = paginatedResult?.data || [];
+  const totalCount = paginatedResult?.totalCount || 0;
+  const totalPages = paginatedResult?.totalPages || 0;
+
+  // Reset page when search/filter/sort changes
   useEffect(() => {
-    async function load() {
-      setIsLoading(true);
-      try {
-        const [riwayat, masterPoin] = await Promise.all([
-          getRiwayatList(),
-          getMasterPoinList()
-        ]);
-        setHistoryList(riwayat);
-        setMasterPoinNames(new Set(masterPoin.map(mp => mp.nama_poin)));
-      } catch (err) {
-        console.error("Gagal memuat riwayat:", err);
-      }
-      setIsLoading(false);
-    }
-    load();
-  }, [refreshCount]);
+    setCurrentPage(1);
+  }, [searchQuery, filterType, sortOrder]);
 
   const isCustomPoint = (namaPoin: string) => !masterPoinNames.has(namaPoin);
 
@@ -65,7 +71,7 @@ export default function HistoryView({ onRefreshTrigger, refreshCount, userSessio
   const executeRevert = async (id: string) => {
     try {
       await deleteRiwayat(id);
-      setHistoryList(await getRiwayatList());
+      queryClient.invalidateQueries({ queryKey: ["riwayat"] });
       onRefreshTrigger();
     } catch (err: any) {
       alert("Gagal membatalkan riwayat poin: " + err.message);
@@ -83,42 +89,13 @@ export default function HistoryView({ onRefreshTrigger, refreshCount, userSessio
     try {
       const nilai = Math.abs(editNilai) * (editTarget.nilai_diberikan >= 0 ? 1 : -1);
       await updateRiwayat(editTarget.id, editTarget.siswa_id, editNamaPoin, nilai, editTarget.guru_email, editTarget.semester);
-      setHistoryList(await getRiwayatList());
+      queryClient.invalidateQueries({ queryKey: ["riwayat"] });
       onRefreshTrigger();
       setEditTarget(null);
     } catch (err: any) {
       alert("Gagal mengubah poin: " + err.message);
     }
   };
-
-  const filteredLogs = useMemo(() => historyList.filter((log) => {
-    const matchesSearch =
-      (log.siswa_nama || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (log.siswa_nis || "").includes(searchQuery) ||
-      (log.nama_poin || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (log.guru_email || "").toLowerCase().includes(searchQuery.toLowerCase());
-
-    const matchesType =
-      filterType === "Semua" ||
-      (filterType === "Positif" && log.nilai_diberikan > 0) ||
-      (filterType === "Negatif" && log.nilai_diberikan < 0);
-
-    return matchesSearch && matchesType;
-  }), [historyList, searchQuery, filterType]);
-
-  const sortedLogs = useMemo(() => [...filteredLogs].sort((a, b) => {
-    const dateA = new Date(a.created_at).getTime();
-    const dateB = new Date(b.created_at).getTime();
-    return sortOrder === "terbaru" ? dateB - dateA : dateA - dateB;
-  }), [filteredLogs, sortOrder]);
-
-  // Pagination
-  const totalPages = Math.ceil(sortedLogs.length / itemsPerPage);
-  const paginatedLogs = sortedLogs.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, filterType, sortOrder]);
 
   const formatTanggal = (isoString: string) => {
     try {
@@ -144,7 +121,7 @@ export default function HistoryView({ onRefreshTrigger, refreshCount, userSessio
             <Search className="absolute left-3.5 top-3.5 text-brand-500/50 w-4.5 h-4.5" />
             <input
               type="text"
-              placeholder="Cari..."
+              placeholder="Cari nama, NIS, aturan, atau guru..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-3 py-3 bg-white border border-brand-100 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand-500 text-brand-950 placeholder-brand-500/35 shadow-xs"
@@ -153,7 +130,7 @@ export default function HistoryView({ onRefreshTrigger, refreshCount, userSessio
 
           <select
             value={filterType}
-            onChange={(e) => setFilterType(e.target.value)}
+            onChange={(e) => setFilterType(e.target.value as "Semua" | "Positif" | "Negatif")}
             className="px-3 py-2 sm:p-3 bg-white border border-brand-100 rounded-xl text-xs sm:text-sm font-bold text-brand-800 focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-xs cursor-pointer animate-fade-in max-w-[120px] sm:max-w-none"
           >
             <option value="Semua">Semua</option>
@@ -171,10 +148,7 @@ export default function HistoryView({ onRefreshTrigger, refreshCount, userSessio
           </button>
 
           <button
-            onClick={async () => {
-              setHistoryList(await getRiwayatList());
-              onRefreshTrigger();
-            }}
+            onClick={() => queryClient.invalidateQueries({ queryKey: ["riwayat"] })}
             className="flex items-center gap-1.5 px-3 py-3 bg-white border border-brand-100 text-brand-800 hover:bg-brand-50 rounded-xl text-sm font-bold transition-all cursor-pointer shadow-xs"
             title="Segarkan"
           >
@@ -184,7 +158,7 @@ export default function HistoryView({ onRefreshTrigger, refreshCount, userSessio
         </div>
 
         <div className="text-xs font-bold text-brand-600">
-          Total: <strong className="text-brand-900 font-extrabold">{sortedLogs.length} riwayat</strong>
+          Total: <strong className="text-brand-900 font-extrabold">{totalCount} riwayat</strong>
         </div>
       </div>
 
@@ -221,14 +195,14 @@ export default function HistoryView({ onRefreshTrigger, refreshCount, userSessio
                     <td className="py-4.5 px-5 text-right"><div className="h-5 w-16 bg-slate-200 rounded ml-auto" /></td>
                   </tr>
                 ))
-              ) : sortedLogs.length === 0 ? (
+              ) : historyList.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="text-center py-12 text-brand-400 font-medium">
                     Belum ada riwayat poin tercatat yang sesuai filter.
                   </td>
                 </tr>
               ) : (
-                paginatedLogs.map((log) => {
+                historyList.map((log) => {
                   const isPositive = log.nilai_diberikan > 0;
                   const canEditThis = canRevert(log) && isCustomPoint(log.nama_poin);
                   const canRevertThis = canRevert(log);

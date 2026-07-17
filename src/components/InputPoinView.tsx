@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Html5Qrcode } from "html5-qrcode";
+import { useQuery } from "@tanstack/react-query";
+import { queryClient } from "../queryClient";
 import { 
   Camera, 
   Search, 
@@ -27,8 +29,14 @@ interface InputPoinViewProps {
 }
 
 export default function InputPoinView({ userSession, onRefreshHistory }: InputPoinViewProps) {
-  const [siswaList, setSiswaList] = useState<Siswa[]>([]);
-  const [masterPoin, setMasterPoin] = useState<MasterPoin[]>([]);
+  const { data: siswaList = [] } = useQuery({
+    queryKey: ["siswa"],
+    queryFn: getSiswaList,
+  });
+  const { data: masterPoin = [] } = useQuery({
+    queryKey: ["masterPoin"],
+    queryFn: getMasterPoinList,
+  });
   
   // Tab selector: "qr" for camera/simulator, "manual" for lookup search
   const [inputMethod, setInputMethod] = useState<"qr" | "manual">("qr");
@@ -55,20 +63,6 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
   const [isCustomPoint, setIsCustomPoint] = useState(false);
   const [customPointType, setCustomPointType] = useState<"positif" | "negatif">("positif");
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-
-  // Load data
-  useEffect(() => {
-    async function loadData() {
-      setSiswaList(await getSiswaList());
-      setMasterPoin(await getMasterPoinList());
-    }
-    loadData();
-  }, []);
-
-  // Sync real-time data shifts
-  const syncSiswaList = async () => {
-    setSiswaList(await getSiswaList());
-  };
 
   // QR Scanner initialization (Html5Qrcode core API)
   useEffect(() => {
@@ -273,7 +267,7 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
       setSelectedSiswa(updatedSiswa);
 
       // Re-sync local student list
-      await syncSiswaList();
+      await queryClient.invalidateQueries({ queryKey: ["siswa"] });
 
       // Reset input fields
       setSelectedPoinId("");

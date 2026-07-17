@@ -18,10 +18,12 @@ import {
   Award,
   TrendingUp,
   CreditCard,
-  RotateCcw
+  RotateCcw,
+  Download,
+  Upload
 } from "lucide-react";
 import { UserSession } from "./types";
-import { getLocalStorage, setLocalStorage, getCurrentSemester } from "./dbStore";
+import { getLocalStorage, setLocalStorage } from "./dbStore";
 import { supabase, supabaseEnvError } from "./supabaseClient";
 import { toSentenceCase } from "./formatName";
 
@@ -35,7 +37,9 @@ const MasterPoinView = lazy(() => import("./components/MasterPoinView"));
 const SiswaDashboardView = lazy(() => import("./components/SiswaDashboardView"));
 const KelolaPenggunaView = lazy(() => import("./components/KelolaPenggunaView"));
 const ChangePasswordView = lazy(() => import("./components/ChangePasswordView"));
-import SemesterResetModal from "./components/SemesterResetModal";
+import AkhiriAktivitasModal from "./components/AkhiriAktivitasModal";
+import ExportSummaryModal from "./components/ExportSummaryModal";
+import ImportSummaryModal from "./components/ImportSummaryModal";
 import ConfirmationModal from "./components/ConfirmationModal";
 
 export default function App() {
@@ -80,8 +84,9 @@ export default function App() {
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
   const [headerImgFailed, setHeaderImgFailed] = useState(false);
   const [showProfilePopup, setShowProfilePopup] = useState(false);
-  const [currentSemester, setCurrentSemesterState] = useState(() => getCurrentSemester());
-  const [isSemesterResetOpen, setIsSemesterResetOpen] = useState(false);
+  const [isAkhiriAktivitasOpen, setIsAkhiriAktivitasOpen] = useState(false);
+  const [isExportSummaryOpen, setIsExportSummaryOpen] = useState(false);
+  const [isImportSummaryOpen, setIsImportSummaryOpen] = useState(false);
 
   // Sidebar sliding indicator
   const navRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
@@ -276,26 +281,61 @@ export default function App() {
 
           {/* Right profile header info */}
           <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-            {/* Semester Badge — Super Admin only */}
+            {/* Super Admin Actions */}
             {userSession.role === "super_admin" && (
-              <button
-                onClick={() => setIsSemesterResetOpen(true)}
-                className="hidden sm:flex items-center gap-1.5 bg-brand-950/40 md:bg-brand-50/70 px-3 py-2 rounded-2xl border border-white/10 md:border-brand-100 shadow-xs hover:shadow-md transition-all cursor-pointer group"
-                title="Akhiri Aktivitas Poin"
-              >
-                <RotateCcw className="w-3 h-3 text-brand-300 md:text-brand-500 group-hover:text-brand-700 transition-colors" />
-                <span className="text-[10px] font-black text-white md:text-brand-700 tracking-wide whitespace-nowrap">{currentSemester}</span>
-              </button>
-            )}
-            {/* Mobile semester badge (icon only) */}
-            {userSession.role === "super_admin" && (
-              <button
-                onClick={() => setIsSemesterResetOpen(true)}
-                className="sm:hidden p-2 bg-brand-950/40 rounded-xl border border-white/10"
-                title={currentSemester}
-              >
-                <RotateCcw className="w-4 h-4 text-white" />
-              </button>
+              <>
+                {/* Export Summary — Desktop */}
+                <button
+                  onClick={() => setIsExportSummaryOpen(true)}
+                  className="hidden sm:flex items-center gap-1.5 bg-brand-950/40 md:bg-emerald-50/70 px-3 py-2 rounded-2xl border border-white/10 md:border-emerald-200 shadow-xs hover:shadow-md transition-all cursor-pointer group"
+                  title="Export Summary Poin"
+                >
+                  <Download className="w-3 h-3 text-emerald-300 md:text-emerald-600 group-hover:text-emerald-800 transition-colors" />
+                  <span className="text-[10px] font-black text-white md:text-emerald-700 tracking-wide whitespace-nowrap">Export</span>
+                </button>
+                {/* Import Summary — Desktop */}
+                <button
+                  onClick={() => setIsImportSummaryOpen(true)}
+                  className="hidden sm:flex items-center gap-1.5 bg-brand-950/40 md:bg-blue-50/70 px-3 py-2 rounded-2xl border border-white/10 md:border-blue-200 shadow-xs hover:shadow-md transition-all cursor-pointer group"
+                  title="Import Summary Poin"
+                >
+                  <Upload className="w-3 h-3 text-blue-300 md:text-blue-600 group-hover:text-blue-800 transition-colors" />
+                  <span className="text-[10px] font-black text-white md:text-blue-700 tracking-wide whitespace-nowrap">Import</span>
+                </button>
+                {/* Akhiri Aktivitas — Desktop */}
+                <button
+                  onClick={() => setIsAkhiriAktivitasOpen(true)}
+                  className="hidden sm:flex items-center gap-1.5 bg-brand-950/40 md:bg-rose-50/70 px-3 py-2 rounded-2xl border border-white/10 md:border-rose-200 shadow-xs hover:shadow-md transition-all cursor-pointer group"
+                  title="Akhiri Aktivitas Poin"
+                >
+                  <RotateCcw className="w-3 h-3 text-rose-300 md:text-rose-600 group-hover:text-rose-800 transition-colors" />
+                  <span className="text-[10px] font-black text-white md:text-rose-700 tracking-wide whitespace-nowrap">Akhiri</span>
+                </button>
+                {/* Mobile: Export */}
+                <button
+                  onClick={() => setIsExportSummaryOpen(true)}
+                  className="sm:hidden p-2 bg-brand-950/40 rounded-xl border border-white/10"
+                  title="Export Summary Poin"
+                >
+                  <Download className="w-4 h-4 text-white" />
+                </button>
+                {/* Mobile: Import */}
+                <button
+                  onClick={() => setIsImportSummaryOpen(true)}
+                  className="sm:hidden p-2 bg-brand-950/40 rounded-xl border border-white/10"
+                  title="Import Summary Poin"
+                >
+                  <Upload className="w-4 h-4 text-white" />
+                </button>
+                {/* Mobile: Akhiri */}
+                <button
+                  onClick={() => setIsAkhiriAktivitasOpen(true)}
+                  className="sm:hidden p-2 bg-brand-950/40 rounded-xl border border-white/10"
+                  title="Akhiri Aktivitas Poin"
+                >
+                  <RotateCcw className="w-4 h-4 text-white" />
+                </button>
+              </>
             )}
             <button
               onClick={() => setShowProfilePopup(true)}
@@ -491,7 +531,6 @@ export default function App() {
                 <InputPoinView
                   userSession={userSession}
                   onRefreshHistory={() => setHistoryRefreshCount((c) => c + 1)}
-                  currentSemester={currentSemester}
                 />
               )}
 
@@ -623,15 +662,24 @@ export default function App() {
       )}
     </AnimatePresence>
 
-    {/* Semester Reset Modal */}
-    <SemesterResetModal
-      isOpen={isSemesterResetOpen}
-      onClose={() => setIsSemesterResetOpen(false)}
-      onResetComplete={(newSemester) => {
-        setCurrentSemesterState(newSemester);
-        setHistoryRefreshCount((c) => c + 1);
-      }}
-      currentSemester={currentSemester}
+    {/* Akhiri Aktivitas Modal */}
+    <AkhiriAktivitasModal
+      isOpen={isAkhiriAktivitasOpen}
+      onClose={() => setIsAkhiriAktivitasOpen(false)}
+      onResetComplete={() => setHistoryRefreshCount((c) => c + 1)}
+    />
+
+    {/* Export Summary Modal */}
+    <ExportSummaryModal
+      isOpen={isExportSummaryOpen}
+      onClose={() => setIsExportSummaryOpen(false)}
+    />
+
+    {/* Import Summary Modal */}
+    <ImportSummaryModal
+      isOpen={isImportSummaryOpen}
+      onClose={() => setIsImportSummaryOpen(false)}
+      onComplete={() => setHistoryRefreshCount((c) => c + 1)}
     />
     </>
   );

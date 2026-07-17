@@ -1061,7 +1061,9 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
                               className={`font-black text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-xl border shadow-xs whitespace-nowrap inline-block ${
                                 isSuper
                                   ? "bg-purple-50 text-purple-700 border-purple-200"
-                                  : isGuru
+                                  : p.role === "kepala_sekolah"
+                                  ? "bg-slate-50 text-slate-700 border-slate-200"
+                                  : p.role === "guru"
                                   ? "bg-amber-50 text-amber-700 border-amber-200"
                                   : p.role === "piket"
                                   ? "bg-blue-50 text-blue-700 border-blue-200"

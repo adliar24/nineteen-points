@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Search, Calendar, User, Trash2, ArrowUpDown, ShieldCheck, RefreshCw, Undo2, CheckSquare, Pencil, X } from "lucide-react";
+import { Search, Calendar, User, Trash2, ArrowUpDown, ShieldCheck, RefreshCw, Undo2, CheckSquare, Pencil, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { createPortal } from "react-dom";
 import { RiwayatPoin, UserSession } from "../types";
 import { getRiwayatList, deleteRiwayat, updateRiwayat, getMasterPoinList } from "../dbStore";
+import { getVisiblePages } from "../pagination";
 import ConfirmationModal from "./ConfirmationModal";
 import { toSentenceCase } from "../formatName";
 
@@ -26,6 +27,8 @@ export default function HistoryView({ onRefreshTrigger, refreshCount, userSessio
   const [editNamaPoin, setEditNamaPoin] = useState("");
   const [editNilai, setEditNilai] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 15;
 
   const isAdmin = userSession.role === "super_admin";
 
@@ -108,6 +111,14 @@ export default function HistoryView({ onRefreshTrigger, refreshCount, userSessio
     const dateB = new Date(b.created_at).getTime();
     return sortOrder === "terbaru" ? dateB - dateA : dateA - dateB;
   });
+
+  // Pagination
+  const totalPages = Math.ceil(sortedLogs.length / itemsPerPage);
+  const paginatedLogs = sortedLogs.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, filterType, sortOrder]);
 
   const formatTanggal = (isoString: string) => {
     try {
@@ -217,7 +228,7 @@ export default function HistoryView({ onRefreshTrigger, refreshCount, userSessio
                   </td>
                 </tr>
               ) : (
-                sortedLogs.map((log) => {
+                paginatedLogs.map((log) => {
                   const isPositive = log.nilai_diberikan > 0;
                   const canEditThis = canRevert(log) && isCustomPoint(log.nama_poin);
                   const canRevertThis = canRevert(log);
@@ -308,6 +319,48 @@ export default function HistoryView({ onRefreshTrigger, refreshCount, userSessio
           </table>
         </div>
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between pt-2">
+          <p className="text-[11px] font-bold text-brand-500">
+            Halaman <strong className="text-brand-800">{currentPage}</strong> dari <strong className="text-brand-800">{totalPages}</strong>
+          </p>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="p-2 rounded-xl border border-brand-100 text-brand-600 hover:bg-brand-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-all"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            {getVisiblePages(totalPages, currentPage).map((page, i) =>
+              page === "..." ? (
+                <span key={`dots-${i}`} className="text-brand-400 text-xs px-1">...</span>
+              ) : (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page as number)}
+                  className={`w-8 h-8 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    currentPage === page
+                      ? "bg-brand-600 text-white shadow-md"
+                      : "border border-brand-100 text-brand-600 hover:bg-brand-50"
+                  }`}
+                >
+                  {page}
+                </button>
+              )
+            )}
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="p-2 rounded-xl border border-brand-100 text-brand-600 hover:bg-brand-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-all"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Confirmation Modal for Reverting Points */}
       <ConfirmationModal

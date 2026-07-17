@@ -176,7 +176,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
             // Create a brand new auth user
             const { error: createError } = await supabaseAdminAuth.auth.admin.createUser({
               email: email,
-              password: "siswa19",
+              password: `Siswa${s.nis}`,
               email_confirm: true,
               user_metadata: { fullName: s.nama, role: "siswa", nis: s.nis }
             });
@@ -269,7 +269,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
       try {
         const { error: signUpError } = await supabaseAdminAuth.auth.admin.createUser({
           email: `${newNis}@sman19.sch.id`,
-          password: "siswa19",
+          password: `Siswa${newNis}`,
           email_confirm: true,
           user_metadata: {
             fullName: upperNama,
@@ -448,7 +448,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
             try {
               const { error: signUpError } = await supabaseAdminAuth.auth.admin.createUser({
                 email: `${s.nis}@sman19.sch.id`,
-                password: "siswa19",
+              password: `Siswa${s.nis}`,
                 email_confirm: true,
                 user_metadata: {
                   fullName: s.nama,
@@ -559,7 +559,7 @@ export default function KelolaSiswaView({ userSession, onRefreshHistory }: Kelol
           try {
             const { error: signUpError } = await supabaseAdminAuth.auth.admin.createUser({
               email: `${s.nis}@sman19.sch.id`,
-              password: "siswa19",
+              password: `Siswa${s.nis}`,
               email_confirm: true,
               user_metadata: {
                 fullName: s.nama,

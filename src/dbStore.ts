@@ -169,7 +169,18 @@ export const updateRiwayat = async (
   guruEmail: string,
   semester?: string
 ): Promise<void> => {
-  // Delete old entry (trigger reverts points) then insert new entry (trigger adds points)
+  // Safety: fetch old entry before deleting, so we can restore if insert fails
+  const { data: oldEntry, error: fetchError } = await supabase
+    .from("riwayat_poin")
+    .select("id, siswa_id, nama_poin, nilai_diberikan, guru_email, semester")
+    .eq("id", riwayatId)
+    .single();
+
+  if (fetchError || !oldEntry) {
+    throw new Error("Gagal mengambil data riwayat lama: " + (fetchError?.message || "Data tidak ditemukan"));
+  }
+
+  // Delete old entry (trigger reverts points)
   const { error: deleteError } = await supabase
     .from("riwayat_poin")
     .delete()
@@ -180,6 +191,7 @@ export const updateRiwayat = async (
     throw deleteError;
   }
 
+  // Insert new entry (trigger adds points)
   const { error: insertError } = await supabase
     .from("riwayat_poin")
     .insert({
@@ -187,12 +199,27 @@ export const updateRiwayat = async (
       nilai_diberikan: nilaiDiberikan,
       nama_poin: namaPoin,
       guru_email: guruEmail,
-      semester: semester || "2025/2026 Ganjil"
+      semester: semester || oldEntry.semester
     });
 
   if (insertError) {
-    console.error("Error inserting updated riwayat:", insertError);
-    throw insertError;
+    // Rollback: re-insert the old entry to restore points
+    console.error("Error inserting updated riwayat, rolling back:", insertError);
+    const { error: rollbackError } = await supabase
+      .from("riwayat_poin")
+      .insert({
+        id: oldEntry.id,
+        siswa_id: oldEntry.siswa_id,
+        nilai_diberikan: oldEntry.nilai_diberikan,
+        nama_poin: oldEntry.nama_poin,
+        guru_email: oldEntry.guru_email,
+        semester: oldEntry.semester
+      });
+
+    if (rollbackError) {
+      throw new Error("Update gagal dan rollback juga gagal. Hubungi admin. Error: " + insertError.message);
+    }
+    throw new Error("Update gagal, data asli berhasil dipulihkan: " + insertError.message);
   }
 };
 

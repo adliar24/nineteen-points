@@ -169,7 +169,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
         return;
       }
       finalEmail = `${selectedNis}@sman19.sch.id`;
-      finalPassword = "siswa19";
+      finalPassword = `Siswa${selectedNis}`;
     } else if (role === "guru" || role === "kepala_sekolah") {
       if (!nip) {
         setErrorMsg(`Username (NIP) wajib diisi untuk ${role === "kepala_sekolah" ? "Kepala Sekolah" : "Guru"}.`);
@@ -244,6 +244,11 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
         .eq("id", id);
 
       if (error) throw error;
+
+      // Also delete from Supabase Auth to prevent orphan auth users
+      const { error: authError } = await supabaseAdminAuth.auth.admin.deleteUser(id);
+      if (authError) console.warn("Auth user delete failed (non-critical):", authError.message);
+
       showToast(`Profil akun ${emailAddr} berhasil dihapus.`);
       setSelectedIds(prev => prev.filter(x => x !== id));
       loadUsersData();
@@ -283,6 +288,13 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
         .in("id", nonSuperIds);
 
       if (error) throw error;
+
+      // Also delete from Supabase Auth to prevent orphan auth users
+      for (const uid of nonSuperIds) {
+        const { error: authError } = await supabaseAdminAuth.auth.admin.deleteUser(uid);
+        if (authError) console.warn(`Auth user delete failed for ${uid}:`, authError.message);
+      }
+
       showToast(`${nonSuperIds.length} akun berhasil dihapus.`);
       setSelectedIds([]);
       loadUsersData();
@@ -705,7 +717,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
           if (roleVal === "siswa") {
             emailVal = `${username}@sman19.sch.id`;
             nisVal = username;
-            finalPassword = passwordVal || "siswa19";
+            finalPassword = passwordVal || `Siswa${username}`;
           } else if (roleVal === "guru" || roleVal === "kepala_sekolah") {
             emailVal = `${username}@sman19.sch.id`;
             finalPassword = passwordVal || "guru19*";
@@ -1298,7 +1310,7 @@ export default function KelolaPenggunaView({ userSession, onRefreshHistory }: Ke
                 {role === "siswa" && (
                   <div className="text-[10px] font-bold text-brand-500 bg-brand-50/60 border border-brand-100/50 p-3 rounded-2xl space-y-1 animate-slide-up leading-relaxed">
                     <div><strong className="text-brand-900 font-extrabold">Username (Login):</strong> {(selectedNis || "[NIS Murid]") + "@sman19.sch.id"}</div>
-                    <div><strong className="text-brand-900 font-extrabold">Password:</strong> siswa19</div>
+                            <div><strong className="text-brand-900 font-extrabold">Password:</strong> Siswa{`{NIS}`}</div>
                   </div>
                 )}
 

@@ -79,7 +79,7 @@ export default function HistoryView({ onRefreshTrigger, refreshCount, userSessio
     if (!editTarget) return;
     try {
       const nilai = Math.abs(editNilai) * (editTarget.nilai_diberikan >= 0 ? 1 : -1);
-      await updateRiwayat(editTarget.id, editTarget.siswa_id, editNamaPoin, nilai, editTarget.guru_email);
+      await updateRiwayat(editTarget.id, editTarget.siswa_id, editNamaPoin, nilai, editTarget.guru_email, editTarget.semester);
       setHistoryList(await getRiwayatList());
       onRefreshTrigger();
       setEditTarget(null);

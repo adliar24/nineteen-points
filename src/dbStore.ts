@@ -78,6 +78,7 @@ export const getRiwayatList = async (): Promise<RiwayatPoin[]> => {
       nama_poin,
       guru_email,
       created_at,
+      semester,
       siswa (
         nis,
         nama,
@@ -104,6 +105,7 @@ export const getRiwayatList = async (): Promise<RiwayatPoin[]> => {
     nilai_diberikan: row.nilai_diberikan,
     guru_email: row.guru_email,
     created_at: row.created_at,
+    semester: row.semester || "2025/2026 Ganjil",
   }));
 };
 
@@ -121,7 +123,8 @@ export const addRiwayat = async (
   siswaId: string,
   namaPoin: string,
   nilaiDiberikan: number,
-  guruEmail: string
+  guruEmail: string,
+  semester: string
 ): Promise<void> => {
   // With PostgreSQL Triggers configured, inserting a row in 'riwayat_poin'
   // automatically calculates and updates 'total_poin' in 'siswa' table.
@@ -131,7 +134,8 @@ export const addRiwayat = async (
       siswa_id: siswaId,
       nilai_diberikan: nilaiDiberikan,
       nama_poin: namaPoin,
-      guru_email: guruEmail
+      guru_email: guruEmail,
+      semester: semester
     });
 
   if (error) {
@@ -159,7 +163,8 @@ export const updateRiwayat = async (
   siswaId: string,
   namaPoin: string,
   nilaiDiberikan: number,
-  guruEmail: string
+  guruEmail: string,
+  semester?: string
 ): Promise<void> => {
   // Delete old entry (trigger reverts points) then insert new entry (trigger adds points)
   const { error: deleteError } = await supabase
@@ -178,11 +183,94 @@ export const updateRiwayat = async (
       siswa_id: siswaId,
       nilai_diberikan: nilaiDiberikan,
       nama_poin: namaPoin,
-      guru_email: guruEmail
+      guru_email: guruEmail,
+      semester: semester || "2025/2026 Ganjil"
     });
 
   if (insertError) {
     console.error("Error inserting updated riwayat:", insertError);
     throw insertError;
   }
+};
+
+// --- SEMESTER MANAGEMENT ---
+
+const SEMESTER_KEY = "19points_current_semester";
+const DEFAULT_SEMESTER = "2025/2026 Ganjil";
+
+export const getCurrentSemester = (): string => {
+  return getLocalStorage<string>(SEMESTER_KEY, DEFAULT_SEMESTER);
+};
+
+export const setCurrentSemester = (semester: string): void => {
+  setLocalStorage(SEMESTER_KEY, semester);
+};
+
+export const suggestNextSemester = (current: string): string => {
+  // Parse "2025/2026 Ganjil" → suggest "2025/2026 Genap"
+  // Parse "2025/2026 Genap" → suggest "2026/2027 Ganjil"
+  const match = current.match(/^(\d{4})\/(\d{4})\s+(Ganjil|Genap)$/);
+  if (!match) return current;
+
+  const [, startStr, , term] = match;
+  const start = Number(startStr);
+
+  if (term === "Ganjil") {
+    return `${start}/${start + 1} Genap`;
+  } else {
+    return `${start + 1}/${start + 2} Ganjil`;
+  }
+};
+
+export const getRiwayatCount = async (semester: string): Promise<number> => {
+  const { count, error } = await supabase
+    .from("riwayat_poin")
+    .select("*", { count: "exact", head: true })
+    .eq("semester", semester);
+
+  if (error) {
+    console.error("Error counting riwayat:", error);
+    return 0;
+  }
+  return count || 0;
+};
+
+export const resetSemester = async (currentSemester: string, newSemester: string): Promise<void> => {
+  // Step 1: Save current total_poin for all students
+  const { data: siswaList, error: fetchError } = await supabase
+    .from("siswa")
+    .select("id, total_poin");
+
+  if (fetchError) throw new Error("Gagal mengambil data siswa: " + fetchError.message);
+
+  const poinSnapshot: Record<string, number> = {};
+  (siswaList || []).forEach((s: any) => {
+    poinSnapshot[s.id] = s.total_poin;
+  });
+
+  // Step 2: Delete all riwayat for current semester
+  // (DELETE trigger will subtract each entry's nilai_diberikan from siswa.total_poin)
+  const { error: deleteError } = await supabase
+    .from("riwayat_poin")
+    .delete()
+    .eq("semester", currentSemester);
+
+  if (deleteError) throw new Error("Gagal menghapus riwayat: " + deleteError.message);
+
+  // Step 3: Restore total_poin to saved values
+  // After DELETE triggers fire, all affected siswa.total_poin will be reduced.
+  // We need to set them back to the original values.
+  const updatePromises = Object.entries(poinSnapshot).map(([id, poin]) =>
+    supabase
+      .from("siswa")
+      .update({ total_poin: poin })
+      .eq("id", id)
+  );
+
+  const results = await Promise.all(updatePromises);
+  const updateError = results.find(r => r.error);
+  if (updateError) throw new Error("Gagal mengembalikan poin siswa: " + updateError.error?.message);
+
+  // Step 4: Update local semester
+  setCurrentSemester(newSemester);
 };

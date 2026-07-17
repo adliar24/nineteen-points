@@ -24,6 +24,7 @@ export interface RiwayatPoin {
   nilai_diberikan: number;
   guru_email: string;
   created_at: string;
+  semester?: string;
 }
 
 export interface UserSession {

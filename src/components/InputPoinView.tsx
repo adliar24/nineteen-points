@@ -24,9 +24,10 @@ import { toSentenceCase } from "../formatName";
 interface InputPoinViewProps {
   userSession: UserSession;
   onRefreshHistory: () => void;
+  currentSemester: string;
 }
 
-export default function InputPoinView({ userSession, onRefreshHistory }: InputPoinViewProps) {
+export default function InputPoinView({ userSession, onRefreshHistory, currentSemester }: InputPoinViewProps) {
   const [siswaList, setSiswaList] = useState<Siswa[]>([]);
   const [masterPoin, setMasterPoin] = useState<MasterPoin[]>([]);
   
@@ -258,7 +259,7 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
 
     try {
       // Write to DB
-      await addRiwayat(selectedSiswa.id, name, value, userSession.fullName);
+      await addRiwayat(selectedSiswa.id, name, value, userSession.fullName, currentSemester);
       onRefreshHistory();
 
       // Success state

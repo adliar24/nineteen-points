@@ -13,13 +13,16 @@ import {
   School,
   Sparkles,
   Check,
-  X
+  X,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import { UserSession, RiwayatPoin, Siswa } from "../types";
 import { supabase } from "../supabaseClient";
 import html2canvas from "html2canvas-pro";
 import SkeletonLoader from "./SkeletonLoader";
 import { toSentenceCase } from "../formatName";
+import { getVisiblePages } from "../pagination";
 
 interface SiswaDashboardViewProps {
   userSession: UserSession;
@@ -32,6 +35,8 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
   const [isLoading, setIsLoading] = useState(true);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isZoomed, setIsZoomed] = useState(false);
+  const [historyPage, setHistoryPage] = useState(1);
+  const historyPerPage = 10;
 
   useEffect(() => {
     async function loadStudentData() {
@@ -79,6 +84,9 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
 
     loadStudentData();
   }, [userSession.nis]);
+
+  const historyTotalPages = Math.ceil(riwayat.length / historyPerPage);
+  const paginatedRiwayat = riwayat.slice((historyPage - 1) * historyPerPage, historyPage * historyPerPage);
 
   const handleDownloadCard = async () => {
     if (!siswaDetail) return;
@@ -443,8 +451,8 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
 
           {/* Cards List container */}
           <div className="space-y-3">
-            {riwayat.length > 0 ? (
-              riwayat.map((record) => {
+            {paginatedRiwayat.length > 0 ? (
+              paginatedRiwayat.map((record) => {
                 const isPositive = record.nilai_diberikan > 0;
                 return (
                   <div 
@@ -511,6 +519,48 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
               </div>
             )}
           </div>
+
+          {/* Pagination */}
+          {historyTotalPages > 1 && (
+            <div className="flex items-center justify-between pt-2">
+              <p className="text-[11px] font-bold text-brand-500">
+                Halaman <strong className="text-brand-800">{historyPage}</strong> dari <strong className="text-brand-800">{historyTotalPages}</strong>
+              </p>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setHistoryPage((p) => Math.max(1, p - 1))}
+                  disabled={historyPage === 1}
+                  className="p-2 rounded-xl border border-brand-100 text-brand-600 hover:bg-brand-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-all"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                {getVisiblePages(historyTotalPages, historyPage).map((page, i) =>
+                  page === "..." ? (
+                    <span key={`dots-${i}`} className="text-brand-400 text-xs px-1">...</span>
+                  ) : (
+                    <button
+                      key={page}
+                      onClick={() => setHistoryPage(page as number)}
+                      className={`w-8 h-8 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                        historyPage === page
+                          ? "bg-brand-600 text-white shadow-md"
+                          : "border border-brand-100 text-brand-600 hover:bg-brand-50"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  )
+                )}
+                <button
+                  onClick={() => setHistoryPage((p) => Math.min(historyTotalPages, p + 1))}
+                  disabled={historyPage === historyTotalPages}
+                  className="p-2 rounded-xl border border-brand-100 text-brand-600 hover:bg-brand-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-all"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

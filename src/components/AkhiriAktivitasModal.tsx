@@ -37,7 +37,7 @@ export default function AkhiriAktivitasModal({
   };
 
   const handleReset = async () => {
-    if (confirmText.trim() !== CONFIRM_TEXT) return;
+    if (confirmText.trim().toUpperCase() !== CONFIRM_TEXT) return;
 
     setIsResetting(true);
     try {
@@ -142,7 +142,7 @@ export default function AkhiriAktivitasModal({
                   </button>
                   <button
                     onClick={handleReset}
-                    disabled={isResetting || confirmText.trim() !== CONFIRM_TEXT}
+                    disabled={isResetting || confirmText.trim().toUpperCase() !== CONFIRM_TEXT}
                     className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-sm shadow-md disabled:opacity-50 cursor-pointer flex items-center gap-2"
                   >
                     {isResetting ? (

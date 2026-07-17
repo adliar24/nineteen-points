@@ -41,6 +41,7 @@ import AkhiriAktivitasModal from "./components/AkhiriAktivitasModal";
 import ExportSummaryModal from "./components/ExportSummaryModal";
 import ImportSummaryModal from "./components/ImportSummaryModal";
 import ConfirmationModal from "./components/ConfirmationModal";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 export default function App() {
   if (supabaseEnvError) {
@@ -510,6 +511,7 @@ export default function App() {
 
         {/* Dynamic View Panel */}
         <main className="flex-1 p-6 pb-24 md:p-8 md:pb-16 max-w-7xl w-full mx-auto">
+          <ErrorBoundary>
           <Suspense fallback={
             <div className="flex items-center justify-center py-32">
               <div className="w-8 h-8 border-3 border-brand-400 border-t-transparent rounded-full animate-spin" />
@@ -570,6 +572,7 @@ export default function App() {
             </motion.div>
           </AnimatePresence>
           </Suspense>
+          </ErrorBoundary>
         </main>
       </div>
     </div>
@@ -578,11 +581,15 @@ export default function App() {
     <ConfirmationModal
       isOpen={isLogoutConfirmOpen}
       onClose={() => setIsLogoutConfirmOpen(false)}
-      onConfirm={() => {
+      onConfirm={async () => {
+        try {
+          await supabase.auth.signOut();
+        } catch (e) {
+          console.error("signOut error:", e);
+        }
         setUserSession(null);
         setActiveTab("stats");
         setIsLogoutConfirmOpen(false);
-        supabase.auth.signOut().catch((e) => console.error("Background signOut error:", e));
       }}
       title="Keluar dari Aplikasi?"
       message="Apakah Anda yakin ingin keluar dari sistem NineTeen Points?"

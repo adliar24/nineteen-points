@@ -25,7 +25,7 @@ import {
 import { compressImage } from "../compressImage";
 import { getVisiblePages } from "../pagination";
 import { supabase, supabaseAdminAuth } from "../supabaseClient";
-import { Siswa } from "../types";
+import { Siswa, UserSession } from "../types";
 import * as XLSX from "xlsx";
 import ConfirmationModal from "./ConfirmationModal";
 import ModalPortal from "./ModalPortal";
@@ -52,7 +52,7 @@ interface PhotoMatchItem {
 }
 
 interface KelolaPenggunaViewProps {
-  userSession: any;
+  userSession: UserSession;
   onRefreshHistory: () => void;
 }
 

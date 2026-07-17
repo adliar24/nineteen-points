@@ -1,8 +1,11 @@
 -- =========================================================================
--- RESET SEMUA DATA SISWA — SMAN 19 BANDUNG
+-- ⛔⚠️ RESET SEMUA DATA SISWA — SMAN 19 BANDUNG ⚠️⛔
 -- Hapus: foto, riwayat poin, data siswa, profil akun
 -- =========================================================================
--- ⚠️ PASTIKAN KAMU SUDAH LOGIN SEBAGAI SUPER_ADMIN SEJALANKAN SCRIPT INI
+-- ⛔ SCRIPT INI AKTIFKAN HANYA SAAT INgin RESET TOTAL SELURUH DATA SISWA
+-- ⛔ SEMUA DATA RIWAYAT POIN, SISWA, DAN AKUN SISWA AKAN DIHAPUS PERMANEN
+-- ⛔ PASTIKAN KAMU SUDAH LOGIN SEBAGAI SUPER_ADMIN SEJALANKAN SCRIPT INI
+-- ⛔ TIDAK BISA DIURUNGKAN (UNLESS ADA BACKUP DATABASE)
 -- =========================================================================
 
 -- ⚠️ STEP 0: HAPUS FOTO DARI STORAGE (tidak bisa dari SQL!)

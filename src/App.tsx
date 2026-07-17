@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, lazy, Suspense } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   School,
@@ -24,16 +24,16 @@ import { getLocalStorage, setLocalStorage } from "./dbStore";
 import { supabase, supabaseEnvError } from "./supabaseClient";
 import { toSentenceCase } from "./formatName";
 
-// View Imports
-import LoginView from "./components/LoginView";
-import StatsView from "./components/StatsView";
-import InputPoinView from "./components/InputPoinView";
-import KelolaSiswaView from "./components/KelolaSiswaView";
-import HistoryView from "./components/HistoryView";
-import MasterPoinView from "./components/MasterPoinView";
-import SiswaDashboardView from "./components/SiswaDashboardView";
-import KelolaPenggunaView from "./components/KelolaPenggunaView";
-import ChangePasswordView from "./components/ChangePasswordView";
+// View Imports — Lazy Loaded for code splitting
+const LoginView = lazy(() => import("./components/LoginView"));
+const StatsView = lazy(() => import("./components/StatsView"));
+const InputPoinView = lazy(() => import("./components/InputPoinView"));
+const KelolaSiswaView = lazy(() => import("./components/KelolaSiswaView"));
+const HistoryView = lazy(() => import("./components/HistoryView"));
+const MasterPoinView = lazy(() => import("./components/MasterPoinView"));
+const SiswaDashboardView = lazy(() => import("./components/SiswaDashboardView"));
+const KelolaPenggunaView = lazy(() => import("./components/KelolaPenggunaView"));
+const ChangePasswordView = lazy(() => import("./components/ChangePasswordView"));
 import ConfirmationModal from "./components/ConfirmationModal";
 
 export default function App() {
@@ -190,7 +190,15 @@ export default function App() {
   };
 
   if (!userSession) {
-    return <LoginView onLoginSuccess={(session) => setUserSession(session)} />;
+    return (
+      <Suspense fallback={
+        <div className="min-h-screen flex items-center justify-center bg-[#faf9ff]">
+          <div className="w-8 h-8 border-3 border-brand-400 border-t-transparent rounded-full animate-spin" />
+        </div>
+      }>
+        <LoginView onLoginSuccess={(session) => setUserSession(session)} />
+      </Suspense>
+    );
   }
 
   // Construct Dynamic Nav Items based on user role
@@ -437,6 +445,11 @@ export default function App() {
 
         {/* Dynamic View Panel */}
         <main className="flex-1 p-6 pb-24 md:p-8 md:pb-16 max-w-7xl w-full mx-auto">
+          <Suspense fallback={
+            <div className="flex items-center justify-center py-32">
+              <div className="w-8 h-8 border-3 border-brand-400 border-t-transparent rounded-full animate-spin" />
+            </div>
+          }>
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
@@ -491,6 +504,7 @@ export default function App() {
               )}
             </motion.div>
           </AnimatePresence>
+          </Suspense>
         </main>
       </div>
     </div>

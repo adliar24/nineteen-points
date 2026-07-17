@@ -22,7 +22,7 @@ import {
   Camera,
   Image
 } from "lucide-react";
-import { compressImage } from "./KelolaSiswaView";
+import { compressImage } from "../compressImage";
 import { getVisiblePages } from "../pagination";
 import { supabase, supabaseAdminAuth } from "../supabaseClient";
 import { Siswa } from "../types";

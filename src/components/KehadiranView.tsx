@@ -21,19 +21,20 @@ import {
   RefreshCw,
   Sliders,
   ChevronDown,
-  X
+  X,
+  FileText,
+  User
 } from "lucide-react";
 import { Siswa, UserSession } from "../types";
 import {
   getSiswaList,
   getAturanKehadiranList,
   updateAturanKehadiranList,
-  getKehadiranListByDate,
+  getKehadiranListByPeriod,
   saveKehadiran,
   deleteKehadiran,
   setSisaSiswaSebagaiAlfa,
-  AturanKehadiran,
-  KehadiranRow
+  AturanKehadiran
 } from "../dbStore";
 import { toSentenceCase } from "../formatName";
 import * as XLSX from "xlsx";
@@ -48,9 +49,9 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
   const isAdmin = userSession.role === "super_admin" || userSession.role === "kepala_sekolah";
 
   // Tab states
-  // Piket: "scan" (QR code scanner & simulator), "rekap_hari_ini"
-  // Admin: "rekap_semua", "aturan"
-  const [activeTab, setActiveTab] = useState<string>(isPiket ? "scan" : "rekap_semua");
+  // Piket: "scan" (QR code scanner & manual input), "rekap"
+  // Admin: "rekap", "aturan"
+  const [activeTab, setActiveTab] = useState<string>(isPiket ? "scan" : "rekap");
 
   // Core Data Queries
   const { data: siswaList = [] } = useQuery({
@@ -63,24 +64,44 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
     queryFn: getAturanKehadiranList,
   });
 
+  // Date filters
+  const [filterType, setFilterType] = useState<"hari_ini" | "bulan_ini" | "kustom">("hari_ini");
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [customStart, setCustomStart] = useState(() => new Date().toISOString().slice(0, 10));
+  const [customEnd, setCustomEnd] = useState(() => new Date().toISOString().slice(0, 10));
 
-  const { data: kehadiranList = [], isLoading: loadingKehadiran, refetch: refetchKehadiran } = useQuery({
-    queryKey: ["kehadiran", selectedDate],
-    queryFn: () => getKehadiranListByDate(selectedDate),
+  // Compute actual date range for query
+  const dateRange = useMemo(() => {
+    if (filterType === "hari_ini") {
+      return { start: selectedDate, end: selectedDate };
+    } else if (filterType === "bulan_ini") {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = now.getMonth();
+      const start = new Date(y, m, 1).toISOString().slice(0, 10);
+      const end = new Date(y, m + 1, 0).toISOString().slice(0, 10);
+      return { start, end };
+    } else {
+      return { start: customStart, end: customEnd };
+    }
+  }, [filterType, selectedDate, customStart, customEnd]);
+
+  // Query attendance logs for range
+  const { data: rawKehadiranList = [], isLoading: loadingKehadiran, refetch: refetchKehadiran } = useQuery({
+    queryKey: ["kehadiran", dateRange.start, dateRange.end],
+    queryFn: () => getKehadiranListByPeriod(dateRange.start, dateRange.end),
   });
 
-  // Time-based config (defaults to 07:00 WIB)
+  // School Entry Time limit config
   const [schoolEntryTime, setSchoolEntryTime] = useState(() => {
-    const saved = localStorage.getItem("19points_jam_masuk");
-    return saved || "07:00";
+    return localStorage.getItem("19points_jam_masuk") || "07:00";
   });
 
   useEffect(() => {
     localStorage.setItem("19points_jam_masuk", schoolEntryTime);
   }, [schoolEntryTime]);
 
-  // Scanner States
+  // QR Scanner States
   const [cameraActive, setCameraActive] = useState(false);
   const [scannerError, setScannerError] = useState<string | null>(null);
   const scannerRef = useRef<Html5Qrcode | null>(null);
@@ -92,6 +113,7 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
 
   // Form recording states
   const [targetSiswa, setTargetSiswa] = useState<Siswa | null>(null);
+  const [attendanceMainCategory, setAttendanceMainCategory] = useState<"tepat_waktu" | "terlambat" | "izin_sakit" | "alfa">("tepat_waktu");
   const [attendanceStatus, setAttendanceStatus] = useState<AturanKehadiran["status"]>("tepat_waktu");
   const [givenPoints, setGivenPoints] = useState(15);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -101,10 +123,17 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
   const [tempPoints, setTempPoints] = useState<Record<string, number>>({});
   const [isSavingConfig, setIsSavingConfig] = useState(false);
 
-  // Editing existing attendance records (Admin / Piket)
-  const [editingRecord, setEditingRecord] = useState<KehadiranRow | null>(null);
+  // Student specific history popup modal
+  const [detailedStudent, setDetailedStudent] = useState<Siswa | null>(null);
+
+  // Editing existing attendance records
+  const [editingRecord, setEditingRecord] = useState<any | null>(null);
   const [editStatus, setEditStatus] = useState<AturanKehadiran["status"]>("tepat_waktu");
   const [editPoints, setEditPoints] = useState(15);
+
+  // Table Filters (for aggregate rekap)
+  const [rekapSearch, setRekapSearch] = useState("");
+  const [rekapClass, setRekapClass] = useState("Semua");
 
   // Initialize Admin Point Config Form
   useEffect(() => {
@@ -117,7 +146,7 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
     }
   }, [aturanList]);
 
-  // QR Scanner hook
+  // QR Scanner logic
   useEffect(() => {
     if (cameraActive && activeTab === "scan") {
       setScannerError(null);
@@ -217,20 +246,26 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
 
     const diffMinutes = (currHour * 60 + currMin) - (entryHour * 60 + entryMin);
 
+    let mainCat: "tepat_waktu" | "terlambat" | "izin_sakit" | "alfa" = "tepat_waktu";
     let status: AturanKehadiran["status"] = "tepat_waktu";
+
     if (diffMinutes > 0 && diffMinutes <= 5) {
+      mainCat = "terlambat";
       status = "telat_5";
     } else if (diffMinutes > 5 && diffMinutes <= 10) {
+      mainCat = "terlambat";
       status = "telat_10";
     } else if (diffMinutes > 10 && diffMinutes <= 15) {
+      mainCat = "terlambat";
       status = "telat_15";
     } else if (diffMinutes > 15) {
+      mainCat = "alfa";
       status = "alfa";
     }
 
+    setAttendanceMainCategory(mainCat);
     setAttendanceStatus(status);
 
-    // Set points accordingly
     const matchingRule = aturanList.find(r => r.status === status);
     if (matchingRule) {
       setGivenPoints(matchingRule.nilai_poin);
@@ -242,7 +277,23 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
     calculateAutoStatus(student);
   };
 
-  const handleStatusChange = (status: AturanKehadiran["status"]) => {
+  const handleMainCategoryChange = (cat: "tepat_waktu" | "terlambat" | "izin_sakit" | "alfa") => {
+    setAttendanceMainCategory(cat);
+    
+    let defaultStatus: AturanKehadiran["status"] = "tepat_waktu";
+    if (cat === "tepat_waktu") defaultStatus = "tepat_waktu";
+    else if (cat === "terlambat") defaultStatus = "telat_5";
+    else if (cat === "izin_sakit") defaultStatus = "sakit";
+    else if (cat === "alfa") defaultStatus = "alfa";
+
+    setAttendanceStatus(defaultStatus);
+    const matchingRule = aturanList.find(r => r.status === defaultStatus);
+    if (matchingRule) {
+      setGivenPoints(matchingRule.nilai_poin);
+    }
+  };
+
+  const handleSubStatusChange = (status: AturanKehadiran["status"]) => {
     setAttendanceStatus(status);
     const matchingRule = aturanList.find(r => r.status === status);
     if (matchingRule) {
@@ -316,12 +367,15 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
       queryClient.invalidateQueries({ queryKey: ["siswa"] });
       queryClient.invalidateQueries({ queryKey: ["riwayat"] });
       if (onRefreshHistory) onRefreshHistory();
+      
+      // Also refetch aggregate list
+      refetchKehadiran();
     } catch (err: any) {
       alert("Gagal menghapus absensi: " + err.message);
     }
   };
 
-  const handleEditRecord = (record: KehadiranRow) => {
+  const handleEditRecord = (record: any) => {
     setEditingRecord(record);
     setEditStatus(record.status as any);
     setEditPoints(record.nilai_poin_diberikan);
@@ -343,6 +397,9 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
       queryClient.invalidateQueries({ queryKey: ["siswa"] });
       queryClient.invalidateQueries({ queryKey: ["riwayat"] });
       if (onRefreshHistory) onRefreshHistory();
+      
+      // Refresh aggregate view
+      refetchKehadiran();
     } catch (err: any) {
       alert("Gagal mengubah absensi: " + err.message);
     } finally {
@@ -367,49 +424,74 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
     }
   };
 
+  // Group Attendance Log into Student Aggregations
+  const aggregateReport = useMemo(() => {
+    return siswaList.map(student => {
+      const logs = rawKehadiranList.filter(l => l.siswa_id === student.id);
+      
+      const countHadir = logs.filter(l => l.status === "tepat_waktu").length;
+      const countTelat = logs.filter(l => l.status.startsWith("telat_")).length;
+      const countSakit = logs.filter(l => l.status === "sakit").length;
+      const countIzin = logs.filter(l => l.status === "izin").length;
+      const countAlfa = logs.filter(l => l.status === "alfa").length;
+
+      return {
+        siswa: student,
+        hadir: countHadir,
+        terlambat: countTelat,
+        sakit: countSakit,
+        izin: countIzin,
+        alfa: countAlfa,
+        logs: logs
+      };
+    });
+  }, [siswaList, rawKehadiranList]);
+
+  // Apply filters on Aggregate data
+  const filteredReport = useMemo(() => {
+    return aggregateReport.filter(row => {
+      const matchesSearch = row.siswa.nama.toLowerCase().includes(rekapSearch.toLowerCase()) || row.siswa.nis.includes(rekapSearch);
+      const matchesClass = rekapClass === "Semua" || row.siswa.kelas === rekapClass;
+      return matchesSearch && matchesClass;
+    });
+  }, [aggregateReport, rekapSearch, rekapClass]);
+
+  // Export to Excel aggregated report
   const handleExportExcel = () => {
-    if (kehadiranList.length === 0) {
-      alert("Tidak ada data kehadiran untuk tanggal ini.");
+    if (filteredReport.length === 0) {
+      alert("Tidak ada data rekap untuk diekspor.");
       return;
     }
 
-    const rows = kehadiranList.map((row) => ({
-      Tanggal: row.tanggal,
-      NIS: row.siswa_nis,
-      Nama: row.siswa_nama,
-      Kelas: row.siswa_kelas,
-      Status: aturanList.find(r => r.status === row.status)?.label || row.status,
-      Poin: row.nilai_poin_diberikan,
-      Pencatat: row.pencatat_email,
-      "Waktu Pencatatan": new Date(row.created_at).toLocaleTimeString("id-ID")
+    const rows = filteredReport.map((row) => ({
+      NIS: row.siswa.nis,
+      Nama: row.siswa.nama,
+      Kelas: row.siswa.kelas,
+      "Hadir Tepat Waktu (kali)": row.hadir,
+      "Terlambat (kali)": row.terlambat,
+      "Sakit (kali)": row.sakit,
+      "Izin (kali)": row.izin,
+      "Alfa (kali)": row.alfa,
+      "Total Absensi Tercatat": row.logs.length
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(rows);
     worksheet["!cols"] = [
       { wch: 12 },
-      { wch: 12 },
       { wch: 25 },
       { wch: 15 },
-      { wch: 25 },
-      { wch: 10 },
-      { wch: 25 },
-      { wch: 15 }
+      { wch: 22 },
+      { wch: 18 },
+      { wch: 15 },
+      { wch: 15 },
+      { wch: 15 },
+      { wch: 22 }
     ];
 
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap Absensi");
-    XLSX.writeFile(workbook, `REKAP_KEHADIRAN_${selectedDate}.xlsx`);
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap Kehadiran");
+    XLSX.writeFile(workbook, `REKAP_KEHADIRAN_AGREGAT_${dateRange.start}_sd_${dateRange.end}.xlsx`);
   };
-
-  // Filter students by query
-  const filteredStudents = useMemo(() => {
-    if (!searchQuery) return [];
-    return siswaList.filter(s => {
-      const matchQuery = s.nama.toLowerCase().includes(searchQuery.toLowerCase()) || s.nis.includes(searchQuery);
-      const matchClass = selectedClass === "Semua" || s.kelas === selectedClass;
-      return matchQuery && matchClass;
-    }).slice(0, 5);
-  }, [siswaList, searchQuery, selectedClass]);
 
   // Distinct classes list
   const classesList = useMemo(() => {
@@ -420,8 +502,34 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
     return ["Semua", ...Array.from(classes).sort()];
   }, [siswaList]);
 
+  // Filter students for manual search dropdown
+  const filteredStudents = useMemo(() => {
+    if (!searchQuery) return [];
+    return siswaList.filter(s => {
+      const matchQuery = s.nama.toLowerCase().includes(searchQuery.toLowerCase()) || s.nis.includes(searchQuery);
+      const matchClass = selectedClass === "Semua" || s.kelas === selectedClass;
+      return matchQuery && matchClass;
+    }).slice(0, 5);
+  }, [siswaList, searchQuery, selectedClass]);
+
+  // Detailed view logs for detailedStudent
+  const detailedStudentLogs = useMemo(() => {
+    if (!detailedStudent) return [];
+    return rawKehadiranList.filter(l => l.siswa_id === detailedStudent.id);
+  }, [detailedStudent, rawKehadiranList]);
+
   return (
     <div className="space-y-6 pb-12 animate-fade-in font-sans">
+      <style>{`
+        @keyframes scanner-laser {
+          0% { top: 0%; }
+          50% { top: 100%; }
+          100% { top: 0%; }
+        }
+        .animate-scanner-laser {
+          animation: scanner-laser 2s infinite linear;
+        }
+      `}</style>
       
       {/* Header View */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -435,17 +543,20 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
           </p>
         </div>
 
-        {/* Global Date & Time Picker */}
-        <div className="flex items-center gap-2.5 bg-white border border-brand-100 p-2 rounded-2xl shadow-xs">
-          <Clock className="w-4 h-4 text-brand-500" />
-          <span className="text-xs font-black text-brand-950 uppercase tracking-wider">Tgl Rekap:</span>
-          <input
-            type="date"
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            className="text-xs font-bold text-brand-800 focus:outline-none border-none bg-transparent cursor-pointer"
-          />
-        </div>
+        {/* Entry boundary setting (only for scanning) */}
+        {isPiket && activeTab === "scan" && (
+          <div className="flex items-center gap-2 bg-white border border-brand-100 p-2.5 rounded-2xl shadow-xs">
+            <Clock className="w-4 h-4 text-brand-600" />
+            <span className="text-[10px] font-black text-brand-950 uppercase tracking-widest">Batas Masuk:</span>
+            <input
+              type="text"
+              value={schoolEntryTime}
+              onChange={(e) => setSchoolEntryTime(e.target.value)}
+              placeholder="07:00"
+              className="w-12 text-xs font-black text-brand-800 focus:outline-none border-none bg-transparent"
+            />
+          </div>
+        )}
       </div>
 
       {/* Tabs */}
@@ -463,23 +574,23 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
               Scan & Input Hadir
             </button>
             <button
-              onClick={() => { setActiveTab("rekap_hari_ini"); refetchKehadiran(); }}
+              onClick={() => { setActiveTab("rekap"); refetchKehadiran(); }}
               className={`px-5 py-3 text-xs font-black uppercase tracking-wider border-b-2 cursor-pointer transition-all ${
-                activeTab === "rekap_hari_ini"
+                activeTab === "rekap"
                   ? "border-brand-600 text-brand-800"
                   : "border-transparent text-slate-400 hover:text-slate-600"
               }`}
             >
-              Rekap Absen Hari Ini
+              Tabel Rekap Kehadiran
             </button>
           </>
         )}
         {isAdmin && (
           <>
             <button
-              onClick={() => { setActiveTab("rekap_semua"); refetchKehadiran(); }}
+              onClick={() => { setActiveTab("rekap"); refetchKehadiran(); }}
               className={`px-5 py-3 text-xs font-black uppercase tracking-wider border-b-2 cursor-pointer transition-all ${
-                activeTab === "rekap_semua"
+                activeTab === "rekap"
                   ? "border-brand-600 text-brand-800"
                   : "border-transparent text-slate-400 hover:text-slate-600"
               }`}
@@ -530,26 +641,19 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
             <div className="bg-white p-5 rounded-3xl border border-brand-100/60 shadow-md shadow-brand-900/5 space-y-4">
               <div className="flex justify-between items-center">
                 <span className="text-[10px] font-black text-brand-400 uppercase tracking-widest block">Metode Absensi</span>
-                
-                {/* Time setup */}
-                <div className="flex items-center gap-1 bg-brand-50 px-3 py-1.5 rounded-xl border border-brand-100">
-                  <Clock className="w-3.5 h-3.5 text-brand-600" />
-                  <span className="text-[10px] font-bold text-brand-700">Batas Masuk:</span>
-                  <input
-                    type="text"
-                    value={schoolEntryTime}
-                    onChange={(e) => setSchoolEntryTime(e.target.value)}
-                    placeholder="07:00"
-                    className="w-10 text-[10px] font-black text-brand-950 focus:outline-none border-none bg-transparent"
-                  />
-                </div>
+                <span className="text-[10px] font-black text-brand-500 bg-brand-50 border border-brand-100 px-2.5 py-1 rounded-lg uppercase">
+                  Tgl Absen: {selectedDate}
+                </span>
               </div>
 
-              {/* Camera Activation */}
+              {/* Camera Activation with Green Glowing Laser effect */}
               <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-brand-100 rounded-2xl bg-brand-50/20 relative overflow-hidden min-h-[300px]">
                 {cameraActive ? (
-                  <div className="w-full flex flex-col items-center space-y-4">
-                    <div id="reader-kehadiran" className="w-full max-w-[280px] overflow-hidden rounded-2xl border border-brand-200 bg-black shadow-lg" />
+                  <div className="w-full flex flex-col items-center space-y-4 relative">
+                    <div id="reader-kehadiran" className="w-full max-w-[280px] overflow-hidden rounded-2xl border-2 border-brand-300 bg-black shadow-lg relative">
+                      {/* Active Beam Laser effect */}
+                      <div className="absolute left-0 right-0 h-1 bg-emerald-500 shadow-[0_0_12px_#10b981] z-20 animate-scanner-laser pointer-events-none" />
+                    </div>
                     <button
                       onClick={stopScanner}
                       className="px-5 py-2 bg-rose-50 border border-rose-100 hover:bg-rose-100 rounded-xl text-xs font-bold text-rose-700 cursor-pointer"
@@ -705,12 +809,12 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
                     </button>
                   </div>
 
-                  {/* Student profile info */}
+                  {/* Student profile info (Pas Foto digital card style) */}
                   <div className="flex items-center gap-4 bg-brand-50/70 p-4 border border-brand-100 rounded-2xl">
                     {targetSiswa.foto_url ? (
                       <img src={targetSiswa.foto_url} className="w-12 h-16 rounded-xl object-cover shadow-sm border border-brand-200" alt="Avatar" />
                     ) : (
-                      <div className="w-12 h-16 rounded-xl bg-gradient-to-tr from-accent-500 to-amber-400 flex items-center justify-center font-bold text-white shadow-sm border border-brand-200">
+                      <div className="w-12 h-16 rounded-xl bg-gradient-to-tr from-brand-500 to-amber-500 flex items-center justify-center font-bold text-white shadow-sm border border-brand-200">
                         {targetSiswa.nama.slice(0, 2).toUpperCase()}
                       </div>
                     )}
@@ -723,35 +827,153 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
                     </div>
                   </div>
 
-                  {/* Status Picker Buttons */}
-                  <div className="space-y-2">
+                  {/* Nested Status Picker */}
+                  <div className="space-y-4">
                     <label className="text-[10px] font-black text-brand-400 uppercase tracking-widest block">
-                      Status Kehadiran
+                      Pilih Status Kehadiran
                     </label>
+
+                    {/* Main Categories Selector */}
                     <div className="grid grid-cols-2 gap-2">
-                      {aturanList.map(rule => {
-                        const isSelected = attendanceStatus === rule.status;
-                        return (
-                          <button
-                            key={rule.status}
-                            type="button"
-                            onClick={() => handleStatusChange(rule.status)}
-                            className={`p-3.5 rounded-2xl border text-left flex flex-col justify-between transition-all cursor-pointer min-h-[75px] ${
-                              isSelected
-                                ? rule.nilai_poin >= 0
-                                  ? "bg-emerald-50 border-emerald-200 text-emerald-800 shadow-xs"
-                                  : "bg-rose-50 border-rose-200 text-rose-800 shadow-xs"
-                                : "bg-white border-brand-100 text-brand-800 hover:bg-slate-50"
-                            }`}
-                          >
-                            <span className="text-[11px] font-black tracking-wide leading-none">{rule.label}</span>
-                            <span className={`text-[10px] font-black mt-2 font-mono ${rule.nilai_poin >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
-                              {rule.nilai_poin >= 0 ? `+${rule.nilai_poin}` : rule.nilai_poin} pts
-                            </span>
-                          </button>
-                        );
-                      })}
+                      {/* Hadir Tepat Waktu */}
+                      <button
+                        type="button"
+                        onClick={() => handleMainCategoryChange("tepat_waktu")}
+                        className={`p-3.5 rounded-2xl border text-left flex flex-col justify-between transition-all cursor-pointer min-h-[75px] ${
+                          attendanceMainCategory === "tepat_waktu"
+                            ? "bg-emerald-50 border-emerald-300 text-emerald-800 shadow-xs"
+                            : "bg-white border-brand-100 text-brand-800 hover:bg-slate-50"
+                        }`}
+                      >
+                        <span className="text-[11px] font-black tracking-wide">Hadir Tepat Waktu</span>
+                        <span className="text-[10px] font-black mt-2 font-mono text-emerald-600">
+                          {aturanList.find(r => r.status === "tepat_waktu")?.nilai_poin !== undefined ? `+${aturanList.find(r => r.status === "tepat_waktu")?.nilai_poin}` : "+15"} pts
+                        </span>
+                      </button>
+
+                      {/* Alfa */}
+                      <button
+                        type="button"
+                        onClick={() => handleMainCategoryChange("alfa")}
+                        className={`p-3.5 rounded-2xl border text-left flex flex-col justify-between transition-all cursor-pointer min-h-[75px] ${
+                          attendanceMainCategory === "alfa"
+                            ? "bg-rose-50 border-rose-300 text-rose-800 shadow-xs"
+                            : "bg-white border-brand-100 text-brand-800 hover:bg-slate-50"
+                        }`}
+                      >
+                        <span className="text-[11px] font-black tracking-wide">Alfa (Absen)</span>
+                        <span className="text-[10px] font-black mt-2 font-mono text-rose-600">
+                          {aturanList.find(r => r.status === "alfa")?.nilai_poin || "-25"} pts
+                        </span>
+                      </button>
+
+                      {/* Izin / Sakit Dropdown Trigger */}
+                      <button
+                        type="button"
+                        onClick={() => handleMainCategoryChange("izin_sakit")}
+                        className={`p-3.5 rounded-2xl border text-left flex flex-col justify-between transition-all cursor-pointer min-h-[75px] ${
+                          attendanceMainCategory === "izin_sakit"
+                            ? "bg-purple-50 border-purple-300 text-purple-800 shadow-xs"
+                            : "bg-white border-brand-100 text-brand-800 hover:bg-slate-50"
+                        }`}
+                      >
+                        <span className="text-[11px] font-black tracking-wide">Izin / Sakit</span>
+                        <span className="text-[10px] font-bold text-slate-400 mt-2">
+                          {attendanceMainCategory === "izin_sakit" ? toSentenceCase(attendanceStatus) : "Sakit / Izin"}
+                        </span>
+                      </button>
+
+                      {/* Terlambat Dropdown Trigger */}
+                      <button
+                        type="button"
+                        onClick={() => handleMainCategoryChange("terlambat")}
+                        className={`p-3.5 rounded-2xl border text-left flex flex-col justify-between transition-all cursor-pointer min-h-[75px] ${
+                          attendanceMainCategory === "terlambat"
+                            ? "bg-amber-50 border-amber-300 text-amber-800 shadow-xs"
+                            : "bg-white border-brand-100 text-brand-800 hover:bg-slate-50"
+                        }`}
+                      >
+                        <span className="text-[11px] font-black tracking-wide">Terlambat</span>
+                        <span className="text-[10px] font-bold text-slate-400 mt-2">
+                          {attendanceMainCategory === "terlambat" ? `${attendanceStatus.replace("telat_", "")} Menit` : "Rentang Telat"}
+                        </span>
+                      </button>
                     </div>
+
+                    {/* Sub Options (Expanded nicely) */}
+                    <AnimatePresence mode="wait">
+                      {attendanceMainCategory === "izin_sakit" && (
+                        <motion.div
+                          key="izin_sakit_sub"
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="bg-purple-50/50 p-4 border border-purple-100 rounded-2xl space-y-2.5"
+                        >
+                          <span className="text-[9px] font-black text-purple-600 uppercase tracking-widest block">Opsi Keterangan</span>
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleSubStatusChange("sakit")}
+                              className={`flex-1 py-2 px-3 rounded-xl border text-xs font-black text-center cursor-pointer transition-all ${
+                                attendanceStatus === "sakit"
+                                  ? "bg-purple-600 text-white border-transparent"
+                                  : "bg-white border-purple-200 text-purple-700 hover:bg-purple-50"
+                              }`}
+                            >
+                              Sakit
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleSubStatusChange("izin")}
+                              className={`flex-1 py-2 px-3 rounded-xl border text-xs font-black text-center cursor-pointer transition-all ${
+                                attendanceStatus === "izin"
+                                  ? "bg-purple-600 text-white border-transparent"
+                                  : "bg-white border-purple-200 text-purple-700 hover:bg-purple-50"
+                              }`}
+                            >
+                              Izin
+                            </button>
+                          </div>
+                          <p className="text-[9px] text-purple-600/70 font-semibold text-center italic mt-1">Sakit & Izin tidak merubah poin (0 Poin).</p>
+                        </motion.div>
+                      )}
+
+                      {attendanceMainCategory === "terlambat" && (
+                        <motion.div
+                          key="terlambat_sub"
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="bg-amber-50/50 p-4 border border-amber-100 rounded-2xl space-y-2.5"
+                        >
+                          <span className="text-[9px] font-black text-amber-600 uppercase tracking-widest block">Durasi Keterlambatan</span>
+                          <div className="grid grid-cols-3 gap-2">
+                            {["telat_5", "telat_10", "telat_15"].map(statusVal => {
+                              const rule = aturanList.find(r => r.status === statusVal);
+                              const isSel = attendanceStatus === statusVal;
+                              return (
+                                <button
+                                  key={statusVal}
+                                  type="button"
+                                  onClick={() => handleSubStatusChange(statusVal as any)}
+                                  className={`py-2 px-1 rounded-xl border text-[10px] font-black text-center cursor-pointer transition-all flex flex-col justify-center items-center ${
+                                    isSel
+                                      ? "bg-amber-600 text-white border-transparent shadow-xs"
+                                      : "bg-white border-amber-200 text-amber-700 hover:bg-amber-50"
+                                  }`}
+                                >
+                                  <span>{statusVal.replace("telat_", "")} Mnt</span>
+                                  <span className={`text-[8.5px] mt-1 font-mono ${isSel ? "text-amber-100" : "text-amber-500"}`}>
+                                    {rule?.nilai_poin || 0} pts
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
 
                   {/* Submit Button */}
@@ -796,134 +1018,240 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
         </div>
       )}
 
-      {/* TAB CONTENT: DAILY REKAP TABLE (PIKET & ADMIN MONITORING) */}
-      {(activeTab === "rekap_hari_ini" || activeTab === "rekap_semua") && (
-        <div className="bg-white rounded-3xl border border-brand-100 shadow-md shadow-brand-900/5 overflow-hidden">
+      {/* TAB CONTENT: STUDENT-CENTRIC CONSOLIDATED AGREGATE TABLE (REKAP TAB) */}
+      {activeTab === "rekap" && (
+        <div className="space-y-6">
           
-          {/* Table Toolbar */}
-          <div className="p-5 border-b border-brand-50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-slate-50/50">
-            <div>
-              <h3 className="text-sm font-black text-brand-950 uppercase tracking-widest flex items-center gap-2">
-                <Users className="w-4.5 h-4.5 text-brand-600" />
-                Data Absensi Tanggal: {selectedDate}
-              </h3>
-              <p className="text-[10.5px] text-brand-400 font-semibold mt-1">
-                Ditemukan {kehadiranList.length} log absensi
-              </p>
+          {/* Filters Toolbar */}
+          <div className="bg-white p-5 rounded-3xl border border-brand-100 shadow-md shadow-brand-900/5 space-y-4">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+              <div>
+                <h3 className="text-sm font-black text-brand-950 uppercase tracking-widest">
+                  Filter & Periode Rekapitulasi Kehadiran
+                </h3>
+                <p className="text-[10.5px] text-brand-400 font-semibold mt-1">
+                  Pilih rentang tanggal rekap absensi agregat siswa
+                </p>
+              </div>
+
+              {/* Period Quick Select Buttons */}
+              <div className="flex bg-brand-50/70 border border-brand-100 p-1 rounded-xl w-full md:w-auto">
+                <button
+                  onClick={() => setFilterType("hari_ini")}
+                  className={`flex-1 md:flex-initial px-4 py-2 text-[10px] font-black uppercase tracking-wider rounded-lg cursor-pointer transition-all ${
+                    filterType === "hari_ini"
+                      ? "bg-white text-brand-900 shadow-xs border border-brand-100/50"
+                      : "text-slate-400 hover:text-slate-600"
+                  }`}
+                >
+                  Hari Ini
+                </button>
+                <button
+                  onClick={() => setFilterType("bulan_ini")}
+                  className={`flex-1 md:flex-initial px-4 py-2 text-[10px] font-black uppercase tracking-wider rounded-lg cursor-pointer transition-all ${
+                    filterType === "bulan_ini"
+                      ? "bg-white text-brand-900 shadow-xs border border-brand-100/50"
+                      : "text-slate-400 hover:text-slate-600"
+                  }`}
+                >
+                  Bulan Ini
+                </button>
+                <button
+                  onClick={() => setFilterType("kustom")}
+                  className={`flex-1 md:flex-initial px-4 py-2 text-[10px] font-black uppercase tracking-wider rounded-lg cursor-pointer transition-all ${
+                    filterType === "kustom"
+                      ? "bg-white text-brand-900 shadow-xs border border-brand-100/50"
+                      : "text-slate-400 hover:text-slate-600"
+                  }`}
+                >
+                  Kustom Range
+                </button>
+              </div>
             </div>
 
-            <div className="flex gap-2.5 w-full md:w-auto">
-              <button
-                onClick={handleExportExcel}
-                className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 px-4 py-2.5 text-xs font-black text-emerald-700 rounded-xl cursor-pointer hover:bg-emerald-100 hover:shadow-xs transition-all"
-              >
-                <Download className="w-4 h-4" />
-                Export XLS
-              </button>
-              <button
-                onClick={() => refetchKehadiran()}
-                className="flex items-center justify-center p-2.5 border border-brand-100 rounded-xl hover:bg-brand-50 text-brand-600 cursor-pointer"
-                title="Refresh Data"
-              >
-                <RefreshCw className="w-4 h-4" />
-              </button>
+            {/* Date Picker Range Inputs */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-brand-50 pt-4">
+              
+              {/* If Hari Ini filter */}
+              {filterType === "hari_ini" && (
+                <div className="flex flex-col gap-1 md:col-span-3">
+                  <label className="text-[10px] font-black text-brand-400 uppercase tracking-widest">Pilih Tanggal</label>
+                  <input
+                    type="date"
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                    className="border border-brand-100 rounded-xl p-3 text-xs font-bold text-brand-800 bg-white outline-none w-full md:max-w-xs"
+                  />
+                </div>
+              )}
+
+              {/* If Bulan Ini */}
+              {filterType === "bulan_ini" && (
+                <div className="md:col-span-3 bg-brand-50/50 border border-brand-100 rounded-2xl p-3 flex items-center gap-2">
+                  <Calendar className="w-4.5 h-4.5 text-brand-600" />
+                  <span className="text-xs font-bold text-brand-800">
+                    Menampilkan periode: <strong>{dateRange.start}</strong> s/d <strong>{dateRange.end}</strong> (Bulan ini)
+                  </span>
+                </div>
+              )}
+
+              {/* If Kustom */}
+              {filterType === "kustom" && (
+                <>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] font-black text-brand-400 uppercase tracking-widest">Tanggal Awal</label>
+                    <input
+                      type="date"
+                      value={customStart}
+                      onChange={(e) => setCustomStart(e.target.value)}
+                      className="border border-brand-100 rounded-xl p-3 text-xs font-bold text-brand-800 bg-white outline-none"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] font-black text-brand-400 uppercase tracking-widest">Tanggal Akhir</label>
+                    <input
+                      type="date"
+                      value={customEnd}
+                      onChange={(e) => setCustomEnd(e.target.value)}
+                      className="border border-brand-100 rounded-xl p-3 text-xs font-bold text-brand-800 bg-white outline-none"
+                    />
+                  </div>
+                </>
+              )}
             </div>
+
+            {/* Sub-Filters: Search name & class filter */}
+            <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 border-t border-brand-50 pt-4">
+              <div className="sm:col-span-8 relative">
+                <Search className="absolute left-3.5 top-3.5 h-4.5 w-4.5 text-brand-400" />
+                <input
+                  type="text"
+                  placeholder="Cari nama atau NIS siswa..."
+                  value={rekapSearch}
+                  onChange={(e) => setRekapSearch(e.target.value)}
+                  className="w-full border border-brand-100 rounded-xl py-3 pl-10 pr-4 text-xs font-bold text-brand-900 bg-brand-50/10 focus:ring-1 focus:ring-brand-500 outline-none"
+                />
+              </div>
+
+              <div className="sm:col-span-4 flex gap-2">
+                <select
+                  value={rekapClass}
+                  onChange={(e) => setRekapClass(e.target.value)}
+                  className="w-full border border-brand-100 rounded-xl p-3 text-xs font-bold text-brand-800 bg-white cursor-pointer focus:outline-none"
+                >
+                  <option value="Semua">Semua Kelas</option>
+                  {classesList.filter(c => c !== "Semua").map(cls => (
+                    <option key={cls} value={cls}>Kelas {cls}</option>
+                  ))}
+                </select>
+
+                <button
+                  onClick={handleExportExcel}
+                  className="flex items-center justify-center gap-1.5 bg-emerald-50 border border-emerald-200 px-4 py-2.5 text-xs font-black text-emerald-700 rounded-xl cursor-pointer hover:bg-emerald-100 transition-all flex-shrink-0"
+                  title="Ekspor Rekap Excel"
+                >
+                  <Download className="w-4.5 h-4.5" />
+                  XLS
+                </button>
+              </div>
+            </div>
+
           </div>
 
-          {/* Table Container */}
-          <div className="overflow-x-auto">
-            {loadingKehadiran ? (
-              <div className="py-20 text-center">
-                <RefreshCw className="w-8 h-8 animate-spin mx-auto text-brand-500" />
-                <p className="text-xs font-bold text-brand-400 mt-2">Memuat data absensi...</p>
-              </div>
-            ) : kehadiranList.length > 0 ? (
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-brand-100 bg-brand-50/20 text-[10px] font-black text-brand-400 uppercase tracking-widest">
-                    <th className="py-4 px-5">Siswa</th>
-                    <th className="py-4 px-4">Kelas</th>
-                    <th className="py-4 px-4">Waktu Scan</th>
-                    <th className="py-4 px-4">Status</th>
-                    <th className="py-4 px-4">Poin</th>
-                    <th className="py-4 px-4">Pencatat</th>
-                    <th className="py-4 px-5 text-right">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-brand-50 text-xs font-semibold text-brand-900">
-                  {kehadiranList.map((row) => {
-                    const rule = aturanList.find(r => r.status === row.status);
-                    return (
-                      <tr key={row.id} className="hover:bg-slate-50/30 transition-colors">
+          {/* Aggregate Student Grid Table */}
+          <div className="bg-white rounded-3xl border border-brand-100 shadow-md shadow-brand-900/5 overflow-hidden">
+            <div className="overflow-x-auto">
+              {loadingKehadiran ? (
+                <div className="py-20 text-center">
+                  <RefreshCw className="w-8 h-8 animate-spin mx-auto text-brand-500" />
+                  <p className="text-xs font-bold text-brand-400 mt-2">Memuat rekap absensi...</p>
+                </div>
+              ) : filteredReport.length > 0 ? (
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-brand-100 bg-brand-50/20 text-[10px] font-black text-brand-400 uppercase tracking-widest">
+                      <th className="py-4 px-5">Siswa</th>
+                      <th className="py-4 px-4">Kelas</th>
+                      <th className="py-4 px-3 text-center bg-emerald-50/20 text-emerald-700">Hadir</th>
+                      <th className="py-4 px-3 text-center bg-amber-50/20 text-amber-700">Telat</th>
+                      <th className="py-4 px-3 text-center bg-purple-50/20 text-purple-700">Sakit</th>
+                      <th className="py-4 px-3 text-center bg-indigo-50/20 text-indigo-700">Izin</th>
+                      <th className="py-4 px-3 text-center bg-rose-50/20 text-rose-700">Alfa</th>
+                      <th className="py-4 px-5 text-right">Tindakan</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-brand-50 text-xs font-semibold text-brand-900">
+                    {filteredReport.map((row) => (
+                      <tr 
+                        key={row.siswa.id} 
+                        className="hover:bg-slate-50/40 transition-colors cursor-pointer"
+                        onClick={() => setDetailedStudent(row.siswa)}
+                      >
                         <td className="py-3.5 px-5 flex items-center gap-3">
-                          {row.siswa_foto_url ? (
-                            <img src={row.siswa_foto_url} className="w-8 h-10 rounded-lg object-cover border border-brand-100 shadow-xs" alt="Avatar" />
+                          {row.siswa.foto_url ? (
+                            <img src={row.siswa.foto_url} className="w-8 h-10 rounded-lg object-cover border border-brand-100 shadow-xs" alt="Avatar" />
                           ) : (
                             <div className="w-8 h-10 rounded-lg bg-gradient-to-tr from-brand-500 to-accent-500 text-white flex items-center justify-center font-bold text-[10px] shadow-xs">
-                              {row.siswa_nama.slice(0, 2).toUpperCase()}
+                              {row.siswa.nama.slice(0, 2).toUpperCase()}
                             </div>
                           )}
                           <div>
-                            <span className="font-extrabold text-brand-950 block">{toSentenceCase(row.siswa_nama)}</span>
-                            <span className="text-[10px] text-slate-400 font-bold block mt-1">NIS {row.siswa_nis}</span>
+                            <span className="font-extrabold text-brand-950 block hover:text-brand-700 transition-colors">{toSentenceCase(row.siswa.nama)}</span>
+                            <span className="text-[10px] text-slate-400 font-bold block mt-1">NIS {row.siswa.nis}</span>
                           </div>
                         </td>
-                        <td className="py-3.5 px-4">{row.siswa_kelas}</td>
-                        <td className="py-3.5 px-4 font-mono font-medium">
-                          {new Date(row.created_at).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}
+                        <td className="py-3.5 px-4">{row.siswa.kelas}</td>
+                        
+                        {/* Hadir */}
+                        <td className="py-3.5 px-3 text-center bg-emerald-50/10 font-mono text-emerald-700 font-bold">
+                          {row.hadir > 0 ? `${row.hadir}x` : "-"}
                         </td>
-                        <td className="py-3.5 px-4">
-                          <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wide border ${
-                            row.status === "tepat_waktu"
-                              ? "bg-emerald-50 border-emerald-100 text-emerald-700"
-                              : row.status === "alfa"
-                              ? "bg-rose-50 border-rose-100 text-rose-700"
-                              : "bg-amber-50 border-amber-100 text-amber-700"
-                          }`}>
-                            {rule?.label || row.status}
-                          </span>
+                        
+                        {/* Telat */}
+                        <td className="py-3.5 px-3 text-center bg-amber-50/10 font-mono text-amber-700 font-bold">
+                          {row.terlambat > 0 ? `${row.terlambat}x` : "-"}
                         </td>
-                        <td className="py-3.5 px-4">
-                          <span className={`font-mono font-black ${row.nilai_poin_diberikan >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
-                            {row.nilai_poin_diberikan >= 0 ? `+${row.nilai_poin_diberikan}` : row.nilai_poin_diberikan} pts
-                          </span>
+                        
+                        {/* Sakit */}
+                        <td className="py-3.5 px-3 text-center bg-purple-50/10 font-mono text-purple-700 font-bold">
+                          {row.sakit > 0 ? `${row.sakit}x` : "-"}
                         </td>
-                        <td className="py-3.5 px-4 text-slate-500 text-[10px] font-bold" title={row.pencatat_email}>
-                          {row.pencatat_email.split("@")[0]}
+
+                        {/* Izin */}
+                        <td className="py-3.5 px-3 text-center bg-indigo-50/10 font-mono text-indigo-700 font-bold">
+                          {row.izin > 0 ? `${row.izin}x` : "-"}
                         </td>
+
+                        {/* Alfa */}
+                        <td className="py-3.5 px-3 text-center bg-rose-50/10 font-mono text-rose-700 font-bold">
+                          {row.alfa > 0 ? `${row.alfa}x` : "-"}
+                        </td>
+
                         <td className="py-3.5 px-5 text-right">
-                          <div className="inline-flex gap-1.5">
-                            <button
-                              onClick={() => handleEditRecord(row)}
-                              className="p-2 border border-brand-100 rounded-xl hover:bg-slate-100 text-brand-600 cursor-pointer"
-                              title="Ubah Status Absen"
-                            >
-                              <Edit3 className="w-4.5 h-4.5" />
-                            </button>
-                            <button
-                              onClick={() => handleDeleteRecord(row.id)}
-                              className="p-2 border border-rose-100 rounded-xl hover:bg-rose-50 text-rose-600 cursor-pointer"
-                              title="Hapus Absen"
-                            >
-                              <Trash2 className="w-4.5 h-4.5" />
-                            </button>
-                          </div>
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); setDetailedStudent(row.siswa); }}
+                            className="px-3.5 py-1.5 bg-brand-50 border border-brand-100 hover:bg-brand-100 hover:text-brand-800 text-brand-600 rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors cursor-pointer"
+                          >
+                            Riwayat
+                          </button>
                         </td>
                       </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            ) : (
-              <div className="py-24 text-center space-y-2">
-                <Calendar className="w-10 h-10 text-brand-300 mx-auto" />
-                <h4 className="text-xs font-black text-brand-500 uppercase tracking-widest">Tidak ada absensi</h4>
-                <p className="text-[10px] text-brand-400 font-semibold max-w-xs mx-auto">
-                  Belum ada log absensi terdaftar pada tanggal {selectedDate}.
-                </p>
-              </div>
-            )}
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="py-24 text-center space-y-2">
+                  <Calendar className="w-10 h-10 text-brand-300 mx-auto" />
+                  <h4 className="text-xs font-black text-brand-500 uppercase tracking-widest">Tidak Ada Siswa</h4>
+                  <p className="text-[10px] text-brand-400 font-semibold max-w-xs mx-auto">
+                    Tidak ditemukan data siswa yang cocok dengan filter.
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
+
         </div>
       )}
 
@@ -973,6 +1301,140 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
         </div>
       )}
 
+      {/* POPUP MODAL: DETAILED STUDENT ATTENDANCE HISTORY LIST */}
+      <AnimatePresence>
+        {detailedStudent && (
+          <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.12 }}
+              className="fixed inset-0 bg-brand-950/60 backdrop-blur-xs"
+              onClick={() => setDetailedStudent(null)}
+            />
+            
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 8, transition: { duration: 0.12 } }}
+              transition={{ type: "spring", stiffness: 450, damping: 38 }}
+              className="bg-white rounded-3xl p-6 w-full max-w-2xl border border-brand-100 shadow-2xl relative z-10 flex flex-col max-h-[85vh]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Modal Header */}
+              <div className="flex justify-between items-center border-b pb-3 border-brand-50">
+                <h3 className="text-xs font-black text-brand-950 uppercase tracking-widest flex items-center gap-2">
+                  <FileText className="w-4.5 h-4.5 text-brand-600" />
+                  Riwayat Absensi Murid
+                </h3>
+                <button
+                  onClick={() => setDetailedStudent(null)}
+                  className="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-xl cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Student info */}
+              <div className="bg-brand-50/70 p-4 border border-brand-100 rounded-2xl flex items-center gap-3.5 my-4">
+                {detailedStudent.foto_url ? (
+                  <img src={detailedStudent.foto_url} className="w-10 h-13 rounded-lg object-cover border border-brand-100" alt="Pas Foto" />
+                ) : (
+                  <div className="w-10 h-13 rounded-lg bg-gradient-to-tr from-brand-500 to-amber-500 text-white flex items-center justify-center font-bold text-[11px] shadow-sm">
+                    {detailedStudent.nama.slice(0, 2).toUpperCase()}
+                  </div>
+                )}
+                <div>
+                  <h4 className="text-sm font-extrabold text-brand-950">{toSentenceCase(detailedStudent.nama)}</h4>
+                  <p className="text-[10px] text-brand-400 font-bold mt-1">Kelas {detailedStudent.kelas} • NIS {detailedStudent.nis}</p>
+                </div>
+              </div>
+
+              {/* Logs List Table */}
+              <div className="overflow-y-auto flex-1 pr-1 scrollbar-thin">
+                {detailedStudentLogs.length > 0 ? (
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="border-b border-brand-100 bg-brand-50/30 text-[9px] font-black text-brand-400 uppercase tracking-widest">
+                        <th className="py-2.5 px-3">Tanggal</th>
+                        <th className="py-2.5 px-3">Waktu Input</th>
+                        <th className="py-2.5 px-3">Status</th>
+                        <th className="py-2.5 px-3">Poin</th>
+                        <th className="py-2.5 px-3 text-right">Tindakan</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-brand-50 text-[11px] font-semibold text-brand-900">
+                      {detailedStudentLogs.map((log) => {
+                        const rule = aturanList.find(r => r.status === log.status);
+                        return (
+                          <tr key={log.id} className="hover:bg-slate-50/30">
+                            <td className="py-3 px-3 font-mono font-bold text-slate-800">{log.tanggal}</td>
+                            <td className="py-3 px-3 font-mono text-slate-500">
+                              {new Date(log.created_at).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}
+                            </td>
+                            <td className="py-3 px-3">
+                              <span className={`inline-flex px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wide border ${
+                                log.status === "tepat_waktu"
+                                  ? "bg-emerald-50 border-emerald-100 text-emerald-700"
+                                  : log.status === "alfa"
+                                  ? "bg-rose-50 border-rose-100 text-rose-700"
+                                  : log.status === "sakit" || log.status === "izin"
+                                  ? "bg-purple-50 border-purple-100 text-purple-700"
+                                  : "bg-amber-50 border-amber-100 text-amber-700"
+                              }`}>
+                                {rule?.label || log.status}
+                              </span>
+                            </td>
+                            <td className="py-3 px-3">
+                              <span className={`font-mono font-black ${log.nilai_poin_diberikan >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
+                                {log.nilai_poin_diberikan >= 0 ? `+${log.nilai_poin_diberikan}` : log.nilai_poin_diberikan}
+                              </span>
+                            </td>
+                            <td className="py-3 px-3 text-right">
+                              <div className="inline-flex gap-1">
+                                <button
+                                  onClick={() => handleEditRecord(log)}
+                                  className="p-1.5 border border-brand-100 rounded-lg hover:bg-slate-100 text-brand-600 cursor-pointer"
+                                  title="Edit Log"
+                                >
+                                  <Edit3 className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteRecord(log.id)}
+                                  className="p-1.5 border border-rose-100 rounded-lg hover:bg-rose-55 text-rose-600 cursor-pointer"
+                                  title="Hapus Log"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                ) : (
+                  <div className="py-12 text-center text-brand-400 font-bold">
+                    Tidak ada riwayat absensi tercatat pada rentang tanggal terpilih.
+                  </div>
+                )}
+              </div>
+
+              {/* Close Button */}
+              <div className="border-t border-brand-50 pt-4 mt-4 flex justify-end">
+                <button
+                  onClick={() => setDetailedStudent(null)}
+                  className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-black uppercase tracking-wider rounded-xl cursor-pointer"
+                >
+                  Tutup
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       {/* EDIT MODAL POPUP FOR ABSENSI LOG (Piket / Admin) */}
       <AnimatePresence>
         {editingRecord && (
@@ -981,19 +1443,14 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.12, ease: "easeOut" }}
+              transition={{ duration: 0.12 }}
               onClick={() => setEditingRecord(null)}
               className="fixed inset-0 bg-brand-950/60 backdrop-blur-xs"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{
-                opacity: 0,
-                scale: 0.96,
-                y: 8,
-                transition: { duration: 0.12, ease: "easeInOut" }
-              }}
+              exit={{ opacity: 0, scale: 0.96, y: 8, transition: { duration: 0.12 } }}
               transition={{ type: "spring", stiffness: 450, damping: 38 }}
               className="bg-white rounded-3xl p-6 w-full max-w-sm border border-brand-100 shadow-2xl relative z-10 space-y-5"
               onClick={(e) => e.stopPropagation()}
@@ -1013,8 +1470,8 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
 
               {/* Student header info */}
               <div className="bg-brand-50/70 p-3.5 border border-brand-100 rounded-2xl text-xs font-semibold">
-                <p className="font-extrabold text-brand-950 leading-tight">{toSentenceCase(editingRecord.siswa_nama)}</p>
-                <p className="text-[10px] text-brand-400 font-bold mt-1.5">Kelas {editingRecord.siswa_kelas} • Tanggal {editingRecord.tanggal}</p>
+                <p className="font-extrabold text-brand-950 leading-tight">Ubah Absensi Tanggal {editingRecord.tanggal}</p>
+                <p className="text-[10px] text-brand-400 font-bold mt-1.5">Siswa: {editingRecord.siswa_nama || "Siswa"}</p>
               </div>
 
               {/* Edit Status Select */}

@@ -68,7 +68,7 @@ ALTER TABLE public.profiles ADD CONSTRAINT profiles_role_check
 
 -- 1e. TABEL ATURAN KEHADIRAN
 CREATE TABLE IF NOT EXISTS public.aturan_kehadiran (
-  status       TEXT PRIMARY KEY CHECK (status IN ('tepat_waktu', 'telat_5', 'telat_10', 'telat_15', 'alfa')),
+  status       TEXT PRIMARY KEY CHECK (status IN ('tepat_waktu', 'telat_5', 'telat_10', 'telat_15', 'alfa', 'sakit', 'izin')),
   label        TEXT NOT NULL,
   nilai_poin   INT NOT NULL
 );
@@ -242,13 +242,20 @@ INSERT INTO public.master_poin (nama_poin, nilai_poin) VALUES
 ('Bolos Jam Pelajaran', -25)
 ON CONFLICT DO NOTHING;
 
+-- 4a. UPDATE CONSTRAINT (jika tabel sudah ada dengan constraint lama)
+ALTER TABLE public.aturan_kehadiran DROP CONSTRAINT IF EXISTS aturan_kehadiran_status_check;
+ALTER TABLE public.aturan_kehadiran ADD CONSTRAINT aturan_kehadiran_status_check
+  CHECK (status IN ('tepat_waktu', 'telat_5', 'telat_10', 'telat_15', 'alfa', 'sakit', 'izin'));
+
 -- 4b. SEED DATA — ATURAN KEHADIRAN DEFAULT SMAN 19 BANDUNG
 INSERT INTO public.aturan_kehadiran (status, label, nilai_poin) VALUES
 ('tepat_waktu', 'Hadir Tepat Waktu', 15),
 ('telat_5',      'Terlambat 5 Menit', -5),
 ('telat_10',     'Terlambat 10 Menit', -10),
 ('telat_15',     'Terlambat 15 Menit', -15),
-('alfa',         'Alfa / Tanpa Keterangan', -25)
+('alfa',         'Alfa / Tanpa Keterangan', -25),
+('sakit',        'Sakit', 0),
+('izin',         'Izin', 0)
 ON CONFLICT (status) DO UPDATE
 SET label = EXCLUDED.label, nilai_poin = EXCLUDED.nilai_poin;
 

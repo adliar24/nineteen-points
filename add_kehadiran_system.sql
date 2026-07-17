@@ -5,10 +5,15 @@
 
 -- 1. TABEL ATURAN KEHADIRAN
 CREATE TABLE IF NOT EXISTS public.aturan_kehadiran (
-  status       TEXT PRIMARY KEY CHECK (status IN ('tepat_waktu', 'telat_5', 'telat_10', 'telat_15', 'alfa')),
+  status       TEXT PRIMARY KEY CHECK (status IN ('tepat_waktu', 'telat_5', 'telat_10', 'telat_15', 'alfa', 'sakit', 'izin')),
   label        TEXT NOT NULL,
   nilai_poin   INT NOT NULL
 );
+
+-- Sesuaikan CHECK constraint jika tabel sudah ada
+ALTER TABLE public.aturan_kehadiran DROP CONSTRAINT IF EXISTS aturan_kehadiran_status_check;
+ALTER TABLE public.aturan_kehadiran ADD CONSTRAINT aturan_kehadiran_status_check
+  CHECK (status IN ('tepat_waktu', 'telat_5', 'telat_10', 'telat_15', 'alfa', 'sakit', 'izin'));
 
 -- Seed Data Awal
 INSERT INTO public.aturan_kehadiran (status, label, nilai_poin) VALUES
@@ -16,7 +21,9 @@ INSERT INTO public.aturan_kehadiran (status, label, nilai_poin) VALUES
 ('telat_5',      'Terlambat 5 Menit', -5),
 ('telat_10',     'Terlambat 10 Menit', -10),
 ('telat_15',     'Terlambat 15 Menit', -15),
-('alfa',         'Alfa / Tanpa Keterangan', -25)
+('alfa',         'Alfa / Tanpa Keterangan', -25),
+('sakit',        'Sakit', 0),
+('izin',         'Izin', 0)
 ON CONFLICT (status) DO UPDATE 
 SET label = EXCLUDED.label, nilai_poin = EXCLUDED.nilai_poin;
 
@@ -31,6 +38,9 @@ CREATE TABLE IF NOT EXISTS public.kehadiran (
   created_at           TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
   UNIQUE (siswa_id, tanggal)
 );
+
+-- Sesuaikan CHECK constraint pada tabel kehadiran jika sudah ada
+ALTER TABLE public.kehadiran DROP CONSTRAINT IF EXISTS kehadiran_status_check;
 
 -- 3. KOLOM LINK KEHADIRAN DI RIWAYAT_POIN
 ALTER TABLE public.riwayat_poin 

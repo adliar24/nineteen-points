@@ -406,10 +406,31 @@ export const importSummaryData = async (rows: SummaryRow[]): Promise<{ updated: 
 // --- ATTENDANCE SYSTEM INTEGRATIONS ---
 
 export interface AturanKehadiran {
-  status: "tepat_waktu" | "telat_5" | "telat_10" | "telat_15" | "alfa";
+  status: "tepat_waktu" | "telat_5" | "telat_10" | "telat_15" | "alfa" | "sakit" | "izin";
   label: string;
   nilai_poin: number;
 }
+
+export const getKehadiranListByPeriod = async (startDate: string, endDate: string): Promise<any[]> => {
+  const { data, error } = await supabase
+    .from("kehadiran")
+    .select(`
+      id,
+      siswa_id,
+      tanggal,
+      status,
+      nilai_poin_diberikan,
+      pencatat_email,
+      created_at
+    `)
+    .gte("tanggal", startDate)
+    .lte("tanggal", endDate);
+  if (error) {
+    console.error("Error fetching attendance by period:", error);
+    return [];
+  }
+  return data || [];
+};
 
 export interface KehadiranRow {
   id: string;

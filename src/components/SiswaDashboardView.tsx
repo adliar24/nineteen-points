@@ -32,11 +32,17 @@ interface SiswaDashboardViewProps {
 export default function SiswaDashboardView({ userSession, activeTab }: SiswaDashboardViewProps) {
   const [siswaDetail, setSiswaDetail] = useState<Siswa | null>(null);
   const [riwayat, setRiwayat] = useState<RiwayatPoin[]>([]);
+  const [absensi, setAbsensi] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isZoomed, setIsZoomed] = useState(false);
   const [historyPage, setHistoryPage] = useState(1);
+  const [historyTab, setHistoryTab] = useState<"poin" | "kehadiran">("poin");
   const historyPerPage = 10;
+
+  useEffect(() => {
+    setHistoryPage(1);
+  }, [historyTab]);
 
   useEffect(() => {
     async function loadStudentData() {
@@ -74,6 +80,23 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
 
           if (riwayatError) throw riwayatError;
           setRiwayat(riwayatData || []);
+
+          // 2b. Fetch Attendance History
+          const { data: absensiData, error: absensiError } = await supabase
+            .from("kehadiran")
+            .select(`
+              id,
+              tanggal,
+              status,
+              nilai_poin_diberikan,
+              pencatat_email,
+              created_at
+            `)
+            .eq("siswa_id", siswaData.id)
+            .order("tanggal", { ascending: false });
+
+          if (absensiError) throw absensiError;
+          setAbsensi(absensiData || []);
         }
       } catch (error) {
         console.error("Failed to load student dashboard details:", error);
@@ -85,8 +108,10 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
     loadStudentData();
   }, [userSession.nis]);
 
-  const historyTotalPages = Math.ceil(riwayat.length / historyPerPage);
-  const paginatedRiwayat = riwayat.slice((historyPage - 1) * historyPerPage, historyPage * historyPerPage);
+  const historyTotalPages = Math.ceil((historyTab === "poin" ? riwayat.length : absensi.length) / historyPerPage);
+  const paginatedData = historyTab === "poin"
+    ? riwayat.slice((historyPage - 1) * historyPerPage, historyPage * historyPerPage)
+    : absensi.slice((historyPage - 1) * historyPerPage, historyPage * historyPerPage);
 
   const handleDownloadCard = async () => {
     if (!siswaDetail) return;
@@ -195,6 +220,10 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
   const totalPrestasi = riwayat.filter(r => r.nilai_diberikan > 0).reduce((acc, r) => acc + r.nilai_diberikan, 0);
   const totalPelanggaran = riwayat.filter(r => r.nilai_diberikan < 0).reduce((acc, r) => acc + r.nilai_diberikan, 0);
 
+  const countTepatWaktu = absensi.filter(a => a.status === "tepat_waktu").length;
+  const countTerlambat = absensi.filter(a => a.status.startsWith("telat_")).length;
+  const countAlfa = absensi.filter(a => a.status === "alfa").length;
+
   return (
     <div className="space-y-6 pb-8">
       
@@ -287,6 +316,28 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Akumulasi Pelanggaran</span>
                 <span className="text-xl font-black text-rose-600">{totalPelanggaran} Poin</span>
                 <p className="text-[10px] text-slate-400 mt-0.5">Poin minus dari melanggar aturan.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Attendance Summary row */}
+          <div className="bg-white rounded-3xl p-6 border border-brand-100 shadow-xl shadow-brand-900/5 space-y-4">
+            <h3 className="text-sm font-black text-brand-950 uppercase tracking-widest flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-brand-600" />
+              Ikhtisar Kehadiran Harian
+            </h3>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="bg-emerald-50/50 border border-emerald-100 rounded-2xl p-4 text-center">
+                <span className="text-[10px] font-black text-emerald-600 uppercase tracking-wider block">Tepat Waktu</span>
+                <span className="text-lg font-black text-emerald-700 block mt-1">{countTepatWaktu}x</span>
+              </div>
+              <div className="bg-amber-50/50 border border-amber-100 rounded-2xl p-4 text-center">
+                <span className="text-[10px] font-black text-amber-600 uppercase tracking-wider block">Terlambat</span>
+                <span className="text-lg font-black text-amber-700 block mt-1">{countTerlambat}x</span>
+              </div>
+              <div className="bg-rose-50/50 border border-rose-100 rounded-2xl p-4 text-center">
+                <span className="text-[10px] font-black text-rose-600 uppercase tracking-wider block">Alfa</span>
+                <span className="text-lg font-black text-rose-700 block mt-1">{countAlfa}x</span>
               </div>
             </div>
           </div>
@@ -434,89 +485,165 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
       {activeTab === "siswa_history" && (
         <div className="space-y-4 animate-fade-in">
           {/* Header block */}
-          <div className="bg-white rounded-3xl p-6 border border-brand-100 shadow-xl shadow-brand-900/5 flex justify-between items-center">
+          <div className="bg-white rounded-3xl p-6 border border-brand-100 shadow-xl shadow-brand-900/5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
               <h3 className="text-base font-extrabold text-brand-900 flex items-center gap-2">
                 <Clock className="w-5 h-5 text-brand-600" />
-                Riwayat Perolehan Poin
+                Catatan Aktivitas Siswa
               </h3>
               <p className="text-[10px] text-brand-500 font-medium mt-0.5">
-                Daftar lengkap poin prestasi dan pelanggaranmu.
+                Daftar lengkap perolehan poin dan riwayat kehadiran harian Anda.
               </p>
             </div>
-            <span className="px-3.5 py-1.5 bg-brand-50 text-brand-700 font-black rounded-xl text-[10px] tracking-wide border border-brand-100 flex-shrink-0">
-              {riwayat.length} Catatan
-            </span>
+            
+            {/* Sub-tab Selector */}
+            <div className="flex bg-brand-50/70 border border-brand-100 p-1 rounded-xl w-full sm:w-auto">
+              <button
+                onClick={() => setHistoryTab("poin")}
+                className={`flex-1 sm:flex-initial px-4 py-2 text-[10.5px] font-black uppercase tracking-wider rounded-lg cursor-pointer transition-all ${
+                  historyTab === "poin"
+                    ? "bg-white text-brand-900 shadow-xs border border-brand-100/50"
+                    : "text-slate-400 hover:text-slate-600"
+                }`}
+              >
+                Poin
+              </button>
+              <button
+                onClick={() => setHistoryTab("kehadiran")}
+                className={`flex-1 sm:flex-initial px-4 py-2 text-[10.5px] font-black uppercase tracking-wider rounded-lg cursor-pointer transition-all ${
+                  historyTab === "kehadiran"
+                    ? "bg-white text-brand-900 shadow-xs border border-brand-100/50"
+                    : "text-slate-400 hover:text-slate-600"
+                }`}
+              >
+                Kehadiran
+              </button>
+            </div>
           </div>
 
           {/* Cards List container */}
           <div className="space-y-3">
-            {paginatedRiwayat.length > 0 ? (
-              paginatedRiwayat.map((record) => {
-                const isPositive = record.nilai_diberikan > 0;
-                return (
-                  <div 
-                    key={record.id} 
-                    className="bg-white rounded-2xl p-4.5 border border-brand-100 shadow-xs flex items-center justify-between gap-4 card-hover-effect"
-                  >
-                    {/* Left: Icon Badge & Details */}
-                    <div className="flex items-center gap-4 min-w-0">
-                      {/* Icon Badge */}
-                      <div 
-                        className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                          isPositive 
-                            ? "bg-emerald-50 text-emerald-600 border border-emerald-100" 
-                            : "bg-rose-50 text-rose-600 border border-rose-100"
-                        }`}
-                      >
-                        {isPositive ? (
-                          <Award className="w-5 h-5" />
-                        ) : (
-                          <TrendingUp className="w-5 h-5 rotate-180" />
-                        )}
-                      </div>
-                      
-                      {/* Name, Date, and Recorder */}
-                      <div className="min-w-0">
-                        <span className="font-extrabold text-xs text-brand-950 block leading-snug truncate">
-                          {record.nama_poin}
-                        </span>
-                        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-slate-400 font-semibold mt-1">
-                          <span className="font-mono text-slate-500">
-                            {new Date(record.created_at).toLocaleString("id-ID", {
-                              dateStyle: "medium",
-                              timeStyle: "short"
-                            })}
+            {historyTab === "poin" ? (
+              paginatedData.length > 0 ? (
+                (paginatedData as RiwayatPoin[]).map((record) => {
+                  const isPositive = record.nilai_diberikan > 0;
+                  return (
+                    <div 
+                      key={record.id} 
+                      className="bg-white rounded-2xl p-4.5 border border-brand-100 shadow-xs flex items-center justify-between gap-4 card-hover-effect"
+                    >
+                      {/* Left: Icon Badge & Details */}
+                      <div className="flex items-center gap-4 min-w-0">
+                        <div 
+                          className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                            isPositive 
+                              ? "bg-emerald-50 text-emerald-600 border border-emerald-100" 
+                              : "bg-rose-50 text-rose-600 border border-rose-100"
+                          }`}
+                        >
+                          {isPositive ? <Award className="w-5 h-5" /> : <TrendingUp className="w-5 h-5 rotate-180" />}
+                        </div>
+                        <div className="min-w-0">
+                          <span className="font-extrabold text-xs text-brand-950 block leading-snug truncate">
+                            {record.nama_poin}
                           </span>
-                          <span className="hidden sm:inline w-1 h-1 bg-slate-300 rounded-full" />
-                          <span className="truncate">
-                            Dicatat: {toSentenceCase(record.guru_email.split("@")[0])}
-                          </span>
+                          <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-slate-400 font-semibold mt-1">
+                            <span className="font-mono text-slate-500">
+                              {new Date(record.created_at).toLocaleString("id-ID", {
+                                dateStyle: "medium",
+                                timeStyle: "short"
+                              })}
+                            </span>
+                            <span className="hidden sm:inline w-1 h-1 bg-slate-300 rounded-full" />
+                            <span className="truncate">
+                              Dicatat: {toSentenceCase(record.guru_email.split("@")[0])}
+                            </span>
+                          </div>
                         </div>
                       </div>
+                      <div className="flex-shrink-0">
+                        <span 
+                          className={`font-black font-mono px-3.5 py-1.5 rounded-xl text-xs ${
+                            isPositive 
+                              ? "bg-emerald-50 text-emerald-700 border border-emerald-100/50" 
+                              : "bg-rose-50 text-rose-700 border border-rose-100/50"
+                          }`}
+                        >
+                          {isPositive ? `+${record.nilai_diberikan}` : record.nilai_diberikan}
+                        </span>
+                      </div>
                     </div>
-
-                    {/* Right: Point Value */}
-                    <div className="flex-shrink-0">
-                      <span 
-                        className={`font-black font-mono px-3.5 py-1.5 rounded-xl text-xs ${
-                          isPositive 
-                            ? "bg-emerald-50 text-emerald-700 border border-emerald-100/50" 
-                            : "bg-rose-50 text-rose-700 border border-rose-100/50"
-                        }`}
-                      >
-                        {isPositive ? `+${record.nilai_diberikan}` : record.nilai_diberikan}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })
+                  );
+                })
+              ) : (
+                <div className="bg-white rounded-3xl p-12 text-center border border-brand-100 shadow-xl shadow-brand-900/5">
+                  <p className="text-xs text-slate-400 font-bold">
+                    Belum ada catatan poin. Pertahankan kelakuan baikmu!
+                  </p>
+                </div>
+              )
             ) : (
-              <div className="bg-white rounded-3xl p-12 text-center border border-brand-100 shadow-xl shadow-brand-900/5">
-                <p className="text-xs text-slate-400 font-bold">
-                  Belum ada catatan poin. Pertahankan kelakuan baikmu!
-                </p>
-              </div>
+              paginatedData.length > 0 ? (
+                (paginatedData as any[]).map((record) => {
+                  const isPositive = record.nilai_poin_diberikan >= 0;
+                  const statusLabel = record.status === "tepat_waktu" ? "Hadir Tepat Waktu"
+                    : record.status === "telat_5" ? "Terlambat 5 Menit"
+                    : record.status === "telat_10" ? "Terlambat 10 Menit"
+                    : record.status === "telat_15" ? "Terlambat 15 Menit"
+                    : record.status === "alfa" ? "Alfa / Tanpa Keterangan"
+                    : record.status;
+                  return (
+                    <div 
+                      key={record.id} 
+                      className="bg-white rounded-2xl p-4.5 border border-brand-100 shadow-xs flex items-center justify-between gap-4 card-hover-effect"
+                    >
+                      {/* Left: Icon Badge & Details */}
+                      <div className="flex items-center gap-4 min-w-0">
+                        <div 
+                          className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                            isPositive 
+                              ? "bg-emerald-50 text-emerald-600 border border-emerald-100" 
+                              : "bg-rose-50 text-rose-600 border border-rose-100"
+                          }`}
+                        >
+                          <Calendar className="w-5 h-5" />
+                        </div>
+                        <div className="min-w-0">
+                          <span className="font-extrabold text-xs text-brand-950 block leading-snug truncate">
+                            Absensi: {statusLabel}
+                          </span>
+                          <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-slate-400 font-semibold mt-1">
+                            <span className="font-mono text-slate-500">
+                              Tanggal: {record.tanggal}
+                            </span>
+                            <span className="hidden sm:inline w-1 h-1 bg-slate-300 rounded-full" />
+                            <span className="truncate">
+                              Petugas: {toSentenceCase(record.pencatat_email.split("@")[0])}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex-shrink-0">
+                        <span 
+                          className={`font-black font-mono px-3.5 py-1.5 rounded-xl text-xs ${
+                            isPositive 
+                              ? "bg-emerald-50 text-emerald-700 border border-emerald-100/50" 
+                              : "bg-rose-50 text-rose-700 border border-rose-100/50"
+                          }`}
+                        >
+                          {isPositive ? `+${record.nilai_poin_diberikan}` : record.nilai_poin_diberikan}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="bg-white rounded-3xl p-12 text-center border border-brand-100 shadow-xl shadow-brand-900/5">
+                  <p className="text-xs text-slate-400 font-bold">
+                    Belum ada riwayat absensi harian.
+                  </p>
+                </div>
+              )
             )}
           </div>
 

@@ -402,3 +402,176 @@ export const importSummaryData = async (rows: SummaryRow[]): Promise<{ updated: 
   await Promise.all(updatePromises);
   return { updated, skipped };
 };
+
+// --- ATTENDANCE SYSTEM INTEGRATIONS ---
+
+export interface AturanKehadiran {
+  status: "tepat_waktu" | "telat_5" | "telat_10" | "telat_15" | "alfa";
+  label: string;
+  nilai_poin: number;
+}
+
+export interface KehadiranRow {
+  id: string;
+  siswa_id: string;
+  siswa_nis: string;
+  siswa_nama: string;
+  siswa_kelas: string;
+  siswa_foto_url: string | null;
+  tanggal: string;
+  status: string;
+  nilai_poin_diberikan: number;
+  pencatat_email: string;
+  created_at: string;
+}
+
+export const getAturanKehadiranList = async (): Promise<AturanKehadiran[]> => {
+  const { data, error } = await supabase
+    .from("aturan_kehadiran")
+    .select("*")
+    .order("nilai_poin", { ascending: false });
+  if (error) {
+    console.error("Error fetching attendance rules:", error);
+    return [];
+  }
+  return data || [];
+};
+
+export const updateAturanKehadiranList = async (rules: AturanKehadiran[]): Promise<void> => {
+  const { error } = await supabase
+    .from("aturan_kehadiran")
+    .upsert(rules);
+  if (error) {
+    console.error("Error updating attendance rules:", error);
+    throw error;
+  }
+};
+
+export const getKehadiranListByDate = async (date: string): Promise<KehadiranRow[]> => {
+  const { data, error } = await supabase
+    .from("kehadiran")
+    .select(`
+      id,
+      siswa_id,
+      tanggal,
+      status,
+      nilai_poin_diberikan,
+      pencatat_email,
+      created_at,
+      siswa (
+        nis,
+        nama,
+        kelas,
+        foto_url
+      )
+    `)
+    .eq("tanggal", date);
+  if (error) {
+    console.error("Error fetching attendance by date:", error);
+    return [];
+  }
+  return (data || []).map((row: any) => ({
+    id: row.id,
+    siswa_id: row.siswa_id,
+    siswa_nis: row.siswa?.nis || "-",
+    siswa_nama: row.siswa?.nama || "Tidak Dikenal",
+    siswa_kelas: row.siswa?.kelas || "-",
+    siswa_foto_url: row.siswa?.foto_url || null,
+    tanggal: row.tanggal,
+    status: row.status,
+    nilai_poin_diberikan: row.nilai_poin_diberikan,
+    pencatat_email: row.pencatat_email,
+    created_at: row.created_at
+  }));
+};
+
+export const saveKehadiran = async (
+  siswaId: string,
+  status: string,
+  points: number,
+  email: string,
+  date?: string
+): Promise<void> => {
+  const recordDate = date || new Date().toISOString().slice(0, 10);
+  const { error } = await supabase
+    .from("kehadiran")
+    .upsert({
+      siswa_id: siswaId,
+      tanggal: recordDate,
+      status: status,
+      nilai_poin_diberikan: points,
+      pencatat_email: email
+    }, { onConflict: "siswa_id,tanggal" });
+  if (error) {
+    console.error("Error saving attendance record:", error);
+    throw error;
+  }
+};
+
+export const deleteKehadiran = async (id: string): Promise<void> => {
+  const { error } = await supabase
+    .from("kehadiran")
+    .delete()
+    .eq("id", id);
+  if (error) {
+    console.error("Error deleting attendance record:", error);
+    throw error;
+  }
+};
+
+export const setSisaSiswaSebagaiAlfa = async (email: string, date?: string): Promise<{ updated: number }> => {
+  const recordDate = date || new Date().toISOString().slice(0, 10);
+  
+  // 1. Get all students
+  const { data: students, error: sErr } = await supabase
+    .from("siswa")
+    .select("id");
+  if (sErr || !students) {
+    throw new Error("Gagal mengambil data siswa: " + (sErr?.message || "Data kosong"));
+  }
+
+  // 2. Get students who already have attendance on this date
+  const { data: present, error: pErr } = await supabase
+    .from("kehadiran")
+    .select("siswa_id")
+    .eq("tanggal", recordDate);
+  if (pErr) {
+    throw new Error("Gagal memeriksa data absensi: " + pErr.message);
+  }
+
+  const presentSet = new Set((present || []).map((p: any) => p.siswa_id));
+  const absentStudents = students.filter(s => !presentSet.has(s.id));
+
+  if (absentStudents.length === 0) {
+    return { updated: 0 };
+  }
+
+  // 3. Get the alfa points configuration
+  const { data: alfaRule, error: rErr } = await supabase
+    .from("aturan_kehadiran")
+    .select("nilai_poin")
+    .eq("status", "alfa")
+    .single();
+  
+  const alfaPoints = rErr || !alfaRule ? -25 : alfaRule.nilai_poin;
+
+  // 4. Insert Alfa records in bulk
+  const insertRows = absentStudents.map(s => ({
+    siswa_id: s.id,
+    tanggal: recordDate,
+    status: "alfa",
+    nilai_poin_diberikan: alfaPoints,
+    pencatat_email: email
+  }));
+
+  const { error: insErr } = await supabase
+    .from("kehadiran")
+    .insert(insertRows);
+
+  if (insErr) {
+    console.error("Error bulk inserting alfa records:", insErr);
+    throw insErr;
+  }
+
+  return { updated: absentStudents.length };
+};

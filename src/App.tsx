@@ -31,6 +31,7 @@ import { toSentenceCase } from "./formatName";
 const LoginView = lazy(() => import("./components/LoginView"));
 const StatsView = lazy(() => import("./components/StatsView"));
 const InputPoinView = lazy(() => import("./components/InputPoinView"));
+const KehadiranView = lazy(() => import("./components/KehadiranView"));
 const KelolaSiswaView = lazy(() => import("./components/KelolaSiswaView"));
 const HistoryView = lazy(() => import("./components/HistoryView"));
 const MasterPoinView = lazy(() => import("./components/MasterPoinView"));
@@ -180,15 +181,19 @@ export default function App() {
           setActiveTab("siswa_stats");
         }
       } else if (userSession.role === "piket") {
-        if (!["input", "history", "change_password"].includes(activeTab)) {
-          setActiveTab("input");
+        if (!["kehadiran", "change_password"].includes(activeTab)) {
+          setActiveTab("kehadiran");
         }
-      } else if (userSession.role === "guru" || userSession.role === "kepala_sekolah") {
+      } else if (userSession.role === "guru") {
         if (!["input", "students", "history", "change_password"].includes(activeTab)) {
           setActiveTab("input");
         }
+      } else if (userSession.role === "kepala_sekolah") {
+        if (!["input", "kehadiran", "students", "history", "change_password"].includes(activeTab)) {
+          setActiveTab("input");
+        }
       } else {
-        if (!["stats", "input", "students", "history", "rules", "users", "change_password"].includes(activeTab)) {
+        if (!["stats", "input", "kehadiran", "students", "history", "rules", "users", "change_password"].includes(activeTab)) {
           setActiveTab("stats");
         }
       }
@@ -215,6 +220,7 @@ export default function App() {
   let navItems = [
     { id: "stats", label: "Statistik Poin", icon: TrendingUp, description: "Ikhtisar & analisis grafik" },
     { id: "input", label: "Input Poin", icon: ClipboardCheck, description: "Catat via QR atau pencarian" },
+    { id: "kehadiran", label: "Kehadiran Siswa", icon: Calendar, description: "Pencatatan & rekap absensi" },
     { id: "students", label: "Kelola Murid", icon: Users, description: "Database & kartu pelajar" },
     { id: "history", label: "Riwayat Poin", icon: Calendar, description: "Audit trail pencatatan" },
     { id: "rules", label: "Pengaturan Poin", icon: Settings, description: "Atur sanksi & prestasi" },
@@ -222,12 +228,18 @@ export default function App() {
 
   if (userSession.role === "piket") {
     navItems = [
-      { id: "input", label: "Input Poin", icon: ClipboardCheck, description: "Catat via QR atau pencarian" },
-      { id: "history", label: "Riwayat Poin", icon: Calendar, description: "Audit trail pencatatan" },
+      { id: "kehadiran", label: "Kehadiran Siswa", icon: ClipboardCheck, description: "Rekap absensi & poin" },
     ];
-  } else if (userSession.role === "guru" || userSession.role === "kepala_sekolah") {
+  } else if (userSession.role === "guru") {
     navItems = [
       { id: "input", label: "Input Poin", icon: ClipboardCheck, description: "Catat via QR atau pencarian" },
+      { id: "students", label: "Data Murid", icon: Users, description: "Lihat database & kartu pelajar" },
+      { id: "history", label: "Riwayat Poin", icon: Calendar, description: "Audit trail pencatatan" },
+    ];
+  } else if (userSession.role === "kepala_sekolah") {
+    navItems = [
+      { id: "input", label: "Input Poin", icon: ClipboardCheck, description: "Catat via QR atau pencarian" },
+      { id: "kehadiran", label: "Kehadiran Siswa", icon: Calendar, description: "Monitoring absensi harian" },
       { id: "students", label: "Data Murid", icon: Users, description: "Lihat database & kartu pelajar" },
       { id: "history", label: "Riwayat Poin", icon: Calendar, description: "Audit trail pencatatan" },
     ];
@@ -531,6 +543,13 @@ export default function App() {
 
               {activeTab === "input" && (
                 <InputPoinView
+                  userSession={userSession}
+                  onRefreshHistory={() => setHistoryRefreshCount((c) => c + 1)}
+                />
+              )}
+
+              {activeTab === "kehadiran" && (
+                <KehadiranView
                   userSession={userSession}
                   onRefreshHistory={() => setHistoryRefreshCount((c) => c + 1)}
                 />

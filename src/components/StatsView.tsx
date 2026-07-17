@@ -1,13 +1,10 @@
-import React, { useState, useEffect } from "react";
-import { motion } from "motion/react";
+import React, { useState, useEffect, useMemo } from "react";
 import { 
-  TrendingUp, 
   Award, 
   AlertTriangle, 
   Users, 
   Calendar, 
-  BarChart2,
-  Sparkles
+  BarChart2
 } from "lucide-react";
 import { 
   getSiswaList, 
@@ -44,9 +41,11 @@ export default function StatsView() {
     async function loadData() {
       setIsLoading(true);
       try {
-        const siswa = await getSiswaList();
-        const riwayat = await getRiwayatList();
-        const master = await getMasterPoinList();
+        const [siswa, riwayat, master] = await Promise.all([
+          getSiswaList(),
+          getRiwayatList(),
+          getMasterPoinList()
+        ]);
         setSiswaList(siswa);
         setRiwayatList(riwayat);
         setMasterPoin(master);
@@ -89,40 +88,41 @@ export default function StatsView() {
   const totalSiswa = siswaList.length;
   const totalLogs = riwayatList.length;
   
-  const totalPoinPositif = riwayatList
+  const totalPoinPositif = useMemo(() => riwayatList
     .filter(r => r.nilai_diberikan > 0)
-    .reduce((sum, r) => sum + r.nilai_diberikan, 0);
+    .reduce((sum, r) => sum + r.nilai_diberikan, 0), [riwayatList]);
 
-  const totalPoinNegatif = riwayatList
+  const totalPoinNegatif = useMemo(() => riwayatList
     .filter(r => r.nilai_diberikan < 0)
-    .reduce((sum, r) => sum + Math.abs(r.nilai_diberikan), 0);
+    .reduce((sum, r) => sum + Math.abs(r.nilai_diberikan), 0), [riwayatList]);
 
   // 2. Top 5 Students by Achievement
-  const topAchievers = [...siswaList]
+  const topAchievers = useMemo(() => [...siswaList]
     .sort((a, b) => b.total_poin - a.total_poin)
-    .slice(0, 5);
+    .slice(0, 5), [siswaList]);
 
   // 3. Class Chart Data (Top 5 by average points)
-  const classGroups: { [key: string]: { total: number; count: number } } = {};
-  siswaList.forEach(s => {
-    if (!classGroups[s.kelas]) {
-      classGroups[s.kelas] = { total: 0, count: 0 };
-    }
-    classGroups[s.kelas].total += s.total_poin;
-    classGroups[s.kelas].count += 1;
-  });
-
-  const classChartData = Object.keys(classGroups)
-    .map(className => ({
-      name: className,
-      "Rata-rata Poin": Math.round(classGroups[className].total / classGroups[className].count),
-      "Jumlah Murid": classGroups[className].count
-    }))
-    .sort((a, b) => b["Rata-rata Poin"] - a["Rata-rata Poin"])
-    .slice(0, 5);
+  const classChartData = useMemo(() => {
+    const classGroups: { [key: string]: { total: number; count: number } } = {};
+    siswaList.forEach(s => {
+      if (!classGroups[s.kelas]) {
+        classGroups[s.kelas] = { total: 0, count: 0 };
+      }
+      classGroups[s.kelas].total += s.total_poin;
+      classGroups[s.kelas].count += 1;
+    });
+    return Object.keys(classGroups)
+      .map(className => ({
+        name: className,
+        "Rata-rata Poin": Math.round(classGroups[className].total / classGroups[className].count),
+        "Jumlah Murid": classGroups[className].count
+      }))
+      .sort((a, b) => b["Rata-rata Poin"] - a["Rata-rata Poin"])
+      .slice(0, 5);
+  }, [siswaList]);
 
   // 3. Student Chart Data (Top 5 by total points)
-  const studentChartData = [...siswaList]
+  const studentChartData = useMemo(() => [...siswaList]
     .sort((a, b) => b.total_poin - a.total_poin)
     .slice(0, 5)
     .map(s => ({
@@ -130,81 +130,80 @@ export default function StatsView() {
       fullName: s.nama,
       "Total Poin": s.total_poin,
       Kelas: s.kelas
-    }));
+    })), [siswaList]);
 
   // 4. Day Chart Data (Average points per day of week)
-  const dayGroups: { [key: string]: { total: number; count: number } } = {};
-  DAY_NAMES.forEach(d => { dayGroups[d] = { total: 0, count: 0 }; });
-  riwayatList.forEach(r => {
-    const date = new Date(r.created_at);
-    const dayName = DAY_NAMES[date.getDay()];
-    dayGroups[dayName].total += r.nilai_diberikan;
-    dayGroups[dayName].count += 1;
-  });
-
-  // Only show days that have data, sorted by total, top 5
-  const dayChartData = DAY_NAMES
-    .filter(d => dayGroups[d].count > 0)
-    .map(d => ({
-      name: d,
-      "Rata-rata Poin": dayGroups[d].count > 0 ? Math.round(dayGroups[d].total / dayGroups[d].count) : 0,
-      "Jumlah Log": dayGroups[d].count
-    }))
-    .sort((a, b) => b["Rata-rata Poin"] - a["Rata-rata Poin"])
-    .slice(0, 5);
+  const dayChartData = useMemo(() => {
+    const dayGroups: { [key: string]: { total: number; count: number } } = {};
+    DAY_NAMES.forEach(d => { dayGroups[d] = { total: 0, count: 0 }; });
+    riwayatList.forEach(r => {
+      const date = new Date(r.created_at);
+      const dayName = DAY_NAMES[date.getDay()];
+      dayGroups[dayName].total += r.nilai_diberikan;
+      dayGroups[dayName].count += 1;
+    });
+    return DAY_NAMES
+      .filter(d => dayGroups[d].count > 0)
+      .map(d => ({
+        name: d,
+        "Rata-rata Poin": dayGroups[d].count > 0 ? Math.round(dayGroups[d].total / dayGroups[d].count) : 0,
+        "Jumlah Log": dayGroups[d].count
+      }))
+      .sort((a, b) => b["Rata-rata Poin"] - a["Rata-rata Poin"])
+      .slice(0, 5);
+  }, [riwayatList]);
 
   // 5. Top 5 Students by Violations
-  const studentViolationSums: { [key: string]: { siswa: Siswa; sum: number } } = {};
-  siswaList.forEach(s => {
-    studentViolationSums[s.id] = { siswa: s, sum: 0 };
-  });
-
-  riwayatList.forEach(r => {
-    if (r.nilai_diberikan < 0 && studentViolationSums[r.siswa_id]) {
-      studentViolationSums[r.siswa_id].sum += Math.abs(r.nilai_diberikan);
-    }
-  });
-
-  const topViolators = Object.values(studentViolationSums)
-    .filter(item => item.sum > 0)
-    .sort((a, b) => b.sum - a.sum)
-    .slice(0, 5);
+  const topViolators = useMemo(() => {
+    const studentViolationSums: { [key: string]: { siswa: Siswa; sum: number } } = {};
+    siswaList.forEach(s => {
+      studentViolationSums[s.id] = { siswa: s, sum: 0 };
+    });
+    riwayatList.forEach(r => {
+      if (r.nilai_diberikan < 0 && studentViolationSums[r.siswa_id]) {
+        studentViolationSums[r.siswa_id].sum += Math.abs(r.nilai_diberikan);
+      }
+    });
+    return Object.values(studentViolationSums)
+      .filter(item => item.sum > 0)
+      .sort((a, b) => b.sum - a.sum)
+      .slice(0, 5);
+  }, [siswaList, riwayatList]);
 
   // 6. Popular Rules (Top 5)
-  const ruleCounts: { [key: string]: { name: string; count: number; value: number } } = {};
-  riwayatList.forEach(r => {
-    if (!ruleCounts[r.nama_poin]) {
-      ruleCounts[r.nama_poin] = { name: r.nama_poin, count: 0, value: r.nilai_diberikan };
-    }
-    ruleCounts[r.nama_poin].count += 1;
-  });
-
-  const popularRulesData = Object.values(ruleCounts)
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 5)
-    .map(item => ({
-      name: item.name.length > 30 ? item.name.slice(0, 30) + "..." : item.name,
-      fullName: item.name,
-      Frekuensi: item.count,
-      Tipe: item.value > 0 ? "Penghargaan" : "Pelanggaran"
-    }));
+  const popularRulesData = useMemo(() => {
+    const ruleCounts: { [key: string]: { name: string; count: number; value: number } } = {};
+    riwayatList.forEach(r => {
+      if (!ruleCounts[r.nama_poin]) {
+        ruleCounts[r.nama_poin] = { name: r.nama_poin, count: 0, value: r.nilai_diberikan };
+      }
+      ruleCounts[r.nama_poin].count += 1;
+    });
+    return Object.values(ruleCounts)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5)
+      .map(item => ({
+        name: item.name.length > 30 ? item.name.slice(0, 30) + "..." : item.name,
+        fullName: item.name,
+        Frekuensi: item.count,
+        Tipe: item.value > 0 ? "Penghargaan" : "Pelanggaran"
+      }));
+  }, [riwayatList]);
 
   // Chart tab config
-  const chartTabs: { key: ChartTab; label: string; icon: React.ReactNode }[] = [
-    { key: "kelas", label: "Kelas", icon: <BarChart2 className="w-3.5 h-3.5" /> },
-    { key: "siswa", label: "Siswa", icon: <Users className="w-3.5 h-3.5" /> },
-    { key: "hari", label: "Hari", icon: <Calendar className="w-3.5 h-3.5" /> },
-  ];
+  const chartTabs = useMemo(() => [
+    { key: "kelas" as ChartTab, label: "Kelas", icon: <BarChart2 className="w-3.5 h-3.5" /> },
+    { key: "siswa" as ChartTab, label: "Siswa", icon: <Users className="w-3.5 h-3.5" /> },
+    { key: "hari" as ChartTab, label: "Hari", icon: <Calendar className="w-3.5 h-3.5" /> },
+  ], []);
 
-  const getActiveChartData = () => {
+  const activeChart = useMemo(() => {
     switch (activeChartTab) {
       case "kelas": return { data: classChartData, dataKey: "Rata-rata Poin", color: "#6d28d9", label: "Rata-rata Poin per Kelas (Top 5)" };
       case "siswa": return { data: studentChartData, dataKey: "Total Poin", color: "#0891b2", label: "Total Poin per Siswa (Top 5)" };
       case "hari": return { data: dayChartData, dataKey: "Rata-rata Poin", color: "#d97706", label: "Rata-rata Poin per Hari (Top 5)" };
     }
-  };
-
-  const activeChart = getActiveChartData();
+  }, [activeChartTab, classChartData, studentChartData, dayChartData]);
 
   return (
     <div className="space-y-6 pb-8 animate-fade-in font-sans">

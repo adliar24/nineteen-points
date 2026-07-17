@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Html5Qrcode } from "html5-qrcode";
 import { 
@@ -196,12 +196,12 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
   };
 
   // Manual filter search list of students
-  const filteredStudentsForManual = siswaList.filter(s => {
+  const filteredStudentsForManual = useMemo(() => siswaList.filter(s => {
     const matchesSearch = s.nama.toLowerCase().includes(manualSearchQuery.toLowerCase()) || 
                           s.nis.includes(manualSearchQuery);
     const matchesClass = manualSelectedClass === "Semua" || s.kelas === manualSelectedClass;
     return matchesSearch && matchesClass;
-  });
+  }), [siswaList, manualSearchQuery, manualSelectedClass]);
 
   const handleSelectManualSiswa = (siswa: Siswa) => {
     setSelectedSiswa(siswa);
@@ -209,7 +209,7 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
   };
 
   // Filter master poin rules
-  const filteredMasterRules = masterPoin.filter((p) => {
+  const filteredMasterRules = useMemo(() => masterPoin.filter((p) => {
     // Role piket check: only allow attendance & lateness rules
     if (userSession?.role === "piket") {
       const lower = p.nama_poin.toLowerCase();
@@ -229,7 +229,7 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
       (ruleFilterType === "Negatif" && p.nilai_poin < 0);
     const matchesSearch = p.nama_poin.toLowerCase().includes(ruleSearchQuery.toLowerCase());
     return matchesFilter && matchesSearch;
-  });
+  }), [masterPoin, userSession?.role, ruleFilterType, ruleSearchQuery]);
 
   // Submission
   const handleApplyPoint = async () => {
@@ -292,7 +292,7 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
   };
 
   // Unique classes for manual filter dropdown
-  const classes = ["Semua", ...Array.from(new Set(siswaList.map(s => s.kelas)))];
+  const classes = useMemo(() => ["Semua", ...Array.from(new Set(siswaList.map(s => s.kelas)))], [siswaList]);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 pb-8">

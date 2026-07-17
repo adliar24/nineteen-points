@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Search, Calendar, User, Trash2, ArrowUpDown, ShieldCheck, RefreshCw, Undo2, CheckSquare, Pencil, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { createPortal } from "react-dom";
@@ -91,7 +91,7 @@ export default function HistoryView({ onRefreshTrigger, refreshCount, userSessio
     }
   };
 
-  const filteredLogs = historyList.filter((log) => {
+  const filteredLogs = useMemo(() => historyList.filter((log) => {
     const matchesSearch =
       (log.siswa_nama || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
       (log.siswa_nis || "").includes(searchQuery) ||
@@ -104,13 +104,13 @@ export default function HistoryView({ onRefreshTrigger, refreshCount, userSessio
       (filterType === "Negatif" && log.nilai_diberikan < 0);
 
     return matchesSearch && matchesType;
-  });
+  }), [historyList, searchQuery, filterType]);
 
-  const sortedLogs = [...filteredLogs].sort((a, b) => {
+  const sortedLogs = useMemo(() => [...filteredLogs].sort((a, b) => {
     const dateA = new Date(a.created_at).getTime();
     const dateB = new Date(b.created_at).getTime();
     return sortOrder === "terbaru" ? dateB - dateA : dateA - dateB;
-  });
+  }), [filteredLogs, sortOrder]);
 
   // Pagination
   const totalPages = Math.ceil(sortedLogs.length / itemsPerPage);

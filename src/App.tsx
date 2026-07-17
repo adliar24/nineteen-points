@@ -287,29 +287,29 @@ export default function App() {
                 {/* Export Summary — Desktop */}
                 <button
                   onClick={() => setIsExportSummaryOpen(true)}
-                  className="hidden sm:flex items-center gap-1.5 bg-brand-950/40 md:bg-emerald-50/70 px-3 py-2 rounded-2xl border border-white/10 md:border-emerald-200 shadow-xs hover:shadow-md transition-all cursor-pointer group"
+                  className="hidden sm:flex items-center gap-2 bg-brand-950/40 md:bg-emerald-50/70 px-4 py-2.5 rounded-xl border border-white/10 md:border-emerald-200 shadow-xs hover:shadow-md transition-all cursor-pointer group"
                   title="Export Summary Poin"
                 >
-                  <Download className="w-3 h-3 text-emerald-300 md:text-emerald-600 group-hover:text-emerald-800 transition-colors" />
-                  <span className="text-[10px] font-black text-white md:text-emerald-700 tracking-wide whitespace-nowrap">Export</span>
+                  <Download className="w-4 h-4 text-emerald-300 md:text-emerald-600 group-hover:text-emerald-800 transition-colors" />
+                  <span className="text-xs font-bold text-white md:text-emerald-700 tracking-wide whitespace-nowrap">Export</span>
                 </button>
                 {/* Import Summary — Desktop */}
                 <button
                   onClick={() => setIsImportSummaryOpen(true)}
-                  className="hidden sm:flex items-center gap-1.5 bg-brand-950/40 md:bg-blue-50/70 px-3 py-2 rounded-2xl border border-white/10 md:border-blue-200 shadow-xs hover:shadow-md transition-all cursor-pointer group"
+                  className="hidden sm:flex items-center gap-2 bg-brand-950/40 md:bg-blue-50/70 px-4 py-2.5 rounded-xl border border-white/10 md:border-blue-200 shadow-xs hover:shadow-md transition-all cursor-pointer group"
                   title="Import Summary Poin"
                 >
-                  <Upload className="w-3 h-3 text-blue-300 md:text-blue-600 group-hover:text-blue-800 transition-colors" />
-                  <span className="text-[10px] font-black text-white md:text-blue-700 tracking-wide whitespace-nowrap">Import</span>
+                  <Upload className="w-4 h-4 text-blue-300 md:text-blue-600 group-hover:text-blue-800 transition-colors" />
+                  <span className="text-xs font-bold text-white md:text-blue-700 tracking-wide whitespace-nowrap">Import</span>
                 </button>
                 {/* Akhiri Aktivitas — Desktop */}
                 <button
                   onClick={() => setIsAkhiriAktivitasOpen(true)}
-                  className="hidden sm:flex items-center gap-1.5 bg-brand-950/40 md:bg-rose-50/70 px-3 py-2 rounded-2xl border border-white/10 md:border-rose-200 shadow-xs hover:shadow-md transition-all cursor-pointer group"
+                  className="hidden sm:flex items-center gap-2 bg-brand-950/40 md:bg-rose-50/70 px-4 py-2.5 rounded-xl border border-white/10 md:border-rose-200 shadow-xs hover:shadow-md transition-all cursor-pointer group"
                   title="Akhiri Aktivitas Poin"
                 >
-                  <RotateCcw className="w-3 h-3 text-rose-300 md:text-rose-600 group-hover:text-rose-800 transition-colors" />
-                  <span className="text-[10px] font-black text-white md:text-rose-700 tracking-wide whitespace-nowrap">Akhiri</span>
+                  <RotateCcw className="w-4 h-4 text-rose-300 md:text-rose-600 group-hover:text-rose-800 transition-colors" />
+                  <span className="text-xs font-bold text-white md:text-rose-700 tracking-wide whitespace-nowrap">Akhiri</span>
                 </button>
                 {/* Mobile: Export */}
                 <button

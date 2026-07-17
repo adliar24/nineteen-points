@@ -66,20 +66,25 @@ export default function ImportSummaryModal({ isOpen, onClose, onComplete }: Impo
   return createPortal(
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 bg-brand-950/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
-            className="fixed inset-0"
+            transition={{ duration: 0.12, ease: "easeOut" }}
+            className="fixed inset-0 bg-brand-950/60 backdrop-blur-xs"
             onClick={onClose}
           />
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 15 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 10 }}
-            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+            exit={{ 
+              opacity: 0, 
+              scale: 0.96, 
+              y: 8,
+              transition: { duration: 0.12, ease: "easeInOut" }
+            }}
+            transition={{ type: "spring", stiffness: 450, damping: 38 }}
             className="bg-white rounded-3xl p-6 w-full max-w-sm border border-brand-100 shadow-2xl relative z-10"
             onClick={(e) => e.stopPropagation()}
           >

@@ -200,13 +200,12 @@ CREATE POLICY "profiles_insert"
     EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
   );
 
--- Update: super_admin, atau user update profil sendiri
+-- Update: hanya super_admin
 CREATE POLICY "profiles_update"
   ON public.profiles FOR UPDATE
   TO authenticated
   USING (
-    id = auth.uid()
-    OR EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
   );
 
 -- Delete: hanya super_admin
@@ -333,7 +332,7 @@ EXCEPTION WHEN unique_violation THEN
   NULL;
 END $$;
 
--- Hapus policies lama
+-- Hapus semua policies lama yang mengandung 'foto' (termasuk yang dibuat script ini sebelumnya)
 DO $$
 DECLARE
   pol RECORD;
@@ -349,23 +348,23 @@ BEGIN
   END LOOP;
 END $$;
 
--- Storage policies
-CREATE POLICY "storage_select_public"
+-- Storage policies (nama mengandung 'foto' agar bersih saat run ulang)
+CREATE POLICY "foto_select_public"
   ON storage.objects FOR SELECT
   TO public
   USING (bucket_id = 'profile-photos');
 
-CREATE POLICY "storage_insert_authenticated"
+CREATE POLICY "foto_insert_authenticated"
   ON storage.objects FOR INSERT
   TO authenticated
   WITH CHECK (bucket_id = 'profile-photos');
 
-CREATE POLICY "storage_update_authenticated"
+CREATE POLICY "foto_update_authenticated"
   ON storage.objects FOR UPDATE
   TO authenticated
   USING (bucket_id = 'profile-photos');
 
-CREATE POLICY "storage_delete_authenticated"
+CREATE POLICY "foto_delete_authenticated"
   ON storage.objects FOR DELETE
   TO authenticated
   USING (bucket_id = 'profile-photos');

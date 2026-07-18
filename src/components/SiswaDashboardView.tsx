@@ -489,7 +489,7 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
             <div>
               <h3 className="text-base font-extrabold text-brand-900 flex items-center gap-2">
                 <Clock className="w-5 h-5 text-brand-600" />
-                Catatan Aktivitas Siswa
+                Catatan Aktivitas Murid
               </h3>
               <p className="text-[10px] text-brand-500 font-medium mt-0.5">
                 Daftar lengkap perolehan poin dan riwayat kehadiran harian Anda.

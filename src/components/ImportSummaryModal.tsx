@@ -47,7 +47,7 @@ export default function ImportSummaryModal({ isOpen, onClose, onComplete }: Impo
         }));
 
       if (rows.length === 0) {
-        setError("Tidak ada data siswa ditemukan. Pastikan kolom NIS dan Total Poin tersedia.");
+        setError("Tidak ada data murid ditemukan. Pastikan kolom NIS dan Total Poin tersedia.");
         setIsImporting(false);
         return;
       }
@@ -110,7 +110,7 @@ export default function ImportSummaryModal({ isOpen, onClose, onComplete }: Impo
                 </div>
                 <h4 className="text-sm font-black text-brand-950">Import Berhasil!</h4>
                 <p className="text-[11px] text-brand-500 font-medium">
-                  <strong className="text-emerald-700">{result.updated}</strong> siswa berhasil diperbarui.
+                  <strong className="text-emerald-700">{result.updated}</strong> murid berhasil diperbarui.
                   {result.skipped > 0 && (
                     <> <strong className="text-amber-600">{result.skipped}</strong> dilewati (NIS tidak ditemukan).</>
                   )}

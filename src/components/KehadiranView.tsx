@@ -550,10 +550,10 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
         <div>
           <h2 className="text-xl font-extrabold text-brand-950 tracking-tight flex items-center gap-2">
             <Calendar className="w-6 h-6 text-brand-600" />
-            Rekap Kehadiran Siswa
+            Rekap Kehadiran Murid
           </h2>
           <p className="text-xs text-brand-500 font-semibold mt-1">
-            {isPiket ? "Pencatatan & pengawasan kehadiran gerbang sekolah harian" : "Manajemen poin & log kehadiran siswa"}
+            {isPiket ? "Pencatatan & pengawasan kehadiran gerbang sekolah harian" : "Manajemen poin & log kehadiran murid"}
           </p>
         </div>
 
@@ -683,7 +683,7 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
                     <div>
                       <h4 className="text-sm font-black text-brand-950">Arahkan Kamera ke QR Code</h4>
                       <p className="text-[11px] text-brand-400 font-semibold max-w-xs mx-auto mt-1 leading-relaxed">
-                        Pindai kartu pelajar digital siswa untuk mencatat kehadiran secara instan.
+                        Pindai kartu pelajar digital murid untuk mencatat kehadiran secara instan.
                       </p>
                     </div>
                     <button
@@ -711,7 +711,7 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
                 >
                   <span className="flex items-center gap-2">
                     <Search className="w-4 h-4" />
-                    Cari Siswa Manual (Jika QR rusak/hilang)
+                    Cari Murid Manual (Jika QR rusak/hilang)
                   </span>
                   <ChevronDown className={`w-4 h-4 transition-transform ${manualSelectOpen ? "rotate-180" : ""}`} />
                 </button>
@@ -768,7 +768,7 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
                               </button>
                             ))
                           ) : (
-                            <p className="p-3 text-[10px] text-brand-400 font-bold text-center">Siswa tidak ditemukan.</p>
+                            <p className="p-3 text-[10px] text-brand-400 font-bold text-center">Murid tidak ditemukan.</p>
                           )}
                         </div>
                       )}
@@ -787,7 +787,7 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
                   Mencatat Ketidakhadiran (Alfa)
                 </h4>
                 <p className="text-[10.5px] text-amber-800 font-medium leading-relaxed max-w-lg">
-                  Setelah jam masuk selesai, tandai semua siswa yang tidak absen hari ini sebagai Alfa untuk memotong poin pelanggaran kehadiran harian secara massal.
+                  Setelah jam masuk selesai, tandai semua murid yang tidak absen hari ini sebagai Alfa untuk memotong poin pelanggaran kehadiran harian secara massal.
                 </p>
               </div>
               <button
@@ -1018,10 +1018,10 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
                   <div className="space-y-2">
                     <Zap className="w-8 h-8 text-brand-400 mx-auto animate-pulse" />
                     <h4 className="text-xs font-black text-brand-500 uppercase tracking-widest">
-                      Konfirmasi Absensi Siswa
+                      Konfirmasi Absensi Murid
                     </h4>
                     <p className="text-[10.5px] text-brand-400 font-semibold max-w-xs">
-                      Silakan scan kartu pelajar digital siswa atau cari namanya lewat menu manual.
+                      Silakan scan kartu pelajar digital murid atau cari namanya lewat menu manual.
                     </p>
                   </div>
                 </div>
@@ -1044,7 +1044,7 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
                   Filter & Periode Rekapitulasi Kehadiran
                 </h3>
                 <p className="text-[10.5px] text-brand-400 font-semibold mt-1">
-                  Pilih rentang tanggal rekap absensi agregat siswa
+                  Pilih rentang tanggal rekap absensi agregat murid
                 </p>
               </div>
 
@@ -1155,7 +1155,7 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
                 <Search className="absolute left-3.5 top-3.5 h-4.5 w-4.5 text-brand-400" />
                 <input
                   type="text"
-                  placeholder="Cari nama atau NIS siswa..."
+                  placeholder="Cari nama atau NIS murid..."
                   value={rekapSearch}
                   onChange={(e) => setRekapSearch(e.target.value)}
                   className="w-full border border-brand-100 rounded-xl py-3 pl-10 pr-4 text-xs font-bold text-brand-900 bg-brand-50/10 focus:ring-1 focus:ring-brand-500 outline-none"
@@ -1199,7 +1199,7 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="border-b border-brand-100 bg-brand-50/20 text-[10px] font-black text-brand-400 uppercase tracking-widest">
-                      <th className="py-4 px-5">Siswa</th>
+                      <th className="py-4 px-5">Murid</th>
                       <th className="py-4 px-4">Kelas</th>
                       <th className="py-4 px-3 text-center bg-emerald-50/20 text-emerald-700">Hadir</th>
                       <th className="py-4 px-3 text-center bg-amber-50/20 text-amber-700">Telat</th>
@@ -1272,9 +1272,9 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
               ) : (
                 <div className="py-24 text-center space-y-2">
                   <Calendar className="w-10 h-10 text-brand-300 mx-auto" />
-                  <h4 className="text-xs font-black text-brand-500 uppercase tracking-widest">Tidak Ada Siswa</h4>
+                  <h4 className="text-xs font-black text-brand-500 uppercase tracking-widest">Tidak Ada Murid</h4>
                   <p className="text-[10px] text-brand-400 font-semibold max-w-xs mx-auto">
-                    Tidak ditemukan data siswa yang cocok dengan filter.
+                    Tidak ditemukan data murid yang cocok dengan filter.
                   </p>
                 </div>
               )}
@@ -1487,7 +1487,7 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
               <div className="flex justify-between items-center border-b pb-3 border-brand-50">
                 <h3 className="text-xs font-black text-brand-950 uppercase tracking-widest flex items-center gap-2">
                   <Edit3 className="w-4.5 h-4.5 text-brand-600" />
-                  Ubah Absensi Siswa
+                  Ubah Absensi Murid
                 </h3>
                 <button
                   onClick={() => setEditingRecord(null)}
@@ -1500,7 +1500,7 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
               {/* Student header info */}
               <div className="bg-brand-50/70 p-3.5 border border-brand-100 rounded-2xl text-xs font-semibold">
                 <p className="font-extrabold text-brand-950 leading-tight">Ubah Absensi Tanggal {editingRecord.tanggal}</p>
-                <p className="text-[10px] text-brand-400 font-bold mt-1.5">Siswa: {editingRecord.siswa_nama || "Siswa"}</p>
+                <p className="text-[10px] text-brand-400 font-bold mt-1.5">Murid: {editingRecord.siswa_nama || "Murid"}</p>
               </div>
 
               {/* Edit Status Select */}

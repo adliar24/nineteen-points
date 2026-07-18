@@ -220,7 +220,7 @@ export default function App() {
   let navItems = [
     { id: "stats", label: "Statistik Poin", icon: TrendingUp, description: "Ikhtisar & analisis grafik" },
     { id: "input", label: "Input Poin", icon: ClipboardCheck, description: "Catat via QR atau pencarian" },
-    { id: "kehadiran", label: "Kehadiran Siswa", icon: Calendar, description: "Pencatatan & rekap absensi" },
+    { id: "kehadiran", label: "Kehadiran Murid", icon: Calendar, description: "Pencatatan & rekap absensi murid" },
     { id: "students", label: "Kelola Murid", icon: Users, description: "Database & kartu pelajar" },
     { id: "history", label: "Riwayat Poin", icon: Calendar, description: "Audit trail pencatatan" },
     { id: "rules", label: "Pengaturan Poin", icon: Settings, description: "Atur sanksi & prestasi" },
@@ -228,7 +228,7 @@ export default function App() {
 
   if (userSession.role === "piket") {
     navItems = [
-      { id: "kehadiran", label: "Kehadiran Siswa", icon: ClipboardCheck, description: "Rekap absensi & poin" },
+      { id: "kehadiran", label: "Kehadiran Murid", icon: ClipboardCheck, description: "Rekap absensi & poin" },
     ];
   } else if (userSession.role === "guru") {
     navItems = [
@@ -239,7 +239,7 @@ export default function App() {
   } else if (userSession.role === "kepala_sekolah") {
     navItems = [
       { id: "input", label: "Input Poin", icon: ClipboardCheck, description: "Catat via QR atau pencarian" },
-      { id: "kehadiran", label: "Kehadiran Siswa", icon: Calendar, description: "Monitoring absensi harian" },
+      { id: "kehadiran", label: "Kehadiran Murid", icon: Calendar, description: "Monitoring absensi harian" },
       { id: "students", label: "Data Murid", icon: Users, description: "Lihat database & kartu pelajar" },
       { id: "history", label: "Riwayat Poin", icon: Calendar, description: "Audit trail pencatatan" },
     ];
@@ -381,7 +381,7 @@ export default function App() {
             <img src="/logo.png" className="w-9 h-9 object-contain" alt="Logo" />
             <div>
               <h4 className="text-sm font-black tracking-tight text-white uppercase">SMAN 19 Bandung</h4>
-              <p className="text-[11px] text-accent-400 font-black uppercase tracking-wider">NineTeen Points</p>
+              <p className="text-[11px] text-accent-400 font-black uppercase tracking-wider">Nineteen Space</p>
             </div>
           </div>
 
@@ -465,7 +465,7 @@ export default function App() {
                     <img src="/logo.png" className="w-8 h-8 object-contain" alt="Logo" />
                     <div>
                       <h4 className="text-sm font-black tracking-tight text-white">SMAN 19 Bandung</h4>
-                      <p className="text-[11px] text-accent-400 font-black uppercase tracking-wider">NineTeen Points</p>
+                      <p className="text-[11px] text-accent-400 font-black uppercase tracking-wider">Nineteen Space</p>
                     </div>
                   </div>
                   <button
@@ -611,7 +611,7 @@ export default function App() {
         setIsLogoutConfirmOpen(false);
       }}
       title="Keluar dari Aplikasi?"
-      message="Apakah Anda yakin ingin keluar dari sistem NineTeen Points?"
+      message="Apakah Anda yakin ingin keluar dari sistem Nineteen Space?"
       confirmText="Ya, Keluar"
       cancelText="Batal"
       type="warning"

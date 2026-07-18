@@ -149,7 +149,7 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
         setCameraActive(false);
       }
     } else {
-      setScannerError(`QR Terbaca: "${trimmed}", namun siswa tidak ditemukan.`);
+      setScannerError(`QR Terbaca: "${trimmed}", namun murid tidak ditemukan.`);
       setTimeout(() => setScannerError(null), 4000);
     }
   }
@@ -373,7 +373,7 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
                         </div>
                         <h4 className="text-sm font-bold text-brand-900">Scan QR Kartu Pelajar</h4>
                         <p className="text-xs text-brand-500 max-w-xs mt-1 mb-5 leading-relaxed">
-                          Nyalakan kamera untuk mendeteksi QR Code secara langsung dari kartu cetak atau ponsel siswa.
+                          Nyalakan kamera untuk mendeteksi QR Code secara langsung dari kartu cetak atau ponsel murid.
                         </p>
                         <motion.button
                           whileHover={{ scale: 1.02 }}
@@ -406,7 +406,7 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
                           <Search className="w-4.5 h-4.5 text-brand-400 absolute left-4 top-1/2 -translate-y-1/2" />
                           <input
                             type="text"
-                            placeholder="Ketik Nama atau NIS siswa..."
+                            placeholder="Ketik Nama atau NIS murid..."
                             value={manualSearchQuery}
                             onChange={(e) => setManualSearchQuery(e.target.value)}
                             className="w-full border border-brand-100 rounded-2xl py-3 pl-11 pr-4 text-xs font-semibold text-brand-900 focus:ring-2 focus:ring-brand-500 outline-none bg-brand-50/20"

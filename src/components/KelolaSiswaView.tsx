@@ -107,7 +107,7 @@ export default function KelolaSiswaView({
       const missingStudents = siswaList.filter((s) => !existingNisSet.has(s.nis));
 
       if (missingStudents.length === 0) {
-        showToast("Semua siswa sudah memiliki akun login.");
+        showToast("Semua murid sudah memiliki akun login.");
         setIsSyncingAccounts(false);
         return;
       }
@@ -201,7 +201,7 @@ export default function KelolaSiswaView({
       setSelectedSiswaIds((prev) => prev.filter((item) => item !== id));
       showToast(`Murid "${nama}" telah dihapus.`);
     } catch (err: any) {
-      alert("Gagal menghapus siswa: " + err.message);
+      alert("Gagal menghapus murid: " + err.message);
     }
   };
 
@@ -212,9 +212,9 @@ export default function KelolaSiswaView({
       await syncSiswa();
       const count = selectedSiswaIds.length;
       setSelectedSiswaIds([]);
-      showToast(`Sukses menghapus ${count} data siswa terpilih.`);
+      showToast(`Sukses menghapus ${count} data murid terpilih.`);
     } catch (err: any) {
-      alert("Gagal menghapus data siswa: " + err.message);
+      alert("Gagal menghapus data murid: " + err.message);
     }
   };
 
@@ -253,7 +253,7 @@ export default function KelolaSiswaView({
     const targets =
       selectedSiswaIds.length > 0 ? selectedSiswaIds : filteredSiswa.map((s) => s.id);
     if (targets.length === 0) {
-      alert("Pilih siswa terlebih dahulu untuk dicetak kartunya.");
+      alert("Pilih murid terlebih dahulu untuk dicetak kartunya.");
       return;
     }
 
@@ -378,7 +378,7 @@ export default function KelolaSiswaView({
               className="flex items-center justify-center gap-2 p-3 md:px-5 md:py-3 brand-gradient text-white rounded-2xl text-sm font-black transition-all shadow-md cursor-pointer"
             >
               <UserPlus className="w-4.5 h-4.5" />
-              <span className="hidden md:inline">Siswa Baru</span>
+              <span className="hidden md:inline">Murid Baru</span>
             </motion.button>
 
             <motion.button
@@ -423,8 +423,8 @@ export default function KelolaSiswaView({
                 {isExporting
                   ? "Memproses ZIP..."
                   : selectedSiswaIds.length > 0
-                  ? `Kartu Siswa (${selectedSiswaIds.length})`
-                  : "Kartu Siswa"}
+                  ? `Kartu Murid (${selectedSiswaIds.length})`
+                  : "Kartu Murid"}
               </span>
             </motion.button>
           </div>
@@ -614,7 +614,7 @@ export default function KelolaSiswaView({
                               <button
                                 onClick={() => handleDeleteSiswa(siswa.id, siswa.nama)}
                                 className="p-2 hover:bg-rose-50 text-rose-500 hover:text-rose-700 rounded-xl transition-all cursor-pointer border border-transparent hover:border-rose-100"
-                                title="Hapus Siswa"
+                                title="Hapus Murid"
                               >
                                 <Trash2 className="w-4.5 h-4.5" />
                               </button>

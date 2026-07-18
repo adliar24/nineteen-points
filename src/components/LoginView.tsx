@@ -118,10 +118,10 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
             <img src="/logo.png" className="w-full h-full object-contain z-10" alt="Logo" />
           </motion.div>
           <h2 className="mt-6 text-3xl font-extrabold tracking-tight text-brand-900 font-sans bg-gradient-to-r from-brand-700 to-accent-600 bg-clip-text text-transparent">
-            NineTeen Points
+            Nineteen Space
           </h2>
           <p className="mt-2 text-sm font-medium text-brand-600">
-            Manajemen Poin & Karakter Siswa SMAN 19 Bandung
+            Manajemen Poin & Karakter Murid SMAN 19 Bandung
           </p>
         </div>
 

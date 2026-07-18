@@ -158,14 +158,14 @@ export default function StatsView() {
   // Chart tab config
   const chartTabs = useMemo(() => [
     { key: "kelas" as ChartTab, label: "Kelas", icon: <BarChart2 className="w-3.5 h-3.5" /> },
-    { key: "siswa" as ChartTab, label: "Siswa", icon: <Users className="w-3.5 h-3.5" /> },
+    { key: "siswa" as ChartTab, label: "Murid", icon: <Users className="w-3.5 h-3.5" /> },
     { key: "hari" as ChartTab, label: "Hari", icon: <Calendar className="w-3.5 h-3.5" /> },
   ], []);
 
   const activeChart = useMemo(() => {
     switch (activeChartTab) {
       case "kelas": return { data: classChartData, dataKey: "Rata-rata Poin", color: "#6d28d9", label: "Rata-rata Poin per Kelas (Top 5)" };
-      case "siswa": return { data: studentChartData, dataKey: "Total Poin", color: "#0891b2", label: "Total Poin per Siswa (Top 5)" };
+      case "siswa": return { data: studentChartData, dataKey: "Total Poin", color: "#0891b2", label: "Total Poin per Murid (Top 5)" };
       case "hari": return { data: dayChartData, dataKey: "Rata-rata Poin", color: "#d97706", label: "Rata-rata Poin per Hari (Top 5)" };
     }
   }, [activeChartTab, classChartData, studentChartData, dayChartData]);

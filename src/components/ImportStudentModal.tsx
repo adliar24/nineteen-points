@@ -40,7 +40,7 @@ export default function ImportStudentModal({
 
       worksheet["!cols"] = [{ wch: 12 }, { wch: 25 }, { wch: 15 }];
 
-      XLSX.writeFile(workbook, "TEMPLATE_IMPORT_SISWA_SMAN19.xlsx");
+      XLSX.writeFile(workbook, "TEMPLATE_IMPORT_MURID_SMAN19.xlsx");
       showToast("Template Excel berhasil diunduh!");
     } catch (err: any) {
       console.error(err);
@@ -54,7 +54,7 @@ export default function ImportStudentModal({
     duplicateCount: number
   ) => {
     if (newSiswaToInsert.length > 0) {
-      setImportStatusMsg(`Menyimpan ${newSiswaToInsert.length} data siswa baru...`);
+      setImportStatusMsg(`Menyimpan ${newSiswaToInsert.length} data murid baru...`);
       const { error } = await supabase.from("siswa").insert(newSiswaToInsert);
       if (error) throw error;
 
@@ -90,13 +90,13 @@ export default function ImportStudentModal({
 
       if (authFailedCount === 0) {
         showToast(
-          `Sukses mengimpor ${addedCount} siswa & akun login mereka!${
+          `Sukses mengimpor ${addedCount} murid & akun login mereka!${
             duplicateCount > 0 ? ` (${duplicateCount} NIS duplikat dilewati).` : ""
           }`
         );
       } else {
         showToast(
-          `Sukses mengimpor ${addedCount} siswa (${
+          `Sukses mengimpor ${addedCount} murid (${
             addedCount - authFailedCount
           } akun berhasil, ${authFailedCount} gagal).`
         );

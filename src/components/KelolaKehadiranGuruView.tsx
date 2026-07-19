@@ -79,8 +79,7 @@ export default function KelolaKehadiranGuruView() {
     <div className="space-y-6 pb-12 animate-fade-in font-sans">
       {/* Header */}
       <div>
-        <h2 className="text-xl font-extrabold text-brand-950 tracking-tight flex items-center gap-2">
-          <Calendar className="w-6 h-6 text-brand-600" />
+        <h2 className="text-xl font-extrabold text-brand-950 tracking-tight">
           Monitoring Absensi Mengajar Guru
         </h2>
         <p className="text-xs text-brand-500 font-semibold mt-1">

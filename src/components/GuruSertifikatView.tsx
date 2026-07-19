@@ -203,8 +203,7 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-xl font-extrabold text-brand-950 tracking-tight flex items-center gap-2">
-            <Award className="w-6 h-6 text-brand-600" />
+          <h2 className="text-xl font-extrabold text-brand-950 tracking-tight">
             Sertifikat Kegiatan
           </h2>
           <p className="text-xs text-brand-500 font-semibold mt-1">

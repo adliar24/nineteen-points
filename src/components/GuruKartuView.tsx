@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { createPortal } from "react-dom";
 import { motion } from "motion/react";
 import { QRCodeSVG } from "qrcode.react";
 import { 
@@ -128,7 +129,7 @@ export default function GuruKartuView({ userSession }: GuruKartuViewProps) {
       </div>
 
       {/* Lightbox / Zoom Modal */}
-      {isZoomed && (
+      {isZoomed && createPortal(
         <div 
           className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black/95 backdrop-blur-xs p-4 animate-fade-in cursor-zoom-out"
           onClick={() => setIsZoomed(false)}
@@ -209,7 +210,8 @@ export default function GuruKartuView({ userSession }: GuruKartuViewProps) {
           <p className="text-xs text-white/50 font-medium mt-4 select-none">
             Klik di mana saja untuk menutup
           </p>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

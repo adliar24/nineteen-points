@@ -596,3 +596,215 @@ export const setSisaSiswaSebagaiAlfa = async (email: string, date?: string): Pro
 
   return { updated: absentStudents.length };
 };
+
+// --- TEACHER SYSTEM INTEGRATIONS ---
+import { KehadiranGuru, KegiatanGuru } from "./types";
+
+export const getTodayKehadiranGuru = async (userId: string, dateStr: string): Promise<KehadiranGuru | null> => {
+  const { data, error } = await supabase
+    .from("kehadiran_guru")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("tanggal", dateStr)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Error fetching today's teacher attendance:", error);
+    return null;
+  }
+  return data;
+};
+
+export const checkInGuru = async (
+  userId: string,
+  dateStr: string,
+  timeStr: string,
+  status: 'hadir' | 'sakit' | 'izin' | 'alfa',
+  keterangan: string
+): Promise<KehadiranGuru> => {
+  const { data, error } = await supabase
+    .from("kehadiran_guru")
+    .insert({
+      user_id: userId,
+      tanggal: dateStr,
+      jam_masuk: timeStr,
+      status,
+      keterangan: keterangan || null
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
+export const checkOutGuru = async (userId: string, dateStr: string, timeStr: string): Promise<KehadiranGuru> => {
+  const { data, error } = await supabase
+    .from("kehadiran_guru")
+    .update({ jam_keluar: timeStr })
+    .eq("user_id", userId)
+    .eq("tanggal", dateStr)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
+export const getKehadiranGuruHistory = async (userId: string): Promise<KehadiranGuru[]> => {
+  const { data, error } = await supabase
+    .from("kehadiran_guru")
+    .select("*")
+    .eq("user_id", userId)
+    .order("tanggal", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching teacher attendance history:", error);
+    return [];
+  }
+  return data || [];
+};
+
+export const getTeacherProfiles = async (): Promise<any[]> => {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id, email, nama, role")
+    .eq("role", "guru")
+    .order("nama");
+
+  if (error) {
+    console.error("Error fetching teacher profiles:", error);
+    return [];
+  }
+  return data || [];
+};
+
+export const getKehadiranGuruAll = async (dateStr: string): Promise<any[]> => {
+  const { data: profiles, error: pErr } = await supabase
+    .from("profiles")
+    .select("id, email, nama, role")
+    .eq("role", "guru");
+
+  if (pErr) {
+    console.error("Error fetching teacher profiles:", pErr);
+    return [];
+  }
+
+  const { data: attendance, error: aErr } = await supabase
+    .from("kehadiran_guru")
+    .select("*")
+    .eq("tanggal", dateStr);
+
+  if (aErr) {
+    console.error("Error fetching teacher attendance:", aErr);
+    return [];
+  }
+
+  const attendanceMap = new Map<string, any>((attendance || []).map(a => [a.user_id, a]));
+
+  return (profiles || []).map(p => {
+    const att = attendanceMap.get(p.id);
+    return {
+      user_id: p.id,
+      user_nama: p.nama,
+      user_email: p.email,
+      id: att?.id || null,
+      tanggal: dateStr,
+      jam_masuk: att?.jam_masuk || null,
+      jam_keluar: att?.jam_keluar || null,
+      status: att?.status || null,
+      keterangan: att?.keterangan || null,
+      created_at: att?.created_at || null
+    };
+  });
+};
+
+export const saveKehadiranGuruManual = async (
+  userId: string,
+  dateStr: string,
+  status: 'hadir' | 'sakit' | 'izin' | 'alfa',
+  jamMasuk: string | null,
+  jamKeluar: string | null,
+  keterangan: string | null
+): Promise<void> => {
+  const { error } = await supabase
+    .from("kehadiran_guru")
+    .upsert({
+      user_id: userId,
+      tanggal: dateStr,
+      status,
+      jam_masuk: jamMasuk || null,
+      jam_keluar: jamKeluar || null,
+      keterangan: keterangan || null
+    }, { onConflict: "user_id,tanggal" });
+
+  if (error) throw error;
+};
+
+export const getKegiatanGuruList = async (userId: string): Promise<KegiatanGuru[]> => {
+  const { data, error } = await supabase
+    .from("kegiatan_guru")
+    .select("*")
+    .eq("user_id", userId)
+    .order("tanggal_kegiatan", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching teacher kegiatan list:", error);
+    return [];
+  }
+  return data || [];
+};
+
+export const getAllKegiatanGuru = async (): Promise<any[]> => {
+  const { data, error } = await supabase
+    .from("kegiatan_guru")
+    .select(`
+      *,
+      profiles:user_id ( nama, email )
+    `)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching all kegiatan guru:", error);
+    return [];
+  }
+
+  return (data || []).map(row => ({
+    ...row,
+    user_nama: (row as any).profiles?.nama || "Tidak Dikenal",
+    user_email: (row as any).profiles?.email || ""
+  }));
+};
+
+export const addKegiatanGuru = async (
+  userId: string,
+  namaKegiatan: string,
+  tanggalKegiatan: string,
+  peran: string,
+  noSertifikat: string,
+  penyelenggara: string,
+  durasiJam: number
+): Promise<void> => {
+  const { error } = await supabase
+    .from("kegiatan_guru")
+    .insert({
+      user_id: userId,
+      nama_kegiatan: namaKegiatan,
+      tanggal_kegiatan: tanggalKegiatan,
+      peran,
+      no_sertifikat: noSertifikat || null,
+      penyelenggara,
+      durasi_jam: durasiJam || null
+    });
+
+  if (error) throw error;
+};
+
+export const deleteKegiatanGuru = async (id: string): Promise<void> => {
+  const { error } = await supabase
+    .from("kegiatan_guru")
+    .delete()
+    .eq("id", id);
+
+  if (error) throw error;
+};

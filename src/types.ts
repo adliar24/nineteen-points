@@ -28,6 +28,7 @@ export interface RiwayatPoin {
 }
 
 export interface UserSession {
+  id: string;
   email: string;
   fullName: string;
   role: string;
@@ -43,4 +44,31 @@ export interface Profile {
   nis: string | null;
   foto_url: string | null;
   created_at: string;
+}
+
+export interface KehadiranGuru {
+  id: string;
+  user_id: string;
+  tanggal: string;
+  jam_masuk: string | null;
+  jam_keluar: string | null;
+  status: 'hadir' | 'sakit' | 'izin' | 'alfa';
+  keterangan: string | null;
+  created_at: string;
+  user_nama?: string;
+  user_email?: string;
+}
+
+export interface KegiatanGuru {
+  id: string;
+  user_id: string;
+  nama_kegiatan: string;
+  tanggal_kegiatan: string;
+  peran: string;
+  no_sertifikat: string | null;
+  penyelenggara: string;
+  durasi_jam: number | null;
+  created_at: string;
+  user_nama?: string;
+  user_email?: string;
 }

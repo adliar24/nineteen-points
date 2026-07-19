@@ -55,6 +55,7 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
           console.error("Profile fetch error:", profileError);
           // Fallback if profile row is not yet created but Auth is successful
           const session: UserSession = {
+            id: data.user.id,
             email: data.user.email || loginEmail,
             fullName: data.user.user_metadata?.fullName || loginEmail.split("@")[0].toUpperCase(),
             role: data.user.user_metadata?.role || "guru",
@@ -78,6 +79,7 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
           }
 
           const session: UserSession = {
+            id: profile.id,
             email: profile.email,
             fullName: profile.nama,
             role: profile.role,

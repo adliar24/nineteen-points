@@ -38,6 +38,10 @@ const MasterPoinView = lazy(() => import("./components/MasterPoinView"));
 const SiswaDashboardView = lazy(() => import("./components/SiswaDashboardView"));
 const KelolaPenggunaView = lazy(() => import("./components/KelolaPenggunaView"));
 const ChangePasswordView = lazy(() => import("./components/ChangePasswordView"));
+const GuruKehadiranView = lazy(() => import("./components/GuruKehadiranView"));
+const GuruSertifikatView = lazy(() => import("./components/GuruSertifikatView"));
+const KelolaKehadiranGuruView = lazy(() => import("./components/KelolaKehadiranGuruView"));
+const KelolaSertifikatGuruView = lazy(() => import("./components/KelolaSertifikatGuruView"));
 import AkhiriAktivitasModal from "./components/AkhiriAktivitasModal";
 import ExportSummaryModal from "./components/ExportSummaryModal";
 import ImportSummaryModal from "./components/ImportSummaryModal";
@@ -232,6 +236,8 @@ export default function App() {
     ];
   } else if (userSession.role === "guru") {
     navItems = [
+      { id: "guru_kehadiran", label: "Kehadiran Saya", icon: Calendar, description: "Absen masuk & pulang" },
+      { id: "guru_sertifikat", label: "Sertifikat Kegiatan", icon: Award, description: "Unduh sertifikat pelatihan" },
       { id: "input", label: "Input Poin", icon: ClipboardCheck, description: "Catat via QR atau pencarian" },
       { id: "students", label: "Data Murid", icon: Users, description: "Lihat database & kartu pelajar" },
       { id: "history", label: "Riwayat Poin", icon: Calendar, description: "Audit trail pencatatan" },
@@ -240,10 +246,23 @@ export default function App() {
     navItems = [
       { id: "input", label: "Input Poin", icon: ClipboardCheck, description: "Catat via QR atau pencarian" },
       { id: "kehadiran", label: "Kehadiran Murid", icon: Calendar, description: "Monitoring absensi harian" },
+      { id: "kelola_kehadiran_guru", label: "Kehadiran Guru", icon: Calendar, description: "Monitoring absensi guru" },
       { id: "students", label: "Data Murid", icon: Users, description: "Lihat database & kartu pelajar" },
       { id: "history", label: "Riwayat Poin", icon: Calendar, description: "Audit trail pencatatan" },
     ];
   } else if (userSession.role === "super_admin") {
+    navItems.push({
+      id: "kelola_kehadiran_guru",
+      label: "Kehadiran Guru",
+      icon: Calendar,
+      description: "Monitoring & koreksi absensi"
+    });
+    navItems.push({
+      id: "kelola_sertifikat_guru",
+      label: "Sertifikat Guru",
+      icon: Award,
+      description: "Kelola kegiatan & sertifikat"
+    });
     navItems.push({
       id: "users",
       label: "Kelola Akun",
@@ -579,6 +598,22 @@ export default function App() {
                   userSession={userSession}
                   onRefreshHistory={() => setHistoryRefreshCount((c) => c + 1)}
                 />
+              )}
+
+              {activeTab === "guru_kehadiran" && userSession.role === "guru" && (
+                <GuruKehadiranView userSession={userSession} />
+              )}
+
+              {activeTab === "guru_sertifikat" && userSession.role === "guru" && (
+                <GuruSertifikatView userSession={userSession} />
+              )}
+
+              {activeTab === "kelola_kehadiran_guru" && ["super_admin", "kepala_sekolah"].includes(userSession.role) && (
+                <KelolaKehadiranGuruView />
+              )}
+
+              {activeTab === "kelola_sertifikat_guru" && userSession.role === "super_admin" && (
+                <KelolaSertifikatGuruView />
               )}
 
               {activeTab === "change_password" && (

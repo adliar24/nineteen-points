@@ -189,15 +189,15 @@ export default function App() {
           setActiveTab("kehadiran");
         }
       } else if (userSession.role === "guru") {
-        if (!["input", "students", "history", "change_password"].includes(activeTab)) {
+        if (!["input", "students", "history", "change_password", "guru_kehadiran", "guru_sertifikat"].includes(activeTab)) {
           setActiveTab("input");
         }
       } else if (userSession.role === "kepala_sekolah") {
-        if (!["input", "kehadiran", "students", "history", "change_password"].includes(activeTab)) {
+        if (!["input", "kehadiran", "students", "history", "change_password", "kelola_kehadiran_guru"].includes(activeTab)) {
           setActiveTab("input");
         }
       } else {
-        if (!["stats", "input", "kehadiran", "students", "history", "rules", "users", "change_password"].includes(activeTab)) {
+        if (!["stats", "input", "kehadiran", "students", "history", "rules", "users", "change_password", "kelola_kehadiran_guru", "kelola_sertifikat_guru"].includes(activeTab)) {
           setActiveTab("stats");
         }
       }

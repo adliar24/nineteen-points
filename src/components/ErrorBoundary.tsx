@@ -22,6 +22,24 @@ export default class ErrorBoundary extends React.Component<Props, State> {
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
     console.error("ErrorBoundary caught:", error, info.componentStack);
+    
+    // Auto-reload on chunk loading errors (Vite dynamic import failures)
+    const errorMessage = error.message || "";
+    if (
+      errorMessage.includes("Failed to fetch dynamically imported module") ||
+      errorMessage.includes("ChunkLoadError") ||
+      errorMessage.includes("loading chunk")
+    ) {
+      const lastReload = sessionStorage.getItem("last-chunk-reload");
+      const now = Date.now();
+      
+      // Prevent infinite reloading loops if the user is completely offline
+      if (!lastReload || now - parseInt(lastReload, 10) > 15000) {
+        sessionStorage.setItem("last-chunk-reload", String(now));
+        console.warn("Pembaruan aplikasi terdeteksi (chunk error). Memuat ulang halaman...");
+        window.location.reload();
+      }
+    }
   }
 
   handleReset = () => {

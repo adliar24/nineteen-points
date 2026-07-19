@@ -130,7 +130,7 @@ export default function GuruKartuView({ userSession }: GuruKartuViewProps) {
       {/* Lightbox / Zoom Modal */}
       {isZoomed && (
         <div 
-          className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-brand-950/80 backdrop-blur-md p-4 animate-fade-in cursor-zoom-out"
+          className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black/95 backdrop-blur-xs p-4 animate-fade-in cursor-zoom-out"
           onClick={() => setIsZoomed(false)}
         >
           {/* Close button at top right */}
@@ -146,24 +146,23 @@ export default function GuruKartuView({ userSession }: GuruKartuViewProps) {
 
           {/* Scaled-up Card: Reference-inspired design */}
           <div 
-            className="w-full max-w-[340px] sm:max-w-[360px] aspect-[1/1.58] rounded-none bg-white text-brand-950 border border-brand-200 shadow-2xl relative flex flex-col items-center justify-between py-10 px-6 cursor-default animate-fade-in overflow-hidden"
-            style={{ width: "340px", height: "537px" }}
+            className="w-full max-w-[390px] aspect-[1/1.58] rounded-none bg-white text-brand-950 border border-brand-200 shadow-2xl relative flex flex-col items-center justify-between py-12 px-7 cursor-default animate-fade-in overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             {/* TOP WAVE DECORATION (SVG) */}
-            <svg className="absolute top-0 inset-x-0 w-full h-36 pointer-events-none" viewBox="0 0 340 150" fill="none" preserveAspectRatio="none">
+            <svg className="absolute top-0 inset-x-0 w-full h-38 pointer-events-none" viewBox="0 0 340 150" fill="none" preserveAspectRatio="none">
               <path d="M0 0H340V108C245 150 187 100 128 131C70 162 35 135 0 141Z" fill="var(--color-brand-600)" opacity="0.2" />
               <path d="M0 0H340V94C245 131 193 84 134 117C76 150 41 120 0 127Z" fill="var(--color-brand-700)" />
             </svg>
 
             {/* Top Left School Branding */}
-            <div className="absolute top-5 left-6 flex items-center gap-2.5 z-10 text-white pointer-events-none">
-              <div className="w-9 h-9 rounded-xl bg-white p-1 flex items-center justify-center shadow-sm">
+            <div className="absolute top-6 left-7 flex items-center gap-3 z-10 text-white pointer-events-none">
+              <div className="w-10 h-10 rounded-xl bg-white p-1 flex items-center justify-center shadow-sm">
                 <img src="/logo.png" className="w-full h-full object-contain" alt="Logo" />
               </div>
               <div>
-                <h4 className="text-[9px] font-black tracking-widest text-white uppercase leading-tight">SMAN 19 BANDUNG</h4>
-                <p className="text-[7px] text-brand-100 font-bold uppercase tracking-wider font-mono">Teacher Card</p>
+                <h4 className="text-[10px] font-black tracking-widest text-white uppercase leading-tight">SMAN 19 BANDUNG</h4>
+                <p className="text-[8px] text-brand-100 font-bold uppercase tracking-wider font-mono">Teacher Card</p>
               </div>
             </div>
 
@@ -171,11 +170,11 @@ export default function GuruKartuView({ userSession }: GuruKartuViewProps) {
             <div className="relative z-10 w-full flex-1 flex flex-col justify-between items-center pt-14 pb-1">
               
               {/* 1. 3x4 Portrait Avatar (Pas Foto Style) */}
-              <div className="w-27 h-36 rounded-[24px] border-[4px] border-brand-500 bg-white flex items-center justify-center p-[3px] shadow-md shadow-brand-500/10 flex-shrink-0">
+              <div className="w-32 h-44 rounded-[28px] border-[4px] border-brand-500 bg-white flex items-center justify-center p-[3px] shadow-md shadow-brand-500/10 flex-shrink-0">
                 {userSession.foto_url ? (
-                  <img src={userSession.foto_url} className="w-full h-full rounded-[18px] object-cover" alt={userSession.fullName} />
+                  <img src={userSession.foto_url} className="w-full h-full rounded-[22px] object-cover" alt={userSession.fullName} />
                 ) : (
-                  <div className="w-full h-full rounded-[18px] border border-brand-100 bg-brand-50/50 flex items-center justify-center text-brand-650 font-black text-4xl uppercase tracking-wider">
+                  <div className="w-full h-full rounded-[22px] border border-brand-100 bg-brand-50/50 flex items-center justify-center text-brand-650 font-black text-4xl uppercase tracking-wider">
                     {userSession.fullName.slice(0, 2)}
                   </div>
                 )}
@@ -183,20 +182,20 @@ export default function GuruKartuView({ userSession }: GuruKartuViewProps) {
 
               {/* 2. Teacher Info */}
               <div className="text-center space-y-1 mt-3">
-                <h3 className="text-base font-black tracking-tight text-[#1e1b4b] px-2 line-clamp-1 leading-snug">
+                <h3 className="text-lg font-black tracking-tight text-[#1e1b4b] px-2 line-clamp-1 leading-snug">
                   {toSentenceCase(userSession.fullName)}
                 </h3>
-                <p className="text-xs text-brand-650 font-extrabold uppercase tracking-widest">
+                <p className="text-xs text-brand-650 font-extrabold uppercase tracking-widest mt-1">
                   NIP: {emailPrefix} &bull; GURU
                 </p>
               </div>
 
               {/* 3. High quality QR code */}
               <div className="mt-4 flex flex-col items-center">
-                <div className="bg-white p-3.5 rounded-2xl border-[3.5px] border-brand-600">
+                <div className="bg-white p-4 rounded-3xl border-[4px] border-brand-600">
                   <QRCodeSVG
                     value={userSession.email}
-                    size={110}
+                    size={135}
                     level="M"
                     includeMargin={false}
                     fgColor="var(--color-brand-700)"

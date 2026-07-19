@@ -447,7 +447,7 @@ export default function App() {
       {
         type: "group",
         id: "manajemen",
-        label: "Manajemen Kelola",
+        label: "Manajemen",
         icon: FolderOpen,
         items: [
           { id: "students", label: "Kelola Murid", icon: Users, description: "Database & kartu pelajar" },

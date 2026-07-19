@@ -214,14 +214,17 @@ export default function GuruKehadiranView({ userSession }: GuruKehadiranViewProp
             ) : (
               <div className="space-y-4">
                 <p className="text-xs font-bold text-brand-500">Daftar jadwal kelas Anda hari ini:</p>
-                {todaySchedules.map((sched) => {
+                {todaySchedules.map((sched, index) => {
                   const att = todayAttendance.find(a => sched.ids.includes(a.jadwal_id));
                   const isCheckedIn = !!att;
                   const active = isScheduleActive(sched.hari, sched.jam_mulai, sched.jam_selesai);
 
                   return (
-                    <div
+                    <motion.div
                       key={sched.id}
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ type: "spring", stiffness: 100, damping: 15, delay: index * 0.04 }}
                       className={`p-5 rounded-2xl border transition-all flex items-center justify-between gap-4 relative overflow-hidden ${
                         isCheckedIn 
                           ? "bg-emerald-50/15 border-emerald-100/60 text-brand-900" 
@@ -290,7 +293,7 @@ export default function GuruKehadiranView({ userSession }: GuruKehadiranViewProp
                           Absen
                         </button>
                       )}
-                    </div>
+                    </motion.div>
                   );
                 })}
               </div>

@@ -426,17 +426,19 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
             {/* TOP WAVE DECORATION (SVG) */}
             <svg className="absolute top-0 inset-x-0 w-full h-32 pointer-events-none" viewBox="0 0 290 128" fill="none" preserveAspectRatio="none">
               {/* Back Translucent Wave */}
-              <path d="M0 0H290V92C210 128 160 85 110 112C60 138 30 115 0 120Z" fill="#7c3aed" opacity="0.2" />
-              {/* Front Main Wave (Sidebar Purple color #4c1d95) */}
-              <path d="M0 0H290V80C210 112 165 72 115 100C65 128 35 102 0 108Z" fill="#4c1d95" />
+              <path d="M0 0H290V92C210 128 160 85 110 112C60 138 30 115 0 120Z" fill="var(--color-brand-600)" opacity="0.2" />
+              {/* Front Main Wave */}
+              <path d="M0 0H290V80C210 112 165 72 115 100C65 128 35 102 0 108Z" fill="var(--color-brand-700)" />
             </svg>
 
             {/* Top Left School Branding */}
             <div className="absolute top-4.5 left-5 flex items-center gap-2 z-10 text-white pointer-events-none">
-              <img src="/logo.png" className="w-6.5 h-6.5 object-contain" alt="Logo" />
+              <div className="w-7 h-7 rounded-lg bg-white p-1 flex items-center justify-center shadow-sm">
+                <img src="/logo.png" className="w-full h-full object-contain" alt="Logo" />
+              </div>
               <div>
                 <h4 className="text-[8px] font-black tracking-widest text-white uppercase leading-tight">SMAN 19 BANDUNG</h4>
-                <p className="text-[6px] text-brand-200 font-bold uppercase tracking-wider font-mono">Student Card</p>
+                <p className="text-[6px] text-brand-100 font-bold uppercase tracking-wider font-mono">Student Card</p>
               </div>
             </div>
 
@@ -444,11 +446,11 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
             <div className="relative z-10 w-full flex-1 flex flex-col justify-between items-center pt-11 pb-1">
               
               {/* 1. 3x4 Portrait Avatar (Pas Foto Style) */}
-              <div className="w-21 h-28 rounded-2xl border-[3px] border-pink-500 bg-white flex items-center justify-center p-[2.5px] shadow-md shadow-pink-500/10 flex-shrink-0">
+              <div className="w-21 h-28 rounded-2xl border-[3px] border-brand-500 bg-white flex items-center justify-center p-[2.5px] shadow-md shadow-brand-500/10 flex-shrink-0">
                 {siswaDetail.foto_url ? (
                   <img src={siswaDetail.foto_url} className="w-full h-full rounded-xl object-cover" alt={siswaDetail.nama} />
                 ) : (
-                  <div className="w-full h-full rounded-xl border border-pink-100 bg-rose-50/50 flex items-center justify-center text-pink-600 font-black text-3xl uppercase tracking-wider">
+                  <div className="w-full h-full rounded-xl border border-brand-100 bg-brand-50/50 flex items-center justify-center text-brand-650 font-black text-3xl uppercase tracking-wider">
                     {siswaDetail.nama.slice(0, 2)}
                   </div>
                 )}
@@ -459,7 +461,7 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
                 <h3 className="text-sm font-black tracking-tight text-[#1e1b4b] px-2 line-clamp-1 leading-snug">
                   {toSentenceCase(siswaDetail.nama)}
                 </h3>
-                <p className="text-[9px] text-[#7c3aed] font-extrabold uppercase tracking-widest">
+                <p className="text-[9px] text-brand-600 font-extrabold uppercase tracking-widest">
                   NIS: {siswaDetail.nis} &bull; KELAS: {siswaDetail.kelas}
                 </p>
               </div>
@@ -472,7 +474,7 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
                     size={95}
                     level="M"
                     includeMargin={false}
-                    fgColor="#4c1d95"
+                    fgColor="var(--color-brand-700)"
                   />
                 </div>
               </div>
@@ -716,18 +718,18 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
           >
             {/* TOP WAVE DECORATION (SVG) */}
             <svg className="absolute top-0 inset-x-0 w-full h-36 pointer-events-none" viewBox="0 0 340 150" fill="none" preserveAspectRatio="none">
-              {/* Back Translucent Wave */}
-              <path d="M0 0H340V108C245 150 187 100 128 131C70 162 35 135 0 141Z" fill="#7c3aed" opacity="0.2" />
-              {/* Front Main Wave (Sidebar Purple color #4c1d95) */}
-              <path d="M0 0H340V94C245 131 193 84 134 117C76 150 41 120 0 127Z" fill="#4c1d95" />
+              <path d="M0 0H340V108C245 150 187 100 128 131C70 162 35 135 0 141Z" fill="var(--color-brand-600)" opacity="0.2" />
+              <path d="M0 0H340V94C245 131 193 84 134 117C76 150 41 120 0 127Z" fill="var(--color-brand-700)" />
             </svg>
 
             {/* Top Left School Branding */}
             <div className="absolute top-5 left-6 flex items-center gap-2.5 z-10 text-white pointer-events-none">
-              <img src="/logo.png" className="w-8 h-8 object-contain" alt="Logo" />
+              <div className="w-9 h-9 rounded-xl bg-white p-1 flex items-center justify-center shadow-sm">
+                <img src="/logo.png" className="w-full h-full object-contain" alt="Logo" />
+              </div>
               <div>
                 <h4 className="text-[9px] font-black tracking-widest text-white uppercase leading-tight">SMAN 19 BANDUNG</h4>
-                <p className="text-[7px] text-brand-200 font-bold uppercase tracking-wider font-mono">Student Card</p>
+                <p className="text-[7px] text-brand-100 font-bold uppercase tracking-wider font-mono">Student Card</p>
               </div>
             </div>
 
@@ -735,11 +737,11 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
             <div className="relative z-10 w-full flex-1 flex flex-col justify-between items-center pt-14 pb-1">
               
               {/* 1. 3x4 Portrait Avatar (Pas Foto Style) */}
-              <div className="w-27 h-36 rounded-[24px] border-[4px] border-pink-500 bg-white flex items-center justify-center p-[3px] shadow-md shadow-pink-500/10 flex-shrink-0">
+              <div className="w-27 h-36 rounded-[24px] border-[4px] border-brand-500 bg-white flex items-center justify-center p-[3px] shadow-md shadow-brand-500/10 flex-shrink-0">
                 {siswaDetail.foto_url ? (
                   <img src={siswaDetail.foto_url} className="w-full h-full rounded-[18px] object-cover" alt={siswaDetail.nama} />
                 ) : (
-                  <div className="w-full h-full rounded-[18px] border border-pink-100 bg-rose-50/50 flex items-center justify-center text-pink-600 font-black text-4xl uppercase tracking-wider">
+                  <div className="w-full h-full rounded-[18px] border border-brand-100 bg-brand-50/50 flex items-center justify-center text-brand-650 font-black text-4xl uppercase tracking-wider">
                     {siswaDetail.nama.slice(0, 2)}
                   </div>
                 )}
@@ -750,7 +752,7 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
                 <h3 className="text-base font-black tracking-tight text-[#1e1b4b] px-2 line-clamp-1 leading-snug">
                   {toSentenceCase(siswaDetail.nama)}
                 </h3>
-                <p className="text-xs text-[#7c3aed] font-extrabold uppercase tracking-widest">
+                <p className="text-xs text-brand-650 font-extrabold uppercase tracking-widest">
                   NIS: {siswaDetail.nis} &bull; KELAS: {siswaDetail.kelas}
                 </p>
               </div>
@@ -763,7 +765,7 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
                     size={110}
                     level="M"
                     includeMargin={false}
-                    fgColor="#4c1d95"
+                    fgColor="var(--color-brand-700)"
                   />
                 </div>
               </div>

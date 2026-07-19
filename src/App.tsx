@@ -549,6 +549,10 @@ export default function App() {
                           initial={{ height: 0, opacity: 0 }}
                           animate={{ height: "auto", opacity: 1 }}
                           exit={{ height: 0, opacity: 0 }}
+                          transition={{
+                            height: { duration: 0.28, ease: [0.4, 0, 0.2, 1] },
+                            opacity: { duration: 0.2, ease: "easeInOut" }
+                          }}
                           className="pl-3.5 space-y-1 overflow-hidden"
                         >
                           {element.items.map((subItem) => {
@@ -680,6 +684,10 @@ export default function App() {
                                 initial={{ height: 0, opacity: 0 }}
                                 animate={{ height: "auto", opacity: 1 }}
                                 exit={{ height: 0, opacity: 0 }}
+                                transition={{
+                                  height: { duration: 0.28, ease: [0.4, 0, 0.2, 1] },
+                                  opacity: { duration: 0.2, ease: "easeInOut" }
+                                }}
                                 className="pl-3.5 space-y-1 overflow-hidden"
                               >
                                 {element.items.map((subItem) => {

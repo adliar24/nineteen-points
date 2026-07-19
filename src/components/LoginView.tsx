@@ -115,7 +115,7 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
             initial={{ scale: 0.7, opacity: 0, rotate: -10 }}
             animate={{ scale: 1, opacity: 1, rotate: 0 }}
             transition={{ delay: 0.15, duration: 0.6, type: "spring", stiffness: 200 }}
-            className="mx-auto h-20 w-20 flex items-center justify-center relative"
+            className="mx-auto h-22 w-22 flex items-center justify-center relative bg-white border-2 border-brand-100 rounded-3xl p-3.5 shadow-md shadow-brand-500/5"
           >
             <img src="/logo.png" className="w-full h-full object-contain z-10" alt="Logo" />
           </motion.div>

@@ -24,12 +24,96 @@ import {
   ChevronDown,
   FolderOpen,
   LogIn,
-  Edit3
+  Edit3,
+  Check
 } from "lucide-react";
 import { UserSession } from "./types";
 import { getLocalStorage, setLocalStorage } from "./dbStore";
 import { supabase, supabaseEnvError } from "./supabaseClient";
 import { toSentenceCase } from "./formatName";
+
+const THEMES = [
+  {
+    id: "royal_purple",
+    name: "Royal Purple",
+    primary: "#5b21b6",
+    colors: {
+      "--color-brand-50": "#f5f3ff",
+      "--color-brand-100": "#ede9fe",
+      "--color-brand-200": "#ddd6fe",
+      "--color-brand-500": "#6d28d9",
+      "--color-brand-600": "#5b21b6",
+      "--color-brand-700": "#4c1d95",
+      "--color-brand-800": "#3b0764",
+      "--color-accent-500": "#d946ef",
+      "--color-accent-600": "#c026d3"
+    }
+  },
+  {
+    id: "ocean_blue",
+    name: "Ocean Blue",
+    primary: "#0369a1",
+    colors: {
+      "--color-brand-50": "#f0f9ff",
+      "--color-brand-100": "#e0f2fe",
+      "--color-brand-200": "#bae6fd",
+      "--color-brand-500": "#0284c7",
+      "--color-brand-600": "#0369a1",
+      "--color-brand-700": "#075985",
+      "--color-brand-800": "#0c4a6e",
+      "--color-accent-500": "#06b6d4",
+      "--color-accent-600": "#0891b2"
+    }
+  },
+  {
+    id: "emerald_green",
+    name: "Emerald Green",
+    primary: "#059669",
+    colors: {
+      "--color-brand-50": "#f0fdf4",
+      "--color-brand-100": "#dcfce7",
+      "--color-brand-200": "#bbf7d0",
+      "--color-brand-500": "#10b981",
+      "--color-brand-600": "#059669",
+      "--color-brand-700": "#047857",
+      "--color-brand-800": "#064e3b",
+      "--color-accent-500": "#14b8a6",
+      "--color-accent-600": "#0d9488"
+    }
+  },
+  {
+    id: "sunset_orange",
+    name: "Sunset Orange",
+    primary: "#ea580c",
+    colors: {
+      "--color-brand-50": "#fff7ed",
+      "--color-brand-100": "#ffedd5",
+      "--color-brand-200": "#fed7aa",
+      "--color-brand-500": "#f97316",
+      "--color-brand-600": "#ea580c",
+      "--color-brand-700": "#c2410c",
+      "--color-brand-800": "#7c2d12",
+      "--color-accent-500": "#eab308",
+      "--color-accent-600": "#ca8a04"
+    }
+  },
+  {
+    id: "ruby_rose",
+    name: "Ruby Rose",
+    primary: "#e11d48",
+    colors: {
+      "--color-brand-50": "#fff1f2",
+      "--color-brand-100": "#ffe4e6",
+      "--color-brand-200": "#fecdd3",
+      "--color-brand-500": "#f43f5e",
+      "--color-brand-600": "#e11d48",
+      "--color-brand-700": "#be123c",
+      "--color-brand-800": "#881337",
+      "--color-accent-500": "#ec4899",
+      "--color-accent-600": "#db2777"
+    }
+  }
+];
 
 // View Imports — Lazy Loaded for code splitting
 const LoginView = lazy(() => import("./components/LoginView"));
@@ -87,6 +171,23 @@ export default function App() {
   const [userSession, setUserSession] = useState<UserSession | null>(() => {
     return getLocalStorage<UserSession | null>("19points_session", null);
   });
+
+  const [activeTheme, setActiveTheme] = useState(() => {
+    return localStorage.getItem("nineteen-space-theme") || "royal_purple";
+  });
+
+  const applyTheme = (themeId: string) => {
+    const t = THEMES.find(item => item.id === themeId) || THEMES[0];
+    Object.entries(t.colors).forEach(([key, val]) => {
+      document.documentElement.style.setProperty(key, val);
+    });
+    localStorage.setItem("nineteen-space-theme", themeId);
+    setActiveTheme(themeId);
+  };
+
+  useEffect(() => {
+    applyTheme(activeTheme);
+  }, []);
   
   const [activeTab, setActiveTab] = useState<string>("stats");
 
@@ -460,7 +561,9 @@ export default function App() {
         <div className="space-y-6">
           {/* Branding inside Sidebar */}
           <div className="flex items-center gap-2.5 pb-4 border-b border-brand-800/60">
-            <img src="/logo.png" className="w-9 h-9 object-contain" alt="Logo" />
+            <div className="w-10 h-10 rounded-2xl bg-white border border-brand-100 p-1.5 flex items-center justify-center shadow-md flex-shrink-0">
+              <img src="/logo.png" className="w-full h-full object-contain" alt="Logo" />
+            </div>
             <div>
               <h4 className="text-sm font-black tracking-tight text-white uppercase">SMAN 19 Bandung</h4>
               <p className="text-[11px] text-accent-400 font-black uppercase tracking-wider">Nineteen Space</p>
@@ -601,7 +704,9 @@ export default function App() {
                 {/* Header Information */}
                 <div className="p-6 border-b border-brand-800/60 flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
-                    <img src="/logo.png" className="w-8 h-8 object-contain" alt="Logo" />
+                    <div className="w-9 h-9 rounded-xl bg-white border border-brand-100 p-1 flex items-center justify-center shadow-md flex-shrink-0">
+                      <img src="/logo.png" className="w-full h-full object-contain" alt="Logo" />
+                    </div>
                     <div>
                       <h4 className="text-sm font-black tracking-tight text-white">SMAN 19 Bandung</h4>
                       <p className="text-[11px] text-accent-400 font-black uppercase tracking-wider">Nineteen Space</p>
@@ -907,6 +1012,31 @@ export default function App() {
                   ? userSession.nis || userSession.email.split("@")[0]
                   : userSession.email.split("@")[0]}
               </p>
+            </div>
+
+            {/* Theme Selector */}
+            <div className="mt-6 pt-5 border-t border-slate-100 space-y-3">
+              <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest text-left">Pilih Warna Tema</p>
+              <div className="flex items-center justify-between gap-2">
+                {THEMES.map((theme) => {
+                  const isActive = activeTheme === theme.id;
+                  return (
+                    <button
+                      key={theme.id}
+                      onClick={() => applyTheme(theme.id)}
+                      className={`w-7 h-7 rounded-full cursor-pointer transition-all border-2 relative flex items-center justify-center ${
+                        isActive ? "border-slate-800 scale-110 shadow-sm" : "border-transparent hover:scale-105"
+                      }`}
+                      style={{ backgroundColor: theme.primary }}
+                      title={theme.name}
+                    >
+                      {isActive && (
+                        <Check className="w-3 h-3 text-white" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </motion.div>
         </div>

@@ -229,7 +229,7 @@ export default function App() {
         }
       } else if (userSession.role === "guru") {
         if (!["input", "students", "history", "change_password", "guru_kehadiran", "guru_sertifikat", "guru_jadwal"].includes(activeTab)) {
-          setActiveTab("input");
+          setActiveTab("guru_kehadiran");
         }
       } else if (userSession.role === "kepala_sekolah") {
         if (!["input", "kehadiran", "students", "history", "change_password", "kelola_kehadiran_guru", "kelola_jadwal_guru"].includes(activeTab)) {

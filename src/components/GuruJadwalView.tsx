@@ -21,6 +21,24 @@ export default function GuruJadwalView({ userSession }: GuruJadwalViewProps) {
 
   const listHari = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
 
+  // Helper to check if a schedule is currently active
+  const isScheduleActive = (hari: string, jamMulai: string, jamSelesai: string) => {
+    const days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+    const today = days[new Date().getDay()];
+    if (hari !== today) return false;
+
+    const now = new Date();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+    const [startH, startM] = jamMulai.split(":").map(Number);
+    const [endH, endM] = jamSelesai.split(":").map(Number);
+    
+    const startMinutes = startH * 60 + startM;
+    const endMinutes = endH * 60 + endM;
+
+    return currentMinutes >= startMinutes && currentMinutes <= endMinutes;
+  };
+
   // Helper to merge consecutive slots (same day, class, mapel, gap <= 35m)
   const mergeSchedules = (list: any[]) => {
     if (list.length === 0) return [];
@@ -130,46 +148,68 @@ export default function GuruJadwalView({ userSession }: GuruJadwalViewProps) {
             </div>
           </div>
         ) : (
-          filteredSchedules.map((row, index) => (
-            <motion.div
-              key={`${row.id}-${index}`}
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
-              className="bg-white p-6 rounded-3xl border border-brand-100/60 shadow-xl shadow-brand-900/5 hover:shadow-brand-900/10 hover:border-brand-200/60 transition-all flex flex-col justify-between space-y-4 group relative overflow-hidden"
-            >
-              {/* Dynamic Accent Strip */}
-              <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-brand-500 rounded-l-3xl" />
-              
-              <div className="space-y-3 pl-2">
-                <div className="flex items-center gap-2 text-brand-450">
-                  <Clock className="w-4 h-4 text-brand-400" />
-                  <span className="text-[11px] font-black tracking-wider uppercase">JAM PELAJARAN</span>
-                </div>
-                <h3 className="text-lg font-black text-brand-950 leading-snug tracking-tight">
-                  {formatSubjectName(row.mata_pelajaran)}
-                </h3>
-              </div>
+          filteredSchedules.map((row, index) => {
+            const active = isScheduleActive(row.hari, row.jam_mulai, row.jam_selesai);
 
-              <div className="flex items-center gap-6 pl-2 border-t border-brand-50 pt-4">
-                <div className="flex items-center gap-2 text-sm font-bold text-brand-700">
-                  <Users className="w-4.5 h-4.5 text-brand-400" />
-                  <div>
-                    <p className="text-[10px] text-brand-400 font-black tracking-wide uppercase leading-none">KELAS</p>
-                    <p className="mt-0.5">{row.kelas}</p>
+            return (
+              <motion.div
+                key={`${row.id}-${index}`}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+                className={`p-6 rounded-3xl border transition-all flex flex-col justify-between space-y-4 group relative overflow-hidden ${
+                  active
+                    ? "bg-brand-800 text-white border-transparent shadow-xl shadow-brand-700/20 scale-[1.01]"
+                    : "bg-brand-50/20 hover:bg-brand-50/40 border-brand-100/50 text-brand-900 shadow-lg shadow-brand-900/3"
+                }`}
+              >
+                {/* Dynamic Accent Strip */}
+                <div className={`absolute left-0 top-0 bottom-0 w-1.5 rounded-l-3xl ${
+                  active ? "bg-amber-400" : "bg-brand-300"
+                }`} />
+                
+                <div className="space-y-3 pl-2">
+                  <div className="flex items-center gap-2">
+                    <Clock className={`w-4 h-4 ${active ? "text-brand-300" : "text-brand-400"}`} />
+                    <span className={`text-[11px] font-black tracking-wider uppercase ${
+                      active ? "text-brand-200" : "text-brand-450"
+                    }`}>
+                      {active ? "SEDANG BERLANGSUNG" : "JAM PELAJARAN"}
+                    </span>
+                  </div>
+                  <h3 className={`text-lg font-black leading-snug tracking-tight ${
+                    active ? "text-white" : "text-brand-950"
+                  }`}>
+                    {formatSubjectName(row.mata_pelajaran)}
+                  </h3>
+                </div>
+
+                <div className={`flex items-center gap-6 pl-2 border-t pt-4 ${
+                  active ? "border-white/10 text-brand-100" : "border-brand-50 text-brand-700"
+                }`}>
+                  <div className="flex items-center gap-2 text-sm font-bold">
+                    <Users className={`w-4.5 h-4.5 ${active ? "text-brand-300" : "text-brand-400"}`} />
+                    <div>
+                      <p className={`text-[10px] font-black tracking-wide uppercase leading-none ${
+                        active ? "text-brand-300" : "text-brand-400"
+                      }`}>KELAS</p>
+                      <p className="mt-0.5">{row.kelas}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 text-sm font-bold">
+                    <Clock className={`w-4.5 h-4.5 ${active ? "text-brand-300" : "text-brand-400"}`} />
+                    <div>
+                      <p className={`text-[10px] font-black tracking-wide uppercase leading-none ${
+                        active ? "text-brand-300" : "text-brand-400"
+                      }`}>WAKTU</p>
+                      <p className="mt-0.5">{row.jam_mulai.slice(0, 5)} - {row.jam_selesai.slice(0, 5)} WIB</p>
+                    </div>
                   </div>
                 </div>
-
-                <div className="flex items-center gap-2 text-sm font-bold text-brand-700">
-                  <Clock className="w-4.5 h-4.5 text-brand-400" />
-                  <div>
-                    <p className="text-[10px] text-brand-400 font-black tracking-wide uppercase leading-none">WAKTU</p>
-                    <p className="mt-0.5">{row.jam_mulai.slice(0, 5)} - {row.jam_selesai.slice(0, 5)} WIB</p>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          ))
+              </motion.div>
+            );
+          })
         )}
       </div>
     </div>

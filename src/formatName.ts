@@ -34,7 +34,7 @@ export function toSentenceCase(name: string): string {
 export function formatSubjectName(subject: string): string {
   if (!subject) return "";
 
-  const uppercaseAcronyms = ["PKWU", "PAIBP", "PJOK", "KKA", "KBM", "IHT"];
+  const uppercaseAcronyms = ["PKWU", "PAIBP", "PJOK", "KKA", "KBM", "IHT", "TL"];
   const lowercaseWords = ["dan", "atau", "ke", "di", "dari", "yang", "untuk"];
 
   return subject

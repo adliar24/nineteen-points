@@ -36,6 +36,24 @@ export default function GuruKehadiranView({ userSession }: GuruKehadiranViewProp
     queryFn: () => getJadwalGuruList(userSession.id),
   });
 
+  // Helper to check if a schedule is currently active
+  const isScheduleActive = (hari: string, jamMulai: string, jamSelesai: string) => {
+    const days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+    const today = days[new Date().getDay()];
+    if (hari !== today) return false;
+
+    const now = new Date();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+    const [startH, startM] = jamMulai.split(":").map(Number);
+    const [endH, endM] = jamSelesai.split(":").map(Number);
+    
+    const startMinutes = startH * 60 + startM;
+    const endMinutes = endH * 60 + endM;
+
+    return currentMinutes >= startMinutes && currentMinutes <= endMinutes;
+  };
+
   // Helper to merge consecutive slots (same day, class, mapel, gap <= 35m)
   const mergeSchedules = (list: any[]) => {
     if (list.length === 0) return [];
@@ -196,33 +214,55 @@ export default function GuruKehadiranView({ userSession }: GuruKehadiranViewProp
               </div>
             ) : (
               <div className="space-y-4">
-                <p className="text-xs font-bold text-brand-500">Pilih slot KBM untuk mencatat absensi:</p>
+                <p className="text-xs font-bold text-brand-500">Daftar jadwal kelas Anda hari ini:</p>
                 {todaySchedules.map((sched) => {
                   const att = todayAttendance.find(a => sched.ids.includes(a.jadwal_id));
                   const isCheckedIn = !!att;
+                  const active = isScheduleActive(sched.hari, sched.jam_mulai, sched.jam_selesai);
 
                   return (
                     <div
                       key={sched.id}
-                      className={`p-5 rounded-2xl border transition-all flex items-center justify-between gap-4 ${
+                      className={`p-5 rounded-2xl border transition-all flex items-center justify-between gap-4 relative overflow-hidden ${
                         isCheckedIn 
-                          ? "bg-emerald-50/20 border-emerald-100/60" 
-                          : "bg-brand-50/10 border-brand-100 hover:border-brand-350"
+                          ? "bg-emerald-50/15 border-emerald-100/60 text-brand-900" 
+                          : active
+                          ? "bg-brand-800 text-white border-transparent shadow-xl shadow-brand-700/20 scale-[1.01]"
+                          : "bg-brand-50/20 border-brand-100 hover:border-brand-300 text-brand-900 shadow-md shadow-brand-900/3"
                       }`}
                     >
-                      <div className="space-y-1.5">
-                        <span className="px-2 py-0.5 bg-brand-100/60 text-brand-700 text-[10px] font-black rounded-lg uppercase tracking-wide">
-                          {sched.jam_mulai.slice(0, 5)} - {sched.jam_selesai.slice(0, 5)}
+                      {/* Accent strip indicator */}
+                      <div className={`absolute left-0 top-0 bottom-0 w-1 ${
+                        isCheckedIn 
+                          ? "bg-emerald-400" 
+                          : active
+                          ? "bg-amber-400"
+                          : "bg-brand-300"
+                      }`} />
+
+                      <div className="space-y-1.5 pl-2">
+                        <span className={`px-2 py-0.5 text-[10px] font-black rounded-lg uppercase tracking-wide inline-block ${
+                          isCheckedIn
+                            ? "bg-emerald-100 text-emerald-800"
+                            : active
+                            ? "bg-brand-700 text-white border border-brand-600"
+                            : "bg-brand-100 text-brand-700"
+                        }`}>
+                          {sched.jam_mulai.slice(0, 5)} - {sched.jam_selesai.slice(0, 5)} {active && !isCheckedIn ? "• SEDANG BERLANGSUNG" : ""}
                         </span>
-                        <h4 className="font-extrabold text-sm text-brand-950">{formatSubjectName(sched.mata_pelajaran)}</h4>
-                        <div className="flex items-center gap-1.5 text-xs text-brand-500 font-bold">
-                          <Users className="w-3.5 h-3.5 text-brand-350" />
+                        <h4 className={`font-extrabold text-sm ${active && !isCheckedIn ? "text-white" : "text-brand-950"}`}>
+                          {formatSubjectName(sched.mata_pelajaran)}
+                        </h4>
+                        <div className={`flex items-center gap-1.5 text-xs font-bold ${
+                          active && !isCheckedIn ? "text-brand-200" : "text-brand-500"
+                        }`}>
+                          <Users className="w-3.5 h-3.5" />
                           <span>Kelas {sched.kelas}</span>
                         </div>
                       </div>
 
                       {isCheckedIn ? (
-                        <div className="text-right space-y-1">
+                        <div className="text-right space-y-1 z-10">
                           <span className={`px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wide inline-block ${
                             att.status === "hadir" 
                               ? "bg-emerald-150 text-emerald-800 border border-emerald-200" 
@@ -241,7 +281,11 @@ export default function GuruKehadiranView({ userSession }: GuruKehadiranViewProp
                             setStatus("hadir");
                             setKeterangan("");
                           }}
-                          className="py-2 px-4 bg-brand-600 hover:bg-brand-750 text-white font-extrabold text-xs rounded-xl shadow-md shadow-brand-500/10 cursor-pointer border-0 transition-all flex items-center gap-1.5"
+                          className={`py-2 px-4 font-extrabold text-xs rounded-xl shadow-md cursor-pointer border-0 transition-all flex items-center gap-1.5 z-10 ${
+                            active
+                              ? "bg-amber-400 hover:bg-amber-500 text-brand-950 shadow-amber-550/10"
+                              : "bg-brand-600 hover:bg-brand-750 text-white shadow-brand-500/10"
+                          }`}
                         >
                           <LogIn className="w-3.5 h-3.5" />
                           Absen

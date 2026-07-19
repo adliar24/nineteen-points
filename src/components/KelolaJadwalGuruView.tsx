@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Calendar, Search, RefreshCw, Plus, Trash2, X, AlertTriangle, BookOpen, Clock, Users } from "lucide-react";
 import { supabase } from "../supabaseClient";
 import { getJadwalGuruList, addJadwalGuru, deleteJadwalGuru } from "../dbStore";
-import { toSentenceCase } from "../formatName";
+import { toSentenceCase, formatSubjectName } from "../formatName";
 
 export default function KelolaJadwalGuruView() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -221,7 +221,7 @@ export default function KelolaJadwalGuruView() {
                       </span>
                     </td>
                     <td className="py-4.5 px-6 font-bold text-brand-900">
-                      {row.mata_pelajaran}
+                      {formatSubjectName(row.mata_pelajaran)}
                     </td>
                     <td className="py-4.5 px-6">
                       <div className="flex items-center gap-1.5 text-brand-600 font-bold">

@@ -30,3 +30,28 @@ export function toSentenceCase(name: string): string {
     })
     .join(" ");
 }
+
+export function formatSubjectName(subject: string): string {
+  if (!subject) return "";
+
+  const uppercaseAcronyms = ["PKWU", "PAIBP", "PJOK", "KKA", "KBM", "IHT"];
+  const lowercaseWords = ["dan", "atau", "ke", "di", "dari", "yang", "untuk"];
+
+  return subject
+    .split(/\s+/)
+    .map(word => {
+      const cleanWord = word.replace(/[^a-zA-Z]/g, "").toUpperCase();
+      if (uppercaseAcronyms.includes(cleanWord)) {
+        return word.toUpperCase();
+      }
+
+      const cleanLower = word.toLowerCase();
+      if (lowercaseWords.includes(cleanLower)) {
+        return cleanLower;
+      }
+
+      if (word.length === 0) return "";
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    })
+    .join(" ");
+}

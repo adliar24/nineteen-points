@@ -3,7 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "motion/react";
 import { Calendar, Search, RefreshCw, Edit3, X, Check, Clock, BookOpen, Users } from "lucide-react";
 import { getKehadiranGuruAll, saveKehadiranGuruManual } from "../dbStore";
-import { toSentenceCase } from "../formatName";
+import { toSentenceCase, formatSubjectName } from "../formatName";
 
 export default function KelolaKehadiranGuruView() {
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().slice(0, 10));
@@ -175,7 +175,7 @@ export default function KelolaKehadiranGuruView() {
 
                       {/* Mapel */}
                       <td className="py-4.5 px-6 font-bold text-brand-900">
-                        {row.mata_pelajaran}
+                        {formatSubjectName(row.mata_pelajaran)}
                       </td>
 
                       {/* Kelas */}
@@ -258,7 +258,7 @@ export default function KelolaKehadiranGuruView() {
                 <div>
                   <h3 className="font-black text-brand-950 text-base">Koreksi Absensi Guru</h3>
                   <p className="text-[11px] font-bold text-brand-500 mt-0.5">
-                    {toSentenceCase(editingRecord.user_nama)} | {editingRecord.mata_pelajaran} ({editingRecord.kelas})
+                    {toSentenceCase(editingRecord.user_nama)} | {formatSubjectName(editingRecord.mata_pelajaran)} ({editingRecord.kelas})
                   </p>
                 </div>
                 <button

@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Clock, Check, Calendar, AlertCircle, RefreshCw, FileText, LogIn, X, Users, BookOpen } from "lucide-react";
 import { UserSession } from "../types";
 import { getTodayKehadiranGuru, checkInGuru, getKehadiranGuruHistory, getJadwalGuruList } from "../dbStore";
+import { formatSubjectName } from "../formatName";
 
 interface GuruKehadiranViewProps {
   userSession: UserSession;
@@ -35,8 +36,55 @@ export default function GuruKehadiranView({ userSession }: GuruKehadiranViewProp
     queryFn: () => getJadwalGuruList(userSession.id),
   });
 
-  // Filter schedules for today's day of week
-  const todaySchedules = schedules.filter(s => s.hari === todayDayName);
+  // Helper to merge consecutive slots (same day, class, mapel, gap <= 35m)
+  const mergeSchedules = (list: any[]) => {
+    if (list.length === 0) return [];
+    
+    const sorted = [...list].sort((a, b) => {
+      if (a.hari !== b.hari) return a.hari.localeCompare(b.hari);
+      if (a.kelas !== b.kelas) return a.kelas.localeCompare(b.kelas);
+      if (a.mata_pelajaran !== b.mata_pelajaran) return a.mata_pelajaran.localeCompare(b.mata_pelajaran);
+      return a.jam_mulai.localeCompare(b.jam_mulai);
+    });
+
+    const merged: any[] = [];
+    let current = {
+      ...sorted[0],
+      ids: [sorted[0].id]
+    };
+
+    for (let i = 1; i < sorted.length; i++) {
+      const next = sorted[i];
+      
+      const [currH, currM] = current.jam_selesai.split(":").map(Number);
+      const [nextH, nextM] = next.jam_mulai.split(":").map(Number);
+      const gapMinutes = (nextH * 60 + nextM) - (currH * 60 + currM);
+
+      const isSameGroup = 
+        current.hari === next.hari &&
+        current.kelas === next.kelas &&
+        current.mata_pelajaran === next.mata_pelajaran;
+
+      if (isSameGroup && gapMinutes >= 0 && gapMinutes <= 35) {
+        current = {
+          ...current,
+          jam_selesai: next.jam_selesai,
+          ids: [...current.ids, next.id]
+        };
+      } else {
+        merged.push(current);
+        current = {
+          ...next,
+          ids: [next.id]
+        };
+      }
+    }
+    merged.push(current);
+    return merged;
+  };
+
+  // Filter schedules for today's day of week and merge them
+  const todaySchedules = mergeSchedules(schedules.filter(s => s.hari === todayDayName));
 
   // 3. Fetch Attendance History
   const { data: history = [], isLoading: loadingHistory, refetch: refetchHistory } = useQuery({
@@ -50,7 +98,12 @@ export default function GuruKehadiranView({ userSession }: GuruKehadiranViewProp
       if (!activeJadwal) return;
       const now = new Date();
       const timeStr = now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
-      return checkInGuru(userSession.id, todayStr, timeStr, status, keterangan, activeJadwal.id);
+      
+      // Perform check-in for all slot IDs in the merged block!
+      const promises = activeJadwal.ids.map((id: string) => 
+        checkInGuru(userSession.id, todayStr, timeStr, status, keterangan, id)
+      );
+      return Promise.all(promises);
     },
     onSuccess: () => {
       setSuccessMsg(`Berhasil mencatat absensi mengajar.`);
@@ -145,7 +198,7 @@ export default function GuruKehadiranView({ userSession }: GuruKehadiranViewProp
               <div className="space-y-4">
                 <p className="text-xs font-bold text-brand-500">Pilih slot KBM untuk mencatat absensi:</p>
                 {todaySchedules.map((sched) => {
-                  const att = todayAttendance.find(a => a.jadwal_id === sched.id);
+                  const att = todayAttendance.find(a => sched.ids.includes(a.jadwal_id));
                   const isCheckedIn = !!att;
 
                   return (
@@ -161,7 +214,7 @@ export default function GuruKehadiranView({ userSession }: GuruKehadiranViewProp
                         <span className="px-2 py-0.5 bg-brand-100/60 text-brand-700 text-[10px] font-black rounded-lg uppercase tracking-wide">
                           {sched.jam_mulai.slice(0, 5)} - {sched.jam_selesai.slice(0, 5)}
                         </span>
-                        <h4 className="font-extrabold text-sm text-brand-950">{sched.mata_pelajaran}</h4>
+                        <h4 className="font-extrabold text-sm text-brand-950">{formatSubjectName(sched.mata_pelajaran)}</h4>
                         <div className="flex items-center gap-1.5 text-xs text-brand-500 font-bold">
                           <Users className="w-3.5 h-3.5 text-brand-350" />
                           <span>Kelas {sched.kelas}</span>
@@ -241,7 +294,7 @@ export default function GuruKehadiranView({ userSession }: GuruKehadiranViewProp
                             {new Date(record.tanggal).toLocaleDateString("id-ID", { day: 'numeric', month: 'short', year: 'numeric' })}
                           </span>
                           <span className="text-xs font-bold text-brand-800 block">
-                            {scheduleInfo.mata_pelajaran || "Jadwal Dihapus"} ({scheduleInfo.kelas || "-"})
+                            {formatSubjectName(scheduleInfo.mata_pelajaran || "Jadwal Dihapus")} ({scheduleInfo.kelas || "-"})
                           </span>
                           {record.keterangan && (
                             <span className="text-[10px] text-slate-400 italic block">
@@ -290,7 +343,7 @@ export default function GuruKehadiranView({ userSession }: GuruKehadiranViewProp
                 <div>
                   <h3 className="font-black text-brand-950 text-base">Absen Mengajar</h3>
                   <p className="text-[11px] font-bold text-brand-500 mt-0.5">
-                    Kelas {activeJadwal.kelas} | {activeJadwal.mata_pelajaran}
+                    Kelas {activeJadwal.kelas} | {formatSubjectName(activeJadwal.mata_pelajaran)}
                   </p>
                 </div>
                 <button

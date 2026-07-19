@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Calendar, Clock, BookOpen, Users, RefreshCw } from "lucide-react";
 import { getJadwalGuruList } from "../dbStore";
 import { UserSession } from "../types";
+import { formatSubjectName } from "../formatName";
 
 interface GuruJadwalViewProps {
   userSession: UserSession;
@@ -20,8 +21,52 @@ export default function GuruJadwalView({ userSession }: GuruJadwalViewProps) {
 
   const listHari = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
 
+  // Helper to merge consecutive slots (same day, class, mapel, gap <= 35m)
+  const mergeSchedules = (list: any[]) => {
+    if (list.length === 0) return [];
+    
+    // Sort by day, class, subject, and start time
+    const sorted = [...list].sort((a, b) => {
+      if (a.hari !== b.hari) return a.hari.localeCompare(b.hari);
+      if (a.kelas !== b.kelas) return a.kelas.localeCompare(b.kelas);
+      if (a.mata_pelajaran !== b.mata_pelajaran) return a.mata_pelajaran.localeCompare(b.mata_pelajaran);
+      return a.jam_mulai.localeCompare(b.jam_mulai);
+    });
+
+    const merged: any[] = [];
+    let current = sorted[0];
+
+    for (let i = 1; i < sorted.length; i++) {
+      const next = sorted[i];
+      
+      const [currH, currM] = current.jam_selesai.split(":").map(Number);
+      const [nextH, nextM] = next.jam_mulai.split(":").map(Number);
+      const gapMinutes = (nextH * 60 + nextM) - (currH * 60 + currM);
+
+      const isSameGroup = 
+        current.hari === next.hari &&
+        current.kelas === next.kelas &&
+        current.mata_pelajaran === next.mata_pelajaran;
+
+      // Allow gap <= 35 mins (to account for recess / ISTIRAHAT)
+      if (isSameGroup && gapMinutes >= 0 && gapMinutes <= 35) {
+        current = {
+          ...current,
+          jam_selesai: next.jam_selesai
+        };
+      } else {
+        merged.push(current);
+        current = next;
+      }
+    }
+    merged.push(current);
+    return merged;
+  };
+
+  const processedSchedules = mergeSchedules(schedules);
+
   // Filter schedules by selected day
-  const filteredSchedules = schedules.filter(row => row.hari === selectedDay);
+  const filteredSchedules = processedSchedules.filter(row => row.hari === selectedDay);
 
   return (
     <div className="space-y-6">
@@ -45,7 +90,7 @@ export default function GuruJadwalView({ userSession }: GuruJadwalViewProps) {
       <div className="flex flex-wrap gap-2 p-1.5 bg-brand-50/70 border border-brand-100/50 rounded-2xl md:max-w-max">
         {listHari.map((day) => {
           const isActive = selectedDay === day;
-          const count = schedules.filter(row => row.hari === day).length;
+          const count = processedSchedules.filter(row => row.hari === day).length;
 
           return (
             <button
@@ -87,7 +132,7 @@ export default function GuruJadwalView({ userSession }: GuruJadwalViewProps) {
         ) : (
           filteredSchedules.map((row, index) => (
             <motion.div
-              key={row.id}
+              key={`${row.id}-${index}`}
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
@@ -102,7 +147,7 @@ export default function GuruJadwalView({ userSession }: GuruJadwalViewProps) {
                   <span className="text-[11px] font-black tracking-wider uppercase">JAM PELAJARAN</span>
                 </div>
                 <h3 className="text-lg font-black text-brand-950 leading-snug tracking-tight">
-                  {row.mata_pelajaran}
+                  {formatSubjectName(row.mata_pelajaran)}
                 </h3>
               </div>
 

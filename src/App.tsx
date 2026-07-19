@@ -107,7 +107,7 @@ export default function App() {
 
   const updateIndicator = useCallback(() => {
     const activeBtn = navRefs.current.get(activeTab);
-    if (activeBtn) {
+    if (activeBtn && activeBtn.offsetParent !== null) {
       let top = activeBtn.offsetTop;
       let parent = activeBtn.offsetParent as HTMLElement;
       while (parent && !parent.classList.contains("nav-container")) {
@@ -120,9 +120,13 @@ export default function App() {
         opacity: 1,
       });
     } else {
-      setIndicatorStyle({ top: 0, height: 0, opacity: 0 });
+      setIndicatorStyle({
+        top: 0,
+        height: 0,
+        opacity: 0,
+      });
     }
-  }, [activeTab]);
+  }, [activeTab, openGroups]);
 
   useEffect(() => {
     updateIndicator();

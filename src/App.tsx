@@ -224,7 +224,7 @@ export default function App() {
           setActiveTab("siswa_stats");
         }
       } else if (userSession.role === "piket") {
-        if (!["kehadiran", "change_password"].includes(activeTab)) {
+        if (!["kehadiran", "change_password", "kelola_kehadiran_guru"].includes(activeTab)) {
           setActiveTab("kehadiran");
         }
       } else if (userSession.role === "guru") {
@@ -265,6 +265,7 @@ export default function App() {
   if (userSession.role === "piket") {
     sidebarElements = [
       { type: "item", id: "kehadiran", label: "Kehadiran Murid", icon: ClipboardCheck, description: "Rekap absensi & poin" },
+      { type: "item", id: "kelola_kehadiran_guru", label: "Kehadiran Guru", icon: Calendar, description: "Monitoring & koreksi absensi" },
       { type: "item", id: "change_password", label: "Ubah Password", icon: Settings, description: "Ganti password akun Anda" }
     ];
   } else if (userSession.role === "guru") {
@@ -761,7 +762,7 @@ export default function App() {
                 <GuruSertifikatView userSession={userSession} />
               )}
 
-              {activeTab === "kelola_kehadiran_guru" && ["super_admin", "kepala_sekolah"].includes(userSession.role) && (
+              {activeTab === "kelola_kehadiran_guru" && ["super_admin", "kepala_sekolah", "piket"].includes(userSession.role) && (
                 <KelolaKehadiranGuruView />
               )}
 

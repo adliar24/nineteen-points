@@ -717,30 +717,31 @@ CREATE POLICY "kehadiran_guru_select" ON public.kehadiran_guru
   FOR SELECT TO authenticated
   USING (
     user_id = auth.uid() OR
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('super_admin', 'kepala_sekolah'))
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('super_admin', 'kepala_sekolah', 'piket'))
   );
 
 CREATE POLICY "kehadiran_guru_insert" ON public.kehadiran_guru
   FOR INSERT TO authenticated
   WITH CHECK (
-    user_id = auth.uid()
+    user_id = auth.uid() OR
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('super_admin', 'kepala_sekolah', 'piket'))
   );
 
 CREATE POLICY "kehadiran_guru_update" ON public.kehadiran_guru
   FOR UPDATE TO authenticated
   USING (
     user_id = auth.uid() OR
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('super_admin', 'kepala_sekolah', 'piket'))
   )
   WITH CHECK (
     user_id = auth.uid() OR
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('super_admin', 'kepala_sekolah', 'piket'))
   );
 
 CREATE POLICY "kehadiran_guru_delete" ON public.kehadiran_guru
   FOR DELETE TO authenticated
   USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('super_admin', 'kepala_sekolah', 'piket'))
   );
 
 -- 7h. POLICIES KEGIATAN GURU (SERTIFIKAT)

@@ -154,9 +154,9 @@ export default function GuruJadwalView({ userSession }: GuruJadwalViewProps) {
             return (
               <motion.div
                 key={`${row.id}-${index}`}
-                initial={{ opacity: 0, y: 12 }}
+                initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ type: "spring", stiffness: 100, damping: 15, delay: index * 0.04 }}
+                transition={{ duration: 0.25, ease: "easeOut", delay: index * 0.03 }}
                 className={`p-6 rounded-3xl border transition-all flex flex-col justify-between space-y-4 group relative overflow-hidden ${
                   active
                     ? "bg-brand-800 text-white border-transparent shadow-xl shadow-brand-700/20 scale-[1.01]"

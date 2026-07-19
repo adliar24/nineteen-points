@@ -222,9 +222,9 @@ export default function GuruKehadiranView({ userSession }: GuruKehadiranViewProp
                   return (
                     <motion.div
                       key={sched.id}
-                      initial={{ opacity: 0, y: 12 }}
+                      initial={{ opacity: 0, y: 6 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ type: "spring", stiffness: 100, damping: 15, delay: index * 0.04 }}
+                      transition={{ duration: 0.25, ease: "easeOut", delay: index * 0.03 }}
                       className={`p-5 rounded-2xl border transition-all flex items-center justify-between gap-4 relative overflow-hidden ${
                         isCheckedIn 
                           ? "bg-emerald-50/15 border-emerald-100/60 text-brand-900" 

@@ -512,13 +512,13 @@ export default function App() {
                   <div key={element.id} className="space-y-1">
                     <button
                       onClick={() => setOpenGroups(prev => ({ ...prev, [element.id]: !isOpen }))}
-                      className="w-full text-left px-4 py-2.5 rounded-xl flex items-center justify-between text-brand-300 hover:text-white cursor-pointer"
+                      className="w-full text-left px-4 py-3.5 rounded-2xl flex items-center justify-between text-brand-200/85 hover:text-white cursor-pointer transition-colors"
                     >
-                      <div className="flex items-center gap-2">
-                        <GroupIcon className="w-4 h-4 text-brand-300" />
-                        <span className="text-[10px] font-black uppercase tracking-wider">{element.label}</span>
+                      <div className="flex items-center gap-3">
+                        <GroupIcon className="w-4.5 h-4.5 text-brand-300" />
+                        <span className="text-sm font-bold tracking-wide">{element.label}</span>
                       </div>
-                      <ChevronDown className={`w-3.5 h-3.5 transform transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
+                      <ChevronDown className={`w-4 h-4 transform transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
                     </button>
                     <AnimatePresence initial={false}>
                       {isOpen && (
@@ -536,12 +536,12 @@ export default function App() {
                                 key={subItem.id}
                                 ref={(el) => { if (el) navRefs.current.set(subItem.id, el); }}
                                 onClick={() => setActiveTab(subItem.id)}
-                                className={`w-full text-left px-4 py-2.5 rounded-xl flex items-center gap-3 transition-colors relative z-10 cursor-pointer ${
+                                className={`w-full text-left px-4 py-3 rounded-2xl flex items-center gap-3 transition-colors relative z-10 cursor-pointer ${
                                   isActive ? "text-brand-800 font-bold" : "text-brand-200/85 hover:text-white"
                                 }`}
                               >
-                                <SubIcon className={`w-4 h-4 flex-shrink-0 transition-colors ${isActive ? "text-brand-600" : "text-brand-300"}`} />
-                                <span className="text-xs font-bold tracking-wide">{subItem.label}</span>
+                                <SubIcon className={`w-4.5 h-4.5 flex-shrink-0 transition-colors ${isActive ? "text-brand-600" : "text-brand-300"}`} />
+                                <span className="text-sm font-bold tracking-wide">{subItem.label}</span>
                               </button>
                             );
                           })}
@@ -640,13 +640,13 @@ export default function App() {
                         <div key={element.id} className="space-y-1">
                           <button
                             onClick={() => setOpenGroups(prev => ({ ...prev, [element.id]: !isOpen }))}
-                            className="w-full text-left px-4 py-3 rounded-2xl flex items-center justify-between text-brand-300 hover:text-white cursor-pointer"
+                            className="w-full text-left px-4 py-3.5 rounded-2xl flex items-center justify-between text-brand-200 hover:text-white cursor-pointer"
                           >
-                            <div className="flex items-center gap-2.5">
-                              <GroupIcon className="w-4 h-4 text-brand-300" />
-                              <span className="text-[10px] font-black uppercase tracking-wider">{element.label}</span>
+                            <div className="flex items-center gap-3">
+                              <GroupIcon className="w-4.5 h-4.5 text-brand-300" />
+                              <span className="text-sm font-bold tracking-wide">{element.label}</span>
                             </div>
-                            <ChevronDown className={`w-3.5 h-3.5 transform transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
+                            <ChevronDown className={`w-4 h-4 transform transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
                           </button>
                           <AnimatePresence initial={false}>
                             {isOpen && (
@@ -672,8 +672,8 @@ export default function App() {
                                           : "text-brand-200 hover:text-white hover:bg-white/5"
                                       }`}
                                     >
-                                      <SubIcon className={`w-4 h-4 flex-shrink-0 transition-colors ${isActive ? "text-brand-600" : "text-brand-400"}`} />
-                                      <span className="text-xs font-bold tracking-wide">{subItem.label}</span>
+                                      <SubIcon className={`w-4.5 h-4.5 flex-shrink-0 transition-colors ${isActive ? "text-brand-600" : "text-brand-400"}`} />
+                                      <span className="text-sm font-bold tracking-wide">{subItem.label}</span>
                                     </button>
                                   );
                                 })}

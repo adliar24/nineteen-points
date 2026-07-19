@@ -22,7 +22,9 @@ import {
   Download,
   Upload,
   ChevronDown,
-  FolderOpen
+  FolderOpen,
+  LogIn,
+  Edit3
 } from "lucide-react";
 import { UserSession } from "./types";
 import { getLocalStorage, setLocalStorage } from "./dbStore";
@@ -34,6 +36,7 @@ const LoginView = lazy(() => import("./components/LoginView"));
 const StatsView = lazy(() => import("./components/StatsView"));
 const InputPoinView = lazy(() => import("./components/InputPoinView"));
 const KehadiranView = lazy(() => import("./components/KehadiranView"));
+const InputKehadiranView = lazy(() => import("./components/InputKehadiranView"));
 const KelolaSiswaView = lazy(() => import("./components/KelolaSiswaView"));
 const HistoryView = lazy(() => import("./components/HistoryView"));
 const MasterPoinView = lazy(() => import("./components/MasterPoinView"));
@@ -224,19 +227,19 @@ export default function App() {
           setActiveTab("siswa_stats");
         }
       } else if (userSession.role === "piket") {
-        if (!["kehadiran", "change_password", "kelola_kehadiran_guru"].includes(activeTab)) {
-          setActiveTab("kehadiran");
+        if (!["kehadiran", "kelola_kehadiran_guru", "input_kehadiran"].includes(activeTab)) {
+          setActiveTab("input_kehadiran");
         }
       } else if (userSession.role === "guru") {
         if (!["input", "students", "history", "change_password", "guru_kehadiran", "guru_sertifikat", "guru_jadwal"].includes(activeTab)) {
           setActiveTab("guru_kehadiran");
         }
       } else if (userSession.role === "kepala_sekolah") {
-        if (!["input", "kehadiran", "students", "history", "change_password", "kelola_kehadiran_guru", "kelola_jadwal_guru"].includes(activeTab)) {
-          setActiveTab("input");
+        if (!["input_kehadiran", "input", "kehadiran", "students", "history", "change_password", "kelola_kehadiran_guru", "kelola_jadwal_guru"].includes(activeTab)) {
+          setActiveTab("input_kehadiran");
         }
       } else {
-        if (!["stats", "input", "kehadiran", "students", "history", "rules", "users", "change_password", "kelola_kehadiran_guru", "kelola_sertifikat_guru", "kelola_jadwal_guru"].includes(activeTab)) {
+        if (!["stats", "input_kehadiran", "input", "kehadiran", "students", "history", "rules", "users", "change_password", "kelola_kehadiran_guru", "kelola_sertifikat_guru", "kelola_jadwal_guru"].includes(activeTab)) {
           setActiveTab("stats");
         }
       }
@@ -264,9 +267,9 @@ export default function App() {
 
   if (userSession.role === "piket") {
     sidebarElements = [
-      { type: "item", id: "kehadiran", label: "Kehadiran Murid", icon: ClipboardCheck, description: "Rekap absensi & poin" },
-      { type: "item", id: "kelola_kehadiran_guru", label: "Kehadiran Guru", icon: Calendar, description: "Monitoring & koreksi absensi" },
-      { type: "item", id: "change_password", label: "Ubah Password", icon: Settings, description: "Ganti password akun Anda" }
+      { type: "item", id: "input_kehadiran", label: "Input Kehadiran", icon: ClipboardCheck, description: "Scan QR & input absen harian" },
+      { type: "item", id: "kehadiran", label: "Kehadiran Murid", icon: Users, description: "Rekap absensi & poin murid" },
+      { type: "item", id: "kelola_kehadiran_guru", label: "Kehadiran Guru", icon: Calendar, description: "Monitoring absensi guru" }
     ];
   } else if (userSession.role === "guru") {
     sidebarElements = [
@@ -280,8 +283,17 @@ export default function App() {
     ];
   } else if (userSession.role === "kepala_sekolah") {
     sidebarElements = [
-      { type: "item", id: "input", label: "Input Poin", icon: ClipboardCheck, description: "Catat via QR atau pencarian" },
-      { type: "item", id: "kehadiran", label: "Kehadiran Murid", icon: Calendar, description: "Monitoring absensi harian" },
+      {
+        type: "group",
+        id: "input_data",
+        label: "Input Data",
+        icon: ClipboardCheck,
+        items: [
+          { id: "input_kehadiran", label: "Input Kehadiran", icon: LogIn, description: "Absensi guru & murid" },
+          { id: "input", label: "Input Poin", icon: Edit3, description: "Pencatatan sanksi & prestasi" }
+        ]
+      },
+      { type: "item", id: "kehadiran", label: "Kehadiran Murid", icon: Users, description: "Monitoring absensi murid" },
       { type: "item", id: "kelola_kehadiran_guru", label: "Kehadiran Guru", icon: Calendar, description: "Monitoring absensi guru" },
       { type: "item", id: "history", label: "Riwayat Poin", icon: Calendar, description: "Audit trail pencatatan" },
       { type: "item", id: "students", label: "Data Murid", icon: Users, description: "Lihat database & kartu pelajar" },
@@ -291,9 +303,18 @@ export default function App() {
   } else if (userSession.role === "super_admin") {
     sidebarElements = [
       { type: "item", id: "stats", label: "Statistik Poin", icon: TrendingUp, description: "Ikhtisar & analisis grafik" },
-      { type: "item", id: "input", label: "Input Poin", icon: ClipboardCheck, description: "Catat via QR atau pencarian" },
-      { type: "item", id: "kehadiran", label: "Kehadiran Murid", icon: Calendar, description: "Pencatatan & rekap absensi murid" },
-      { type: "item", id: "kelola_kehadiran_guru", label: "Kehadiran Guru", icon: Calendar, description: "Monitoring & koreksi absensi" },
+      {
+        type: "group",
+        id: "input_data",
+        label: "Input Data",
+        icon: ClipboardCheck,
+        items: [
+          { id: "input_kehadiran", label: "Input Kehadiran", icon: LogIn, description: "Absensi guru & murid" },
+          { id: "input", label: "Input Poin", icon: Edit3, description: "Pencatatan sanksi & prestasi" }
+        ]
+      },
+      { type: "item", id: "kehadiran", label: "Kehadiran Murid", icon: Users, description: "Rekap absensi murid" },
+      { type: "item", id: "kelola_kehadiran_guru", label: "Kehadiran Guru", icon: Calendar, description: "Monitoring absensi guru" },
       { type: "item", id: "history", label: "Riwayat Poin", icon: Calendar, description: "Audit trail pencatatan" },
       {
         type: "group",
@@ -725,6 +746,12 @@ export default function App() {
                 <KehadiranView
                   userSession={userSession}
                   onRefreshHistory={() => setHistoryRefreshCount((c) => c + 1)}
+                />
+              )}
+
+              {activeTab === "input_kehadiran" && (
+                <InputKehadiranView
+                  userSession={userSession}
                 />
               )}
 

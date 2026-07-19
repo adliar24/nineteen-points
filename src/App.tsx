@@ -149,6 +149,7 @@ const KelolaKehadiranGuruView = lazy(() => import("./components/KelolaKehadiranG
 const KelolaSertifikatGuruView = lazy(() => import("./components/KelolaSertifikatGuruView"));
 const KelolaJadwalGuruView = lazy(() => import("./components/KelolaJadwalGuruView"));
 const GuruJadwalView = lazy(() => import("./components/GuruJadwalView"));
+const GuruKartuView = lazy(() => import("./components/GuruKartuView"));
 import AkhiriAktivitasModal from "./components/AkhiriAktivitasModal";
 import ExportSummaryModal from "./components/ExportSummaryModal";
 import ImportSummaryModal from "./components/ImportSummaryModal";
@@ -354,7 +355,7 @@ export default function App() {
           setActiveTab("input_kehadiran");
         }
       } else if (userSession.role === "guru") {
-        if (!["input", "students", "history", "change_password", "guru_kehadiran", "guru_sertifikat", "guru_jadwal"].includes(activeTab)) {
+        if (!["input", "students", "history", "change_password", "guru_kehadiran", "guru_sertifikat", "guru_jadwal", "guru_kartu"].includes(activeTab)) {
           setActiveTab("guru_kehadiran");
         }
       } else if (userSession.role === "kepala_sekolah") {
@@ -400,6 +401,7 @@ export default function App() {
       { type: "item", id: "guru_kehadiran", label: "Kehadiran Saya", icon: Calendar, description: "Absen masuk & pulang" },
       { type: "item", id: "guru_sertifikat", label: "Sertifikat Kegiatan", icon: Award, description: "Unduh sertifikat pelatihan" },
       { type: "item", id: "guru_jadwal", label: "Jadwal Mengajar", icon: Calendar, description: "Jadwal mengajar Anda" },
+      { type: "item", id: "guru_kartu", label: "Kartu Guru", icon: CreditCard, description: "QR Kartu Guru Digital" },
       { type: "item", id: "input", label: "Input Poin", icon: ClipboardCheck, description: "Catat via QR atau pencarian" },
       { type: "item", id: "history", label: "Riwayat Poin", icon: Calendar, description: "Audit trail pencatatan" },
       { type: "item", id: "students", label: "Data Murid", icon: Users, description: "Lihat database & kartu pelajar" },
@@ -931,6 +933,10 @@ export default function App() {
 
               {activeTab === "guru_jadwal" && userSession.role === "guru" && (
                 <GuruJadwalView userSession={userSession} />
+              )}
+
+              {activeTab === "guru_kartu" && userSession.role === "guru" && (
+                <GuruKartuView userSession={userSession} />
               )}
 
               {activeTab === "change_password" && (

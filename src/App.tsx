@@ -112,6 +112,22 @@ const THEMES = [
       "--color-accent-500": "#ec4899",
       "--color-accent-600": "#db2777"
     }
+  },
+  {
+    id: "slate_grey",
+    name: "Slate Grey",
+    primary: "#475569",
+    colors: {
+      "--color-brand-50": "#f8fafc",
+      "--color-brand-100": "#f1f5f9",
+      "--color-brand-200": "#e2e8f0",
+      "--color-brand-500": "#64748b",
+      "--color-brand-600": "#475569",
+      "--color-brand-700": "#334155",
+      "--color-brand-800": "#1e293b",
+      "--color-accent-500": "#94a3b8",
+      "--color-accent-600": "#64748b"
+    }
   }
 ];
 
@@ -328,7 +344,7 @@ export default function App() {
           setActiveTab("siswa_stats");
         }
       } else if (userSession.role === "piket") {
-        if (!["kehadiran", "kelola_kehadiran_guru", "input_kehadiran"].includes(activeTab)) {
+        if (!["kehadiran", "kelola_kehadiran_guru", "input_kehadiran", "change_password"].includes(activeTab)) {
           setActiveTab("input_kehadiran");
         }
       } else if (userSession.role === "guru") {
@@ -370,7 +386,8 @@ export default function App() {
     sidebarElements = [
       { type: "item", id: "input_kehadiran", label: "Input Kehadiran", icon: ClipboardCheck, description: "Scan QR & input absen harian" },
       { type: "item", id: "kehadiran", label: "Kehadiran Murid", icon: Users, description: "Rekap absensi & poin murid" },
-      { type: "item", id: "kelola_kehadiran_guru", label: "Kehadiran Guru", icon: Calendar, description: "Monitoring absensi guru" }
+      { type: "item", id: "kelola_kehadiran_guru", label: "Kehadiran Guru", icon: Calendar, description: "Monitoring absensi guru" },
+      { type: "item", id: "change_password", label: "Pengaturan", icon: Settings, description: "Ubah warna tema aplikasi" }
     ];
   } else if (userSession.role === "guru") {
     sidebarElements = [
@@ -380,7 +397,7 @@ export default function App() {
       { type: "item", id: "input", label: "Input Poin", icon: ClipboardCheck, description: "Catat via QR atau pencarian" },
       { type: "item", id: "history", label: "Riwayat Poin", icon: Calendar, description: "Audit trail pencatatan" },
       { type: "item", id: "students", label: "Data Murid", icon: Users, description: "Lihat database & kartu pelajar" },
-      { type: "item", id: "change_password", label: "Ubah Password", icon: Settings, description: "Ganti password akun Anda" }
+      { type: "item", id: "change_password", label: "Pengaturan", icon: Settings, description: "Ubah sandi & tema warna" }
     ];
   } else if (userSession.role === "kepala_sekolah") {
     sidebarElements = [
@@ -399,7 +416,7 @@ export default function App() {
       { type: "item", id: "history", label: "Riwayat Poin", icon: Calendar, description: "Audit trail pencatatan" },
       { type: "item", id: "students", label: "Data Murid", icon: Users, description: "Lihat database & kartu pelajar" },
       { type: "item", id: "kelola_jadwal_guru", label: "Jadwal Guru", icon: Calendar, description: "Manajemen jadwal mengajar guru" },
-      { type: "item", id: "change_password", label: "Ubah Password", icon: Settings, description: "Ganti password akun Anda" }
+      { type: "item", id: "change_password", label: "Pengaturan", icon: Settings, description: "Ubah sandi & tema warna" }
     ];
   } else if (userSession.role === "super_admin") {
     sidebarElements = [
@@ -436,7 +453,7 @@ export default function App() {
         icon: Settings,
         items: [
           { id: "users", label: "Pengaturan Akun", icon: ShieldCheck, description: "Atur akun guru & murid" },
-          { id: "change_password", label: "Ubah Password", icon: Settings, description: "Ganti password akun Anda" }
+          { id: "change_password", label: "Pengaturan", icon: Settings, description: "Ubah sandi & tema warna" }
         ]
       }
     ];
@@ -445,7 +462,7 @@ export default function App() {
       { type: "item", id: "siswa_stats", label: "Statistik", icon: TrendingUp, description: "Statistik poin Anda" },
       { type: "item", id: "siswa_barcode", label: "Kartu Pelajar", icon: CreditCard, description: "QR Kartu Pelajar Digital" },
       { type: "item", id: "siswa_history", label: "Riwayat Poin", icon: Calendar, description: "Riwayat perolehan poin" },
-      { type: "item", id: "change_password", label: "Ubah Password", icon: Settings, description: "Ganti password akun Anda" }
+      { type: "item", id: "change_password", label: "Pengaturan", icon: Settings, description: "Ubah sandi & tema warna" }
     ];
   }
 
@@ -911,7 +928,11 @@ export default function App() {
               )}
 
               {activeTab === "change_password" && (
-                <ChangePasswordView />
+                <ChangePasswordView
+                  activeTheme={activeTheme}
+                  applyTheme={applyTheme}
+                  role={userSession.role}
+                />
               )}
 
               {["siswa_stats", "siswa_barcode", "siswa_history"].includes(activeTab) && (
@@ -1012,31 +1033,6 @@ export default function App() {
                   ? userSession.nis || userSession.email.split("@")[0]
                   : userSession.email.split("@")[0]}
               </p>
-            </div>
-
-            {/* Theme Selector */}
-            <div className="mt-6 pt-5 border-t border-slate-100 space-y-3">
-              <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest text-left">Pilih Warna Tema</p>
-              <div className="flex items-center justify-between gap-2">
-                {THEMES.map((theme) => {
-                  const isActive = activeTheme === theme.id;
-                  return (
-                    <button
-                      key={theme.id}
-                      onClick={() => applyTheme(theme.id)}
-                      className={`w-7 h-7 rounded-full cursor-pointer transition-all border-2 relative flex items-center justify-center ${
-                        isActive ? "border-slate-800 scale-110 shadow-sm" : "border-transparent hover:scale-105"
-                      }`}
-                      style={{ backgroundColor: theme.primary }}
-                      title={theme.name}
-                    >
-                      {isActive && (
-                        <Check className="w-3 h-3 text-white" />
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
             </div>
           </motion.div>
         </div>

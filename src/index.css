@@ -37,11 +37,11 @@ body {
 
 /* Custom gorgeous UI components mimicking the 'Audit' reference */
 .brand-gradient {
-  background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 40%, #c026d3 100%);
+  background: linear-gradient(135deg, var(--color-brand-700) 0%, var(--color-brand-500) 40%, var(--color-accent-600) 100%);
 }
 
 .brand-gradient-soft {
-  background: linear-gradient(135deg, #f5f3ff 0%, #edd9ff 100%);
+  background: linear-gradient(135deg, var(--color-brand-50) 0%, var(--color-brand-100) 100%);
 }
 
 .glass-card {

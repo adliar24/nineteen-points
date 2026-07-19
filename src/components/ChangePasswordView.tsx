@@ -1,8 +1,23 @@
 import React, { useState } from "react";
-import { Lock, Eye, EyeOff, ShieldCheck, AlertCircle } from "lucide-react";
+import { Lock, Eye, EyeOff, ShieldCheck, AlertCircle, Palette, Check } from "lucide-react";
 import { supabase } from "../supabaseClient";
 
-export default function ChangePasswordView() {
+const THEMES = [
+  { id: "royal_purple", name: "Royal Purple", primary: "#5b21b6" },
+  { id: "ocean_blue", name: "Ocean Blue", primary: "#0369a1" },
+  { id: "emerald_green", name: "Emerald Green", primary: "#059669" },
+  { id: "sunset_orange", name: "Sunset Orange", primary: "#ea580c" },
+  { id: "ruby_rose", name: "Ruby Rose", primary: "#e11d48" },
+  { id: "slate_grey", name: "Slate Grey", primary: "#475569" }
+];
+
+interface ChangePasswordViewProps {
+  activeTheme?: string;
+  applyTheme?: (themeId: string) => void;
+  role?: string;
+}
+
+export default function ChangePasswordView({ activeTheme, applyTheme, role }: ChangePasswordViewProps) {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -44,81 +59,133 @@ export default function ChangePasswordView() {
   };
 
   return (
-    <div className="max-w-md mx-auto bg-white p-6 md:p-8 rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 space-y-6">
-      <div className="space-y-1">
-        <h3 className="text-sm font-black text-brand-950 uppercase tracking-widest">Ubah Password</h3>
+    <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 pb-12">
+      {/* Warna Tema Card */}
+      <div className={`bg-white p-6 md:p-8 rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 space-y-6 ${
+        role === "piket" ? "md:col-span-12 max-w-md mx-auto w-full" : "md:col-span-5"
+      }`}>
+        <div className="space-y-1.5">
+          <h3 className="text-sm font-black text-brand-950 uppercase tracking-widest flex items-center gap-2">
+            <Palette className="w-5 h-5 text-brand-600" />
+            Warna Tema
+          </h3>
+          <p className="text-[10.5px] text-brand-450 font-semibold leading-relaxed">
+            Sesuaikan skema warna antarmuka aplikasi. Perubahan disimpan langsung di perangkat Anda.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3 pt-2">
+          {THEMES.map((theme) => {
+            const isActive = activeTheme === theme.id;
+            return (
+              <button
+                key={theme.id}
+                type="button"
+                onClick={() => applyTheme?.(theme.id)}
+                className={`p-3.5 rounded-2xl border text-xs font-bold flex items-center gap-2.5 transition-all cursor-pointer ${
+                  isActive
+                    ? "bg-brand-50 border-brand-300 text-brand-950 ring-2 ring-brand-500/20"
+                    : "bg-slate-50/50 border-slate-100 hover:bg-slate-50 text-slate-600"
+                }`}
+              >
+                <span
+                  className="w-4 h-4 rounded-full flex-shrink-0 flex items-center justify-center"
+                  style={{ backgroundColor: theme.primary }}
+                >
+                  {isActive && <Check className="w-2.5 h-2.5 text-white" />}
+                </span>
+                <span>{theme.name}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      {message && (
-        <div
-          className={`p-4 rounded-2xl flex items-start gap-3 border text-xs leading-relaxed font-semibold ${
-            message.type === "success"
-              ? "bg-emerald-50 text-emerald-700 border-emerald-100"
-              : "bg-rose-50 text-rose-700 border-rose-100"
-          }`}
-        >
-          {message.type === "success" ? (
-            <ShieldCheck className="w-5 h-5 flex-shrink-0 text-emerald-500" />
-          ) : (
-            <AlertCircle className="w-5 h-5 flex-shrink-0 text-rose-500" />
+      {/* Ubah Password Card */}
+      {role !== "piket" && (
+        <div className="md:col-span-7 bg-white p-6 md:p-8 rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 space-y-6">
+          <div className="space-y-1.5">
+            <h3 className="text-sm font-black text-brand-950 uppercase tracking-widest flex items-center gap-2">
+              <Lock className="w-5 h-5 text-brand-650" />
+              Keamanan Akun
+            </h3>
+            <p className="text-[10.5px] text-brand-450 font-semibold leading-relaxed">
+              Perbarui kata sandi akun Anda secara berkala untuk menjaga kerahasiaan hak akses.
+            </p>
+          </div>
+
+          {message && (
+            <div
+              className={`p-4 rounded-2xl flex items-start gap-3 border text-xs leading-relaxed font-semibold ${
+                message.type === "success"
+                  ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+                  : "bg-rose-50 text-rose-700 border-rose-100"
+              }`}
+            >
+              {message.type === "success" ? (
+                <ShieldCheck className="w-5 h-5 flex-shrink-0 text-emerald-500" />
+              ) : (
+                <AlertCircle className="w-5 h-5 flex-shrink-0 text-rose-500" />
+              )}
+              <span>{message.text}</span>
+            </div>
           )}
-          <span>{message.text}</span>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Password Baru */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-black text-brand-900 uppercase block">Password Baru</label>
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+                  <Lock className="w-4 h-4" />
+                </span>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  required
+                  placeholder="Masukkan password baru"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="w-full pl-11 pr-11 py-3 text-xs bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 font-bold transition-all placeholder:text-slate-400"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer animate-fade-in"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            {/* Konfirmasi Password Baru */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-black text-brand-900 uppercase block">Konfirmasi Password Baru</label>
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+                  <Lock className="w-4 h-4" />
+                </span>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  required
+                  placeholder="Ulangi password baru"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full pl-11 pr-11 py-3 text-xs bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 font-bold transition-all placeholder:text-slate-400"
+                />
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full py-3.5 bg-brand-600 hover:bg-brand-700 disabled:bg-brand-400 text-white rounded-2xl font-bold text-xs tracking-wide shadow-md shadow-brand-500/10 cursor-pointer hover:scale-[1.01] transition-all flex items-center justify-center gap-2 border-0"
+            >
+              {isLoading ? "Menyimpan..." : "Simpan Password Baru"}
+            </button>
+          </form>
         </div>
       )}
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Password Baru */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-black text-brand-900 uppercase block">Password Baru</label>
-          <div className="relative">
-            <span className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
-              <Lock className="w-4 h-4" />
-            </span>
-            <input
-              type={showPassword ? "text" : "password"}
-              required
-              placeholder="Masukkan password baru"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              className="w-full pl-11 pr-11 py-3 text-xs bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 font-bold transition-all placeholder:text-slate-400"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
-            >
-              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            </button>
-          </div>
-        </div>
-
-        {/* Konfirmasi Password Baru */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-black text-brand-900 uppercase block">Konfirmasi Password Baru</label>
-          <div className="relative">
-            <span className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
-              <Lock className="w-4 h-4" />
-            </span>
-            <input
-              type={showPassword ? "text" : "password"}
-              required
-              placeholder="Ulangi password baru"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full pl-11 pr-11 py-3 text-xs bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 font-bold transition-all placeholder:text-slate-400"
-            />
-          </div>
-        </div>
-
-        {/* Submit Button */}
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="w-full py-3.5 bg-brand-600 hover:bg-brand-700 disabled:bg-brand-400 text-white rounded-2xl font-bold text-xs tracking-wide shadow-md shadow-brand-500/10 cursor-pointer hover:scale-[1.01] transition-all flex items-center justify-center gap-2"
-        >
-          {isLoading ? "Menyimpan..." : "Simpan Password Baru"}
-        </button>
-      </form>
     </div>
   );
 }

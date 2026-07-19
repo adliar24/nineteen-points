@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "motion/react";
-import { Calendar, Search, RefreshCw, Edit3, X, Check, Clock, BookOpen, Users } from "lucide-react";
+import { Calendar, Search, RefreshCw, Edit3, X, Check, Clock, BookOpen, Users, AlertCircle } from "lucide-react";
 import { getKehadiranGuruAll, saveKehadiranGuruManual } from "../dbStore";
 import { toSentenceCase, formatSubjectName } from "../formatName";
 
@@ -26,6 +26,16 @@ export default function KelolaKehadiranGuruView() {
     queryKey: ["kehadiranGuruAll", selectedDate],
     queryFn: () => getKehadiranGuruAll(selectedDate),
   });
+
+  // Compute attendance stats
+  const stats = useMemo(() => {
+    const total = list.length;
+    const hadir = list.filter(row => row.status === "hadir").length;
+    const sakitIzin = list.filter(row => row.status === "sakit" || row.status === "izin").length;
+    const alfa = list.filter(row => row.status === "alfa").length;
+    const belum = list.filter(row => !row.status).length;
+    return { total, hadir, sakitIzin, alfa, belum };
+  }, [list]);
 
   // 2. Mutation for manual/override update
   const saveManualMutation = useMutation({
@@ -76,6 +86,55 @@ export default function KelolaKehadiranGuruView() {
         <p className="text-xs text-brand-500 font-semibold mt-1">
           Pantau absensi KBM harian guru dan kelola ketidakhadiran secara terpusat berdasarkan jadwal pelajaran.
         </p>
+      </div>
+
+      {/* Summary Statistics Dashboard */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Total KBM Card */}
+        <div className="bg-[#f0edfc] border border-[#e4dffd] p-5 rounded-3xl flex items-center gap-4 shadow-sm">
+          <div className="w-10 h-10 rounded-2xl bg-brand-100/80 text-brand-600 flex items-center justify-center flex-shrink-0">
+            <BookOpen className="w-5 h-5" />
+          </div>
+          <div>
+            <p className="text-[10px] text-brand-450 font-black tracking-wider uppercase leading-none">TOTAL KBM</p>
+            <h4 className="text-xl font-black text-brand-950 mt-1.5 leading-none">{stats.total}</h4>
+          </div>
+        </div>
+
+        {/* Hadir Card */}
+        <div className="bg-emerald-50/20 border border-emerald-100/60 p-5 rounded-3xl flex items-center gap-4 shadow-sm">
+          <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center flex-shrink-0">
+            <Check className="w-5 h-5" />
+          </div>
+          <div>
+            <p className="text-[10px] text-emerald-650 font-black tracking-wider uppercase leading-none">GURU HADIR</p>
+            <h4 className="text-xl font-black text-emerald-800 mt-1.5 leading-none">{stats.hadir}</h4>
+          </div>
+        </div>
+
+        {/* Belum Absen Card */}
+        <div className="bg-amber-50/20 border border-amber-100/60 p-5 rounded-3xl flex items-center gap-4 shadow-sm">
+          <div className="w-10 h-10 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center flex-shrink-0">
+            <Clock className="w-5 h-5" />
+          </div>
+          <div>
+            <p className="text-[10px] text-amber-650 font-black tracking-wider uppercase leading-none">BELUM ABSEN</p>
+            <h4 className="text-xl font-black text-amber-800 mt-1.5 leading-none">{stats.belum}</h4>
+          </div>
+        </div>
+
+        {/* Tidak Hadir Card */}
+        <div className="bg-rose-50/20 border border-rose-100/60 p-5 rounded-3xl flex items-center gap-4 shadow-sm">
+          <div className="w-10 h-10 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center flex-shrink-0">
+            <AlertCircle className="w-5 h-5" />
+          </div>
+          <div>
+            <p className="text-[10px] text-rose-650 font-black tracking-wider uppercase leading-none">KETIDAKHADIRAN</p>
+            <h4 className="text-xl font-black text-rose-800 mt-1.5 leading-none">
+              {stats.sakitIzin + stats.alfa} <span className="text-[9.5px] font-bold text-rose-400">({stats.sakitIzin} S/I, {stats.alfa} A)</span>
+            </h4>
+          </div>
+        </div>
       </div>
 
       {/* ALERT SUCCESS */}

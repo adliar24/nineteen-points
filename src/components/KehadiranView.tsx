@@ -470,6 +470,33 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
     });
   }, [aggregateReport, rekapSearch, rekapClass]);
 
+  const rekapStats = useMemo(() => {
+    if (filteredReport.length === 0) {
+      return { totalStudents: 0, avgAttendance: 0, totalSakitIzin: 0, totalAlfa: 0 };
+    }
+    
+    const totalStudents = filteredReport.length;
+    let sumPercentage = 0;
+    let sumSakit = 0;
+    let sumIzin = 0;
+    let sumAlfa = 0;
+    
+    for (const row of filteredReport) {
+      const totalLogs = row.hadir + row.terlambat + row.sakit + row.izin + row.alfa;
+      const rate = totalLogs > 0 ? ((row.hadir + row.terlambat) / totalLogs) * 100 : 100;
+      sumPercentage += rate;
+      sumSakit += row.sakit;
+      sumIzin += row.izin;
+      sumAlfa += row.alfa;
+    }
+    
+    const avgAttendance = Math.round(sumPercentage / totalStudents);
+    const totalSakitIzin = sumSakit + sumIzin;
+    const totalAlfa = sumAlfa;
+    
+    return { totalStudents, avgAttendance, totalSakitIzin, totalAlfa };
+  }, [filteredReport]);
+
   // Export to Excel aggregated report
   const handleExportExcel = () => {
     if (filteredReport.length === 0) {
@@ -1035,6 +1062,53 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
       {/* TAB CONTENT: STUDENT-CENTRIC CONSOLIDATED AGREGATE TABLE (REKAP TAB) */}
       {activeTab === "rekap" && (
         <div className="space-y-6">
+          
+          {/* Student Recap Summary Cards */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Total Students Card */}
+            <div className="bg-[#f0edfc] border border-[#e4dffd] p-5 rounded-3xl flex items-center gap-4 shadow-sm">
+              <div className="w-10 h-10 rounded-2xl bg-brand-100/80 text-brand-600 flex items-center justify-center flex-shrink-0">
+                <Users className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-[10px] text-brand-450 font-black tracking-wider uppercase leading-none">TOTAL MURID</p>
+                <h4 className="text-xl font-black text-brand-950 mt-1.5 leading-none">{rekapStats.totalStudents}</h4>
+              </div>
+            </div>
+
+            {/* Tingkat Kehadiran Card */}
+            <div className="bg-emerald-50/20 border border-emerald-100/60 p-5 rounded-3xl flex items-center gap-4 shadow-sm">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center flex-shrink-0">
+                <Zap className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-[10px] text-emerald-650 font-black tracking-wider uppercase leading-none">TINGK. KEHADIRAN</p>
+                <h4 className="text-xl font-black text-emerald-800 mt-1.5 leading-none">{rekapStats.avgAttendance}%</h4>
+              </div>
+            </div>
+
+            {/* Total Sakit / Izin Card */}
+            <div className="bg-[#f5f3ff] border border-[#e8e4fd] p-5 rounded-3xl flex items-center gap-4 shadow-sm">
+              <div className="w-10 h-10 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center flex-shrink-0">
+                <Clock className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-[10px] text-brand-450 font-black tracking-wider uppercase leading-none">TOTAL SAKIT/IZIN</p>
+                <h4 className="text-xl font-black text-brand-800 mt-1.5 leading-none">{rekapStats.totalSakitIzin} <span className="text-[9px] font-bold text-brand-400">kali</span></h4>
+              </div>
+            </div>
+
+            {/* Total Alfa Card */}
+            <div className="bg-rose-50/20 border border-rose-100/60 p-5 rounded-3xl flex items-center gap-4 shadow-sm">
+              <div className="w-10 h-10 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center flex-shrink-0">
+                <AlertCircle className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-[10px] text-rose-650 font-black tracking-wider uppercase leading-none">TOTAL ALFA</p>
+                <h4 className="text-xl font-black text-rose-800 mt-1.5 leading-none">{rekapStats.totalAlfa} <span className="text-[9px] font-bold text-rose-400">kali</span></h4>
+              </div>
+            </div>
+          </div>
           
           {/* Filters Toolbar */}
           <div className="bg-white p-5 rounded-3xl border border-brand-100 shadow-md shadow-brand-900/5 space-y-4">

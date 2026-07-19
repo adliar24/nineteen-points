@@ -20,7 +20,9 @@ import {
   CreditCard,
   RotateCcw,
   Download,
-  Upload
+  Upload,
+  ChevronDown,
+  FolderOpen
 } from "lucide-react";
 import { UserSession } from "./types";
 import { getLocalStorage, setLocalStorage } from "./dbStore";
@@ -94,6 +96,11 @@ export default function App() {
   const [isExportSummaryOpen, setIsExportSummaryOpen] = useState(false);
   const [isImportSummaryOpen, setIsImportSummaryOpen] = useState(false);
 
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
+    manajemen: true,
+    pengaturan: true,
+  });
+
   // Sidebar sliding indicator
   const navRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
   const [indicatorStyle, setIndicatorStyle] = useState({ top: 0, height: 0, opacity: 0 });
@@ -101,11 +108,19 @@ export default function App() {
   const updateIndicator = useCallback(() => {
     const activeBtn = navRefs.current.get(activeTab);
     if (activeBtn) {
+      let top = activeBtn.offsetTop;
+      let parent = activeBtn.offsetParent as HTMLElement;
+      while (parent && !parent.classList.contains("nav-container")) {
+        top += parent.offsetTop;
+        parent = parent.offsetParent as HTMLElement;
+      }
       setIndicatorStyle({
-        top: activeBtn.offsetTop,
+        top,
         height: activeBtn.offsetHeight,
         opacity: 1,
       });
+    } else {
+      setIndicatorStyle({ top: 0, height: 0, opacity: 0 });
     }
   }, [activeTab]);
 
@@ -176,6 +191,12 @@ export default function App() {
 
   useEffect(() => {
     setLocalStorage("19points_active_tab", activeTab);
+    if (["students", "kelola_kehadiran_guru", "kelola_sertifikat_guru", "rules"].includes(activeTab)) {
+      setOpenGroups((prev) => ({ ...prev, manajemen: true }));
+    }
+    if (["users", "change_password"].includes(activeTab)) {
+      setOpenGroups((prev) => ({ ...prev, pengaturan: true }));
+    }
   }, [activeTab]);
 
   useEffect(() => {
@@ -220,70 +241,117 @@ export default function App() {
     );
   }
 
-  // Construct Dynamic Nav Items based on user role
-  let navItems = [
-    { id: "stats", label: "Statistik Poin", icon: TrendingUp, description: "Ikhtisar & analisis grafik" },
-    { id: "input", label: "Input Poin", icon: ClipboardCheck, description: "Catat via QR atau pencarian" },
-    { id: "kehadiran", label: "Kehadiran Murid", icon: Calendar, description: "Pencatatan & rekap absensi murid" },
-    { id: "students", label: "Kelola Murid", icon: Users, description: "Database & kartu pelajar" },
-    { id: "history", label: "Riwayat Poin", icon: Calendar, description: "Audit trail pencatatan" },
-    { id: "rules", label: "Pengaturan Poin", icon: Settings, description: "Atur sanksi & prestasi" },
-  ];
+  // Construct Dynamic Sidebar Elements based on user role
+  let sidebarElements: any[] = [];
 
   if (userSession.role === "piket") {
-    navItems = [
-      { id: "kehadiran", label: "Kehadiran Murid", icon: ClipboardCheck, description: "Rekap absensi & poin" },
+    sidebarElements = [
+      { type: "item", id: "kehadiran", label: "Kehadiran Murid", icon: ClipboardCheck, description: "Rekap absensi & poin" },
+      {
+        type: "group",
+        id: "pengaturan",
+        label: "Pengaturan",
+        icon: Settings,
+        items: [
+          { id: "change_password", label: "Ubah Password", icon: Settings, description: "Ganti password akun Anda" }
+        ]
+      }
     ];
   } else if (userSession.role === "guru") {
-    navItems = [
-      { id: "guru_kehadiran", label: "Kehadiran Saya", icon: Calendar, description: "Absen masuk & pulang" },
-      { id: "guru_sertifikat", label: "Sertifikat Kegiatan", icon: Award, description: "Unduh sertifikat pelatihan" },
-      { id: "input", label: "Input Poin", icon: ClipboardCheck, description: "Catat via QR atau pencarian" },
-      { id: "students", label: "Data Murid", icon: Users, description: "Lihat database & kartu pelajar" },
-      { id: "history", label: "Riwayat Poin", icon: Calendar, description: "Audit trail pencatatan" },
+    sidebarElements = [
+      { type: "item", id: "guru_kehadiran", label: "Kehadiran Saya", icon: Calendar, description: "Absen masuk & pulang" },
+      { type: "item", id: "guru_sertifikat", label: "Sertifikat Kegiatan", icon: Award, description: "Unduh sertifikat pelatihan" },
+      { type: "item", id: "input", label: "Input Poin", icon: ClipboardCheck, description: "Catat via QR atau pencarian" },
+      { type: "item", id: "history", label: "Riwayat Poin", icon: Calendar, description: "Audit trail pencatatan" },
+      {
+        type: "group",
+        id: "manajemen",
+        label: "Manajemen Kelola",
+        icon: FolderOpen,
+        items: [
+          { id: "students", label: "Data Murid", icon: Users, description: "Lihat database & kartu pelajar" }
+        ]
+      },
+      {
+        type: "group",
+        id: "pengaturan",
+        label: "Pengaturan",
+        icon: Settings,
+        items: [
+          { id: "change_password", label: "Ubah Password", icon: Settings, description: "Ganti password akun Anda" }
+        ]
+      }
     ];
   } else if (userSession.role === "kepala_sekolah") {
-    navItems = [
-      { id: "input", label: "Input Poin", icon: ClipboardCheck, description: "Catat via QR atau pencarian" },
-      { id: "kehadiran", label: "Kehadiran Murid", icon: Calendar, description: "Monitoring absensi harian" },
-      { id: "kelola_kehadiran_guru", label: "Kehadiran Guru", icon: Calendar, description: "Monitoring absensi guru" },
-      { id: "students", label: "Data Murid", icon: Users, description: "Lihat database & kartu pelajar" },
-      { id: "history", label: "Riwayat Poin", icon: Calendar, description: "Audit trail pencatatan" },
+    sidebarElements = [
+      { type: "item", id: "input", label: "Input Poin", icon: ClipboardCheck, description: "Catat via QR atau pencarian" },
+      { type: "item", id: "kehadiran", label: "Kehadiran Murid", icon: Calendar, description: "Monitoring absensi harian" },
+      { type: "item", id: "history", label: "Riwayat Poin", icon: Calendar, description: "Audit trail pencatatan" },
+      {
+        type: "group",
+        id: "manajemen",
+        label: "Manajemen Kelola",
+        icon: FolderOpen,
+        items: [
+          { id: "students", label: "Data Murid", icon: Users, description: "Lihat database & kartu pelajar" },
+          { id: "kelola_kehadiran_guru", label: "Kehadiran Guru", icon: Calendar, description: "Monitoring absensi guru" }
+        ]
+      },
+      {
+        type: "group",
+        id: "pengaturan",
+        label: "Pengaturan",
+        icon: Settings,
+        items: [
+          { id: "change_password", label: "Ubah Password", icon: Settings, description: "Ganti password akun Anda" }
+        ]
+      }
     ];
   } else if (userSession.role === "super_admin") {
-    navItems.push({
-      id: "kelola_kehadiran_guru",
-      label: "Kehadiran Guru",
-      icon: Calendar,
-      description: "Monitoring & koreksi absensi"
-    });
-    navItems.push({
-      id: "kelola_sertifikat_guru",
-      label: "Sertifikat Guru",
-      icon: Award,
-      description: "Kelola kegiatan & sertifikat"
-    });
-    navItems.push({
-      id: "users",
-      label: "Kelola Akun",
-      icon: ShieldCheck,
-      description: "Atur akun guru & murid"
-    });
+    sidebarElements = [
+      { type: "item", id: "stats", label: "Statistik Poin", icon: TrendingUp, description: "Ikhtisar & analisis grafik" },
+      { type: "item", id: "input", label: "Input Poin", icon: ClipboardCheck, description: "Catat via QR atau pencarian" },
+      { type: "item", id: "kehadiran", label: "Kehadiran Murid", icon: Calendar, description: "Pencatatan & rekap absensi murid" },
+      { type: "item", id: "history", label: "Riwayat Poin", icon: Calendar, description: "Audit trail pencatatan" },
+      {
+        type: "group",
+        id: "manajemen",
+        label: "Manajemen Kelola",
+        icon: FolderOpen,
+        items: [
+          { id: "students", label: "Kelola Murid", icon: Users, description: "Database & kartu pelajar" },
+          { id: "kelola_kehadiran_guru", label: "Kehadiran Guru", icon: Calendar, description: "Monitoring & koreksi absensi" },
+          { id: "kelola_sertifikat_guru", label: "Sertifikat Guru", icon: Award, description: "Kelola kegiatan & sertifikat" },
+          { id: "rules", label: "Pengaturan Poin", icon: Settings, description: "Atur sanksi & prestasi" }
+        ]
+      },
+      {
+        type: "group",
+        id: "pengaturan",
+        label: "Pengaturan",
+        icon: Settings,
+        items: [
+          { id: "users", label: "Pengaturan Akun", icon: ShieldCheck, description: "Atur akun guru & murid" },
+          { id: "change_password", label: "Ubah Password", icon: Settings, description: "Ganti password akun Anda" }
+        ]
+      }
+    ];
   } else if (userSession.role === "siswa") {
-    navItems = [
-      { id: "siswa_stats", label: "Statistik", icon: TrendingUp, description: "Statistik poin Anda" },
-      { id: "siswa_barcode", label: "Kartu Pelajar", icon: CreditCard, description: "QR Kartu Pelajar Digital" },
-      { id: "siswa_history", label: "Riwayat Poin", icon: Calendar, description: "Riwayat perolehan poin" },
+    sidebarElements = [
+      { type: "item", id: "siswa_stats", label: "Statistik", icon: TrendingUp, description: "Statistik poin Anda" },
+      { type: "item", id: "siswa_barcode", label: "Kartu Pelajar", icon: CreditCard, description: "QR Kartu Pelajar Digital" },
+      { type: "item", id: "siswa_history", label: "Riwayat Poin", icon: Calendar, description: "Riwayat perolehan poin" },
+      {
+        type: "group",
+        id: "pengaturan",
+        label: "Pengaturan",
+        icon: Settings,
+        items: [
+          { id: "change_password", label: "Ubah Password", icon: Settings, description: "Ganti password akun Anda" }
+        ]
+      }
     ];
   }
-
-  // Self-service change password tab for all logged in accounts
-  navItems.push({
-    id: "change_password",
-    label: "Ubah Password",
-    icon: Settings,
-    description: "Ganti password akun Anda"
-  });
 
   return (
     <>
@@ -408,7 +476,7 @@ export default function App() {
             MENU UTAMA
           </div>
           
-          <div className="space-y-1 relative">
+          <div className="space-y-1 relative nav-container">
             {/* Sliding Indicator */}
             <motion.div
               className="absolute left-0 right-0 bg-white rounded-2xl shadow-md shadow-brand-950/10 border border-white z-0"
@@ -420,22 +488,69 @@ export default function App() {
               transition={{ type: "spring", stiffness: 350, damping: 30 }}
             />
 
-            {navItems.map((item) => {
-              const IconComponent = item.icon;
-              const isActive = activeTab === item.id;
-              return (
-                <button
-                  key={item.id}
-                  ref={(el) => { if (el) navRefs.current.set(item.id, el); }}
-                  onClick={() => setActiveTab(item.id)}
-                  className={`w-full text-left px-4 py-3.5 rounded-2xl flex items-center gap-3 transition-colors relative z-10 cursor-pointer ${
-                    isActive ? "text-brand-800 font-bold" : "text-brand-200/85 hover:text-white"
-                  }`}
-                >
-                  <IconComponent className={`w-4.5 h-4.5 flex-shrink-0 transition-colors ${isActive ? "text-brand-600" : "text-brand-300 group-hover:text-white"}`} />
-                  <span className="text-sm font-bold tracking-wide">{item.label}</span>
-                </button>
-              );
+            {sidebarElements.map((element) => {
+              if (element.type === "item") {
+                const IconComponent = element.icon;
+                const isActive = activeTab === element.id;
+                return (
+                  <button
+                    key={element.id}
+                    ref={(el) => { if (el) navRefs.current.set(element.id, el); }}
+                    onClick={() => setActiveTab(element.id)}
+                    className={`w-full text-left px-4 py-3.5 rounded-2xl flex items-center gap-3 transition-colors relative z-10 cursor-pointer ${
+                      isActive ? "text-brand-800 font-bold" : "text-brand-200/85 hover:text-white"
+                    }`}
+                  >
+                    <IconComponent className={`w-4.5 h-4.5 flex-shrink-0 transition-colors ${isActive ? "text-brand-600" : "text-brand-300 group-hover:text-white"}`} />
+                    <span className="text-sm font-bold tracking-wide">{element.label}</span>
+                  </button>
+                );
+              } else {
+                const GroupIcon = element.icon;
+                const isOpen = openGroups[element.id] ?? true;
+                return (
+                  <div key={element.id} className="space-y-1">
+                    <button
+                      onClick={() => setOpenGroups(prev => ({ ...prev, [element.id]: !isOpen }))}
+                      className="w-full text-left px-4 py-2.5 rounded-xl flex items-center justify-between text-brand-300 hover:text-white cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2">
+                        <GroupIcon className="w-4 h-4 text-brand-300" />
+                        <span className="text-[10px] font-black uppercase tracking-wider">{element.label}</span>
+                      </div>
+                      <ChevronDown className={`w-3.5 h-3.5 transform transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
+                    </button>
+                    <AnimatePresence initial={false}>
+                      {isOpen && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="pl-3.5 space-y-1 overflow-hidden"
+                        >
+                          {element.items.map((subItem) => {
+                            const SubIcon = subItem.icon;
+                            const isActive = activeTab === subItem.id;
+                            return (
+                              <button
+                                key={subItem.id}
+                                ref={(el) => { if (el) navRefs.current.set(subItem.id, el); }}
+                                onClick={() => setActiveTab(subItem.id)}
+                                className={`w-full text-left px-4 py-2.5 rounded-xl flex items-center gap-3 transition-colors relative z-10 cursor-pointer ${
+                                  isActive ? "text-brand-800 font-bold" : "text-brand-200/85 hover:text-white"
+                                }`}
+                              >
+                                <SubIcon className={`w-4 h-4 flex-shrink-0 transition-colors ${isActive ? "text-brand-600" : "text-brand-300"}`} />
+                                <span className="text-xs font-bold tracking-wide">{subItem.label}</span>
+                              </button>
+                            );
+                          })}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                );
+              }
             })}
           </div>
         </div>
@@ -496,27 +611,78 @@ export default function App() {
                 </div>
 
                 {/* Drawer Body Menu */}
-                <div className="flex-1 py-6 px-4 space-y-1">
-                  {navItems.map((item) => {
-                    const IconComp = item.icon;
-                    const isActive = activeTab === item.id;
-                    return (
-                      <button
-                        key={item.id}
-                        onClick={() => {
-                          setActiveTab(item.id);
-                          setMobileMenuOpen(false);
-                        }}
-                        className={`w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-all cursor-pointer relative overflow-hidden group ${
-                          isActive
-                            ? "bg-white text-brand-800 shadow-md shadow-brand-950/10 border border-white"
-                            : "text-brand-200 hover:text-white hover:bg-white/5"
-                        }`}
-                      >
-                        <IconComp className={`w-4.5 h-4.5 flex-shrink-0 ${isActive ? "text-brand-600" : "text-brand-400 group-hover:text-white"}`} />
-                        <span className="text-sm font-bold tracking-wide">{item.label}</span>
-                      </button>
-                    );
+                <div className="flex-1 py-6 px-4 space-y-1 overflow-y-auto">
+                  {sidebarElements.map((element) => {
+                    if (element.type === "item") {
+                      const IconComp = element.icon;
+                      const isActive = activeTab === element.id;
+                      return (
+                        <button
+                          key={element.id}
+                          onClick={() => {
+                            setActiveTab(element.id);
+                            setMobileMenuOpen(false);
+                          }}
+                          className={`w-full text-left px-4 py-3.5 rounded-2xl flex items-center gap-3 transition-all cursor-pointer relative overflow-hidden group ${
+                            isActive
+                              ? "bg-white text-brand-800 shadow-md shadow-brand-950/10 border border-white"
+                              : "text-brand-200 hover:text-white hover:bg-white/5"
+                          }`}
+                        >
+                          <IconComp className={`w-4.5 h-4.5 flex-shrink-0 ${isActive ? "text-brand-600" : "text-brand-400 group-hover:text-white"}`} />
+                          <span className="text-sm font-bold tracking-wide">{element.label}</span>
+                        </button>
+                      );
+                    } else {
+                      const GroupIcon = element.icon;
+                      const isOpen = openGroups[element.id] ?? true;
+                      return (
+                        <div key={element.id} className="space-y-1">
+                          <button
+                            onClick={() => setOpenGroups(prev => ({ ...prev, [element.id]: !isOpen }))}
+                            className="w-full text-left px-4 py-3 rounded-2xl flex items-center justify-between text-brand-300 hover:text-white cursor-pointer"
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <GroupIcon className="w-4 h-4 text-brand-300" />
+                              <span className="text-[10px] font-black uppercase tracking-wider">{element.label}</span>
+                            </div>
+                            <ChevronDown className={`w-3.5 h-3.5 transform transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
+                          </button>
+                          <AnimatePresence initial={false}>
+                            {isOpen && (
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: "auto", opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                className="pl-3.5 space-y-1 overflow-hidden"
+                              >
+                                {element.items.map((subItem) => {
+                                  const SubIcon = subItem.icon;
+                                  const isActive = activeTab === subItem.id;
+                                  return (
+                                    <button
+                                      key={subItem.id}
+                                      onClick={() => {
+                                        setActiveTab(subItem.id);
+                                        setMobileMenuOpen(false);
+                                      }}
+                                      className={`w-full text-left px-4 py-3 rounded-2xl flex items-center gap-3 transition-colors relative z-10 cursor-pointer ${
+                                        isActive
+                                          ? "bg-white text-brand-800 shadow-md shadow-brand-950/10 border border-white"
+                                          : "text-brand-200 hover:text-white hover:bg-white/5"
+                                      }`}
+                                    >
+                                      <SubIcon className={`w-4 h-4 flex-shrink-0 transition-colors ${isActive ? "text-brand-600" : "text-brand-400"}`} />
+                                      <span className="text-xs font-bold tracking-wide">{subItem.label}</span>
+                                    </button>
+                                  );
+                                })}
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      );
+                    }
                   })}
                 </div>
 

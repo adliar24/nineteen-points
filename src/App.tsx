@@ -265,15 +265,7 @@ export default function App() {
   if (userSession.role === "piket") {
     sidebarElements = [
       { type: "item", id: "kehadiran", label: "Kehadiran Murid", icon: ClipboardCheck, description: "Rekap absensi & poin" },
-      {
-        type: "group",
-        id: "pengaturan",
-        label: "Pengaturan",
-        icon: Settings,
-        items: [
-          { id: "change_password", label: "Ubah Password", icon: Settings, description: "Ganti password akun Anda" }
-        ]
-      }
+      { type: "item", id: "change_password", label: "Ubah Password", icon: Settings, description: "Ganti password akun Anda" }
     ];
   } else if (userSession.role === "guru") {
     sidebarElements = [
@@ -282,24 +274,8 @@ export default function App() {
       { type: "item", id: "guru_jadwal", label: "Jadwal Mengajar", icon: Calendar, description: "Jadwal mengajar Anda" },
       { type: "item", id: "input", label: "Input Poin", icon: ClipboardCheck, description: "Catat via QR atau pencarian" },
       { type: "item", id: "history", label: "Riwayat Poin", icon: Calendar, description: "Audit trail pencatatan" },
-      {
-        type: "group",
-        id: "manajemen",
-        label: "Manajemen Kelola",
-        icon: FolderOpen,
-        items: [
-          { id: "students", label: "Data Murid", icon: Users, description: "Lihat database & kartu pelajar" }
-        ]
-      },
-      {
-        type: "group",
-        id: "pengaturan",
-        label: "Pengaturan",
-        icon: Settings,
-        items: [
-          { id: "change_password", label: "Ubah Password", icon: Settings, description: "Ganti password akun Anda" }
-        ]
-      }
+      { type: "item", id: "students", label: "Data Murid", icon: Users, description: "Lihat database & kartu pelajar" },
+      { type: "item", id: "change_password", label: "Ubah Password", icon: Settings, description: "Ganti password akun Anda" }
     ];
   } else if (userSession.role === "kepala_sekolah") {
     sidebarElements = [
@@ -307,25 +283,9 @@ export default function App() {
       { type: "item", id: "kehadiran", label: "Kehadiran Murid", icon: Calendar, description: "Monitoring absensi harian" },
       { type: "item", id: "kelola_kehadiran_guru", label: "Kehadiran Guru", icon: Calendar, description: "Monitoring absensi guru" },
       { type: "item", id: "history", label: "Riwayat Poin", icon: Calendar, description: "Audit trail pencatatan" },
-      {
-        type: "group",
-        id: "manajemen",
-        label: "Manajemen Kelola",
-        icon: FolderOpen,
-        items: [
-          { id: "students", label: "Data Murid", icon: Users, description: "Lihat database & kartu pelajar" },
-          { id: "kelola_jadwal_guru", label: "Jadwal Guru", icon: Calendar, description: "Manajemen jadwal mengajar guru" }
-        ]
-      },
-      {
-        type: "group",
-        id: "pengaturan",
-        label: "Pengaturan",
-        icon: Settings,
-        items: [
-          { id: "change_password", label: "Ubah Password", icon: Settings, description: "Ganti password akun Anda" }
-        ]
-      }
+      { type: "item", id: "students", label: "Data Murid", icon: Users, description: "Lihat database & kartu pelajar" },
+      { type: "item", id: "kelola_jadwal_guru", label: "Jadwal Guru", icon: Calendar, description: "Manajemen jadwal mengajar guru" },
+      { type: "item", id: "change_password", label: "Ubah Password", icon: Settings, description: "Ganti password akun Anda" }
     ];
   } else if (userSession.role === "super_admin") {
     sidebarElements = [
@@ -362,15 +322,7 @@ export default function App() {
       { type: "item", id: "siswa_stats", label: "Statistik", icon: TrendingUp, description: "Statistik poin Anda" },
       { type: "item", id: "siswa_barcode", label: "Kartu Pelajar", icon: CreditCard, description: "QR Kartu Pelajar Digital" },
       { type: "item", id: "siswa_history", label: "Riwayat Poin", icon: Calendar, description: "Riwayat perolehan poin" },
-      {
-        type: "group",
-        id: "pengaturan",
-        label: "Pengaturan",
-        icon: Settings,
-        items: [
-          { id: "change_password", label: "Ubah Password", icon: Settings, description: "Ganti password akun Anda" }
-        ]
-      }
+      { type: "item", id: "change_password", label: "Ubah Password", icon: Settings, description: "Ganti password akun Anda" }
     ];
   }
 

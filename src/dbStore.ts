@@ -600,19 +600,18 @@ export const setSisaSiswaSebagaiAlfa = async (email: string, date?: string): Pro
 // --- TEACHER SYSTEM INTEGRATIONS ---
 import { KehadiranGuru, KegiatanGuru } from "./types";
 
-export const getTodayKehadiranGuru = async (userId: string, dateStr: string): Promise<KehadiranGuru | null> => {
+export const getTodayKehadiranGuru = async (userId: string, dateStr: string): Promise<any[]> => {
   const { data, error } = await supabase
     .from("kehadiran_guru")
     .select("*")
     .eq("user_id", userId)
-    .eq("tanggal", dateStr)
-    .maybeSingle();
+    .eq("tanggal", dateStr);
 
   if (error) {
     console.error("Error fetching today's teacher attendance:", error);
-    return null;
+    return [];
   }
-  return data;
+  return data || [];
 };
 
 export const checkInGuru = async (
@@ -620,8 +619,9 @@ export const checkInGuru = async (
   dateStr: string,
   timeStr: string,
   status: 'hadir' | 'sakit' | 'izin' | 'alfa',
-  keterangan: string
-): Promise<KehadiranGuru> => {
+  keterangan: string,
+  jadwalId: string
+): Promise<any> => {
   const { data, error } = await supabase
     .from("kehadiran_guru")
     .insert({
@@ -629,7 +629,8 @@ export const checkInGuru = async (
       tanggal: dateStr,
       jam_masuk: timeStr,
       status,
-      keterangan: keterangan || null
+      keterangan: keterangan || null,
+      jadwal_id: jadwalId
     })
     .select()
     .single();
@@ -638,25 +639,22 @@ export const checkInGuru = async (
   return data;
 };
 
-export const checkOutGuru = async (userId: string, dateStr: string, timeStr: string): Promise<KehadiranGuru> => {
+export const getKehadiranGuruHistory = async (userId: string): Promise<any[]> => {
   const { data, error } = await supabase
     .from("kehadiran_guru")
-    .update({ jam_keluar: timeStr })
+    .select(`
+      *,
+      jadwal_guru:jadwal_id (
+        hari,
+        mata_pelajaran,
+        kelas,
+        jam_mulai,
+        jam_selesai
+      )
+    `)
     .eq("user_id", userId)
-    .eq("tanggal", dateStr)
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data;
-};
-
-export const getKehadiranGuruHistory = async (userId: string): Promise<KehadiranGuru[]> => {
-  const { data, error } = await supabase
-    .from("kehadiran_guru")
-    .select("*")
-    .eq("user_id", userId)
-    .order("tanggal", { ascending: false });
+    .order("tanggal", { ascending: false })
+    .order("jam_masuk", { ascending: false });
 
   if (error) {
     console.error("Error fetching teacher attendance history:", error);
@@ -680,13 +678,19 @@ export const getTeacherProfiles = async (): Promise<any[]> => {
 };
 
 export const getKehadiranGuruAll = async (dateStr: string): Promise<any[]> => {
-  const { data: profiles, error: pErr } = await supabase
-    .from("profiles")
-    .select("id, email, nama, role")
-    .eq("role", "guru");
+  const days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+  const dayName = days[new Date(dateStr).getDay()];
 
-  if (pErr) {
-    console.error("Error fetching teacher profiles:", pErr);
+  const { data: schedules, error: sErr } = await supabase
+    .from("jadwal_guru")
+    .select(`
+      *,
+      profiles:user_id ( nama, email )
+    `)
+    .eq("hari", dayName);
+
+  if (sErr) {
+    console.error("Error fetching schedules for attendance:", sErr);
     return [];
   }
 
@@ -700,21 +704,23 @@ export const getKehadiranGuruAll = async (dateStr: string): Promise<any[]> => {
     return [];
   }
 
-  const attendanceMap = new Map<string, any>((attendance || []).map(a => [a.user_id, a]));
-
-  return (profiles || []).map(p => {
-    const att = attendanceMap.get(p.id);
+  return (schedules || []).map(sched => {
+    const attRecord = (attendance || []).find(a => a.jadwal_id === sched.id);
     return {
-      user_id: p.id,
-      user_nama: p.nama,
-      user_email: p.email,
-      id: att?.id || null,
+      id: attRecord?.id || null,
+      jadwal_id: sched.id,
+      user_id: sched.user_id,
+      user_nama: sched.profiles?.nama || "Tidak Dikenal",
+      user_email: sched.profiles?.email || "",
+      hari: sched.hari,
+      mata_pelajaran: sched.mata_pelajaran,
+      kelas: sched.kelas,
+      jam_mulai: sched.jam_mulai,
+      jam_selesai: sched.jam_selesai,
       tanggal: dateStr,
-      jam_masuk: att?.jam_masuk || null,
-      jam_keluar: att?.jam_keluar || null,
-      status: att?.status || null,
-      keterangan: att?.keterangan || null,
-      created_at: att?.created_at || null
+      status: attRecord?.status || null,
+      jam_masuk: attRecord?.jam_masuk || null,
+      keterangan: attRecord?.keterangan || null
     };
   });
 };
@@ -724,21 +730,39 @@ export const saveKehadiranGuruManual = async (
   dateStr: string,
   status: 'hadir' | 'sakit' | 'izin' | 'alfa',
   jamMasuk: string | null,
-  jamKeluar: string | null,
-  keterangan: string | null
+  keterangan: string | null,
+  jadwalId: string
 ): Promise<void> => {
-  const { error } = await supabase
+  const { data: existing } = await supabase
     .from("kehadiran_guru")
-    .upsert({
-      user_id: userId,
-      tanggal: dateStr,
-      status,
-      jam_masuk: jamMasuk || null,
-      jam_keluar: jamKeluar || null,
-      keterangan: keterangan || null
-    }, { onConflict: "user_id,tanggal" });
+    .select("id")
+    .eq("jadwal_id", jadwalId)
+    .eq("tanggal", dateStr)
+    .maybeSingle();
 
-  if (error) throw error;
+  if (existing) {
+    const { error } = await supabase
+      .from("kehadiran_guru")
+      .update({
+        status,
+        jam_masuk: jamMasuk || null,
+        keterangan: keterangan || null
+      })
+      .eq("id", existing.id);
+    if (error) throw error;
+  } else {
+    const { error } = await supabase
+      .from("kehadiran_guru")
+      .insert({
+        user_id: userId,
+        jadwal_id: jadwalId,
+        tanggal: dateStr,
+        status,
+        jam_masuk: jamMasuk || null,
+        keterangan: keterangan || null
+      });
+    if (error) throw error;
+  }
 };
 
 export const getKegiatanGuruList = async (userId: string): Promise<KegiatanGuru[]> => {

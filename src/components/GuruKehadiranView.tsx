@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "motion/react";
-import { Clock, LogIn, LogOut, Check, Calendar, AlertCircle, RefreshCw, FileText } from "lucide-react";
+import { Clock, Check, Calendar, AlertCircle, RefreshCw, FileText, LogIn, X, Users, BookOpen } from "lucide-react";
 import { UserSession } from "../types";
-import { getTodayKehadiranGuru, checkInGuru, checkOutGuru, getKehadiranGuruHistory } from "../dbStore";
-import { queryClient } from "../queryClient";
+import { getTodayKehadiranGuru, checkInGuru, getKehadiranGuruHistory, getJadwalGuruList } from "../dbStore";
 
 interface GuruKehadiranViewProps {
   userSession: UserSession;
@@ -12,63 +11,63 @@ interface GuruKehadiranViewProps {
 
 export default function GuruKehadiranView({ userSession }: GuruKehadiranViewProps) {
   const todayStr = new Date().toISOString().slice(0, 10);
-  const [status, setStatus] = useState<'hadir' | 'sakit' | 'izin'>('hadir');
-  const [keterangan, setKeterangan] = useState("");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  // 1. Query today's attendance status
-  const { data: todayAttendance, isLoading: loadingToday, refetch: refetchToday } = useQuery({
+  // Form State for Active Check-In
+  const [activeJadwal, setActiveJadwal] = useState<any | null>(null);
+  const [status, setStatus] = useState<'hadir' | 'sakit' | 'izin'>('hadir');
+  const [keterangan, setKeterangan] = useState("");
+
+  // Determine Day Name
+  const days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+  const todayDayName = days[new Date().getDay()];
+
+  // 1. Fetch Today's Attendance Records
+  const { data: todayAttendance = [], isLoading: loadingToday, refetch: refetchToday } = useQuery({
     queryKey: ["todayKehadiranGuru", userSession.id, todayStr],
     queryFn: () => getTodayKehadiranGuru(userSession.id, todayStr),
   });
 
-  // 2. Query attendance history
+  // 2. Fetch All Teacher's Schedules
+  const { data: schedules = [], isLoading: loadingSchedules } = useQuery({
+    queryKey: ["jadwalGuruMe", userSession.id],
+    queryFn: () => getJadwalGuruList(userSession.id),
+  });
+
+  // Filter schedules for today's day of week
+  const todaySchedules = schedules.filter(s => s.hari === todayDayName);
+
+  // 3. Fetch Attendance History
   const { data: history = [], isLoading: loadingHistory, refetch: refetchHistory } = useQuery({
     queryKey: ["kehadiranGuruHistory", userSession.id],
     queryFn: () => getKehadiranGuruHistory(userSession.id),
   });
 
-  // 3. Mutation check-in
+  // 4. Mutation check-in
   const checkInMutation = useMutation({
     mutationFn: async () => {
+      if (!activeJadwal) return;
       const now = new Date();
       const timeStr = now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
-      return checkInGuru(userSession.id, todayStr, timeStr, status, keterangan);
+      return checkInGuru(userSession.id, todayStr, timeStr, status, keterangan, activeJadwal.id);
     },
-    onSuccess: (data) => {
-      setSuccessMsg(`Berhasil melakukan Absen Masuk pada pukul ${data.jam_masuk}.`);
+    onSuccess: () => {
+      setSuccessMsg(`Berhasil mencatat absensi mengajar.`);
       refetchToday();
       refetchHistory();
+      setActiveJadwal(null);
+      setStatus("hadir");
       setKeterangan("");
       setTimeout(() => setSuccessMsg(null), 5000);
     },
     onError: (err: any) => {
-      setErrorMsg("Gagal absen masuk: " + err.message);
+      setErrorMsg("Gagal mencatat absensi: " + err.message);
       setTimeout(() => setErrorMsg(null), 5000);
     }
   });
 
-  // 4. Mutation check-out
-  const checkOutMutation = useMutation({
-    mutationFn: async () => {
-      const now = new Date();
-      const timeStr = now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
-      return checkOutGuru(userSession.id, todayStr, timeStr);
-    },
-    onSuccess: (data) => {
-      setSuccessMsg(`Berhasil melakukan Absen Pulang pada pukul ${data.jam_keluar}. Terima kasih atas dedikasi Anda hari ini.`);
-      refetchToday();
-      refetchHistory();
-      setTimeout(() => setSuccessMsg(null), 5000);
-    },
-    onError: (err: any) => {
-      setErrorMsg("Gagal absen pulang: " + err.message);
-      setTimeout(() => setErrorMsg(null), 5000);
-    }
-  });
-
-  const isLoading = loadingToday || loadingHistory;
+  const isLoading = loadingToday || loadingHistory || loadingSchedules;
 
   return (
     <div className="space-y-6 pb-12 animate-fade-in font-sans">
@@ -76,10 +75,10 @@ export default function GuruKehadiranView({ userSession }: GuruKehadiranViewProp
       <div>
         <h2 className="text-xl font-extrabold text-brand-950 tracking-tight flex items-center gap-2">
           <Clock className="w-6 h-6 text-brand-600" />
-          Kehadiran Saya (Guru)
+          Absensi Mengajar (KBM)
         </h2>
         <p className="text-xs text-brand-500 font-semibold mt-1">
-          Catat absensi masuk & pulang harian Anda secara mandiri di sini.
+          Lakukan pencatatan absensi kehadiran mengajar untuk setiap jadwal kelas Anda hari ini.
         </p>
       </div>
 
@@ -115,149 +114,100 @@ export default function GuruKehadiranView({ userSession }: GuruKehadiranViewProp
       </AnimatePresence>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* LEFT COLUMN: ATTENDANCE ACTION CARD */}
-        <div className="lg:col-span-5 space-y-6">
+        {/* LEFT COLUMN: TODAY'S SCHEDULES & CHECK-IN SLOTS */}
+        <div className="lg:col-span-6 space-y-6">
           <div className="bg-white p-6 rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 space-y-6">
             <div className="flex justify-between items-center border-b pb-4 border-slate-50">
-              <span className="text-[10px] font-black text-brand-400 uppercase tracking-widest block">Hari Ini</span>
-              <span className="text-xs font-black text-brand-900 bg-brand-50 border border-brand-100 px-3 py-1 rounded-xl">
-                {new Date().toLocaleDateString("id-ID", { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-              </span>
+              <div className="flex flex-col">
+                <span className="text-[10px] font-black text-brand-400 uppercase tracking-widest block">Hari Ini</span>
+                <span className="text-xs font-black text-brand-900 bg-brand-50 border border-brand-100 px-3 py-1 rounded-xl mt-1">
+                  {new Date().toLocaleDateString("id-ID", { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                </span>
+              </div>
             </div>
 
             {isLoading ? (
-              <div className="py-12 text-center">
+              <div className="py-20 text-center">
                 <RefreshCw className="w-8 h-8 animate-spin mx-auto text-brand-500" />
-                <p className="text-xs font-bold text-brand-400 mt-2">Memuat status kehadiran...</p>
+                <p className="text-xs font-bold text-brand-400 mt-2">Memuat jadwal mengajar hari ini...</p>
               </div>
-            ) : !todayAttendance ? (
-              /* CHECK IN FORM */
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  checkInMutation.mutate();
-                }}
-                className="space-y-5"
-              >
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-brand-400 uppercase tracking-widest block">
-                    Pilih Status
-                  </label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {(['hadir', 'sakit', 'izin'] as const).map((s) => (
-                      <button
-                        key={s}
-                        type="button"
-                        onClick={() => setStatus(s)}
-                        className={`py-3 rounded-2xl border text-xs font-black text-center cursor-pointer transition-all ${
-                          status === s
-                            ? "bg-brand-600 text-white border-transparent shadow-md"
-                            : "bg-white border-brand-100 text-brand-700 hover:bg-slate-50"
-                        }`}
-                      >
-                        {s === "hadir" ? "Hadir" : s === "sakit" ? "Sakit" : "Izin"}
-                      </button>
-                    ))}
-                  </div>
+            ) : todaySchedules.length === 0 ? (
+              <div className="py-20 text-center space-y-3">
+                <BookOpen className="w-12 h-12 text-brand-300 mx-auto" />
+                <div>
+                  <h4 className="text-sm font-black text-brand-950">Tidak Ada Jadwal Mengajar</h4>
+                  <p className="text-xs text-brand-500 font-semibold mt-1">
+                    Anda bebas tugas mengajar pada hari {todayDayName}.
+                  </p>
                 </div>
-
-                {status !== "hadir" && (
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-brand-400 uppercase tracking-widest block">
-                      Keterangan
-                    </label>
-                    <textarea
-                      required
-                      rows={3}
-                      placeholder="Tulis alasan sakit/izin..."
-                      value={keterangan}
-                      onChange={(e) => setKeterangan(e.target.value)}
-                      className="w-full border border-brand-100 rounded-2xl p-3 text-xs font-semibold text-brand-900 focus:ring-2 focus:ring-brand-500 outline-none bg-brand-50/10"
-                    />
-                  </div>
-                )}
-
-                <motion.button
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
-                  type="submit"
-                  disabled={checkInMutation.isPending}
-                  className="w-full py-4 brand-gradient disabled:opacity-50 text-white text-xs font-black uppercase tracking-wider rounded-2xl cursor-pointer shadow-lg shadow-brand-500/25 flex items-center justify-center gap-2"
-                >
-                  {checkInMutation.isPending ? (
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <>
-                      <LogIn className="w-4.5 h-4.5" />
-                      Absen Masuk
-                    </>
-                  )}
-                </motion.button>
-              </form>
+              </div>
             ) : (
-              /* CHECK OUT OR COMPLETED STATUS */
-              <div className="space-y-6">
-                <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-brand-100 rounded-2xl bg-brand-50/10 text-center space-y-4">
-                  <div className="w-16 h-16 rounded-3xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
-                    <Check className="w-8 h-8" />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-black text-brand-950">
-                      {todayAttendance.status === "hadir"
-                        ? "Anda Sudah Absen Masuk"
-                        : `Anda Tercatat: ${todayAttendance.status.toUpperCase()}`}
-                    </h4>
-                    <p className="text-[10.5px] text-brand-500 font-semibold mt-1">
-                      Jam Masuk: <strong className="text-brand-900 font-bold">{todayAttendance.jam_masuk || "-"}</strong>
-                    </p>
-                    {todayAttendance.jam_keluar && (
-                      <p className="text-[10.5px] text-brand-500 font-semibold mt-0.5">
-                        Jam Pulang: <strong className="text-brand-900 font-bold">{todayAttendance.jam_keluar}</strong>
-                      </p>
-                    )}
-                    {todayAttendance.keterangan && (
-                      <p className="text-[10px] text-slate-400 italic mt-2">
-                        "{todayAttendance.keterangan}"
-                      </p>
-                    )}
-                  </div>
-                </div>
+              <div className="space-y-4">
+                <p className="text-xs font-bold text-brand-500">Pilih slot KBM untuk mencatat absensi:</p>
+                {todaySchedules.map((sched) => {
+                  const att = todayAttendance.find(a => a.jadwal_id === sched.id);
+                  const isCheckedIn = !!att;
 
-                {todayAttendance.status === "hadir" && !todayAttendance.jam_keluar && (
-                  <motion.button
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.99 }}
-                    onClick={() => checkOutMutation.mutate()}
-                    disabled={checkOutMutation.isPending}
-                    className="w-full py-4 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white text-xs font-black uppercase tracking-wider rounded-2xl cursor-pointer shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2"
-                  >
-                    {checkOutMutation.isPending ? (
-                      <RefreshCw className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <>
-                        <LogOut className="w-4.5 h-4.5" />
-                        Absen Pulang (Keluar)
-                      </>
-                    )}
-                  </motion.button>
-                )}
+                  return (
+                    <div
+                      key={sched.id}
+                      className={`p-5 rounded-2xl border transition-all flex items-center justify-between gap-4 ${
+                        isCheckedIn 
+                          ? "bg-emerald-50/20 border-emerald-100/60" 
+                          : "bg-brand-50/10 border-brand-100 hover:border-brand-350"
+                      }`}
+                    >
+                      <div className="space-y-1.5">
+                        <span className="px-2 py-0.5 bg-brand-100/60 text-brand-700 text-[10px] font-black rounded-lg uppercase tracking-wide">
+                          {sched.jam_mulai.slice(0, 5)} - {sched.jam_selesai.slice(0, 5)}
+                        </span>
+                        <h4 className="font-extrabold text-sm text-brand-950">{sched.mata_pelajaran}</h4>
+                        <div className="flex items-center gap-1.5 text-xs text-brand-500 font-bold">
+                          <Users className="w-3.5 h-3.5 text-brand-350" />
+                          <span>Kelas {sched.kelas}</span>
+                        </div>
+                      </div>
 
-                {todayAttendance.jam_keluar && (
-                  <div className="p-4 bg-emerald-50/50 border border-emerald-100 rounded-2xl text-center text-[10.5px] font-bold text-emerald-800">
-                    Aktivitas mengajar hari ini telah selesai dicatat. Sampai jumpa besok!
-                  </div>
-                )}
+                      {isCheckedIn ? (
+                        <div className="text-right space-y-1">
+                          <span className={`px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wide inline-block ${
+                            att.status === "hadir" 
+                              ? "bg-emerald-150 text-emerald-800 border border-emerald-200" 
+                              : att.status === "sakit" 
+                              ? "bg-amber-100 text-amber-800" 
+                              : "bg-purple-100 text-purple-800"
+                          }`}>
+                            {att.status === "hadir" ? "Hadir" : att.status === "sakit" ? "Sakit" : "Izin"}
+                          </span>
+                          <p className="text-[10px] text-brand-450 font-bold">{att.jam_masuk.slice(0, 5)} WIB</p>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            setActiveJadwal(sched);
+                            setStatus("hadir");
+                            setKeterangan("");
+                          }}
+                          className="py-2 px-4 bg-brand-600 hover:bg-brand-750 text-white font-extrabold text-xs rounded-xl shadow-md shadow-brand-500/10 cursor-pointer border-0 transition-all flex items-center gap-1.5"
+                        >
+                          <LogIn className="w-3.5 h-3.5" />
+                          Absen
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
         </div>
 
-        {/* RIGHT COLUMN: HISTORY LIST */}
-        <div className="lg:col-span-7">
+        {/* RIGHT COLUMN: ATTENDANCE HISTORY LIST */}
+        <div className="lg:col-span-6">
           <div className="bg-white p-6 rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 flex flex-col min-h-[400px]">
             <h3 className="text-sm font-black text-brand-950 uppercase tracking-widest flex items-center gap-2 border-b pb-4 border-slate-50 flex-shrink-0">
               <Calendar className="w-4.5 h-4.5 text-brand-600" />
-              Riwayat Absensi Saya
+              Riwayat Absensi Mengajar
             </h3>
 
             <div className="flex-1 overflow-y-auto mt-4 space-y-3 pr-1 scrollbar-thin">
@@ -269,6 +219,8 @@ export default function GuruKehadiranView({ userSession }: GuruKehadiranViewProp
               ) : history.length > 0 ? (
                 history.map((record) => {
                   const isPresent = record.status === "hadir";
+                  const scheduleInfo = record.jadwal_guru || {};
+                  
                   return (
                     <div
                       key={record.id}
@@ -284,32 +236,128 @@ export default function GuruKehadiranView({ userSession }: GuruKehadiranViewProp
                         >
                           <FileText className="w-4.5 h-4.5" />
                         </div>
-                        <div>
+                        <div className="space-y-0.5">
                           <span className="font-extrabold text-xs text-brand-950 block">
-                            Tanggal: {new Date(record.tanggal).toLocaleDateString("id-ID", { day: 'numeric', month: 'short', year: 'numeric' })}
+                            {new Date(record.tanggal).toLocaleDateString("id-ID", { day: 'numeric', month: 'short', year: 'numeric' })}
                           </span>
-                          <span className="text-[10px] text-slate-400 font-semibold block mt-0.5">
-                            Status: <strong className={isPresent ? "text-emerald-600" : "text-purple-600"}>{record.status.toUpperCase()}</strong>
+                          <span className="text-xs font-bold text-brand-800 block">
+                            {scheduleInfo.mata_pelajaran || "Jadwal Dihapus"} ({scheduleInfo.kelas || "-"})
                           </span>
+                          {record.keterangan && (
+                            <span className="text-[10px] text-slate-400 italic block">
+                              "{record.keterangan}"
+                            </span>
+                          )}
                         </div>
                       </div>
 
-                      <div className="text-right font-mono text-[10px] text-brand-800 font-bold space-y-0.5">
-                        <p>Masuk: {record.jam_masuk || "-"}</p>
-                        <p>Pulang: {record.jam_keluar || "-"}</p>
+                      <div className="text-right flex flex-col items-end gap-1 font-mono text-[10px] text-brand-800 font-bold">
+                        <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wide inline-block ${
+                          isPresent 
+                            ? "bg-emerald-50 text-emerald-700 border border-emerald-100" 
+                            : record.status === "sakit" 
+                            ? "bg-amber-50 text-amber-700 border border-amber-100" 
+                            : "bg-purple-50 text-purple-700 border border-purple-100"
+                        }`}>
+                          {record.status.toUpperCase()}
+                        </span>
+                        <p>{record.jam_masuk.slice(0, 5)} WIB</p>
                       </div>
                     </div>
                   );
                 })
               ) : (
                 <div className="py-24 text-center text-brand-400 font-bold text-xs">
-                  Belum ada catatan riwayat absensi guru.
+                  Belum ada catatan riwayat absensi.
                 </div>
               )}
             </div>
           </div>
         </div>
       </div>
+
+      {/* CHECK-IN ACTIVE DIALOG MODAL */}
+      <AnimatePresence>
+        {activeJadwal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-brand-950/60 backdrop-blur-xs">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden border border-brand-150"
+            >
+              <div className="px-6 py-5 bg-brand-50 border-b border-brand-100 flex items-center justify-between">
+                <div>
+                  <h3 className="font-black text-brand-950 text-base">Absen Mengajar</h3>
+                  <p className="text-[11px] font-bold text-brand-500 mt-0.5">
+                    Kelas {activeJadwal.kelas} | {activeJadwal.mata_pelajaran}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setActiveJadwal(null)}
+                  className="p-1.5 rounded-xl hover:bg-brand-200/50 text-brand-400 hover:text-brand-800 transition-all cursor-pointer bg-transparent border-0"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="p-6 space-y-5">
+                {/* Select Status */}
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-brand-700 uppercase tracking-widest block">Status Kehadiran</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {(['hadir', 'sakit', 'izin'] as const).map((s) => (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => setStatus(s)}
+                        className={`py-3 rounded-2xl border text-xs font-black text-center cursor-pointer transition-all ${
+                          status === s
+                            ? "bg-brand-600 text-white border-transparent shadow-md"
+                            : "bg-[#faf9ff] border-brand-100 text-brand-700 hover:bg-slate-50"
+                        }`}
+                      >
+                        {s === "hadir" ? "Hadir" : s === "sakit" ? "Sakit" : "Izin"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Description Textarea */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black text-brand-700 uppercase tracking-widest block">
+                    Keterangan {status === "hadir" ? "(Opsional)" : ""}
+                  </label>
+                  <textarea
+                    rows={3}
+                    placeholder={status === "hadir" ? "Catatan materi/lainnya (opsional)..." : "Tulis alasan sakit/izin..."}
+                    value={keterangan}
+                    onChange={(e) => setKeterangan(e.target.value)}
+                    required={status !== "hadir"}
+                    className="w-full border border-brand-100 rounded-2xl p-3 text-xs font-semibold text-brand-900 focus:ring-2 focus:ring-brand-500 outline-none bg-[#faf9ff]"
+                  />
+                </div>
+              </div>
+
+              <div className="px-6 py-4 bg-brand-50/50 border-t border-brand-100 flex items-center justify-end gap-3">
+                <button
+                  onClick={() => setActiveJadwal(null)}
+                  className="px-4 py-2.5 rounded-2xl hover:bg-brand-200/40 text-brand-600 hover:text-brand-900 font-bold text-sm transition-all cursor-pointer bg-transparent border-0"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={() => checkInMutation.mutate()}
+                  disabled={checkInMutation.isPending}
+                  className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-brand-600 to-brand-700 hover:from-brand-700 hover:to-brand-800 text-white font-bold text-sm shadow-md transition-all cursor-pointer border-0"
+                >
+                  {checkInMutation.isPending ? "Mencatat..." : "Simpan Absen"}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -217,6 +217,7 @@ export default function App() {
   const [isImportSummaryOpen, setIsImportSummaryOpen] = useState(false);
 
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
+    input_data: false,
     manajemen: false,
     pengaturan: false,
   });
@@ -228,6 +229,11 @@ export default function App() {
   const updateIndicator = useCallback(() => {
     // 1. Check if activeTab belongs to a group and if that group is closed
     let isParentGroupClosed = false;
+    if (["input_kehadiran", "input"].includes(activeTab)) {
+      if (!openGroups.input_data) {
+        isParentGroupClosed = true;
+      }
+    }
     if (["students", "kelola_jadwal_guru", "kelola_sertifikat_guru", "rules"].includes(activeTab)) {
       if (!openGroups.manajemen) {
         isParentGroupClosed = true;
@@ -958,7 +964,7 @@ export default function App() {
         }
         setUserSession(null);
         setActiveTab("stats");
-        setOpenGroups({ manajemen: false, pengaturan: false });
+        setOpenGroups({ input_data: false, manajemen: false, pengaturan: false });
         setIsLogoutConfirmOpen(false);
       }}
       title="Keluar dari Aplikasi?"

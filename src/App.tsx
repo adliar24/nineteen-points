@@ -107,7 +107,7 @@ export default function App() {
 
   const updateIndicator = useCallback(() => {
     const activeBtn = navRefs.current.get(activeTab);
-    if (activeBtn && activeBtn.offsetParent !== null) {
+    if (activeBtn) {
       let top = activeBtn.offsetTop;
       let parent = activeBtn.offsetParent as HTMLElement;
       while (parent && !parent.classList.contains("nav-container")) {
@@ -478,7 +478,6 @@ export default function App() {
             {/* Sliding Indicator */}
             <motion.div
               className="absolute left-0 right-0 bg-white rounded-2xl shadow-md shadow-brand-950/10 border border-white z-0"
-              style={{ display: indicatorStyle.opacity === 0 ? "none" : "block" }}
               animate={{
                 top: indicatorStyle.top,
                 height: indicatorStyle.height,

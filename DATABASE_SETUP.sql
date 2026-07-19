@@ -614,7 +614,7 @@ CREATE POLICY "foto_delete_authenticated"
 -- 7a. TABEL JADWAL GURU
 CREATE TABLE IF NOT EXISTS public.jadwal_guru (
   id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id         UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL, -- guru pengajar
+  user_id         UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL, -- guru pengajar
   hari            TEXT NOT NULL,                                             -- "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"
   mata_pelajaran  TEXT NOT NULL,                                             -- e.g. "Matematika", "Fisika"
   kelas           TEXT NOT NULL,                                             -- e.g. "XI-A", "XII-B"
@@ -629,7 +629,7 @@ DROP TABLE IF EXISTS public.kehadiran_guru CASCADE;
 
 CREATE TABLE public.kehadiran_guru (
   id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id         UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  user_id         UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
   tanggal         DATE DEFAULT CURRENT_DATE NOT NULL,
   jam_masuk       TIME WITHOUT TIME ZONE NOT NULL,
   status          TEXT CHECK (status IN ('hadir', 'sakit', 'izin', 'alfa')) DEFAULT 'hadir' NOT NULL,
@@ -642,7 +642,7 @@ CREATE TABLE public.kehadiran_guru (
 -- 7c. TABEL KEGIATAN GURU (DATA SERTIFIKAT)
 CREATE TABLE IF NOT EXISTS public.kegiatan_guru (
   id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id         UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL, -- penerima sertifikat (guru)
+  user_id         UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL, -- penerima sertifikat (guru)
   nama_kegiatan   TEXT NOT NULL,                                             -- contoh: "IHT Implementasi Kurikulum Merdeka"
   tanggal_kegiatan DATE NOT NULL,
   peran           TEXT NOT NULL,                                             -- "Peserta", "Narasumber", "Panitia"

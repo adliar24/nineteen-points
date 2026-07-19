@@ -808,3 +808,64 @@ export const deleteKegiatanGuru = async (id: string): Promise<void> => {
 
   if (error) throw error;
 };
+
+// =========================================================================
+// JADWAL GURU DATABASE SERVICES
+// =========================================================================
+
+export const getJadwalGuruList = async (userId?: string): Promise<any[]> => {
+  let query = supabase
+    .from("jadwal_guru")
+    .select(`
+      *,
+      profiles:user_id ( nama, email )
+    `);
+
+  if (userId) {
+    query = query.eq("user_id", userId);
+  }
+
+  const { data, error } = await query.order("hari", { ascending: true });
+
+  if (error) {
+    console.error("Error fetching teacher jadwal list:", error);
+    return [];
+  }
+
+  return (data || []).map(row => ({
+    ...row,
+    user_nama: (row as any).profiles?.nama || "Tidak Dikenal",
+    user_email: (row as any).profiles?.email || ""
+  }));
+};
+
+export const addJadwalGuru = async (
+  userId: string,
+  hari: string,
+  mataPelajaran: string,
+  kelas: string,
+  jamMulai: string,
+  jamSelesai: string
+): Promise<void> => {
+  const { error } = await supabase
+    .from("jadwal_guru")
+    .insert({
+      user_id: userId,
+      hari,
+      mata_pelajaran: mataPelajaran,
+      kelas,
+      jam_mulai: jamMulai,
+      jam_selesai: jamSelesai
+    });
+
+  if (error) throw error;
+};
+
+export const deleteJadwalGuru = async (id: string): Promise<void> => {
+  const { error } = await supabase
+    .from("jadwal_guru")
+    .delete()
+    .eq("id", id);
+
+  if (error) throw error;
+};

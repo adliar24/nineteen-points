@@ -44,6 +44,8 @@ const GuruKehadiranView = lazy(() => import("./components/GuruKehadiranView"));
 const GuruSertifikatView = lazy(() => import("./components/GuruSertifikatView"));
 const KelolaKehadiranGuruView = lazy(() => import("./components/KelolaKehadiranGuruView"));
 const KelolaSertifikatGuruView = lazy(() => import("./components/KelolaSertifikatGuruView"));
+const KelolaJadwalGuruView = lazy(() => import("./components/KelolaJadwalGuruView"));
+const GuruJadwalView = lazy(() => import("./components/GuruJadwalView"));
 import AkhiriAktivitasModal from "./components/AkhiriAktivitasModal";
 import ExportSummaryModal from "./components/ExportSummaryModal";
 import ImportSummaryModal from "./components/ImportSummaryModal";
@@ -108,7 +110,7 @@ export default function App() {
   const updateIndicator = useCallback(() => {
     // 1. Check if activeTab belongs to a group and if that group is closed
     let isParentGroupClosed = false;
-    if (["students", "kelola_kehadiran_guru", "kelola_sertifikat_guru", "rules"].includes(activeTab)) {
+    if (["students", "kelola_jadwal_guru", "kelola_sertifikat_guru", "rules"].includes(activeTab)) {
       if (!openGroups.manajemen) {
         isParentGroupClosed = true;
       }
@@ -230,15 +232,15 @@ export default function App() {
           setActiveTab("kehadiran");
         }
       } else if (userSession.role === "guru") {
-        if (!["input", "students", "history", "change_password", "guru_kehadiran", "guru_sertifikat"].includes(activeTab)) {
+        if (!["input", "students", "history", "change_password", "guru_kehadiran", "guru_sertifikat", "guru_jadwal"].includes(activeTab)) {
           setActiveTab("input");
         }
       } else if (userSession.role === "kepala_sekolah") {
-        if (!["input", "kehadiran", "students", "history", "change_password", "kelola_kehadiran_guru"].includes(activeTab)) {
+        if (!["input", "kehadiran", "students", "history", "change_password", "kelola_kehadiran_guru", "kelola_jadwal_guru"].includes(activeTab)) {
           setActiveTab("input");
         }
       } else {
-        if (!["stats", "input", "kehadiran", "students", "history", "rules", "users", "change_password", "kelola_kehadiran_guru", "kelola_sertifikat_guru"].includes(activeTab)) {
+        if (!["stats", "input", "kehadiran", "students", "history", "rules", "users", "change_password", "kelola_kehadiran_guru", "kelola_sertifikat_guru", "kelola_jadwal_guru"].includes(activeTab)) {
           setActiveTab("stats");
         }
       }
@@ -281,6 +283,7 @@ export default function App() {
     sidebarElements = [
       { type: "item", id: "guru_kehadiran", label: "Kehadiran Saya", icon: Calendar, description: "Absen masuk & pulang" },
       { type: "item", id: "guru_sertifikat", label: "Sertifikat Kegiatan", icon: Award, description: "Unduh sertifikat pelatihan" },
+      { type: "item", id: "guru_jadwal", label: "Jadwal Mengajar", icon: Calendar, description: "Jadwal mengajar Anda" },
       { type: "item", id: "input", label: "Input Poin", icon: ClipboardCheck, description: "Catat via QR atau pencarian" },
       { type: "item", id: "history", label: "Riwayat Poin", icon: Calendar, description: "Audit trail pencatatan" },
       {
@@ -306,6 +309,7 @@ export default function App() {
     sidebarElements = [
       { type: "item", id: "input", label: "Input Poin", icon: ClipboardCheck, description: "Catat via QR atau pencarian" },
       { type: "item", id: "kehadiran", label: "Kehadiran Murid", icon: Calendar, description: "Monitoring absensi harian" },
+      { type: "item", id: "kelola_kehadiran_guru", label: "Kehadiran Guru", icon: Calendar, description: "Monitoring absensi guru" },
       { type: "item", id: "history", label: "Riwayat Poin", icon: Calendar, description: "Audit trail pencatatan" },
       {
         type: "group",
@@ -314,7 +318,7 @@ export default function App() {
         icon: FolderOpen,
         items: [
           { id: "students", label: "Data Murid", icon: Users, description: "Lihat database & kartu pelajar" },
-          { id: "kelola_kehadiran_guru", label: "Kehadiran Guru", icon: Calendar, description: "Monitoring absensi guru" }
+          { id: "kelola_jadwal_guru", label: "Jadwal Guru", icon: Calendar, description: "Manajemen jadwal mengajar guru" }
         ]
       },
       {
@@ -332,6 +336,7 @@ export default function App() {
       { type: "item", id: "stats", label: "Statistik Poin", icon: TrendingUp, description: "Ikhtisar & analisis grafik" },
       { type: "item", id: "input", label: "Input Poin", icon: ClipboardCheck, description: "Catat via QR atau pencarian" },
       { type: "item", id: "kehadiran", label: "Kehadiran Murid", icon: Calendar, description: "Pencatatan & rekap absensi murid" },
+      { type: "item", id: "kelola_kehadiran_guru", label: "Kehadiran Guru", icon: Calendar, description: "Monitoring & koreksi absensi" },
       { type: "item", id: "history", label: "Riwayat Poin", icon: Calendar, description: "Audit trail pencatatan" },
       {
         type: "group",
@@ -340,7 +345,7 @@ export default function App() {
         icon: FolderOpen,
         items: [
           { id: "students", label: "Kelola Murid", icon: Users, description: "Database & kartu pelajar" },
-          { id: "kelola_kehadiran_guru", label: "Kehadiran Guru", icon: Calendar, description: "Monitoring & koreksi absensi" },
+          { id: "kelola_jadwal_guru", label: "Jadwal Guru", icon: Calendar, description: "Manajemen jadwal mengajar guru" },
           { id: "kelola_sertifikat_guru", label: "Sertifikat Guru", icon: Award, description: "Kelola kegiatan & sertifikat" },
           { id: "rules", label: "Pengaturan Poin", icon: Settings, description: "Atur sanksi & prestasi" }
         ]
@@ -814,6 +819,14 @@ export default function App() {
 
               {activeTab === "kelola_sertifikat_guru" && userSession.role === "super_admin" && (
                 <KelolaSertifikatGuruView />
+              )}
+
+              {activeTab === "kelola_jadwal_guru" && ["super_admin", "kepala_sekolah"].includes(userSession.role) && (
+                <KelolaJadwalGuruView />
+              )}
+
+              {activeTab === "guru_jadwal" && userSession.role === "guru" && (
+                <GuruJadwalView userSession={userSession} />
               )}
 
               {activeTab === "change_password" && (

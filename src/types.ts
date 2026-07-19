@@ -72,3 +72,16 @@ export interface KegiatanGuru {
   user_nama?: string;
   user_email?: string;
 }
+
+export interface JadwalGuru {
+  id: string;
+  user_id: string;
+  hari: string;
+  mata_pelajaran: string;
+  kelas: string;
+  jam_mulai: string;
+  jam_selesai: string;
+  created_at: string;
+  user_nama?: string;
+  user_email?: string;
+}

@@ -659,6 +659,13 @@ CREATE INDEX IF NOT EXISTS idx_kehadiran_guru_user_id ON public.kehadiran_guru(u
 CREATE INDEX IF NOT EXISTS idx_kehadiran_guru_tanggal ON public.kehadiran_guru(tanggal DESC);
 CREATE INDEX IF NOT EXISTS idx_kegiatan_guru_user_id ON public.kegiatan_guru(user_id);
 
+-- 7e. PENYESUAIAN RELASI UNTUK SUPABASE JOIN (Bila tabel sudah ada)
+ALTER TABLE public.jadwal_guru DROP CONSTRAINT IF EXISTS jadwal_guru_user_id_fkey;
+ALTER TABLE public.jadwal_guru ADD CONSTRAINT jadwal_guru_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.profiles(id) ON DELETE CASCADE;
+
+ALTER TABLE public.kegiatan_guru DROP CONSTRAINT IF EXISTS kegiatan_guru_user_id_fkey;
+ALTER TABLE public.kegiatan_guru ADD CONSTRAINT kegiatan_guru_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.profiles(id) ON DELETE CASCADE;
+
 -- 7e. ENABLE ROW LEVEL SECURITY (RLS)
 ALTER TABLE public.jadwal_guru ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.kehadiran_guru ENABLE ROW LEVEL SECURITY;

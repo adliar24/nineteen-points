@@ -387,7 +387,7 @@ export default function App() {
       { type: "item", id: "input_kehadiran", label: "Input Kehadiran", icon: ClipboardCheck, description: "Scan QR & input absen harian" },
       { type: "item", id: "kehadiran", label: "Kehadiran Murid", icon: Users, description: "Rekap absensi & poin murid" },
       { type: "item", id: "kelola_kehadiran_guru", label: "Kehadiran Guru", icon: Calendar, description: "Monitoring absensi guru" },
-      { type: "item", id: "change_password", label: "Pengaturan", icon: Settings, description: "Ubah warna tema aplikasi" }
+      { type: "item", id: "change_password", label: "Tema & Keamanan", icon: Settings, description: "Ubah warna tema aplikasi" }
     ];
   } else if (userSession.role === "guru") {
     sidebarElements = [
@@ -397,7 +397,7 @@ export default function App() {
       { type: "item", id: "input", label: "Input Poin", icon: ClipboardCheck, description: "Catat via QR atau pencarian" },
       { type: "item", id: "history", label: "Riwayat Poin", icon: Calendar, description: "Audit trail pencatatan" },
       { type: "item", id: "students", label: "Data Murid", icon: Users, description: "Lihat database & kartu pelajar" },
-      { type: "item", id: "change_password", label: "Pengaturan", icon: Settings, description: "Ubah sandi & tema warna" }
+      { type: "item", id: "change_password", label: "Tema & Keamanan", icon: Settings, description: "Ubah sandi & tema warna" }
     ];
   } else if (userSession.role === "kepala_sekolah") {
     sidebarElements = [
@@ -416,7 +416,7 @@ export default function App() {
       { type: "item", id: "history", label: "Riwayat Poin", icon: Calendar, description: "Audit trail pencatatan" },
       { type: "item", id: "students", label: "Data Murid", icon: Users, description: "Lihat database & kartu pelajar" },
       { type: "item", id: "kelola_jadwal_guru", label: "Jadwal Guru", icon: Calendar, description: "Manajemen jadwal mengajar guru" },
-      { type: "item", id: "change_password", label: "Pengaturan", icon: Settings, description: "Ubah sandi & tema warna" }
+      { type: "item", id: "change_password", label: "Tema & Keamanan", icon: Settings, description: "Ubah sandi & tema warna" }
     ];
   } else if (userSession.role === "super_admin") {
     sidebarElements = [
@@ -453,7 +453,7 @@ export default function App() {
         icon: Settings,
         items: [
           { id: "users", label: "Pengaturan Akun", icon: ShieldCheck, description: "Atur akun guru & murid" },
-          { id: "change_password", label: "Pengaturan", icon: Settings, description: "Ubah sandi & tema warna" }
+          { id: "change_password", label: "Tema & Keamanan", icon: Settings, description: "Ubah sandi & tema warna" }
         ]
       }
     ];
@@ -462,7 +462,7 @@ export default function App() {
       { type: "item", id: "siswa_stats", label: "Statistik", icon: TrendingUp, description: "Statistik poin Anda" },
       { type: "item", id: "siswa_barcode", label: "Kartu Pelajar", icon: CreditCard, description: "QR Kartu Pelajar Digital" },
       { type: "item", id: "siswa_history", label: "Riwayat Poin", icon: Calendar, description: "Riwayat perolehan poin" },
-      { type: "item", id: "change_password", label: "Pengaturan", icon: Settings, description: "Ubah sandi & tema warna" }
+      { type: "item", id: "change_password", label: "Tema & Keamanan", icon: Settings, description: "Ubah sandi & tema warna" }
     ];
   }
 

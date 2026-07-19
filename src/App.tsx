@@ -106,8 +106,23 @@ export default function App() {
   const [indicatorStyle, setIndicatorStyle] = useState({ top: 0, height: 0, opacity: 0 });
 
   const updateIndicator = useCallback(() => {
+    // 1. Check if activeTab belongs to a group and if that group is closed
+    let isParentGroupClosed = false;
+    if (["students", "kelola_kehadiran_guru", "kelola_sertifikat_guru", "rules"].includes(activeTab)) {
+      if (!openGroups.manajemen) {
+        isParentGroupClosed = true;
+      }
+    }
+    if (["users", "change_password"].includes(activeTab)) {
+      if (!openGroups.pengaturan) {
+        isParentGroupClosed = true;
+      }
+    }
+
     const activeBtn = navRefs.current.get(activeTab);
-    if (activeBtn) {
+    
+    // 2. Only show indicator if button exists and its parent group is open
+    if (activeBtn && !isParentGroupClosed) {
       let top = activeBtn.offsetTop;
       let parent = activeBtn.offsetParent as HTMLElement;
       while (parent && !parent.classList.contains("nav-container")) {
@@ -129,9 +144,17 @@ export default function App() {
   }, [activeTab, openGroups]);
 
   useEffect(() => {
+    // Run immediately
     updateIndicator();
+    
+    // Run after a short delay to ensure font loading and flex layouts are computed
+    const timer = setTimeout(updateIndicator, 50);
+    
     window.addEventListener("resize", updateIndicator);
-    return () => window.removeEventListener("resize", updateIndicator);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("resize", updateIndicator);
+    };
   }, [updateIndicator]);
 
   // Disable background scrolling when mobile menu is open

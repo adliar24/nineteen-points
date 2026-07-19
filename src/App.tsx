@@ -482,15 +482,17 @@ export default function App() {
           
           <div className="space-y-1 relative nav-container">
             {/* Sliding Indicator */}
-            <motion.div
-              className="absolute left-0 right-0 bg-white rounded-2xl shadow-md shadow-brand-950/10 border border-white z-0"
-              animate={{
-                top: indicatorStyle.top,
-                height: indicatorStyle.height,
-                opacity: indicatorStyle.opacity,
-              }}
-              transition={{ type: "spring", stiffness: 350, damping: 30 }}
-            />
+            {indicatorStyle.opacity > 0 && (
+              <motion.div
+                className="absolute left-0 right-0 bg-white rounded-2xl shadow-md shadow-brand-950/10 border border-white z-0"
+                animate={{
+                  top: indicatorStyle.top,
+                  height: indicatorStyle.height,
+                  opacity: indicatorStyle.opacity,
+                }}
+                transition={{ type: "spring", stiffness: 350, damping: 30 }}
+              />
+            )}
 
             {sidebarElements.map((element) => {
               if (element.type === "item") {
@@ -499,7 +501,10 @@ export default function App() {
                 return (
                   <button
                     key={element.id}
-                    ref={(el) => { if (el) navRefs.current.set(element.id, el); }}
+                    ref={(el) => {
+                      if (el) navRefs.current.set(element.id, el);
+                      else navRefs.current.delete(element.id);
+                    }}
                     onClick={() => setActiveTab(element.id)}
                     className={`w-full text-left px-4 py-3.5 rounded-2xl flex items-center gap-3 transition-colors relative z-10 cursor-pointer ${
                       isActive ? "text-brand-800 font-bold" : "text-brand-200/85 hover:text-white"
@@ -538,7 +543,10 @@ export default function App() {
                             return (
                               <button
                                 key={subItem.id}
-                                ref={(el) => { if (el) navRefs.current.set(subItem.id, el); }}
+                                ref={(el) => {
+                                  if (el) navRefs.current.set(subItem.id, el);
+                                  else navRefs.current.delete(subItem.id);
+                                }}
                                 onClick={() => setActiveTab(subItem.id)}
                                 className={`w-full text-left px-4 py-3 rounded-2xl flex items-center gap-3 transition-colors relative z-10 cursor-pointer ${
                                   isActive ? "text-brand-800 font-bold" : "text-brand-200/85 hover:text-white"
@@ -813,6 +821,7 @@ export default function App() {
         }
         setUserSession(null);
         setActiveTab("stats");
+        setOpenGroups({ manajemen: false, pengaturan: false });
         setIsLogoutConfirmOpen(false);
       }}
       title="Keluar dari Aplikasi?"

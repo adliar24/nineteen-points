@@ -608,8 +608,10 @@ CREATE POLICY "foto_delete_authenticated"
 
 
 -- =========================================================================
--- 7. TABEL JADWAL GURU (TAMBAHAN FITUR JADWAL)
+-- 7. FITUR GURU (JADWAL GURU, KEHADIRAN GURU, KEGIATAN GURU)
 -- =========================================================================
+
+-- 7a. TABEL JADWAL GURU
 CREATE TABLE IF NOT EXISTS public.jadwal_guru (
   id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id         UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL, -- guru pengajar
@@ -621,25 +623,63 @@ CREATE TABLE IF NOT EXISTS public.jadwal_guru (
   created_at      TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
+-- 7b. TABEL KEHADIRAN GURU (ABSENSI KBM BERDASARKAN JADWAL)
+-- Drop tabel lama untuk menyelaraskan perubahan absensi per jadwal
+DROP TABLE IF EXISTS public.kehadiran_guru CASCADE;
+
+CREATE TABLE public.kehadiran_guru (
+  id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id         UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  tanggal         DATE DEFAULT CURRENT_DATE NOT NULL,
+  jam_masuk       TIME WITHOUT TIME ZONE NOT NULL,
+  status          TEXT CHECK (status IN ('hadir', 'sakit', 'izin', 'alfa')) DEFAULT 'hadir' NOT NULL,
+  keterangan      TEXT,
+  jadwal_id       UUID REFERENCES public.jadwal_guru(id) ON DELETE CASCADE NOT NULL,
+  created_at      TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+  UNIQUE (jadwal_id, tanggal)
+);
+
+-- 7c. TABEL KEGIATAN GURU (DATA SERTIFIKAT)
+CREATE TABLE IF NOT EXISTS public.kegiatan_guru (
+  id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id         UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL, -- penerima sertifikat (guru)
+  nama_kegiatan   TEXT NOT NULL,                                             -- contoh: "IHT Implementasi Kurikulum Merdeka"
+  tanggal_kegiatan DATE NOT NULL,
+  peran           TEXT NOT NULL,                                             -- "Peserta", "Narasumber", "Panitia"
+  no_sertifikat   TEXT,                                                      -- nomor surat sertifikat
+  penyelenggara   TEXT DEFAULT 'SMAN 19 Bandung' NOT NULL,
+  durasi_jam      INT,                                                       -- JP (Jam Pelajaran), contoh: 32
+  created_at      TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- 7d. INDEX UNTUK PERFORMA
 CREATE INDEX IF NOT EXISTS idx_jadwal_guru_user_id ON public.jadwal_guru(user_id);
 CREATE INDEX IF NOT EXISTS idx_jadwal_guru_hari ON public.jadwal_guru(hari);
+CREATE INDEX IF NOT EXISTS idx_kehadiran_guru_user_id ON public.kehadiran_guru(user_id);
+CREATE INDEX IF NOT EXISTS idx_kehadiran_guru_tanggal ON public.kehadiran_guru(tanggal DESC);
+CREATE INDEX IF NOT EXISTS idx_kegiatan_guru_user_id ON public.kegiatan_guru(user_id);
 
+-- 7e. ENABLE ROW LEVEL SECURITY (RLS)
 ALTER TABLE public.jadwal_guru ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.kehadiran_guru ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.kegiatan_guru ENABLE ROW LEVEL SECURITY;
 
+-- Hapus policy lama jika ada
 DO $$
 DECLARE
   pol RECORD;
 BEGIN
   FOR pol IN
-    SELECT policyname
+    SELECT policyname, tablename
     FROM pg_policies
     WHERE schemaname = 'public'
-      AND tablename = 'jadwal_guru'
+      AND tablename IN ('jadwal_guru', 'kehadiran_guru', 'kegiatan_guru')
   LOOP
-    EXECUTE format('DROP POLICY IF EXISTS %I ON public.jadwal_guru', pol.policyname);
+    EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I', pol.policyname, pol.tablename);
   END LOOP;
 END $$;
 
+-- 7f. POLICIES JADWAL GURU
 CREATE POLICY "jadwal_guru_select" ON public.jadwal_guru
   FOR SELECT TO authenticated
   USING (true);
@@ -660,6 +700,66 @@ CREATE POLICY "jadwal_guru_update" ON public.jadwal_guru
   );
 
 CREATE POLICY "jadwal_guru_delete" ON public.jadwal_guru
+  FOR DELETE TO authenticated
+  USING (
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
+  );
+
+-- 7g. POLICIES KEHADIRAN GURU
+CREATE POLICY "kehadiran_guru_select" ON public.kehadiran_guru
+  FOR SELECT TO authenticated
+  USING (
+    user_id = auth.uid() OR
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('super_admin', 'kepala_sekolah'))
+  );
+
+CREATE POLICY "kehadiran_guru_insert" ON public.kehadiran_guru
+  FOR INSERT TO authenticated
+  WITH CHECK (
+    user_id = auth.uid()
+  );
+
+CREATE POLICY "kehadiran_guru_update" ON public.kehadiran_guru
+  FOR UPDATE TO authenticated
+  USING (
+    user_id = auth.uid() OR
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
+  )
+  WITH CHECK (
+    user_id = auth.uid() OR
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
+  );
+
+CREATE POLICY "kehadiran_guru_delete" ON public.kehadiran_guru
+  FOR DELETE TO authenticated
+  USING (
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
+  );
+
+-- 7h. POLICIES KEGIATAN GURU (SERTIFIKAT)
+CREATE POLICY "kegiatan_guru_select" ON public.kegiatan_guru
+  FOR SELECT TO authenticated
+  USING (
+    user_id = auth.uid() OR
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('super_admin', 'kepala_sekolah'))
+  );
+
+CREATE POLICY "kegiatan_guru_insert" ON public.kegiatan_guru
+  FOR INSERT TO authenticated
+  WITH CHECK (
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
+  );
+
+CREATE POLICY "kegiatan_guru_update" ON public.kegiatan_guru
+  FOR UPDATE TO authenticated
+  USING (
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
+  )
+  WITH CHECK (
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
+  );
+
+CREATE POLICY "kegiatan_guru_delete" ON public.kegiatan_guru
   FOR DELETE TO authenticated
   USING (
     EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')

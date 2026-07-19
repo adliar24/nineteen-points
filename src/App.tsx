@@ -85,9 +85,7 @@ export default function App() {
     return getLocalStorage<UserSession | null>("19points_session", null);
   });
   
-  const [activeTab, setActiveTab] = useState<string>(() => {
-    return getLocalStorage<string>("19points_active_tab", "stats");
-  });
+  const [activeTab, setActiveTab] = useState<string>("stats");
 
   const [historyRefreshCount, setHistoryRefreshCount] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -99,8 +97,8 @@ export default function App() {
   const [isImportSummaryOpen, setIsImportSummaryOpen] = useState(false);
 
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
-    manajemen: true,
-    pengaturan: true,
+    manajemen: false,
+    pengaturan: false,
   });
 
   // Sidebar sliding indicator
@@ -217,9 +215,7 @@ export default function App() {
     loadLatestPhoto();
   }, [userSession?.nis, userSession?.email]);
 
-  useEffect(() => {
-    setLocalStorage("19points_active_tab", activeTab);
-  }, [activeTab]);
+
 
   useEffect(() => {
     if (userSession) {

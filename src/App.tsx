@@ -195,12 +195,6 @@ export default function App() {
 
   useEffect(() => {
     setLocalStorage("19points_active_tab", activeTab);
-    if (["students", "kelola_kehadiran_guru", "kelola_sertifikat_guru", "rules"].includes(activeTab)) {
-      setOpenGroups((prev) => ({ ...prev, manajemen: true }));
-    }
-    if (["users", "change_password"].includes(activeTab)) {
-      setOpenGroups((prev) => ({ ...prev, pengaturan: true }));
-    }
   }, [activeTab]);
 
   useEffect(() => {
@@ -482,17 +476,16 @@ export default function App() {
           
           <div className="space-y-1 relative nav-container">
             {/* Sliding Indicator */}
-            {indicatorStyle.opacity > 0 && (
-              <motion.div
-                className="absolute left-0 right-0 bg-white rounded-2xl shadow-md shadow-brand-950/10 border border-white z-0"
-                animate={{
-                  top: indicatorStyle.top,
-                  height: indicatorStyle.height,
-                  opacity: indicatorStyle.opacity,
-                }}
-                transition={{ type: "spring", stiffness: 350, damping: 30 }}
-              />
-            )}
+            <motion.div
+              className="absolute left-0 right-0 bg-white rounded-2xl shadow-md shadow-brand-950/10 border border-white z-0"
+              style={{ display: indicatorStyle.opacity === 0 ? "none" : "block" }}
+              animate={{
+                top: indicatorStyle.top,
+                height: indicatorStyle.height,
+                opacity: indicatorStyle.opacity,
+              }}
+              transition={{ type: "spring", stiffness: 350, damping: 30 }}
+            />
 
             {sidebarElements.map((element) => {
               if (element.type === "item") {

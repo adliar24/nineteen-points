@@ -1,0 +1,24 @@
+{
+  "name": "NineTeen Points - SMAN 19 Bandung",
+  "short_name": "NineTeen Points",
+  "description": "Platform Manajemen Poin Akademik Guru SMA dengan Scanner QR, Generator Kartu, dan Export PDF.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#faf9ff",
+  "theme_color": "#4f46e5",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/logo-original-512.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo-original-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

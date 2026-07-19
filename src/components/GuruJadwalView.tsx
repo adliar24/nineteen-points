@@ -160,7 +160,7 @@ export default function GuruJadwalView({ userSession }: GuruJadwalViewProps) {
                 className={`p-6 rounded-3xl border transition-all flex flex-col justify-between space-y-4 group relative overflow-hidden ${
                   active
                     ? "bg-brand-800 text-white border-transparent shadow-xl shadow-brand-700/20 scale-[1.01]"
-                    : "bg-[#f0edfc] hover:bg-[#eae5fa] border-[#e4dffd] text-brand-900 shadow-lg shadow-brand-900/3"
+                    : "bg-brand-50 hover:bg-brand-100 border-brand-200 text-brand-900 shadow-lg shadow-brand-900/3"
                 }`}
               >
                 {/* Dynamic Accent Strip */}

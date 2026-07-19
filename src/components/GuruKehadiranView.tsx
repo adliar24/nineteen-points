@@ -227,7 +227,7 @@ export default function GuruKehadiranView({ userSession }: GuruKehadiranViewProp
                           ? "bg-emerald-50/15 border-emerald-100/60 text-brand-900" 
                           : active
                           ? "bg-brand-800 text-white border-transparent shadow-xl shadow-brand-700/20 scale-[1.01]"
-                          : "bg-[#f0edfc] hover:bg-[#eae5fa] border-[#e4dffd] text-brand-900 shadow-md shadow-brand-900/3"
+                          : "bg-brand-50 hover:bg-brand-100 border-brand-200 text-brand-900 shadow-md shadow-brand-900/3"
                       }`}
                     >
                       {/* Accent strip indicator */}

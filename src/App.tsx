@@ -135,13 +135,12 @@ export default function App() {
         opacity: 1,
       });
     } else {
-      setIndicatorStyle({
-        top: 0,
-        height: 0,
+      setIndicatorStyle((prev) => ({
+        ...prev,
         opacity: 0,
-      });
+      }));
     }
-  }, [activeTab, openGroups]);
+  }, [activeTab, openGroups, userSession]);
 
   useEffect(() => {
     // Run immediately

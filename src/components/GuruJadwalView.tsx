@@ -43,11 +43,11 @@ export default function GuruJadwalView({ userSession }: GuruJadwalViewProps) {
   const mergeSchedules = (list: any[]) => {
     if (list.length === 0) return [];
     
-    // Sort by day, class, subject, and start time
+    // Sort strictly chronologically by day order and then start time
+    const dayOrder = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"];
     const sorted = [...list].sort((a, b) => {
-      if (a.hari !== b.hari) return a.hari.localeCompare(b.hari);
-      if (a.kelas !== b.kelas) return a.kelas.localeCompare(b.kelas);
-      if (a.mata_pelajaran !== b.mata_pelajaran) return a.mata_pelajaran.localeCompare(b.mata_pelajaran);
+      const dayDiff = dayOrder.indexOf(a.hari) - dayOrder.indexOf(b.hari);
+      if (dayDiff !== 0) return dayDiff;
       return a.jam_mulai.localeCompare(b.jam_mulai);
     });
 

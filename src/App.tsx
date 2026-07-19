@@ -230,17 +230,19 @@ export default function App() {
   const updateIndicator = useCallback(() => {
     // 1. Check if activeTab belongs to a group and if that group is closed
     let isParentGroupClosed = false;
-    if (["input_kehadiran", "input"].includes(activeTab)) {
+    const role = userSession?.role || "";
+
+    if (["input_kehadiran", "input"].includes(activeTab) && ["super_admin", "kepala_sekolah"].includes(role)) {
       if (!openGroups.input_data) {
         isParentGroupClosed = true;
       }
     }
-    if (["students", "kelola_jadwal_guru", "kelola_sertifikat_guru", "rules"].includes(activeTab)) {
+    if (["students", "kelola_jadwal_guru", "kelola_sertifikat_guru", "rules"].includes(activeTab) && ["super_admin"].includes(role)) {
       if (!openGroups.manajemen) {
         isParentGroupClosed = true;
       }
     }
-    if (["users", "change_password"].includes(activeTab)) {
+    if (["users", "change_password"].includes(activeTab) && ["super_admin"].includes(role)) {
       if (!openGroups.pengaturan) {
         isParentGroupClosed = true;
       }

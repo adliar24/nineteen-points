@@ -228,7 +228,7 @@ export default function GuruKehadiranView({ userSession }: GuruKehadiranViewProp
                           ? "bg-emerald-50/15 border-emerald-100/60 text-brand-900" 
                           : active
                           ? "bg-brand-800 text-white border-transparent shadow-xl shadow-brand-700/20 scale-[1.01]"
-                          : "bg-brand-50/20 border-brand-100 hover:border-brand-300 text-brand-900 shadow-md shadow-brand-900/3"
+                          : "bg-[#f0edfc] hover:bg-[#eae5fa] border-[#e4dffd] text-brand-900 shadow-md shadow-brand-900/3"
                       }`}
                     >
                       {/* Accent strip indicator */}
@@ -237,7 +237,7 @@ export default function GuruKehadiranView({ userSession }: GuruKehadiranViewProp
                           ? "bg-emerald-400" 
                           : active
                           ? "bg-amber-400"
-                          : "bg-brand-300"
+                          : "bg-brand-400"
                       }`} />
 
                       <div className="space-y-1.5 pl-2">

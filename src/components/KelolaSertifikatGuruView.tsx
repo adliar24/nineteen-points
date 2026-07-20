@@ -1420,6 +1420,87 @@ export default function KelolaSertifikatGuruView() {
                           />
                         </div>
                       </div>
+
+                      {/* Image Specific Sizers & Offset positions */}
+                      <div className="pt-3 border-t border-slate-100 space-y-3">
+                        <label className="text-[10px] font-black uppercase text-brand-600 tracking-wider block">
+                          Format Gambar TTD {ttdNum}:
+                        </label>
+                        <div>
+                          <div className="flex justify-between text-[11px] font-bold text-slate-600">
+                            <span>Lebar Gambar TTD (%)</span>
+                            <span className="font-mono text-brand-600">{imgPos.widthPercent}%</span>
+                          </div>
+                          <input
+                            type="range"
+                            min="3"
+                            max="30"
+                            step="0.5"
+                            value={imgPos.widthPercent}
+                            onChange={(e) => {
+                              const val = parseFloat(e.target.value);
+                              setConfig(prev => ({
+                                ...prev,
+                                positions: {
+                                  ...prev.positions,
+                                  [imgPosKey]: { ...imgPos, widthPercent: val }
+                                }
+                              }));
+                            }}
+                            className="w-full accent-brand-600 cursor-pointer"
+                          />
+                        </div>
+
+                        <div>
+                          <div className="flex justify-between text-[11px] font-bold text-slate-600">
+                            <span>Posisi Vertikal Gambar (Y %)</span>
+                            <span className="font-mono text-brand-600">{imgPos.yPercent}%</span>
+                          </div>
+                          <input
+                            type="range"
+                            min="40"
+                            max="98"
+                            step="0.2"
+                            value={imgPos.yPercent}
+                            onChange={(e) => {
+                              const val = parseFloat(e.target.value);
+                              setConfig(prev => ({
+                                ...prev,
+                                positions: {
+                                  ...prev.positions,
+                                  [imgPosKey]: { ...imgPos, yPercent: val }
+                                }
+                              }));
+                            }}
+                            className="w-full accent-brand-600 cursor-pointer"
+                          />
+                        </div>
+
+                        <div>
+                          <div className="flex justify-between text-[11px] font-bold text-slate-600">
+                            <span>Posisi Horizontal Gambar (X %)</span>
+                            <span className="font-mono text-brand-600">{imgPos.xPercent}%</span>
+                          </div>
+                          <input
+                            type="range"
+                            min="5"
+                            max="95"
+                            step="0.2"
+                            value={imgPos.xPercent}
+                            onChange={(e) => {
+                              const val = parseFloat(e.target.value);
+                              setConfig(prev => ({
+                                ...prev,
+                                positions: {
+                                  ...prev.positions,
+                                  [imgPosKey]: { ...imgPos, xPercent: val }
+                                }
+                              }));
+                            }}
+                            className="w-full accent-brand-600 cursor-pointer"
+                          />
+                        </div>
+                      </div>
                     </div>
                   );
                 })()

@@ -17,15 +17,26 @@ export interface TtdElementPosition {
 export interface SertifikatLayoutConfig {
   templateUrl: string | null; // Data URL or relative URL
   
-  // TTD 1 (Penanda Tangan Kiri)
+  // Jumlah TTD (1, 2, atau 3)
+  jumlahTtd: 1 | 2 | 3;
+
+  // TTD 1
   ttd1Image: string | null;
   ttd1Nama: string;
   ttd1Jabatan: string;
 
-  // TTD 2 (Penanda Tangan Kanan)
+  // TTD 2
   ttd2Image: string | null;
   ttd2Nama: string;
   ttd2Jabatan: string;
+
+  // TTD 3
+  ttd3Image: string | null;
+  ttd3Nama: string;
+  ttd3Jabatan: string;
+
+  // Template Deskripsi Kustom (Mendukung Markdown **bold**)
+  deskripsiTemplate: string;
 
   // Posisi & Styling Elemen
   positions: {
@@ -43,12 +54,19 @@ export interface SertifikatLayoutConfig {
     ttd2ImagePos: TtdElementPosition;
     ttd2NamaPos: ElementPosition;
     ttd2JabatanPos: ElementPosition;
+
+    // TTD 3
+    ttd3ImagePos: TtdElementPosition;
+    ttd3NamaPos: ElementPosition;
+    ttd3JabatanPos: ElementPosition;
   };
 }
 
 export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
   templateUrl: null, // Default uses /sertifikat_template.png
   
+  jumlahTtd: 2,
+
   ttd1Image: null,
   ttd1Nama: "Ben Harrington",
   ttd1Jabatan: "CEO",
@@ -56,6 +74,12 @@ export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
   ttd2Image: null,
   ttd2Nama: "Sameer Shah",
   ttd2Jabatan: "Manager",
+
+  ttd3Image: null,
+  ttd3Nama: "Drs. H. Sukarno, M.Pd.",
+  ttd3Jabatan: "Kepala SMAN 19 Bandung",
+
+  deskripsiTemplate: 'Atas partisipasi aktifnya sebagai **{peran}** dalam kegiatan **"{nama_kegiatan}"** yang diselenggarakan oleh **{penyelenggara}**.',
 
   positions: {
     noSertifikat: {
@@ -92,7 +116,7 @@ export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
       fontWeight: "normal"
     },
     
-    // TTD 1 (Kiri)
+    // TTD 1
     ttd1ImagePos: {
       xPercent: 27,
       yPercent: 74,
@@ -115,7 +139,7 @@ export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
       fontWeight: "normal"
     },
 
-    // TTD 2 (Kanan)
+    // TTD 2
     ttd2ImagePos: {
       xPercent: 73,
       yPercent: 74,
@@ -136,11 +160,34 @@ export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
       color: "#64748b",
       align: "center",
       fontWeight: "normal"
+    },
+
+    // TTD 3
+    ttd3ImagePos: {
+      xPercent: 50,
+      yPercent: 74,
+      widthPercent: 12
+    },
+    ttd3NamaPos: {
+      xPercent: 50,
+      yPercent: 85.5,
+      fontSize: 24,
+      color: "#1e293b",
+      align: "center",
+      fontWeight: "bold"
+    },
+    ttd3JabatanPos: {
+      xPercent: 50,
+      yPercent: 88.5,
+      fontSize: 18,
+      color: "#64748b",
+      align: "center",
+      fontWeight: "normal"
     }
   }
 };
 
-const CONFIG_STORAGE_KEY = "nineteen_points_sertifikat_config_v3";
+const CONFIG_STORAGE_KEY = "nineteen_points_sertifikat_config_v4";
 const DB_NAME = "NineteenPointsSertifikatDB";
 const STORE_NAME = "config_store";
 
@@ -218,13 +265,13 @@ export async function saveSertifikatConfigAsync(config: SertifikatLayoutConfig):
   try {
     localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(config));
   } catch (e) {
-    // If quota exceeded due to large images, save lightweight version without heavy image strings
     try {
       const lightConfig = {
         ...config,
         templateUrl: config.templateUrl && config.templateUrl.length > 500000 ? null : config.templateUrl,
         ttd1Image: config.ttd1Image && config.ttd1Image.length > 500000 ? null : config.ttd1Image,
         ttd2Image: config.ttd2Image && config.ttd2Image.length > 500000 ? null : config.ttd2Image,
+        ttd3Image: config.ttd3Image && config.ttd3Image.length > 500000 ? null : config.ttd3Image,
       };
       localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(lightConfig));
     } catch (err) {

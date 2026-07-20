@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "motion/react";
-import { Award, Plus, Trash2, Search, X, Check, RefreshCw, Layout, Upload, Save, RotateCcw, Move, Edit3, Image as ImageIcon, Users, CheckSquare, Square } from "lucide-react";
+import { Award, Plus, Trash2, Search, X, Check, RefreshCw, Layout, Upload, Save, RotateCcw, Move, Edit3, Image as ImageIcon, Users, CheckSquare, Square, FileText, AlignLeft } from "lucide-react";
 import { getAllKegiatanGuru, getTeacherProfiles, addKegiatanGuruBulk, deleteKegiatanGuru } from "../dbStore";
 import ModalPortal from "./ModalPortal";
 import { toSentenceCase } from "../formatName";
@@ -34,7 +34,6 @@ function optimizeImageDataUrl(file: File, maxWidth = 2000): Promise<string> {
         }
 
         ctx.drawImage(img, 0, 0, width, height);
-        // Save high quality PNG/JPEG
         const isPng = file.type === "image/png";
         const dataUrl = canvas.toDataURL(isPng ? "image/png" : "image/jpeg", 0.92);
         resolve(dataUrl);
@@ -191,7 +190,8 @@ export default function KelolaSertifikatGuruView() {
         }),
         loadImg(config.ttd1Image),
         loadImg(config.ttd2Image),
-      ]).then(([_, ttd1Img, ttd2Img]) => {
+        loadImg(config.ttd3Image),
+      ]).then(([_, ttd1Img, ttd2Img, ttd3Img]) => {
         canvas.width = templateImg.naturalWidth || 2000;
         canvas.height = templateImg.naturalHeight || 1414;
 
@@ -216,7 +216,8 @@ export default function KelolaSertifikatGuruView() {
           "Joseph Adeyemi",
           config,
           ttd1Img,
-          ttd2Img
+          ttd2Img,
+          ttd3Img
         );
 
         // Highlight selected element position with a target indicator
@@ -242,6 +243,9 @@ export default function KelolaSertifikatGuruView() {
         } else if (selectedElement === "ttd2") {
           targetX = (pos.ttd2NamaPos.xPercent / 100) * canvas.width;
           targetY = (pos.ttd2NamaPos.yPercent / 100) * canvas.height;
+        } else if (selectedElement === "ttd3") {
+          targetX = (pos.ttd3NamaPos.xPercent / 100) * canvas.width;
+          targetY = (pos.ttd3NamaPos.yPercent / 100) * canvas.height;
         }
 
         ctx.strokeStyle = "#3b82f6";
@@ -303,6 +307,22 @@ export default function KelolaSertifikatGuruView() {
     }
   };
 
+  // Upload TTD 3 Image
+  const handleTtd3Upload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const optimizedUrl = await optimizeImageDataUrl(file, 800);
+      const newConfig = { ...config, ttd3Image: optimizedUrl };
+      setConfig(newConfig);
+      await saveSertifikatConfigAsync(newConfig);
+      setSuccessMsg("TTD 3 berhasil diunggah & disimpan!");
+      setTimeout(() => setSuccessMsg(null), 3000);
+    } catch (err: any) {
+      alert("Gagal mengunggah TTD: " + err.message);
+    }
+  };
+
   // Save Designer Config
   const handleSaveConfig = async () => {
     await saveSertifikatConfigAsync(config);
@@ -348,6 +368,10 @@ export default function KelolaSertifikatGuruView() {
         updatedPos.ttd2ImagePos = { ...updatedPos.ttd2ImagePos, xPercent, yPercent: yPercent - 10 };
         updatedPos.ttd2NamaPos = { ...updatedPos.ttd2NamaPos, xPercent, yPercent };
         updatedPos.ttd2JabatanPos = { ...updatedPos.ttd2JabatanPos, xPercent, yPercent: yPercent + 3 };
+      } else if (selectedElement === "ttd3") {
+        updatedPos.ttd3ImagePos = { ...updatedPos.ttd3ImagePos, xPercent, yPercent: yPercent - 10 };
+        updatedPos.ttd3NamaPos = { ...updatedPos.ttd3NamaPos, xPercent, yPercent };
+        updatedPos.ttd3JabatanPos = { ...updatedPos.ttd3JabatanPos, xPercent, yPercent: yPercent + 3 };
       }
       return { ...prev, positions: updatedPos };
     });
@@ -514,13 +538,31 @@ export default function KelolaSertifikatGuruView() {
       {/* TAB 2: DESAINER TEMPLATE & POSISI ELEMEN */}
       {activeTab === "desainer" && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* LEFT PANEL: UPLOAD & ELEMENT POSITIONS CONTROL (5 COLS) */}
+          {/* LEFT PANEL: UPLOAD, DESKRIPSI & ELEMENT POSITIONS CONTROL (5 COLS) */}
           <div className="lg:col-span-5 space-y-6">
-            {/* 1. TEMPLATE & TTD UPLOAD SECTION */}
+            {/* 1. KUSTOMISASI DESKRIPSI SERTIFIKAT (MENDUKUNG **BOLD**) */}
+            <div className="bg-white p-5 rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 space-y-3">
+              <h3 className="text-xs font-black uppercase tracking-wider text-brand-900 flex items-center gap-2">
+                <FileText className="w-4 h-4 text-brand-600" />
+                Edit Kalimat Deskripsi & Format Tebal
+              </h3>
+              <p className="text-[11px] text-slate-500 leading-relaxed font-semibold">
+                Gunakan <code className="bg-slate-100 px-1 py-0.5 rounded text-brand-700 font-mono">**teks tebal**</code> untuk menebalkan kata. Gunakan variabel <code className="bg-slate-100 px-1 py-0.5 rounded font-mono text-brand-700">&#123;peran&#125;</code>, <code className="bg-slate-100 px-1 py-0.5 rounded font-mono text-brand-700">&#123;nama_kegiatan&#125;</code>, dan <code className="bg-slate-100 px-1 py-0.5 rounded font-mono text-brand-700">&#123;penyelenggara&#125;</code>.
+              </p>
+              <textarea
+                rows={3}
+                value={config.deskripsiTemplate}
+                onChange={(e) => setConfig(prev => ({ ...prev, deskripsiTemplate: e.target.value }))}
+                placeholder='Atas partisipasi aktifnya sebagai **{peran}** dalam kegiatan **"{nama_kegiatan}"** yang diselenggarakan oleh **{penyelenggara}**.'
+                className="w-full p-3 bg-brand-50/30 rounded-2xl border border-brand-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 text-brand-950 leading-relaxed"
+              />
+            </div>
+
+            {/* 2. TEMPLATE & JUMLAH TTD SECTION */}
             <div className="bg-white p-5 rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 space-y-4">
               <h3 className="text-xs font-black uppercase tracking-wider text-brand-900 flex items-center gap-2">
                 <ImageIcon className="w-4 h-4 text-brand-600" />
-                Upload Template & Tanda Tangan
+                Upload Template & Jumlah Tanda Tangan
               </h3>
 
               {/* Upload Template Background */}
@@ -549,10 +591,46 @@ export default function KelolaSertifikatGuruView() {
                 </div>
               </div>
 
-              {/* Upload TTD 1 (Kiri) */}
+              {/* Pilihan Jumlah TTD (1, 2, atau 3 TTD) */}
+              <div className="space-y-2 pt-2 border-t border-slate-100">
+                <label className="text-[10.5px] font-bold text-slate-700 block">
+                  Pilih Jumlah Tanda Tangan (TTD):
+                </label>
+                <div className="grid grid-cols-3 gap-2 bg-slate-50 p-1.5 rounded-2xl border border-slate-200">
+                  <button
+                    type="button"
+                    onClick={() => setConfig(prev => ({ ...prev, jumlahTtd: 1 }))}
+                    className={`py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer border-0 ${
+                      config.jumlahTtd === 1 ? "bg-brand-600 text-white shadow-sm" : "bg-transparent text-slate-600 hover:text-slate-900"
+                    }`}
+                  >
+                    1 TTD
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setConfig(prev => ({ ...prev, jumlahTtd: 2 }))}
+                    className={`py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer border-0 ${
+                      config.jumlahTtd === 2 ? "bg-brand-600 text-white shadow-sm" : "bg-transparent text-slate-600 hover:text-slate-900"
+                    }`}
+                  >
+                    2 TTD
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setConfig(prev => ({ ...prev, jumlahTtd: 3 }))}
+                    className={`py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer border-0 ${
+                      config.jumlahTtd === 3 ? "bg-brand-600 text-white shadow-sm" : "bg-transparent text-slate-600 hover:text-slate-900"
+                    }`}
+                  >
+                    3 TTD
+                  </button>
+                </div>
+              </div>
+
+              {/* Upload TTD 1 */}
               <div className="space-y-1.5 pt-2 border-t border-slate-100">
                 <label className="text-[10.5px] font-bold text-slate-500 block">
-                  Gambar TTD 1 (Penanda Tangan Kiri - PNG Transparan)
+                  TTD 1 ({config.jumlahTtd === 1 ? "Tengah / Utama" : "Kiri"}) - Gambar PNG Transparan
                 </label>
                 <div className="flex items-center gap-2">
                   <input
@@ -567,7 +645,7 @@ export default function KelolaSertifikatGuruView() {
                     className="px-4 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-2xl text-slate-700 text-xs font-bold flex items-center gap-2 cursor-pointer transition-all flex-1"
                   >
                     <Upload className="w-3.5 h-3.5" />
-                    Upload TTD Kiri
+                    Upload Gambar TTD 1
                   </label>
                   {config.ttd1Image && (
                     <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2.5 py-1 rounded-xl">TTD Ready</span>
@@ -591,50 +669,96 @@ export default function KelolaSertifikatGuruView() {
                 </div>
               </div>
 
-              {/* Upload TTD 2 (Kanan) */}
-              <div className="space-y-1.5 pt-2 border-t border-slate-100">
-                <label className="text-[10.5px] font-bold text-slate-500 block">
-                  Gambar TTD 2 (Penanda Tangan Kanan - PNG Transparan)
-                </label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="file"
-                    accept="image/png"
-                    onChange={handleTtd2Upload}
-                    id="upload-ttd-2"
-                    className="hidden"
-                  />
-                  <label
-                    htmlFor="upload-ttd-2"
-                    className="px-4 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-2xl text-slate-700 text-xs font-bold flex items-center gap-2 cursor-pointer transition-all flex-1"
-                  >
-                    <Upload className="w-3.5 h-3.5" />
-                    Upload TTD Kanan
+              {/* Upload TTD 2 (Jika Jumlah TTD >= 2) */}
+              {config.jumlahTtd >= 2 && (
+                <div className="space-y-1.5 pt-2 border-t border-slate-100">
+                  <label className="text-[10.5px] font-bold text-slate-500 block">
+                    TTD 2 ({config.jumlahTtd === 3 ? "Kanan" : "Kanan"}) - Gambar PNG Transparan
                   </label>
-                  {config.ttd2Image && (
-                    <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2.5 py-1 rounded-xl">TTD Ready</span>
-                  )}
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="file"
+                      accept="image/png"
+                      onChange={handleTtd2Upload}
+                      id="upload-ttd-2"
+                      className="hidden"
+                    />
+                    <label
+                      htmlFor="upload-ttd-2"
+                      className="px-4 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-2xl text-slate-700 text-xs font-bold flex items-center gap-2 cursor-pointer transition-all flex-1"
+                    >
+                      <Upload className="w-3.5 h-3.5" />
+                      Upload Gambar TTD 2
+                    </label>
+                    {config.ttd2Image && (
+                      <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2.5 py-1 rounded-xl">TTD Ready</span>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 mt-1">
+                    <input
+                      type="text"
+                      placeholder="Nama (misal: Sameer Shah)"
+                      value={config.ttd2Nama}
+                      onChange={(e) => setConfig(prev => ({ ...prev, ttd2Nama: e.target.value }))}
+                      className="px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-xs font-bold"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Jabatan (misal: Manager)"
+                      value={config.ttd2Jabatan}
+                      onChange={(e) => setConfig(prev => ({ ...prev, ttd2Jabatan: e.target.value }))}
+                      className="px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-xs font-bold"
+                    />
+                  </div>
                 </div>
-                <div className="grid grid-cols-2 gap-2 mt-1">
-                  <input
-                    type="text"
-                    placeholder="Nama (misal: Sameer Shah)"
-                    value={config.ttd2Nama}
-                    onChange={(e) => setConfig(prev => ({ ...prev, ttd2Nama: e.target.value }))}
-                    className="px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-xs font-bold"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Jabatan (misal: Manager)"
-                    value={config.ttd2Jabatan}
-                    onChange={(e) => setConfig(prev => ({ ...prev, ttd2Jabatan: e.target.value }))}
-                    className="px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-xs font-bold"
-                  />
+              )}
+
+              {/* Upload TTD 3 (Jika Jumlah TTD == 3) */}
+              {config.jumlahTtd === 3 && (
+                <div className="space-y-1.5 pt-2 border-t border-slate-100">
+                  <label className="text-[10.5px] font-bold text-slate-500 block">
+                    TTD 3 (Tengah / Tambahan) - Gambar PNG Transparan
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="file"
+                      accept="image/png"
+                      onChange={handleTtd3Upload}
+                      id="upload-ttd-3"
+                      className="hidden"
+                    />
+                    <label
+                      htmlFor="upload-ttd-3"
+                      className="px-4 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-2xl text-slate-700 text-xs font-bold flex items-center gap-2 cursor-pointer transition-all flex-1"
+                    >
+                      <Upload className="w-3.5 h-3.5" />
+                      Upload Gambar TTD 3
+                    </label>
+                    {config.ttd3Image && (
+                      <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2.5 py-1 rounded-xl">TTD Ready</span>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 mt-1">
+                    <input
+                      type="text"
+                      placeholder="Nama (misal: Drs. Sukarno)"
+                      value={config.ttd3Nama}
+                      onChange={(e) => setConfig(prev => ({ ...prev, ttd3Nama: e.target.value }))}
+                      className="px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-xs font-bold"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Jabatan (misal: Kepala Sekolah)"
+                      value={config.ttd3Jabatan}
+                      onChange={(e) => setConfig(prev => ({ ...prev, ttd3Jabatan: e.target.value }))}
+                      className="px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-xs font-bold"
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
-            {/* 2. ELEMENT POSITION EDITOR CONTROLS */}
+            {/* 3. ELEMENT POSITION EDITOR CONTROLS */}
             <div className="bg-white p-5 rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 space-y-4">
               <h3 className="text-xs font-black uppercase tracking-wider text-brand-900 flex items-center gap-2">
                 <Move className="w-4 h-4 text-brand-600" />
@@ -655,13 +779,14 @@ export default function KelolaSertifikatGuruView() {
                   <option value="prefixNama">Label "Diberikan kepada:"</option>
                   <option value="noSertifikat">Nomor Surat Sertifikat</option>
                   <option value="deskripsi">Deskripsi & Peran Kegiatan</option>
-                  <option value="ttd1">TTD 1 (Kiri) - Posisi & Teks</option>
-                  <option value="ttd2">TTD 2 (Kanan) - Posisi & Teks</option>
+                  <option value="ttd1">TTD 1 - Posisi & Teks</option>
+                  {config.jumlahTtd >= 2 && <option value="ttd2">TTD 2 - Posisi & Teks</option>}
+                  {config.jumlahTtd === 3 && <option value="ttd3">TTD 3 - Posisi & Teks</option>}
                 </select>
               </div>
 
               {/* Slider Posisi X & Y */}
-              {selectedElement !== "ttd1" && selectedElement !== "ttd2" ? (
+              {!selectedElement.startsWith("ttd") ? (
                 (() => {
                   const elemKey = selectedElement as keyof typeof config.positions;
                   const elemPos = (config.positions as any)[elemKey];
@@ -770,17 +895,20 @@ export default function KelolaSertifikatGuruView() {
                 })()
               ) : (
                 (() => {
-                  const isTtd1 = selectedElement === "ttd1";
-                  const posKey = isTtd1 ? "ttd1NamaPos" : "ttd2NamaPos";
-                  const imgPosKey = isTtd1 ? "ttd1ImagePos" : "ttd2ImagePos";
+                  const ttdNum = selectedElement === "ttd1" ? "1" : selectedElement === "ttd2" ? "2" : "3";
+                  const posKey = `ttd${ttdNum}NamaPos`;
+                  const jabKey = `ttd${ttdNum}JabatanPos`;
+                  const imgPosKey = `ttd${ttdNum}ImagePos`;
+
                   const elemPos = (config.positions as any)[posKey];
                   const imgPos = (config.positions as any)[imgPosKey];
+                  if (!elemPos) return null;
 
                   return (
                     <div className="space-y-3 pt-2 border-t border-slate-100">
                       <div>
                         <div className="flex justify-between text-[11px] font-bold text-slate-600">
-                          <span>Posisi Horizontal TTD (X)</span>
+                          <span>Posisi Horizontal TTD {ttdNum} (X)</span>
                           <span className="font-mono text-brand-600">{elemPos.xPercent}%</span>
                         </div>
                         <input
@@ -796,7 +924,7 @@ export default function KelolaSertifikatGuruView() {
                               positions: {
                                 ...prev.positions,
                                 [posKey]: { ...elemPos, xPercent: val },
-                                [isTtd1 ? "ttd1JabatanPos" : "ttd2JabatanPos"]: { ...(prev.positions as any)[isTtd1 ? "ttd1JabatanPos" : "ttd2JabatanPos"], xPercent: val },
+                                [jabKey]: { ...(prev.positions as any)[jabKey], xPercent: val },
                                 [imgPosKey]: { ...imgPos, xPercent: val }
                               }
                             }));
@@ -807,7 +935,7 @@ export default function KelolaSertifikatGuruView() {
 
                       <div>
                         <div className="flex justify-between text-[11px] font-bold text-slate-600">
-                          <span>Posisi Vertikal TTD (Y)</span>
+                          <span>Posisi Vertikal TTD {ttdNum} (Y)</span>
                           <span className="font-mono text-brand-600">{elemPos.yPercent}%</span>
                         </div>
                         <input
@@ -823,7 +951,7 @@ export default function KelolaSertifikatGuruView() {
                               positions: {
                                 ...prev.positions,
                                 [posKey]: { ...elemPos, yPercent: val },
-                                [isTtd1 ? "ttd1JabatanPos" : "ttd2JabatanPos"]: { ...(prev.positions as any)[isTtd1 ? "ttd1JabatanPos" : "ttd2JabatanPos"], yPercent: val + 3 },
+                                [jabKey]: { ...(prev.positions as any)[jabKey], yPercent: val + 3 },
                                 [imgPosKey]: { ...imgPos, yPercent: val - 11.5 }
                               }
                             }));

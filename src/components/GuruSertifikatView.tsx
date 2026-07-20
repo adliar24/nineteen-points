@@ -11,6 +11,35 @@ interface GuruSertifikatViewProps {
   userSession: UserSession;
 }
 
+interface FormattedWord {
+  text: string;
+  isBold: boolean;
+  hasSpace: boolean;
+}
+
+export function parseMarkdownBoldWords(templateStr: string): FormattedWord[] {
+  const words: FormattedWord[] = [];
+  const parts = templateStr.split(/(\*\*.*?\*\*)/g);
+
+  for (const part of parts) {
+    if (!part) continue;
+    const isBold = part.startsWith("**") && part.endsWith("**") && part.length >= 4;
+    const cleanText = isBold ? part.slice(2, -2) : part;
+
+    // Split words while preserving bold state
+    const partWords = cleanText.split(/(\s+)/);
+    for (let i = 0; i < partWords.length; i++) {
+      const item = partWords[i];
+      if (!item) continue;
+      if (/^\s+$/.test(item)) continue; // space separator
+
+      const nextIsSpace = i + 1 < partWords.length && /^\s+$/.test(partWords[i + 1]);
+      words.push({ text: item, isBold, hasSpace: nextIsSpace });
+    }
+  }
+  return words;
+}
+
 export function drawCertificateOnCanvas(
   ctx: CanvasRenderingContext2D,
   canvasWidth: number,
@@ -20,7 +49,8 @@ export function drawCertificateOnCanvas(
   nameText: string,
   config: SertifikatLayoutConfig,
   ttd1Img?: HTMLImageElement | null,
-  ttd2Img?: HTMLImageElement | null
+  ttd2Img?: HTMLImageElement | null,
+  ttd3Img?: HTMLImageElement | null
 ) {
   // 1. Clear & Draw background template
   ctx.clearRect(0, 0, canvasWidth, canvasHeight);
@@ -47,6 +77,16 @@ export function drawCertificateOnCanvas(
     ctx.fillText(text, x, y);
   };
 
+  // Helper for drawing TTD Image
+  const drawTtdImg = (img: HTMLImageElement, elemPos: any) => {
+    const imgW = (elemPos.widthPercent / 100) * canvasWidth;
+    const aspect = img.naturalWidth ? img.naturalHeight / img.naturalWidth : 0.5;
+    const imgH = imgW * aspect;
+    const imgX = (elemPos.xPercent / 100) * canvasWidth - imgW / 2;
+    const imgY = (elemPos.yPercent / 100) * canvasHeight - imgH / 2;
+    ctx.drawImage(img, imgX, imgY, imgW, imgH);
+  };
+
   // 2. No Sertifikat
   const noCertText = kegiatan.no_sertifikat ? `No: ${kegiatan.no_sertifikat}` : "";
   drawStyledText(noCertText, pos.noSertifikat);
@@ -58,64 +98,114 @@ export function drawCertificateOnCanvas(
   const formattedName = toSentenceCase(nameText);
   drawStyledText(formattedName, pos.namaGuru);
 
-  // 5. Deskripsi Kegiatan
-  const deskripsiText = `Atas partisipasi aktifnya sebagai ${kegiatan.peran} dalam kegiatan "${kegiatan.nama_kegiatan}" yang diselenggarakan oleh ${kegiatan.penyelenggara || "SMAN 19 Bandung"}.`;
-  
-  // Wrap multi-line deskripsi if needed
+  // 5. Deskripsi Kegiatan (Formatted Template & Bold Support)
+  let rawDesc = config.deskripsiTemplate || 'Atas partisipasi aktifnya sebagai **{peran}** dalam kegiatan **"{nama_kegiatan}"** yang diselenggarakan oleh **{penyelenggara}**.';
+  rawDesc = rawDesc
+    .replace(/\{peran\}/gi, kegiatan.peran)
+    .replace(/\{nama_kegiatan\}/gi, kegiatan.nama_kegiatan)
+    .replace(/\{kegiatan\}/gi, kegiatan.nama_kegiatan)
+    .replace(/\{penyelenggara\}/gi, kegiatan.penyelenggara || "SMAN 19 Bandung")
+    .replace(/\{nama\}/gi, formattedName)
+    .replace(/\{no_sertifikat\}/gi, kegiatan.no_sertifikat || "");
+
+  const parsedWords = parseMarkdownBoldWords(rawDesc);
+
   const descX = (pos.deskripsi.xPercent / 100) * canvasWidth;
   const descY = (pos.deskripsi.yPercent / 100) * canvasHeight;
-  ctx.font = `${pos.deskripsi.fontWeight || "normal"} ${pos.deskripsi.fontSize || 24}px sans-serif`;
+  const fontSize = pos.deskripsi.fontSize || 24;
+  const baseFontWeight = pos.deskripsi.fontWeight || "normal";
+  const baseFontStyle = pos.deskripsi.fontStyle || "normal";
   ctx.fillStyle = pos.deskripsi.color || "#334155";
-  ctx.textAlign = pos.deskripsi.align || "center";
   ctx.textBaseline = "middle";
 
   const maxWidth = canvasWidth * 0.75;
-  const words = deskripsiText.split(" ");
-  let line = "";
-  const lines: string[] = [];
+  const spaceWidth = ctx.measureText(" ").width;
 
-  for (let n = 0; n < words.length; n++) {
-    const testLine = line + words[n] + " ";
-    const metrics = ctx.measureText(testLine);
-    if (metrics.width > maxWidth && n > 0) {
-      lines.push(line);
-      line = words[n] + " ";
+  // Build wrapped lines of words
+  interface LineWord {
+    text: string;
+    isBold: boolean;
+    width: number;
+  }
+
+  const lines: LineWord[][] = [];
+  let currentLine: LineWord[] = [];
+  let currentLineWidth = 0;
+
+  for (const w of parsedWords) {
+    ctx.font = `${baseFontStyle} ${w.isBold ? "bold" : baseFontWeight} ${fontSize}px sans-serif`;
+    const wWidth = ctx.measureText(w.text).width;
+    const addSpace = w.hasSpace ? spaceWidth : 0;
+
+    if (currentLineWidth + wWidth + addSpace > maxWidth && currentLine.length > 0) {
+      lines.push(currentLine);
+      currentLine = [{ text: w.text, isBold: w.isBold, width: wWidth }];
+      currentLineWidth = wWidth + (w.hasSpace ? spaceWidth : 0);
     } else {
-      line = testLine;
+      currentLine.push({ text: w.text, isBold: w.isBold, width: wWidth });
+      currentLineWidth += wWidth + addSpace;
     }
   }
-  lines.push(line);
+  if (currentLine.length > 0) {
+    lines.push(currentLine);
+  }
 
-  const lineHeight = (pos.deskripsi.fontSize || 24) * 1.4;
+  const lineHeight = fontSize * 1.45;
   const startY = descY - ((lines.length - 1) * lineHeight) / 2;
 
-  lines.forEach((l, index) => {
-    ctx.fillText(l.trim(), descX, startY + index * lineHeight);
+  lines.forEach((lineWords, lineIdx) => {
+    const lineY = startY + lineIdx * lineHeight;
+
+    // Calculate total width of line
+    let totalW = 0;
+    lineWords.forEach((wordObj, i) => {
+      totalW += wordObj.width;
+      if (i < lineWords.length - 1) totalW += spaceWidth;
+    });
+
+    let drawX = descX - totalW / 2;
+    if (pos.deskripsi.align === "left") drawX = descX;
+    if (pos.deskripsi.align === "right") drawX = descX - totalW;
+
+    lineWords.forEach((wordObj, i) => {
+      ctx.font = `${baseFontStyle} ${wordObj.isBold ? "bold" : baseFontWeight} ${fontSize}px sans-serif`;
+      ctx.textAlign = "left";
+      ctx.fillText(wordObj.text, drawX, lineY);
+      drawX += wordObj.width + (i < lineWords.length - 1 ? spaceWidth : 0);
+    });
   });
 
-  // 6. TTD 1 (Penanda Tangan Kiri)
-  if (ttd1Img) {
-    const imgW = (pos.ttd1ImagePos.widthPercent / 100) * canvasWidth;
-    const aspect = ttd1Img.naturalWidth ? ttd1Img.naturalHeight / ttd1Img.naturalWidth : 0.5;
-    const imgH = imgW * aspect;
-    const imgX = (pos.ttd1ImagePos.xPercent / 100) * canvasWidth - imgW / 2;
-    const imgY = (pos.ttd1ImagePos.yPercent / 100) * canvasHeight - imgH / 2;
-    ctx.drawImage(ttd1Img, imgX, imgY, imgW, imgH);
-  }
-  drawStyledText(toSentenceCase(config.ttd1Nama), pos.ttd1NamaPos);
-  drawStyledText(config.ttd1Jabatan, pos.ttd1JabatanPos);
+  // 6. TTD Signatures (Support 1, 2, or 3 Signatures)
+  const jumlahTtd = config.jumlahTtd || 2;
 
-  // 7. TTD 2 (Penanda Tangan Kanan)
-  if (ttd2Img) {
-    const imgW = (pos.ttd2ImagePos.widthPercent / 100) * canvasWidth;
-    const aspect = ttd2Img.naturalWidth ? ttd2Img.naturalHeight / ttd2Img.naturalWidth : 0.5;
-    const imgH = imgW * aspect;
-    const imgX = (pos.ttd2ImagePos.xPercent / 100) * canvasWidth - imgW / 2;
-    const imgY = (pos.ttd2ImagePos.yPercent / 100) * canvasHeight - imgH / 2;
-    ctx.drawImage(ttd2Img, imgX, imgY, imgW, imgH);
+  if (jumlahTtd === 1) {
+    // Single TTD (Center / Configured)
+    if (ttd1Img) drawTtdImg(ttd1Img, pos.ttd1ImagePos);
+    drawStyledText(toSentenceCase(config.ttd1Nama), pos.ttd1NamaPos);
+    drawStyledText(config.ttd1Jabatan, pos.ttd1JabatanPos);
+  } else if (jumlahTtd === 2) {
+    // 2 TTD (Kiri & Kanan)
+    if (ttd1Img) drawTtdImg(ttd1Img, pos.ttd1ImagePos);
+    drawStyledText(toSentenceCase(config.ttd1Nama), pos.ttd1NamaPos);
+    drawStyledText(config.ttd1Jabatan, pos.ttd1JabatanPos);
+
+    if (ttd2Img) drawTtdImg(ttd2Img, pos.ttd2ImagePos);
+    drawStyledText(toSentenceCase(config.ttd2Nama), pos.ttd2NamaPos);
+    drawStyledText(config.ttd2Jabatan, pos.ttd2JabatanPos);
+  } else if (jumlahTtd === 3) {
+    // 3 TTD (Kiri, Tengah, Kanan)
+    if (ttd1Img) drawTtdImg(ttd1Img, pos.ttd1ImagePos);
+    drawStyledText(toSentenceCase(config.ttd1Nama), pos.ttd1NamaPos);
+    drawStyledText(config.ttd1Jabatan, pos.ttd1JabatanPos);
+
+    if (ttd3Img) drawTtdImg(ttd3Img, pos.ttd3ImagePos);
+    drawStyledText(toSentenceCase(config.ttd3Nama), pos.ttd3NamaPos);
+    drawStyledText(config.ttd3Jabatan, pos.ttd3JabatanPos);
+
+    if (ttd2Img) drawTtdImg(ttd2Img, pos.ttd2ImagePos);
+    drawStyledText(toSentenceCase(config.ttd2Nama), pos.ttd2NamaPos);
+    drawStyledText(config.ttd2Jabatan, pos.ttd2JabatanPos);
   }
-  drawStyledText(toSentenceCase(config.ttd2Nama), pos.ttd2NamaPos);
-  drawStyledText(config.ttd2Jabatan, pos.ttd2JabatanPos);
 }
 
 export default function GuruSertifikatView({ userSession }: GuruSertifikatViewProps) {
@@ -180,6 +270,7 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
 
       const ttd1Img = await loadImg(config.ttd1Image);
       const ttd2Img = await loadImg(config.ttd2Image);
+      const ttd3Img = await loadImg(config.ttd3Image);
 
       canvas.width = templateImg.naturalWidth || 2000;
       canvas.height = templateImg.naturalHeight || 1414;
@@ -195,7 +286,8 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
         nameText,
         config,
         ttd1Img,
-        ttd2Img
+        ttd2Img,
+        ttd3Img
       );
 
       const dataUrl = canvas.toDataURL("image/png");
@@ -238,7 +330,8 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
         }),
         loadImg(currentConfig.ttd1Image),
         loadImg(currentConfig.ttd2Image),
-      ]).then(([_, ttd1Img, ttd2Img]) => {
+        loadImg(currentConfig.ttd3Image),
+      ]).then(([_, ttd1Img, ttd2Img, ttd3Img]) => {
         canvas.width = templateImg.naturalWidth || 2000;
         canvas.height = templateImg.naturalHeight || 1414;
 
@@ -253,7 +346,8 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
           nameText,
           currentConfig,
           ttd1Img,
-          ttd2Img
+          ttd2Img,
+          ttd3Img
         );
       });
     }

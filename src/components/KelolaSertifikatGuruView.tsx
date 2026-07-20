@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "motion/react";
-import { Award, Plus, Trash2, Search, X, Check, RefreshCw, Layout, Upload, Save, RotateCcw, Move, Edit3, Image as ImageIcon } from "lucide-react";
-import { getAllKegiatanGuru, getTeacherProfiles, addKegiatanGuru, deleteKegiatanGuru } from "../dbStore";
+import { Award, Plus, Trash2, Search, X, Check, RefreshCw, Layout, Upload, Save, RotateCcw, Move, Edit3, Image as ImageIcon, Users, CheckSquare, Square } from "lucide-react";
+import { getAllKegiatanGuru, getTeacherProfiles, addKegiatanGuruBulk, deleteKegiatanGuru } from "../dbStore";
 import ModalPortal from "./ModalPortal";
 import { toSentenceCase } from "../formatName";
 import { getSertifikatConfig, saveSertifikatConfig, resetSertifikatConfig, SertifikatLayoutConfig, DEFAULT_SERTIFIKAT_CONFIG } from "../sertifikatConfig";
@@ -17,14 +17,14 @@ export default function KelolaSertifikatGuruView() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // Form State for publishing certificate
-  const [selectedTeacherId, setSelectedTeacherId] = useState("");
+  const [selectedTeacherIds, setSelectedTeacherIds] = useState<string[]>([]);
+  const [teacherSearchQuery, setTeacherSearchQuery] = useState("");
   const [namaKegiatan, setNamaKegiatan] = useState("");
   const [tanggalKegiatan, setTanggalKegiatan] = useState(() => new Date().toISOString().slice(0, 10));
   const [peran, setPeran] = useState("Peserta");
   const [customPeran, setCustomPeran] = useState("");
   const [noSertifikat, setNoSertifikat] = useState("");
   const [penyelenggara, setPenyelenggara] = useState("SMAN 19 Bandung");
-  const [durasiJam, setDurasiJam] = useState(32);
 
   // Designer State
   const [config, setConfig] = useState<SertifikatLayoutConfig>(() => getSertifikatConfig());
@@ -47,30 +47,29 @@ export default function KelolaSertifikatGuruView() {
   const addMutation = useMutation({
     mutationFn: async () => {
       const finalPeran = peran === "Lainnya" ? customPeran : peran;
-      return addKegiatanGuru(
-        selectedTeacherId,
+      return addKegiatanGuruBulk(
+        selectedTeacherIds,
         namaKegiatan,
         tanggalKegiatan,
         finalPeran,
         noSertifikat,
-        penyelenggara,
-        durasiJam
+        penyelenggara
       );
     },
     onSuccess: () => {
-      setSuccessMsg("Sertifikat baru berhasil diterbitkan!");
+      setSuccessMsg(`Sertifikat berhasil diterbitkan untuk ${selectedTeacherIds.length} guru!`);
       setIsAddModalOpen(false);
       refetchKegiatan();
       
       // Reset Form
-      setSelectedTeacherId("");
+      setSelectedTeacherIds([]);
+      setTeacherSearchQuery("");
       setNamaKegiatan("");
       setTanggalKegiatan(new Date().toISOString().slice(0, 10));
       setPeran("Peserta");
       setCustomPeran("");
       setNoSertifikat("");
       setPenyelenggara("SMAN 19 Bandung");
-      setDurasiJam(32);
 
       setTimeout(() => setSuccessMsg(null), 4000);
     },
@@ -97,6 +96,28 @@ export default function KelolaSertifikatGuruView() {
     if (confirm) {
       deleteMutation.mutate(id);
     }
+  };
+
+  // Select all / Toggle teachers
+  const filteredTeachersInModal = teachers.filter(t => 
+    t.nama.toLowerCase().includes(teacherSearchQuery.toLowerCase()) ||
+    t.email.toLowerCase().includes(teacherSearchQuery.toLowerCase())
+  );
+
+  const isAllSelected = teachers.length > 0 && selectedTeacherIds.length === teachers.length;
+
+  const handleSelectAllTeachers = (checked: boolean) => {
+    if (checked) {
+      setSelectedTeacherIds(teachers.map(t => t.id));
+    } else {
+      setSelectedTeacherIds([]);
+    }
+  };
+
+  const handleToggleTeacher = (id: string) => {
+    setSelectedTeacherIds(prev => 
+      prev.includes(id) ? prev.filter(tId => tId !== id) : [...prev, id]
+    );
   };
 
   // Render Canvas for Designer Preview
@@ -139,7 +160,7 @@ export default function KelolaSertifikatGuruView() {
           peran: "PESERTA",
           no_sertifikat: "SR.098979898666968968",
           penyelenggara: "SMAN 19 Bandung",
-          durasi_jam: 32,
+          durasi_jam: null,
           created_at: new Date().toISOString()
         };
 
@@ -155,7 +176,7 @@ export default function KelolaSertifikatGuruView() {
           ttd2Img
         );
 
-        // Highlight selected element position with a subtle target box/circle
+        // Highlight selected element position with a target indicator
         const pos = config.positions;
         let targetX = canvas.width / 2;
         let targetY = canvas.height / 2;
@@ -378,14 +399,13 @@ export default function KelolaSertifikatGuruView() {
                     <th className="py-4 px-6">Nama Kegiatan</th>
                     <th className="py-4 px-6">Peran</th>
                     <th className="py-4 px-6">Tanggal</th>
-                    <th className="py-4 px-6">Durasi</th>
                     <th className="py-4 px-6 text-right">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-brand-50">
                   {loadingKegiatan ? (
                     <tr>
-                      <td colSpan={6} className="text-center py-12">
+                      <td colSpan={5} className="text-center py-12">
                         <RefreshCw className="w-6 h-6 animate-spin mx-auto text-brand-500" />
                         <p className="text-xs font-bold text-brand-400 mt-2">Memuat list sertifikat...</p>
                       </td>
@@ -411,9 +431,6 @@ export default function KelolaSertifikatGuruView() {
                         <td className="py-4 px-6 text-slate-500">
                           {new Date(row.tanggal_kegiatan).toLocaleDateString("id-ID", { day: 'numeric', month: 'short', year: 'numeric' })}
                         </td>
-                        <td className="py-4 px-6 text-slate-500">
-                          {row.durasi_jam ? `${row.durasi_jam} JP` : "-"}
-                        </td>
                         <td className="py-4 px-6 text-right">
                           <button
                             onClick={() => handleDelete(row.id, row.user_nama)}
@@ -427,7 +444,7 @@ export default function KelolaSertifikatGuruView() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={6} className="text-center py-12 text-slate-400 font-semibold">
+                      <td colSpan={5} className="text-center py-12 text-slate-400 font-semibold">
                         Belum ada data sertifikat diterbitkan atau cocok dengan filter.
                       </td>
                     </tr>
@@ -813,15 +830,15 @@ export default function KelolaSertifikatGuruView() {
       <ModalPortal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
-        title="Terbitkan Sertifikat Guru Baru"
+        title="Terbitkan Sertifikat Guru"
         icon={Award}
         maxWidth="max-w-lg"
       >
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            if (!selectedTeacherId) {
-              alert("Pilih guru penerima sertifikat terlebih dahulu!");
+            if (selectedTeacherIds.length === 0) {
+              alert("Pilihlah minimal 1 guru penerima sertifikat!");
               return;
             }
             if (!namaKegiatan) {
@@ -838,24 +855,79 @@ export default function KelolaSertifikatGuruView() {
             </div>
           )}
 
-          {/* Pilih Guru */}
-          <div className="space-y-1">
-            <label className="text-[10px] font-black text-brand-400 uppercase tracking-widest block">
-              Guru Penerima Sertifikat *
-            </label>
-            <select
-              value={selectedTeacherId}
-              onChange={(e) => setSelectedTeacherId(e.target.value)}
-              required
-              className="w-full p-3 bg-brand-50/40 rounded-2xl border border-brand-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 text-brand-950"
-            >
-              <option value="">-- Pilih Guru --</option>
-              {teachers.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {toSentenceCase(t.nama)} ({t.email})
-                </option>
-              ))}
-            </select>
+          {/* Pilih Guru (Multi-Select & Pilih Semua) */}
+          <div className="space-y-2 bg-brand-50/50 p-4 rounded-2xl border border-brand-100">
+            <div className="flex justify-between items-center">
+              <label className="text-[11px] font-black text-brand-950 uppercase tracking-wider flex items-center gap-1.5">
+                <Users className="w-4 h-4 text-brand-600" />
+                Pilih Guru Penerima Sertifikat *
+              </label>
+              <span className="text-[10px] font-extrabold bg-brand-600 text-white px-2.5 py-0.5 rounded-xl">
+                {selectedTeacherIds.length} / {teachers.length} Guru Terpilih
+              </span>
+            </div>
+
+            {/* Header Checkbox: Pilih Semua */}
+            <div className="flex items-center justify-between pt-1 pb-2 border-b border-brand-200/60">
+              <button
+                type="button"
+                onClick={() => handleSelectAllTeachers(!isAllSelected)}
+                className="flex items-center gap-2 text-xs font-bold text-brand-700 hover:text-brand-900 cursor-pointer bg-transparent border-0"
+              >
+                {isAllSelected ? (
+                  <CheckSquare className="w-4 h-4 text-brand-600" />
+                ) : (
+                  <Square className="w-4 h-4 text-slate-400" />
+                )}
+                <span>Pilih Semua Guru ({teachers.length})</span>
+              </button>
+            </div>
+
+            {/* Filter Search Teacher */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-3.5 h-3.5" />
+              <input
+                type="text"
+                placeholder="Cari nama atau email guru..."
+                value={teacherSearchQuery}
+                onChange={(e) => setTeacherSearchQuery(e.target.value)}
+                className="w-full pl-8 pr-3 py-1.5 bg-white rounded-xl border border-brand-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-brand-500"
+              />
+            </div>
+
+            {/* Teacher List Checkboxes */}
+            <div className="max-h-44 overflow-y-auto space-y-1.5 pr-1 divide-y divide-slate-100">
+              {loadingTeachers ? (
+                <p className="text-center py-4 text-xs text-slate-400">Memuat data guru...</p>
+              ) : filteredTeachersInModal.length > 0 ? (
+                filteredTeachersInModal.map((t) => {
+                  const isChecked = selectedTeacherIds.includes(t.id);
+                  return (
+                    <label
+                      key={t.id}
+                      className={`flex items-center justify-between p-2 rounded-xl text-xs font-semibold cursor-pointer transition-all ${
+                        isChecked ? "bg-white shadow-xs border border-brand-200 text-brand-950" : "hover:bg-brand-100/50 text-slate-600"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 overflow-hidden">
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => handleToggleTeacher(t.id)}
+                          className="w-4 h-4 accent-brand-600 rounded cursor-pointer"
+                        />
+                        <div className="truncate">
+                          <span className="font-bold text-slate-900 block truncate">{toSentenceCase(t.nama)}</span>
+                          <span className="text-[10px] text-slate-400 block truncate">{t.email}</span>
+                        </div>
+                      </div>
+                    </label>
+                  );
+                })
+              ) : (
+                <p className="text-center py-4 text-xs text-slate-400">Tidak ada guru ditemukan.</p>
+              )}
+            </div>
           </div>
 
           {/* Nama Kegiatan */}
@@ -873,7 +945,7 @@ export default function KelolaSertifikatGuruView() {
             />
           </div>
 
-          {/* Tanggal Kegiatan & Durasi */}
+          {/* Tanggal & Peran */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <label className="text-[10px] font-black text-brand-400 uppercase tracking-widest block">
@@ -890,44 +962,31 @@ export default function KelolaSertifikatGuruView() {
 
             <div className="space-y-1">
               <label className="text-[10px] font-black text-brand-400 uppercase tracking-widest block">
-                Durasi (Jam Pelajaran / JP)
+                Peran Guru *
               </label>
-              <input
-                type="number"
-                placeholder="32"
-                value={durasiJam}
-                onChange={(e) => setDurasiJam(parseInt(e.target.value) || 0)}
+              <select
+                value={peran}
+                onChange={(e) => setPeran(e.target.value)}
                 className="w-full p-3 bg-brand-50/40 rounded-2xl border border-brand-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 text-brand-950"
-              />
+              >
+                <option value="Peserta">Peserta</option>
+                <option value="Narasumber">Narasumber / Pemateri</option>
+                <option value="Panitia">Panitia</option>
+                <option value="Moderator">Moderator</option>
+                <option value="Lainnya">Lainnya...</option>
+              </select>
             </div>
           </div>
 
-          {/* Peran */}
-          <div className="space-y-1">
-            <label className="text-[10px] font-black text-brand-400 uppercase tracking-widest block">
-              Peran Guru *
-            </label>
-            <select
-              value={peran}
-              onChange={(e) => setPeran(e.target.value)}
+          {peran === "Lainnya" && (
+            <input
+              type="text"
+              placeholder="Ketik peran..."
+              value={customPeran}
+              onChange={(e) => setCustomPeran(e.target.value)}
               className="w-full p-3 bg-brand-50/40 rounded-2xl border border-brand-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 text-brand-950"
-            >
-              <option value="Peserta">Peserta</option>
-              <option value="Narasumber">Narasumber / Pemateri</option>
-              <option value="Panitia">Panitia</option>
-              <option value="Moderator">Moderator</option>
-              <option value="Lainnya">Lainnya...</option>
-            </select>
-            {peran === "Lainnya" && (
-              <input
-                type="text"
-                placeholder="Ketik peran..."
-                value={customPeran}
-                onChange={(e) => setCustomPeran(e.target.value)}
-                className="w-full mt-2 p-3 bg-brand-50/40 rounded-2xl border border-brand-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 text-brand-950"
-              />
-            )}
-          </div>
+            />
+          )}
 
           {/* No Sertifikat */}
           <div className="space-y-1">
@@ -967,10 +1026,10 @@ export default function KelolaSertifikatGuruView() {
             </button>
             <button
               type="submit"
-              disabled={addMutation.isPending}
+              disabled={addMutation.isPending || selectedTeacherIds.length === 0}
               className="px-5 py-2.5 rounded-2xl brand-gradient text-white font-bold text-xs shadow-md transition-all cursor-pointer border-0 flex items-center gap-2 disabled:opacity-50"
             >
-              {addMutation.isPending ? <RefreshCw className="w-4 h-4 animate-spin" /> : "Simpan & Terbitkan"}
+              {addMutation.isPending ? <RefreshCw className="w-4 h-4 animate-spin" /> : `Simpan & Terbitkan (${selectedTeacherIds.length} Guru)`}
             </button>
           </div>
         </form>

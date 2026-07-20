@@ -614,6 +614,12 @@ export const getTodayKehadiranGuru = async (userId: string, dateStr: string): Pr
   return data || [];
 };
 
+export const getCurrentTimeString = (): string => {
+  const now = new Date();
+  const pad = (n: number) => n.toString().padStart(2, "0");
+  return `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+};
+
 export const checkInGuru = async (
   userId: string,
   dateStr: string,
@@ -622,8 +628,7 @@ export const checkInGuru = async (
   keterangan: string,
   jadwalId: string
 ): Promise<any> => {
-  const defaultTime = new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
-  const finalTime = timeStr || defaultTime;
+  const finalTime = (timeStr || getCurrentTimeString()).replace(/\./g, ":");
 
   const { data: existing } = await supabase
     .from("kehadiran_guru")
@@ -760,8 +765,7 @@ export const saveKehadiranGuruManual = async (
   keterangan: string | null,
   jadwalId: string
 ): Promise<void> => {
-  const defaultTime = new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
-  const finalJamMasuk = jamMasuk || defaultTime;
+  const finalJamMasuk = (jamMasuk || getCurrentTimeString()).replace(/\./g, ":");
 
   const { data: existing } = await supabase
     .from("kehadiran_guru")

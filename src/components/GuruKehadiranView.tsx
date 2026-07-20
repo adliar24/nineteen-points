@@ -115,7 +115,8 @@ export default function GuruKehadiranView({ userSession }: GuruKehadiranViewProp
     mutationFn: async () => {
       if (!activeJadwal) return;
       const now = new Date();
-      const timeStr = now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
+      const pad = (n: number) => n.toString().padStart(2, "0");
+      const timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
       
       // Perform check-in for all slot IDs in the merged block!
       const promises = activeJadwal.ids.map((id: string) => 

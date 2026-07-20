@@ -264,7 +264,8 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
     setIsSubmitting(true);
     try {
       const now = new Date();
-      const timeStr = now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
+      const pad = (n: number) => n.toString().padStart(2, "0");
+      const timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
       
       const promises = activeGuruJadwal.ids.map((id: string) => 
         saveKehadiranGuruManual(activeGuru.id, todayStr, guruStatus, timeStr, guruKeterangan, id)

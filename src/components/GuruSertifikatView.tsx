@@ -1,17 +1,126 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Award, Download, Calendar, RefreshCw, FileText, Search } from "lucide-react";
+import { Award, Download, Calendar, RefreshCw, FileText, Search, Eye, X } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
 import { getKegiatanGuruList } from "../dbStore";
 import { UserSession, KegiatanGuru } from "../types";
-import { toSentenceCase } from "../formatName";
+import { getSertifikatConfig, SertifikatLayoutConfig } from "../sertifikatConfig";
 
 interface GuruSertifikatViewProps {
   userSession: UserSession;
 }
 
+export function drawCertificateOnCanvas(
+  ctx: CanvasRenderingContext2D,
+  canvasWidth: number,
+  canvasHeight: number,
+  templateImg: HTMLImageElement,
+  kegiatan: KegiatanGuru,
+  nameText: string,
+  config: SertifikatLayoutConfig,
+  ttd1Img?: HTMLImageElement | null,
+  ttd2Img?: HTMLImageElement | null
+) {
+  // 1. Clear & Draw background template
+  ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+  ctx.drawImage(templateImg, 0, 0, canvasWidth, canvasHeight);
+
+  const pos = config.positions;
+
+  // Helper for drawing styled text
+  const drawStyledText = (text: string, elemPos: any) => {
+    if (!text) return;
+    const fontStyle = elemPos.fontStyle || "normal";
+    const fontWeight = elemPos.fontWeight || "normal";
+    const fontSize = elemPos.fontSize || 24;
+    const fontFamily = "sans-serif";
+
+    ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px ${fontFamily}`;
+    ctx.fillStyle = elemPos.color || "#000000";
+    ctx.textAlign = elemPos.align || "center";
+    ctx.textBaseline = "middle";
+
+    const x = (elemPos.xPercent / 100) * canvasWidth;
+    const y = (elemPos.yPercent / 100) * canvasHeight;
+
+    ctx.fillText(text, x, y);
+  };
+
+  // 2. No Sertifikat
+  const noCertText = kegiatan.no_sertifikat ? `No: ${kegiatan.no_sertifikat}` : "";
+  drawStyledText(noCertText, pos.noSertifikat);
+
+  // 3. Prefix Nama ("Diberikan Kepada:" / "We proudly present to:")
+  drawStyledText("Diberikan kepada:", pos.prefixNama);
+
+  // 4. Nama Guru / Peserta
+  drawStyledText(nameText, pos.namaGuru);
+
+  // 5. Deskripsi Kegiatan
+  const deskripsiText = `Atas partisipasi aktifnya sebagai ${kegiatan.peran.toUpperCase()} dalam kegiatan "${kegiatan.nama_kegiatan}" yang diselenggarakan oleh ${kegiatan.penyelenggara || "SMAN 19 Bandung"}.`;
+  
+  // Wrap multi-line deskripsi if needed
+  const descX = (pos.deskripsi.xPercent / 100) * canvasWidth;
+  const descY = (pos.deskripsi.yPercent / 100) * canvasHeight;
+  ctx.font = `${pos.deskripsi.fontWeight || "normal"} ${pos.deskripsi.fontSize || 24}px sans-serif`;
+  ctx.fillStyle = pos.deskripsi.color || "#334155";
+  ctx.textAlign = pos.deskripsi.align || "center";
+  ctx.textBaseline = "middle";
+
+  const maxWidth = canvasWidth * 0.75;
+  const words = deskripsiText.split(" ");
+  let line = "";
+  const lines: string[] = [];
+
+  for (let n = 0; n < words.length; n++) {
+    const testLine = line + words[n] + " ";
+    const metrics = ctx.measureText(testLine);
+    if (metrics.width > maxWidth && n > 0) {
+      lines.push(line);
+      line = words[n] + " ";
+    } else {
+      line = testLine;
+    }
+  }
+  lines.push(line);
+
+  const lineHeight = (pos.deskripsi.fontSize || 24) * 1.4;
+  const startY = descY - ((lines.length - 1) * lineHeight) / 2;
+
+  lines.forEach((l, index) => {
+    ctx.fillText(l.trim(), descX, startY + index * lineHeight);
+  });
+
+  // 6. TTD 1 (Penanda Tangan Kiri)
+  if (ttd1Img) {
+    const imgW = (pos.ttd1ImagePos.widthPercent / 100) * canvasWidth;
+    const aspect = ttd1Img.naturalWidth ? ttd1Img.naturalHeight / ttd1Img.naturalWidth : 0.5;
+    const imgH = imgW * aspect;
+    const imgX = (pos.ttd1ImagePos.xPercent / 100) * canvasWidth - imgW / 2;
+    const imgY = (pos.ttd1ImagePos.yPercent / 100) * canvasHeight - imgH / 2;
+    ctx.drawImage(ttd1Img, imgX, imgY, imgW, imgH);
+  }
+  drawStyledText(config.ttd1Nama, pos.ttd1NamaPos);
+  drawStyledText(config.ttd1Jabatan, pos.ttd1JabatanPos);
+
+  // 7. TTD 2 (Penanda Tangan Kanan)
+  if (ttd2Img) {
+    const imgW = (pos.ttd2ImagePos.widthPercent / 100) * canvasWidth;
+    const aspect = ttd2Img.naturalWidth ? ttd2Img.naturalHeight / ttd2Img.naturalWidth : 0.5;
+    const imgH = imgW * aspect;
+    const imgX = (pos.ttd2ImagePos.xPercent / 100) * canvasWidth - imgW / 2;
+    const imgY = (pos.ttd2ImagePos.yPercent / 100) * canvasHeight - imgH / 2;
+    ctx.drawImage(ttd2Img, imgX, imgY, imgW, imgH);
+  }
+  drawStyledText(config.ttd2Nama, pos.ttd2NamaPos);
+  drawStyledText(config.ttd2Jabatan, pos.ttd2JabatanPos);
+}
+
 export default function GuruSertifikatView({ userSession }: GuruSertifikatViewProps) {
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [previewKegiatan, setPreviewKegiatan] = useState<KegiatanGuru | null>(null);
+  const previewCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // 1. Query teacher activities/certificates
   const { data: list = [], isLoading, refetch } = useQuery({
@@ -19,179 +128,118 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
     queryFn: () => getKegiatanGuruList(userSession.id),
   });
 
-  // 2. Generate and download certificate dynamic canvas
-  const handleDownloadCertificate = (kegiatan: KegiatanGuru) => {
+  // 2. Generate and download certificate using PNG template & dynamic positions
+  const handleDownloadCertificate = async (kegiatan: KegiatanGuru) => {
     setDownloadingId(kegiatan.id);
+    const config = getSertifikatConfig();
     const canvas = document.createElement("canvas");
-    canvas.width = 1123; // A4 landscape resolution at 96 DPI (approx)
-    canvas.height = 794;
     const ctx = canvas.getContext("2d");
     if (!ctx) {
       setDownloadingId(null);
       return;
     }
 
-    // Load logo first
-    const logoImg = new Image();
-    logoImg.src = "/logo.png";
-    logoImg.onload = () => {
-      // Background base
-      ctx.fillStyle = "#ffffff";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    const templateImg = new Image();
+    templateImg.src = config.templateUrl || "/sertifikat_template.png";
 
-      // Border Design (Premium deep purple and gold borders)
-      ctx.lineWidth = 16;
-      ctx.strokeStyle = "#4c1d95"; // Deep Purple
-      ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
+    const loadImg = (src: string | null): Promise<HTMLImageElement | null> => {
+      if (!src) return Promise.resolve(null);
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => resolve(img);
+        img.onerror = () => resolve(null);
+        img.src = src;
+      });
+    };
 
-      ctx.lineWidth = 4;
-      ctx.strokeStyle = "#d97706"; // Gold
-      ctx.strokeRect(36, 36, canvas.width - 72, canvas.height - 72);
+    try {
+      await new Promise<void>((resolve, reject) => {
+        templateImg.onload = () => resolve();
+        templateImg.onerror = () => reject(new Error("Gagal memuat template sertifikat"));
+      });
 
-      // Corner gold ornaments
-      ctx.fillStyle = "#d97706";
-      // Top Left
-      ctx.fillRect(36, 36, 40, 6);
-      ctx.fillRect(36, 36, 6, 40);
-      // Top Right
-      ctx.fillRect(canvas.width - 76, 36, 40, 6);
-      ctx.fillRect(canvas.width - 42, 36, 6, 40);
-      // Bottom Left
-      ctx.fillRect(36, canvas.height - 42, 40, 6);
-      ctx.fillRect(36, canvas.height - 76, 6, 40);
-      // Bottom Right
-      ctx.fillRect(canvas.width - 76, canvas.height - 42, 40, 6);
-      ctx.fillRect(canvas.width - 42, canvas.height - 76, 6, 40);
+      const ttd1Img = await loadImg(config.ttd1Image);
+      const ttd2Img = await loadImg(config.ttd2Image);
 
-      // Draw School Logo
-      ctx.drawImage(logoImg, canvas.width / 2 - 45, 60, 90, 90);
+      canvas.width = templateImg.naturalWidth || 2000;
+      canvas.height = templateImg.naturalHeight || 1414;
 
-      // Certificate Title
-      ctx.fillStyle = "#1e1b4b";
-      ctx.font = "black 32px sans-serif";
-      ctx.textAlign = "center";
-      ctx.fillText("SERTIFIKAT PENGHARGAAN", canvas.width / 2, 200);
+      const nameText = userSession.fullName ? userSession.fullName.toUpperCase() : userSession.email.toUpperCase();
 
-      // Subtitle
-      ctx.fillStyle = "#d97706";
-      ctx.font = "bold 14px sans-serif";
-      ctx.fillText(kegiatan.no_sertifikat ? `NOMOR: ${kegiatan.no_sertifikat}` : "NOMOR: -", canvas.width / 2, 230);
-
-      // Diberikan Kepada
-      ctx.fillStyle = "#64748b";
-      ctx.font = "italic 16px sans-serif";
-      ctx.fillText("Sertifikat ini dengan bangga diberikan kepada:", canvas.width / 2, 280);
-
-      // Teacher Name (Big, Bold, Purple)
-      ctx.fillStyle = "#4c1d95";
-      ctx.font = "extrabold 36px sans-serif";
-      ctx.fillText(userSession.fullName.toUpperCase(), canvas.width / 2, 335);
-
-      // Role Text
-      ctx.fillStyle = "#64748b";
-      ctx.font = "italic 16px sans-serif";
-      ctx.fillText(`Atas partisipasi aktifnya sebagai:`, canvas.width / 2, 385);
-
-      // Role Name
-      ctx.fillStyle = "#d97706";
-      ctx.font = "bold 22px sans-serif";
-      ctx.fillText(kegiatan.peran.toUpperCase(), canvas.width / 2, 420);
-
-      // Activity Text
-      ctx.fillStyle = "#64748b";
-      ctx.font = "italic 16px sans-serif";
-      ctx.fillText(`Dalam kegiatan:`, canvas.width / 2, 465);
-
-      // Activity Name
-      ctx.fillStyle = "#1e1b4b";
-      ctx.font = "bold 20px sans-serif";
-      // Wrap activity title if too long
-      const words = kegiatan.nama_kegiatan.split(" ");
-      let line = "";
-      let y = 500;
-      for (let n = 0; n < words.length; n++) {
-        const testLine = line + words[n] + " ";
-        const metrics = ctx.measureText(testLine);
-        if (metrics.width > 700 && n > 0) {
-          ctx.fillText(line, canvas.width / 2, y);
-          line = words[n] + " ";
-          y += 26;
-        } else {
-          line = testLine;
-        }
-      }
-      ctx.fillText(line, canvas.width / 2, y);
-
-      // Info Footer
-      ctx.fillStyle = "#64748b";
-      ctx.font = "semibold 13px sans-serif";
-      const dateFormatted = new Date(kegiatan.tanggal_kegiatan).toLocaleDateString("id-ID", { day: 'numeric', month: 'long', year: 'numeric' });
-      ctx.fillText(
-        `Diselenggarakan oleh ${kegiatan.penyelenggara} pada tanggal ${dateFormatted} ${
-          kegiatan.durasi_jam ? `dengan beban belajar sebanyak ${kegiatan.durasi_jam} JP.` : "."
-        }`,
-        canvas.width / 2,
-        y + 40
+      drawCertificateOnCanvas(
+        ctx,
+        canvas.width,
+        canvas.height,
+        templateImg,
+        kegiatan,
+        nameText,
+        config,
+        ttd1Img,
+        ttd2Img
       );
 
-      // Signatures
-      // Left Sign
-      ctx.fillStyle = "#1e1b4b";
-      ctx.font = "bold 13px sans-serif";
-      ctx.fillText("Kepala SMAN 19 Bandung,", 250, 630);
-      ctx.lineWidth = 1;
-      ctx.strokeStyle = "#94a3b8";
-      ctx.beginPath();
-      ctx.moveTo(150, 700);
-      ctx.lineTo(350, 700);
-      ctx.stroke();
-      ctx.fillStyle = "#64748b";
-      ctx.fillText("NIP. 197401121999031002", 250, 720);
-
-      // Right Sign
-      ctx.fillStyle = "#1e1b4b";
-      ctx.font = "bold 13px sans-serif";
-      ctx.fillText("Ketua Penyelenggara,", canvas.width - 250, 630);
-      ctx.beginPath();
-      ctx.moveTo(canvas.width - 350, 700);
-      ctx.lineTo(canvas.width - 150, 700);
-      ctx.stroke();
-      ctx.fillStyle = "#64748b";
-      ctx.fillText("Panitia Pelaksana", canvas.width - 250, 720);
-
-      // Trigger Download
       const dataUrl = canvas.toDataURL("image/png");
       const link = document.createElement("a");
       link.href = dataUrl;
-      link.download = `SERTIFIKAT_${kegiatan.nama_kegiatan.toUpperCase().replace(/\s+/g, "_")}_${userSession.fullName.toUpperCase().replace(/\s+/g, "_")}.png`;
+      link.download = `SERTIFIKAT_${kegiatan.nama_kegiatan.toUpperCase().replace(/\s+/g, "_")}_${nameText.replace(/\s+/g, "_")}.png`;
       link.click();
+    } catch (err: any) {
+      alert("Gagal mengunduh sertifikat: " + err.message);
+    } finally {
       setDownloadingId(null);
-    };
-
-    logoImg.onerror = () => {
-      // Fallback without logo
-      ctx.fillStyle = "#ffffff";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.lineWidth = 16;
-      ctx.strokeStyle = "#4c1d95";
-      ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
-
-      ctx.fillStyle = "#1e1b4b";
-      ctx.font = "black 32px sans-serif";
-      ctx.textAlign = "center";
-      ctx.fillText("SERTIFIKAT PENGHARGAAN", canvas.width / 2, 200);
-
-      ctx.font = "bold 20px sans-serif";
-      ctx.fillText(kegiatan.nama_kegiatan, canvas.width / 2, 360);
-
-      const dataUrl = canvas.toDataURL("image/png");
-      const link = document.createElement("a");
-      link.href = dataUrl;
-      link.download = `sertifikat_${kegiatan.id}.png`;
-      link.click();
-      setDownloadingId(null);
-    };
+    }
   };
+
+  // Render preview canvas whenever modal opens
+  useEffect(() => {
+    if (previewKegiatan && previewCanvasRef.current) {
+      const canvas = previewCanvasRef.current;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      const config = getSertifikatConfig();
+      const templateImg = new Image();
+      templateImg.src = config.templateUrl || "/sertifikat_template.png";
+
+      const loadImg = (src: string | null): Promise<HTMLImageElement | null> => {
+        if (!src) return Promise.resolve(null);
+        return new Promise((resolve) => {
+          const img = new Image();
+          img.crossOrigin = "anonymous";
+          img.onload = () => resolve(img);
+          img.onerror = () => resolve(null);
+          img.src = src;
+        });
+      };
+
+      Promise.all([
+        new Promise<void>((resolve) => {
+          templateImg.onload = () => resolve();
+          templateImg.onerror = () => resolve();
+        }),
+        loadImg(config.ttd1Image),
+        loadImg(config.ttd2Image),
+      ]).then(([_, ttd1Img, ttd2Img]) => {
+        canvas.width = templateImg.naturalWidth || 2000;
+        canvas.height = templateImg.naturalHeight || 1414;
+
+        const nameText = userSession.fullName ? userSession.fullName.toUpperCase() : userSession.email.toUpperCase();
+
+        drawCertificateOnCanvas(
+          ctx,
+          canvas.width,
+          canvas.height,
+          templateImg,
+          previewKegiatan,
+          nameText,
+          config,
+          ttd1Img,
+          ttd2Img
+        );
+      });
+    }
+  }, [previewKegiatan, userSession]);
 
   const filteredList = list.filter(k => 
     k.nama_kegiatan.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -281,21 +329,25 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
                 </div>
               </div>
 
-              <div className="pt-5 mt-4 relative z-10">
+              <div className="pt-5 mt-4 relative z-10 grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => setPreviewKegiatan(kegiatan)}
+                  className="py-3 bg-brand-50 hover:bg-brand-100 border border-brand-100 rounded-2xl text-brand-700 text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <Eye className="w-4 h-4" />
+                  Pratinjau
+                </button>
                 <button
                   onClick={() => handleDownloadCertificate(kegiatan)}
                   disabled={downloadingId !== null}
-                  className="w-full py-3 bg-brand-50 hover:bg-brand-600 border border-brand-100 hover:border-transparent rounded-2xl text-brand-700 hover:text-white text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  className="py-3 bg-brand-600 hover:bg-brand-750 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-md"
                 >
                   {downloadingId === kegiatan.id ? (
-                    <>
-                      <RefreshCw className="w-4 h-4 animate-spin" />
-                      Menggambar Sertifikat...
-                    </>
+                    <RefreshCw className="w-4 h-4 animate-spin" />
                   ) : (
                     <>
                       <Download className="w-4 h-4" />
-                      Unduh Sertifikat PNG
+                      Unduh PNG
                     </>
                   )}
                 </button>
@@ -312,6 +364,59 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
           </p>
         </div>
       )}
+
+      {/* PREVIEW SERTIFIKAT MODAL */}
+      <AnimatePresence>
+        {previewKegiatan && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-brand-950/70 backdrop-blur-xs">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-3xl w-full max-w-4xl shadow-2xl overflow-hidden border border-brand-150 flex flex-col max-h-[90vh]"
+            >
+              <div className="px-6 py-4 bg-brand-50 border-b border-brand-100 flex items-center justify-between flex-shrink-0">
+                <div>
+                  <h3 className="font-black text-brand-950 text-sm">Pratinjau Sertifikat Resmi</h3>
+                  <p className="text-[10.5px] font-bold text-brand-500 mt-0.5">
+                    {previewKegiatan.nama_kegiatan}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setPreviewKegiatan(null)}
+                  className="p-1.5 rounded-xl hover:bg-brand-200/50 text-brand-400 hover:text-brand-800 transition-all cursor-pointer bg-transparent border-0"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="p-6 overflow-y-auto flex-1 flex items-center justify-center bg-slate-900">
+                <canvas
+                  ref={previewCanvasRef}
+                  className="w-full h-auto max-h-[60vh] object-contain rounded-xl shadow-2xl border border-slate-700"
+                />
+              </div>
+
+              <div className="px-6 py-4 bg-brand-50/50 border-t border-brand-100 flex items-center justify-end gap-3 flex-shrink-0">
+                <button
+                  onClick={() => setPreviewKegiatan(null)}
+                  className="px-4 py-2.5 rounded-2xl hover:bg-brand-200/40 text-brand-600 font-bold text-sm transition-all cursor-pointer bg-transparent border-0"
+                >
+                  Tutup
+                </button>
+                <button
+                  onClick={() => handleDownloadCertificate(previewKegiatan)}
+                  disabled={downloadingId !== null}
+                  className="px-5 py-2.5 rounded-2xl bg-brand-600 hover:bg-brand-750 text-white font-bold text-sm shadow-md transition-all cursor-pointer border-0 flex items-center gap-2"
+                >
+                  <Download className="w-4 h-4" />
+                  Unduh Sertifikat PNG
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

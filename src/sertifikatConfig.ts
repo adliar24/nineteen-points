@@ -50,12 +50,12 @@ export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
   templateUrl: null, // Default uses /sertifikat_template.png
   
   ttd1Image: null,
-  ttd1Nama: "BEN HARRINGTON",
+  ttd1Nama: "Ben Harrington",
   ttd1Jabatan: "CEO",
 
   ttd2Image: null,
-  ttd2Nama: "SAMEER SHAH",
-  ttd2Jabatan: "MANAGER",
+  ttd2Nama: "Sameer Shah",
+  ttd2Jabatan: "Manager",
 
   positions: {
     noSertifikat: {
@@ -140,7 +140,20 @@ export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
   }
 };
 
-const CONFIG_STORAGE_KEY = "nineteen_points_sertifikat_config_v2";
+const CONFIG_STORAGE_KEY = "nineteen_points_sertifikat_config_v3";
+const DB_NAME = "NineteenPointsSertifikatDB";
+const STORE_NAME = "config_store";
+
+function openDB(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = () => {
+      req.result.createObjectStore(STORE_NAME);
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
 
 export function getSertifikatConfig(): SertifikatLayoutConfig {
   try {
@@ -162,19 +175,91 @@ export function getSertifikatConfig(): SertifikatLayoutConfig {
   return DEFAULT_SERTIFIKAT_CONFIG;
 }
 
-export function saveSertifikatConfig(config: SertifikatLayoutConfig): void {
+export async function getSertifikatConfigAsync(): Promise<SertifikatLayoutConfig> {
   try {
-    localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(config));
+    const db = await openDB();
+    const tx = db.transaction(STORE_NAME, "readonly");
+    const store = tx.objectStore(STORE_NAME);
+    const req = store.get(CONFIG_STORAGE_KEY);
+    return new Promise((resolve) => {
+      req.onsuccess = () => {
+        if (req.result) {
+          resolve({
+            ...DEFAULT_SERTIFIKAT_CONFIG,
+            ...req.result,
+            positions: {
+              ...DEFAULT_SERTIFIKAT_CONFIG.positions,
+              ...(req.result.positions || {})
+            }
+          });
+        } else {
+          resolve(getSertifikatConfig());
+        }
+      };
+      req.onerror = () => resolve(getSertifikatConfig());
+    });
   } catch (e) {
-    console.error("Gagal menyimpan konfigurasi sertifikat:", e);
+    return getSertifikatConfig();
   }
 }
 
-export function resetSertifikatConfig(): SertifikatLayoutConfig {
+export async function saveSertifikatConfigAsync(config: SertifikatLayoutConfig): Promise<void> {
+  // 1. Save to IndexedDB (Supports large Data URLs with no quota limit)
+  try {
+    const db = await openDB();
+    const tx = db.transaction(STORE_NAME, "readwrite");
+    const store = tx.objectStore(STORE_NAME);
+    store.put(config, CONFIG_STORAGE_KEY);
+  } catch (e) {
+    console.error("Gagal menyimpan ke IndexedDB:", e);
+  }
+
+  // 2. Try saving to localStorage as fallback
+  try {
+    localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(config));
+  } catch (e) {
+    // If quota exceeded due to large images, save lightweight version without heavy image strings
+    try {
+      const lightConfig = {
+        ...config,
+        templateUrl: config.templateUrl && config.templateUrl.length > 500000 ? null : config.templateUrl,
+        ttd1Image: config.ttd1Image && config.ttd1Image.length > 500000 ? null : config.ttd1Image,
+        ttd2Image: config.ttd2Image && config.ttd2Image.length > 500000 ? null : config.ttd2Image,
+      };
+      localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(lightConfig));
+    } catch (err) {
+      console.warn("localStorage quota exceeded, stored in IndexedDB only.");
+    }
+  }
+
+  // 3. Dispatch global custom event so all views re-render instantly
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("sertifikat_config_updated", { detail: config }));
+  }
+}
+
+export function saveSertifikatConfig(config: SertifikatLayoutConfig): void {
+  saveSertifikatConfigAsync(config);
+}
+
+export async function resetSertifikatConfigAsync(): Promise<SertifikatLayoutConfig> {
   try {
     localStorage.removeItem(CONFIG_STORAGE_KEY);
+    const db = await openDB();
+    const tx = db.transaction(STORE_NAME, "readwrite");
+    const store = tx.objectStore(STORE_NAME);
+    store.delete(CONFIG_STORAGE_KEY);
   } catch (e) {
     console.error("Gagal mereset konfigurasi sertifikat:", e);
   }
+
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("sertifikat_config_updated", { detail: DEFAULT_SERTIFIKAT_CONFIG }));
+  }
+  return DEFAULT_SERTIFIKAT_CONFIG;
+}
+
+export function resetSertifikatConfig(): SertifikatLayoutConfig {
+  resetSertifikatConfigAsync();
   return DEFAULT_SERTIFIKAT_CONFIG;
 }

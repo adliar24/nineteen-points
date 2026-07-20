@@ -4,7 +4,8 @@ import { Award, Download, Calendar, RefreshCw, FileText, Search, Eye, X } from "
 import { motion, AnimatePresence } from "motion/react";
 import { getKegiatanGuruList } from "../dbStore";
 import { UserSession, KegiatanGuru } from "../types";
-import { getSertifikatConfig, SertifikatLayoutConfig } from "../sertifikatConfig";
+import { getSertifikatConfigAsync, getSertifikatConfig, SertifikatLayoutConfig } from "../sertifikatConfig";
+import { toSentenceCase } from "../formatName";
 
 interface GuruSertifikatViewProps {
   userSession: UserSession;
@@ -50,14 +51,15 @@ export function drawCertificateOnCanvas(
   const noCertText = kegiatan.no_sertifikat ? `No: ${kegiatan.no_sertifikat}` : "";
   drawStyledText(noCertText, pos.noSertifikat);
 
-  // 3. Prefix Nama ("Diberikan Kepada:" / "We proudly present to:")
+  // 3. Prefix Nama ("Diberikan kepada:" / "We proudly present to:")
   drawStyledText("Diberikan kepada:", pos.prefixNama);
 
-  // 4. Nama Guru / Peserta
-  drawStyledText(nameText, pos.namaGuru);
+  // 4. Nama Guru / Peserta (Always Sentence Case)
+  const formattedName = toSentenceCase(nameText);
+  drawStyledText(formattedName, pos.namaGuru);
 
   // 5. Deskripsi Kegiatan
-  const deskripsiText = `Atas partisipasi aktifnya sebagai ${kegiatan.peran.toUpperCase()} dalam kegiatan "${kegiatan.nama_kegiatan}" yang diselenggarakan oleh ${kegiatan.penyelenggara || "SMAN 19 Bandung"}.`;
+  const deskripsiText = `Atas partisipasi aktifnya sebagai ${kegiatan.peran} dalam kegiatan "${kegiatan.nama_kegiatan}" yang diselenggarakan oleh ${kegiatan.penyelenggara || "SMAN 19 Bandung"}.`;
   
   // Wrap multi-line deskripsi if needed
   const descX = (pos.deskripsi.xPercent / 100) * canvasWidth;
@@ -100,7 +102,7 @@ export function drawCertificateOnCanvas(
     const imgY = (pos.ttd1ImagePos.yPercent / 100) * canvasHeight - imgH / 2;
     ctx.drawImage(ttd1Img, imgX, imgY, imgW, imgH);
   }
-  drawStyledText(config.ttd1Nama, pos.ttd1NamaPos);
+  drawStyledText(toSentenceCase(config.ttd1Nama), pos.ttd1NamaPos);
   drawStyledText(config.ttd1Jabatan, pos.ttd1JabatanPos);
 
   // 7. TTD 2 (Penanda Tangan Kanan)
@@ -112,7 +114,7 @@ export function drawCertificateOnCanvas(
     const imgY = (pos.ttd2ImagePos.yPercent / 100) * canvasHeight - imgH / 2;
     ctx.drawImage(ttd2Img, imgX, imgY, imgW, imgH);
   }
-  drawStyledText(config.ttd2Nama, pos.ttd2NamaPos);
+  drawStyledText(toSentenceCase(config.ttd2Nama), pos.ttd2NamaPos);
   drawStyledText(config.ttd2Jabatan, pos.ttd2JabatanPos);
 }
 
@@ -120,7 +122,24 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [previewKegiatan, setPreviewKegiatan] = useState<KegiatanGuru | null>(null);
+  const [currentConfig, setCurrentConfig] = useState<SertifikatLayoutConfig>(() => getSertifikatConfig());
   const previewCanvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  // Load config asynchronously & listen for updates
+  useEffect(() => {
+    getSertifikatConfigAsync().then(cfg => setCurrentConfig(cfg));
+
+    const handleUpdate = (e: any) => {
+      if (e.detail) {
+        setCurrentConfig(e.detail);
+      } else {
+        getSertifikatConfigAsync().then(cfg => setCurrentConfig(cfg));
+      }
+    };
+
+    window.addEventListener("sertifikat_config_updated", handleUpdate);
+    return () => window.removeEventListener("sertifikat_config_updated", handleUpdate);
+  }, []);
 
   // 1. Query teacher activities/certificates
   const { data: list = [], isLoading, refetch } = useQuery({
@@ -131,7 +150,7 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
   // 2. Generate and download certificate using PNG template & dynamic positions
   const handleDownloadCertificate = async (kegiatan: KegiatanGuru) => {
     setDownloadingId(kegiatan.id);
-    const config = getSertifikatConfig();
+    const config = await getSertifikatConfigAsync();
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
     if (!ctx) {
@@ -165,7 +184,7 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
       canvas.width = templateImg.naturalWidth || 2000;
       canvas.height = templateImg.naturalHeight || 1414;
 
-      const nameText = userSession.fullName ? userSession.fullName.toUpperCase() : userSession.email.toUpperCase();
+      const nameText = userSession.fullName || userSession.email;
 
       drawCertificateOnCanvas(
         ctx,
@@ -182,7 +201,7 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
       const dataUrl = canvas.toDataURL("image/png");
       const link = document.createElement("a");
       link.href = dataUrl;
-      link.download = `SERTIFIKAT_${kegiatan.nama_kegiatan.toUpperCase().replace(/\s+/g, "_")}_${nameText.replace(/\s+/g, "_")}.png`;
+      link.download = `SERTIFIKAT_${kegiatan.nama_kegiatan.toUpperCase().replace(/\s+/g, "_")}_${toSentenceCase(nameText).replace(/\s+/g, "_")}.png`;
       link.click();
     } catch (err: any) {
       alert("Gagal mengunduh sertifikat: " + err.message);
@@ -198,9 +217,8 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
-      const config = getSertifikatConfig();
       const templateImg = new Image();
-      templateImg.src = config.templateUrl || "/sertifikat_template.png";
+      templateImg.src = currentConfig.templateUrl || "/sertifikat_template.png";
 
       const loadImg = (src: string | null): Promise<HTMLImageElement | null> => {
         if (!src) return Promise.resolve(null);
@@ -218,13 +236,13 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
           templateImg.onload = () => resolve();
           templateImg.onerror = () => resolve();
         }),
-        loadImg(config.ttd1Image),
-        loadImg(config.ttd2Image),
+        loadImg(currentConfig.ttd1Image),
+        loadImg(currentConfig.ttd2Image),
       ]).then(([_, ttd1Img, ttd2Img]) => {
         canvas.width = templateImg.naturalWidth || 2000;
         canvas.height = templateImg.naturalHeight || 1414;
 
-        const nameText = userSession.fullName ? userSession.fullName.toUpperCase() : userSession.email.toUpperCase();
+        const nameText = userSession.fullName || userSession.email;
 
         drawCertificateOnCanvas(
           ctx,
@@ -233,13 +251,13 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
           templateImg,
           previewKegiatan,
           nameText,
-          config,
+          currentConfig,
           ttd1Img,
           ttd2Img
         );
       });
     }
-  }, [previewKegiatan, userSession]);
+  }, [previewKegiatan, userSession, currentConfig]);
 
   const filteredList = list.filter(k => 
     k.nama_kegiatan.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -320,12 +338,6 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
                     <Calendar className="w-3.5 h-3.5 text-brand-500" />
                     {new Date(kegiatan.tanggal_kegiatan).toLocaleDateString("id-ID", { day: 'numeric', month: 'short', year: 'numeric' })}
                   </span>
-                  {kegiatan.durasi_jam && (
-                    <>
-                      <span className="w-1 h-1 bg-slate-300 rounded-full" />
-                      <span>{kegiatan.durasi_jam} Jam Pelajaran (JP)</span>
-                    </>
-                  )}
                 </div>
               </div>
 

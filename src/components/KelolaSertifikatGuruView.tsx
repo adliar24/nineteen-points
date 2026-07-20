@@ -5,9 +5,47 @@ import { Award, Plus, Trash2, Search, X, Check, RefreshCw, Layout, Upload, Save,
 import { getAllKegiatanGuru, getTeacherProfiles, addKegiatanGuruBulk, deleteKegiatanGuru } from "../dbStore";
 import ModalPortal from "./ModalPortal";
 import { toSentenceCase } from "../formatName";
-import { getSertifikatConfig, saveSertifikatConfig, resetSertifikatConfig, SertifikatLayoutConfig, DEFAULT_SERTIFIKAT_CONFIG } from "../sertifikatConfig";
+import { getSertifikatConfigAsync, saveSertifikatConfigAsync, resetSertifikatConfigAsync, SertifikatLayoutConfig, DEFAULT_SERTIFIKAT_CONFIG } from "../sertifikatConfig";
 import { drawCertificateOnCanvas } from "./GuruSertifikatView";
 import { KegiatanGuru } from "../types";
+
+// Helper function to compress/resize uploaded image data to max 2000px width
+function optimizeImageDataUrl(file: File, maxWidth = 2000): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          resolve(e.target?.result as string);
+          return;
+        }
+
+        ctx.drawImage(img, 0, 0, width, height);
+        // Save high quality PNG/JPEG
+        const isPng = file.type === "image/png";
+        const dataUrl = canvas.toDataURL(isPng ? "image/png" : "image/jpeg", 0.92);
+        resolve(dataUrl);
+      };
+      img.onerror = () => reject(new Error("Gagal membaca gambar"));
+      img.src = e.target?.result as string;
+    };
+    reader.onerror = () => reject(new Error("Gagal membaca file"));
+    reader.readAsDataURL(file);
+  });
+}
 
 export default function KelolaSertifikatGuruView() {
   const [activeTab, setActiveTab] = useState<"riwayat" | "desainer">("riwayat");
@@ -27,9 +65,14 @@ export default function KelolaSertifikatGuruView() {
   const [penyelenggara, setPenyelenggara] = useState("SMAN 19 Bandung");
 
   // Designer State
-  const [config, setConfig] = useState<SertifikatLayoutConfig>(() => getSertifikatConfig());
+  const [config, setConfig] = useState<SertifikatLayoutConfig>(DEFAULT_SERTIFIKAT_CONFIG);
   const [selectedElement, setSelectedElement] = useState<string>("namaGuru");
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  // Load config from IndexedDB on mount
+  useEffect(() => {
+    getSertifikatConfigAsync().then(cfg => setConfig(cfg));
+  }, []);
 
   // Queries
   const { data: kegiatanList = [], isLoading: loadingKegiatan, refetch: refetchKegiatan } = useQuery({
@@ -170,7 +213,7 @@ export default function KelolaSertifikatGuruView() {
           canvas.height,
           templateImg,
           dummyKegiatan,
-          "JOSEPH ADEYEMI",
+          "Joseph Adeyemi",
           config,
           ttd1Img,
           ttd2Img
@@ -212,53 +255,65 @@ export default function KelolaSertifikatGuruView() {
     }
   }, [activeTab, config, selectedElement]);
 
-  // Upload Template Image
-  const handleTemplateUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Upload & Optimize Template Image
+  const handleTemplateUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const dataUrl = event.target?.result as string;
-      setConfig(prev => ({ ...prev, templateUrl: dataUrl }));
-    };
-    reader.readAsDataURL(file);
+    try {
+      const optimizedUrl = await optimizeImageDataUrl(file, 2000);
+      const newConfig = { ...config, templateUrl: optimizedUrl };
+      setConfig(newConfig);
+      await saveSertifikatConfigAsync(newConfig);
+      setSuccessMsg("Gambar template berhasil diunggah & disimpan!");
+      setTimeout(() => setSuccessMsg(null), 3000);
+    } catch (err: any) {
+      alert("Gagal mengunggah template: " + err.message);
+    }
   };
 
   // Upload TTD 1 Image
-  const handleTtd1Upload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleTtd1Upload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const dataUrl = event.target?.result as string;
-      setConfig(prev => ({ ...prev, ttd1Image: dataUrl }));
-    };
-    reader.readAsDataURL(file);
+    try {
+      const optimizedUrl = await optimizeImageDataUrl(file, 800);
+      const newConfig = { ...config, ttd1Image: optimizedUrl };
+      setConfig(newConfig);
+      await saveSertifikatConfigAsync(newConfig);
+      setSuccessMsg("TTD 1 berhasil diunggah & disimpan!");
+      setTimeout(() => setSuccessMsg(null), 3000);
+    } catch (err: any) {
+      alert("Gagal mengunggah TTD: " + err.message);
+    }
   };
 
   // Upload TTD 2 Image
-  const handleTtd2Upload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleTtd2Upload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const dataUrl = event.target?.result as string;
-      setConfig(prev => ({ ...prev, ttd2Image: dataUrl }));
-    };
-    reader.readAsDataURL(file);
+    try {
+      const optimizedUrl = await optimizeImageDataUrl(file, 800);
+      const newConfig = { ...config, ttd2Image: optimizedUrl };
+      setConfig(newConfig);
+      await saveSertifikatConfigAsync(newConfig);
+      setSuccessMsg("TTD 2 berhasil diunggah & disimpan!");
+      setTimeout(() => setSuccessMsg(null), 3000);
+    } catch (err: any) {
+      alert("Gagal mengunggah TTD: " + err.message);
+    }
   };
 
   // Save Designer Config
-  const handleSaveConfig = () => {
-    saveSertifikatConfig(config);
+  const handleSaveConfig = async () => {
+    await saveSertifikatConfigAsync(config);
     setSuccessMsg("Konfigurasi desain template & posisi sertifikat berhasil disimpan!");
     setTimeout(() => setSuccessMsg(null), 4000);
   };
 
   // Reset Designer Config
-  const handleResetConfig = () => {
+  const handleResetConfig = async () => {
     if (window.confirm("Apakah Anda yakin ingin mereset konfigurasi template ke pengaturan default?")) {
-      const res = resetSertifikatConfig();
+      const res = await resetSertifikatConfigAsync();
       setConfig(res);
       setSuccessMsg("Konfigurasi berhasil direset ke default.");
       setTimeout(() => setSuccessMsg(null), 4000);
@@ -521,7 +576,7 @@ export default function KelolaSertifikatGuruView() {
                 <div className="grid grid-cols-2 gap-2 mt-1">
                   <input
                     type="text"
-                    placeholder="Nama (misal: BEN HARRINGTON)"
+                    placeholder="Nama (misal: Ben Harrington)"
                     value={config.ttd1Nama}
                     onChange={(e) => setConfig(prev => ({ ...prev, ttd1Nama: e.target.value }))}
                     className="px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-xs font-bold"
@@ -563,14 +618,14 @@ export default function KelolaSertifikatGuruView() {
                 <div className="grid grid-cols-2 gap-2 mt-1">
                   <input
                     type="text"
-                    placeholder="Nama (misal: SAMEER SHAH)"
+                    placeholder="Nama (misal: Sameer Shah)"
                     value={config.ttd2Nama}
                     onChange={(e) => setConfig(prev => ({ ...prev, ttd2Nama: e.target.value }))}
                     className="px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-xs font-bold"
                   />
                   <input
                     type="text"
-                    placeholder="Jabatan (misal: MANAGER)"
+                    placeholder="Jabatan (misal: Manager)"
                     value={config.ttd2Jabatan}
                     onChange={(e) => setConfig(prev => ({ ...prev, ttd2Jabatan: e.target.value }))}
                     className="px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-xs font-bold"

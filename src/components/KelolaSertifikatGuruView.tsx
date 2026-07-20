@@ -73,6 +73,16 @@ export default function KelolaSertifikatGuruView() {
     getSertifikatConfigAsync().then(cfg => setConfig(cfg));
   }, []);
 
+  // Auto-save configuration changes automatically to IndexedDB & localStorage
+  const isInitialMount = useRef(true);
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    saveSertifikatConfigAsync(config);
+  }, [config]);
+
   // Queries
   const { data: kegiatanList = [], isLoading: loadingKegiatan, refetch: refetchKegiatan } = useQuery({
     queryKey: ["allKegiatanGuru"],
@@ -762,7 +772,7 @@ export default function KelolaSertifikatGuruView() {
             <div className="bg-white p-5 rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 space-y-4">
               <h3 className="text-xs font-black uppercase tracking-wider text-brand-900 flex items-center gap-2">
                 <Move className="w-4 h-4 text-brand-600" />
-                Pengaturan Posisi & Format Elemen
+                Pengaturan Posisi, Font & Spasi Elemen
               </h3>
 
               {/* Selector Elemen */}
@@ -890,6 +900,32 @@ export default function KelolaSertifikatGuruView() {
                           </div>
                         </div>
                       </div>
+
+                      {/* Jarak Spasi Baris / Line Height */}
+                      <div className="pt-2 border-t border-slate-100">
+                        <div className="flex justify-between text-[11px] font-bold text-slate-600">
+                          <span>Jarak Spasi Baris (Line Height)</span>
+                          <span className="font-mono text-brand-600">{(elemPos.lineHeightMultiplier || 1.45).toFixed(2)}x</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="1.0"
+                          max="2.5"
+                          step="0.05"
+                          value={elemPos.lineHeightMultiplier || 1.45}
+                          onChange={(e) => {
+                            const val = parseFloat(e.target.value);
+                            setConfig(prev => ({
+                              ...prev,
+                              positions: {
+                                ...prev.positions,
+                                [elemKey]: { ...elemPos, lineHeightMultiplier: val }
+                              }
+                            }));
+                          }}
+                          className="w-full accent-brand-600 cursor-pointer"
+                        />
+                      </div>
                     </div>
                   );
                 })()
@@ -992,8 +1028,9 @@ export default function KelolaSertifikatGuruView() {
                 <Edit3 className="w-3.5 h-3.5 text-brand-400" />
                 Live Pratinjau Desainer Sertifikat
               </span>
-              <span className="text-[10px] font-bold text-slate-400 bg-slate-900/80 px-2.5 py-1 rounded-lg border border-slate-800">
-                Klik pada canvas untuk memindahkan posisi elemen terpilih
+              <span className="text-[10px] font-bold text-emerald-400 bg-emerald-950/80 px-2.5 py-1 rounded-lg border border-emerald-800/60 flex items-center gap-1.5">
+                <Check className="w-3 h-3 text-emerald-400" />
+                Tersimpan Otomatis
               </span>
             </div>
 

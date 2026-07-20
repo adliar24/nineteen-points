@@ -6,6 +6,7 @@ export interface ElementPosition {
   align: "center" | "left" | "right";
   fontWeight?: string;
   fontStyle?: string;
+  lineHeightMultiplier?: number; // Spasi antar baris (misal 1.0 - 2.5)
 }
 
 export interface TtdElementPosition {
@@ -88,7 +89,8 @@ export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
       fontSize: 26,
       color: "#284478",
       align: "center",
-      fontWeight: "bold"
+      fontWeight: "bold",
+      lineHeightMultiplier: 1.4
     },
     prefixNama: {
       xPercent: 50,
@@ -96,7 +98,8 @@ export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
       fontSize: 24,
       color: "#334155",
       align: "center",
-      fontWeight: "normal"
+      fontWeight: "normal",
+      lineHeightMultiplier: 1.4
     },
     namaGuru: {
       xPercent: 50,
@@ -105,7 +108,8 @@ export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
       color: "#2d5ca8",
       align: "center",
       fontWeight: "bold",
-      fontStyle: "italic"
+      fontStyle: "italic",
+      lineHeightMultiplier: 1.2
     },
     deskripsi: {
       xPercent: 50,
@@ -113,7 +117,8 @@ export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
       fontSize: 24,
       color: "#334155",
       align: "center",
-      fontWeight: "normal"
+      fontWeight: "normal",
+      lineHeightMultiplier: 1.45
     },
     
     // TTD 1
@@ -187,12 +192,19 @@ export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
   }
 };
 
-const CONFIG_STORAGE_KEY = "nineteen_points_sertifikat_config_v4";
-const DB_NAME = "NineteenPointsSertifikatDB";
+const CONFIG_STORAGE_KEY = "nineteen_points_sertifikat_config_v5";
+const DB_NAME = "NineteenPointsSertifikatDB_v5";
 const STORE_NAME = "config_store";
+
+// Memory cache for synchronous instant access
+let cachedConfig: SertifikatLayoutConfig | null = null;
 
 function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
+    if (typeof indexedDB === "undefined") {
+      reject(new Error("IndexedDB not supported"));
+      return;
+    }
     const req = indexedDB.open(DB_NAME, 1);
     req.onupgradeneeded = () => {
       req.result.createObjectStore(STORE_NAME);
@@ -203,11 +215,12 @@ function openDB(): Promise<IDBDatabase> {
 }
 
 export function getSertifikatConfig(): SertifikatLayoutConfig {
+  if (cachedConfig) return cachedConfig;
   try {
     const stored = localStorage.getItem(CONFIG_STORAGE_KEY);
     if (stored) {
       const parsed = JSON.parse(stored);
-      return {
+      cachedConfig = {
         ...DEFAULT_SERTIFIKAT_CONFIG,
         ...parsed,
         positions: {
@@ -215,6 +228,7 @@ export function getSertifikatConfig(): SertifikatLayoutConfig {
           ...(parsed.positions || {})
         }
       };
+      return cachedConfig;
     }
   } catch (e) {
     console.error("Gagal memuat konfigurasi sertifikat:", e);
@@ -223,6 +237,8 @@ export function getSertifikatConfig(): SertifikatLayoutConfig {
 }
 
 export async function getSertifikatConfigAsync(): Promise<SertifikatLayoutConfig> {
+  if (cachedConfig) return cachedConfig;
+
   try {
     const db = await openDB();
     const tx = db.transaction(STORE_NAME, "readonly");
@@ -231,14 +247,15 @@ export async function getSertifikatConfigAsync(): Promise<SertifikatLayoutConfig
     return new Promise((resolve) => {
       req.onsuccess = () => {
         if (req.result) {
-          resolve({
+          cachedConfig = {
             ...DEFAULT_SERTIFIKAT_CONFIG,
             ...req.result,
             positions: {
               ...DEFAULT_SERTIFIKAT_CONFIG.positions,
               ...(req.result.positions || {})
             }
-          });
+          };
+          resolve(cachedConfig);
         } else {
           resolve(getSertifikatConfig());
         }
@@ -251,6 +268,8 @@ export async function getSertifikatConfigAsync(): Promise<SertifikatLayoutConfig
 }
 
 export async function saveSertifikatConfigAsync(config: SertifikatLayoutConfig): Promise<void> {
+  cachedConfig = config;
+
   // 1. Save to IndexedDB (Supports large Data URLs with no quota limit)
   try {
     const db = await openDB();
@@ -261,7 +280,7 @@ export async function saveSertifikatConfigAsync(config: SertifikatLayoutConfig):
     console.error("Gagal menyimpan ke IndexedDB:", e);
   }
 
-  // 2. Try saving to localStorage as fallback
+  // 2. Save to localStorage
   try {
     localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(config));
   } catch (e) {
@@ -290,6 +309,7 @@ export function saveSertifikatConfig(config: SertifikatLayoutConfig): void {
 }
 
 export async function resetSertifikatConfigAsync(): Promise<SertifikatLayoutConfig> {
+  cachedConfig = DEFAULT_SERTIFIKAT_CONFIG;
   try {
     localStorage.removeItem(CONFIG_STORAGE_KEY);
     const db = await openDB();

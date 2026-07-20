@@ -631,7 +631,7 @@ CREATE TABLE public.kehadiran_guru (
   id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id         UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
   tanggal         DATE DEFAULT CURRENT_DATE NOT NULL,
-  jam_masuk       TIME WITHOUT TIME ZONE NOT NULL,
+  jam_masuk       TIME WITHOUT TIME ZONE,
   status          TEXT CHECK (status IN ('hadir', 'sakit', 'izin', 'alfa')) DEFAULT 'hadir' NOT NULL,
   keterangan      TEXT,
   jadwal_id       UUID REFERENCES public.jadwal_guru(id) ON DELETE CASCADE NOT NULL,
@@ -715,10 +715,7 @@ CREATE POLICY "jadwal_guru_delete" ON public.jadwal_guru
 -- 7g. POLICIES KEHADIRAN GURU
 CREATE POLICY "kehadiran_guru_select" ON public.kehadiran_guru
   FOR SELECT TO authenticated
-  USING (
-    user_id = auth.uid() OR
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('super_admin', 'kepala_sekolah', 'piket'))
-  );
+  USING (true);
 
 CREATE POLICY "kehadiran_guru_insert" ON public.kehadiran_guru
   FOR INSERT TO authenticated

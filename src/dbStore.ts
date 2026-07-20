@@ -622,21 +622,48 @@ export const checkInGuru = async (
   keterangan: string,
   jadwalId: string
 ): Promise<any> => {
-  const { data, error } = await supabase
-    .from("kehadiran_guru")
-    .insert({
-      user_id: userId,
-      tanggal: dateStr,
-      jam_masuk: timeStr,
-      status,
-      keterangan: keterangan || null,
-      jadwal_id: jadwalId
-    })
-    .select()
-    .single();
+  const defaultTime = new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
+  const finalTime = timeStr || defaultTime;
 
-  if (error) throw error;
-  return data;
+  const { data: existing } = await supabase
+    .from("kehadiran_guru")
+    .select("id")
+    .eq("jadwal_id", jadwalId)
+    .eq("tanggal", dateStr)
+    .maybeSingle();
+
+  if (existing) {
+    const { data, error } = await supabase
+      .from("kehadiran_guru")
+      .update({
+        user_id: userId,
+        status,
+        jam_masuk: finalTime,
+        keterangan: keterangan || null
+      })
+      .eq("id", existing.id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  } else {
+    const { data, error } = await supabase
+      .from("kehadiran_guru")
+      .insert({
+        user_id: userId,
+        tanggal: dateStr,
+        jam_masuk: finalTime,
+        status,
+        keterangan: keterangan || null,
+        jadwal_id: jadwalId
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
 };
 
 export const getKehadiranGuruHistory = async (userId: string): Promise<any[]> => {
@@ -733,6 +760,9 @@ export const saveKehadiranGuruManual = async (
   keterangan: string | null,
   jadwalId: string
 ): Promise<void> => {
+  const defaultTime = new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
+  const finalJamMasuk = jamMasuk || defaultTime;
+
   const { data: existing } = await supabase
     .from("kehadiran_guru")
     .select("id")
@@ -744,8 +774,9 @@ export const saveKehadiranGuruManual = async (
     const { error } = await supabase
       .from("kehadiran_guru")
       .update({
+        user_id: userId,
         status,
-        jam_masuk: jamMasuk || null,
+        jam_masuk: finalJamMasuk,
         keterangan: keterangan || null
       })
       .eq("id", existing.id);
@@ -758,7 +789,7 @@ export const saveKehadiranGuruManual = async (
         jadwal_id: jadwalId,
         tanggal: dateStr,
         status,
-        jam_masuk: jamMasuk || null,
+        jam_masuk: finalJamMasuk,
         keterangan: keterangan || null
       });
     if (error) throw error;

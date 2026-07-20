@@ -274,7 +274,7 @@ export default function GuruKehadiranView({ userSession }: GuruKehadiranViewProp
                           }`}>
                             {att.status === "hadir" ? "Hadir" : att.status === "sakit" ? "Sakit" : "Izin"}
                           </span>
-                          <p className="text-[10px] text-brand-450 font-bold">{att.jam_masuk.slice(0, 5)} WIB</p>
+                          <p className="text-[10px] text-brand-450 font-bold">{att.jam_masuk ? `${att.jam_masuk.slice(0, 5)} WIB` : "-"}</p>
                         </div>
                       ) : (
                         <button
@@ -360,7 +360,7 @@ export default function GuruKehadiranView({ userSession }: GuruKehadiranViewProp
                         }`}>
                           {record.status.toUpperCase()}
                         </span>
-                        <p>{record.jam_masuk.slice(0, 5)} WIB</p>
+                        <p>{record.jam_masuk ? `${record.jam_masuk.slice(0, 5)} WIB` : "-"}</p>
                       </div>
                     </div>
                   );

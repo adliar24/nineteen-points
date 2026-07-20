@@ -752,7 +752,7 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
                           }`}>
                             {att.status === "hadir" ? "Hadir" : att.status === "sakit" ? "Sakit" : "Izin"}
                           </span>
-                          <p className="text-[10px] text-brand-450 font-bold">{att.jam_masuk.slice(0, 5)} WIB</p>
+                          <p className="text-[10px] text-brand-450 font-bold">{att.jam_masuk ? `${att.jam_masuk.slice(0, 5)} WIB` : "-"}</p>
                         </div>
                       ) : (
                         <button

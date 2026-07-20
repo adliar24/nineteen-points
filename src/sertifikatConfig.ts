@@ -21,6 +21,11 @@ export interface SertifikatLayoutConfig {
   // Jumlah TTD (1, 2, atau 3)
   jumlahTtd: 1 | 2 | 3;
 
+  // Garis otomatis
+  showJudulLine: boolean;
+  showNamaLine: boolean;
+  showTtdLines: boolean;
+
   // TTD 1
   ttd1Image: string | null;
   ttd1Nama: string;
@@ -67,6 +72,10 @@ export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
   templateUrl: null, // Default uses /sertifikat_template.png
   
   jumlahTtd: 2,
+
+  showJudulLine: true,
+  showNamaLine: true,
+  showTtdLines: true,
 
   ttd1Image: null,
   ttd1Nama: "Ben Harrington",
@@ -192,8 +201,8 @@ export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
   }
 };
 
-const CONFIG_STORAGE_KEY = "nineteen_points_sertifikat_config_v5";
-const DB_NAME = "NineteenPointsSertifikatDB_v5";
+const CONFIG_STORAGE_KEY = "nineteen_points_sertifikat_config_v6";
+const DB_NAME = "NineteenPointsSertifikatDB_v6";
 const STORE_NAME = "config_store";
 
 // Memory cache for synchronous instant access
@@ -270,7 +279,6 @@ export async function getSertifikatConfigAsync(): Promise<SertifikatLayoutConfig
 export async function saveSertifikatConfigAsync(config: SertifikatLayoutConfig): Promise<void> {
   cachedConfig = config;
 
-  // 1. Save to IndexedDB (Supports large Data URLs with no quota limit)
   try {
     const db = await openDB();
     const tx = db.transaction(STORE_NAME, "readwrite");
@@ -280,7 +288,6 @@ export async function saveSertifikatConfigAsync(config: SertifikatLayoutConfig):
     console.error("Gagal menyimpan ke IndexedDB:", e);
   }
 
-  // 2. Save to localStorage
   try {
     localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(config));
   } catch (e) {
@@ -298,7 +305,6 @@ export async function saveSertifikatConfigAsync(config: SertifikatLayoutConfig):
     }
   }
 
-  // 3. Dispatch global custom event so all views re-render instantly
   if (typeof window !== "undefined") {
     window.dispatchEvent(new CustomEvent("sertifikat_config_updated", { detail: config }));
   }

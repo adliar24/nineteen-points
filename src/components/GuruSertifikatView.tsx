@@ -87,9 +87,26 @@ export function drawCertificateOnCanvas(
     ctx.drawImage(img, imgX, imgY, imgW, imgH);
   };
 
+  // Helper for drawing auto underlines
+  const drawAutoLine = (xCenterPercent: number, yPercent: number, widthPx: number, thicknessPx: number, color: string) => {
+    const x = (xCenterPercent / 100) * canvasWidth;
+    const y = (yPercent / 100) * canvasHeight;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = thicknessPx;
+    ctx.beginPath();
+    ctx.moveTo(x - widthPx / 2, y);
+    ctx.lineTo(x + widthPx / 2, y);
+    ctx.stroke();
+  };
+
   // 2. No Sertifikat
   const noCertText = kegiatan.no_sertifikat ? `No: ${kegiatan.no_sertifikat}` : "";
   drawStyledText(noCertText, pos.noSertifikat);
+
+  // Draw Title Underline if configured (Below No Sertifikat / Title)
+  if (config.showJudulLine) {
+    drawAutoLine(50, pos.noSertifikat.yPercent + 2.5, 980, 4, pos.noSertifikat.color || "#284478");
+  }
 
   // 3. Prefix Nama ("Diberikan kepada:" / "We proudly present to:")
   drawStyledText("Diberikan kepada:", pos.prefixNama);
@@ -97,6 +114,11 @@ export function drawCertificateOnCanvas(
   // 4. Nama Guru / Peserta (Always Sentence Case)
   const formattedName = toSentenceCase(nameText);
   drawStyledText(formattedName, pos.namaGuru);
+
+  // Draw Name Underline if configured (Below Participant Name)
+  if (config.showNamaLine) {
+    drawAutoLine(50, pos.namaGuru.yPercent + 5.5, 1260, 3.5, "#2d5ca8");
+  }
 
   // 5. Deskripsi Kegiatan (Formatted Template & Bold Support)
   let rawDesc = config.deskripsiTemplate || 'Atas partisipasi aktifnya sebagai **{peran}** dalam kegiatan **"{nama_kegiatan}"** yang diselenggarakan oleh **{penyelenggara}**.';
@@ -150,7 +172,8 @@ export function drawCertificateOnCanvas(
     lines.push(currentLine);
   }
 
-  const lineHeight = fontSize * 1.45;
+  const lineHeightMultiplier = pos.deskripsi.lineHeightMultiplier || 1.45;
+  const lineHeight = fontSize * lineHeightMultiplier;
   const startY = descY - ((lines.length - 1) * lineHeight) / 2;
 
   lines.forEach((lineWords, lineIdx) => {
@@ -178,31 +201,44 @@ export function drawCertificateOnCanvas(
   // 6. TTD Signatures (Support 1, 2, or 3 Signatures)
   const jumlahTtd = config.jumlahTtd || 2;
 
+  // Helper for drawing a signature underline
+  const drawTtdUnderline = (namePos: any) => {
+    if (config.showTtdLines) {
+      drawAutoLine(namePos.xPercent, namePos.yPercent - 2.5, 390, 3, namePos.color || "#284478");
+    }
+  };
+
   if (jumlahTtd === 1) {
     // Single TTD (Center / Configured)
     if (ttd1Img) drawTtdImg(ttd1Img, pos.ttd1ImagePos);
+    drawTtdUnderline(pos.ttd1NamaPos);
     drawStyledText(toSentenceCase(config.ttd1Nama), pos.ttd1NamaPos);
     drawStyledText(config.ttd1Jabatan, pos.ttd1JabatanPos);
   } else if (jumlahTtd === 2) {
     // 2 TTD (Kiri & Kanan)
     if (ttd1Img) drawTtdImg(ttd1Img, pos.ttd1ImagePos);
+    drawTtdUnderline(pos.ttd1NamaPos);
     drawStyledText(toSentenceCase(config.ttd1Nama), pos.ttd1NamaPos);
     drawStyledText(config.ttd1Jabatan, pos.ttd1JabatanPos);
 
     if (ttd2Img) drawTtdImg(ttd2Img, pos.ttd2ImagePos);
+    drawTtdUnderline(pos.ttd2NamaPos);
     drawStyledText(toSentenceCase(config.ttd2Nama), pos.ttd2NamaPos);
     drawStyledText(config.ttd2Jabatan, pos.ttd2JabatanPos);
   } else if (jumlahTtd === 3) {
     // 3 TTD (Kiri, Tengah, Kanan)
     if (ttd1Img) drawTtdImg(ttd1Img, pos.ttd1ImagePos);
+    drawTtdUnderline(pos.ttd1NamaPos);
     drawStyledText(toSentenceCase(config.ttd1Nama), pos.ttd1NamaPos);
     drawStyledText(config.ttd1Jabatan, pos.ttd1JabatanPos);
 
     if (ttd3Img) drawTtdImg(ttd3Img, pos.ttd3ImagePos);
+    drawTtdUnderline(pos.ttd3NamaPos);
     drawStyledText(toSentenceCase(config.ttd3Nama), pos.ttd3NamaPos);
     drawStyledText(config.ttd3Jabatan, pos.ttd3JabatanPos);
 
     if (ttd2Img) drawTtdImg(ttd2Img, pos.ttd2ImagePos);
+    drawTtdUnderline(pos.ttd2NamaPos);
     drawStyledText(toSentenceCase(config.ttd2Nama), pos.ttd2NamaPos);
     drawStyledText(config.ttd2Jabatan, pos.ttd2JabatanPos);
   }
@@ -381,7 +417,7 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
             placeholder="Cari berdasarkan nama kegiatan atau peran..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-11 pr-4 py-3 bg-brand-50/20 rounded-2xl border border-brand-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all text-brand-950 placeholder-brand-500/30"
+            className="w-full pl-11 pr-4 py-3 bg-brand-50/20 rounded-2xl border border-brand-100/50 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all text-brand-950 placeholder-brand-500/30"
           />
         </div>
         <button

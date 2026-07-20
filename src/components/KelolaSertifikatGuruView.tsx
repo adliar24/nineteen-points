@@ -73,6 +73,38 @@ export default function KelolaSertifikatGuruView() {
     getSertifikatConfigAsync().then(cfg => setConfig(cfg));
   }, []);
 
+  const changeTtdCount = (count: 1 | 2 | 3) => {
+    setConfig(prev => {
+      const updatedPos = { ...prev.positions };
+      if (count === 1) {
+        updatedPos.ttd1ImagePos.xPercent = 50;
+        updatedPos.ttd1NamaPos.xPercent = 50;
+        updatedPos.ttd1JabatanPos.xPercent = 50;
+      } else if (count === 2) {
+        updatedPos.ttd1ImagePos.xPercent = 27;
+        updatedPos.ttd1NamaPos.xPercent = 27;
+        updatedPos.ttd1JabatanPos.xPercent = 27;
+
+        updatedPos.ttd2ImagePos.xPercent = 73;
+        updatedPos.ttd2NamaPos.xPercent = 73;
+        updatedPos.ttd2JabatanPos.xPercent = 73;
+      } else if (count === 3) {
+        updatedPos.ttd1ImagePos.xPercent = 20;
+        updatedPos.ttd1NamaPos.xPercent = 20;
+        updatedPos.ttd1JabatanPos.xPercent = 20;
+
+        updatedPos.ttd3ImagePos.xPercent = 50;
+        updatedPos.ttd3NamaPos.xPercent = 50;
+        updatedPos.ttd3JabatanPos.xPercent = 50;
+
+        updatedPos.ttd2ImagePos.xPercent = 80;
+        updatedPos.ttd2NamaPos.xPercent = 80;
+        updatedPos.ttd2JabatanPos.xPercent = 80;
+      }
+      return { ...prev, jumlahTtd: count, positions: updatedPos };
+    });
+  };
+
   // Auto-save configuration changes automatically to IndexedDB & localStorage
   const isInitialMount = useRef(true);
   useEffect(() => {
@@ -609,7 +641,7 @@ export default function KelolaSertifikatGuruView() {
                 <div className="grid grid-cols-3 gap-2 bg-slate-50 p-1.5 rounded-2xl border border-slate-200">
                   <button
                     type="button"
-                    onClick={() => setConfig(prev => ({ ...prev, jumlahTtd: 1 }))}
+                    onClick={() => changeTtdCount(1)}
                     className={`py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer border-0 ${
                       config.jumlahTtd === 1 ? "bg-brand-600 text-white shadow-sm" : "bg-transparent text-slate-600 hover:text-slate-900"
                     }`}
@@ -618,7 +650,7 @@ export default function KelolaSertifikatGuruView() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setConfig(prev => ({ ...prev, jumlahTtd: 2 }))}
+                    onClick={() => changeTtdCount(2)}
                     className={`py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer border-0 ${
                       config.jumlahTtd === 2 ? "bg-brand-600 text-white shadow-sm" : "bg-transparent text-slate-600 hover:text-slate-900"
                     }`}
@@ -627,13 +659,49 @@ export default function KelolaSertifikatGuruView() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setConfig(prev => ({ ...prev, jumlahTtd: 3 }))}
+                    onClick={() => changeTtdCount(3)}
                     className={`py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer border-0 ${
                       config.jumlahTtd === 3 ? "bg-brand-600 text-white shadow-sm" : "bg-transparent text-slate-600 hover:text-slate-900"
                     }`}
                   >
                     3 TTD
                   </button>
+                </div>
+              </div>
+
+              {/* Toggle Garis Otomatis */}
+              <div className="space-y-2 pt-3 border-t border-slate-100">
+                <label className="text-[10.5px] font-bold text-slate-700 block">
+                  Tampilkan Garis Otomatis:
+                </label>
+                <div className="space-y-2 bg-slate-50 p-3 rounded-2xl border border-slate-200">
+                  <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={config.showJudulLine}
+                      onChange={(e) => setConfig(prev => ({ ...prev, showJudulLine: e.target.checked }))}
+                      className="w-4 h-4 accent-brand-600 rounded cursor-pointer"
+                    />
+                    <span>Garis Bawah Nomor/Judul Sertifikat</span>
+                  </label>
+                  <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={config.showNamaLine}
+                      onChange={(e) => setConfig(prev => ({ ...prev, showNamaLine: e.target.checked }))}
+                      className="w-4 h-4 accent-brand-600 rounded cursor-pointer"
+                    />
+                    <span>Garis Bawah Kolom Nama</span>
+                  </label>
+                  <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={config.showTtdLines}
+                      onChange={(e) => setConfig(prev => ({ ...prev, showTtdLines: e.target.checked }))}
+                      className="w-4 h-4 accent-brand-600 rounded cursor-pointer"
+                    />
+                    <span>Garis Bawah Tanda Tangan (TTD)</span>
+                  </label>
                 </div>
               </div>
 

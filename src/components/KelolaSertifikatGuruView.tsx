@@ -80,26 +80,38 @@ export default function KelolaSertifikatGuruView() {
         updatedPos.ttd1ImagePos.xPercent = 50;
         updatedPos.ttd1NamaPos.xPercent = 50;
         updatedPos.ttd1JabatanPos.xPercent = 50;
+        updatedPos.ttd1SubText1Pos.xPercent = 50;
+        updatedPos.ttd1SubText2Pos.xPercent = 50;
       } else if (count === 2) {
         updatedPos.ttd1ImagePos.xPercent = 27;
         updatedPos.ttd1NamaPos.xPercent = 27;
         updatedPos.ttd1JabatanPos.xPercent = 27;
+        updatedPos.ttd1SubText1Pos.xPercent = 27;
+        updatedPos.ttd1SubText2Pos.xPercent = 27;
 
         updatedPos.ttd2ImagePos.xPercent = 73;
         updatedPos.ttd2NamaPos.xPercent = 73;
         updatedPos.ttd2JabatanPos.xPercent = 73;
+        updatedPos.ttd2SubText1Pos.xPercent = 73;
+        updatedPos.ttd2SubText2Pos.xPercent = 73;
       } else if (count === 3) {
         updatedPos.ttd1ImagePos.xPercent = 20;
         updatedPos.ttd1NamaPos.xPercent = 20;
         updatedPos.ttd1JabatanPos.xPercent = 20;
+        updatedPos.ttd1SubText1Pos.xPercent = 20;
+        updatedPos.ttd1SubText2Pos.xPercent = 20;
 
         updatedPos.ttd3ImagePos.xPercent = 50;
         updatedPos.ttd3NamaPos.xPercent = 50;
         updatedPos.ttd3JabatanPos.xPercent = 50;
+        updatedPos.ttd3SubText1Pos.xPercent = 50;
+        updatedPos.ttd3SubText2Pos.xPercent = 50;
 
         updatedPos.ttd2ImagePos.xPercent = 80;
         updatedPos.ttd2NamaPos.xPercent = 80;
         updatedPos.ttd2JabatanPos.xPercent = 80;
+        updatedPos.ttd2SubText1Pos.xPercent = 80;
+        updatedPos.ttd2SubText2Pos.xPercent = 80;
       }
       return { ...prev, jumlahTtd: count, positions: updatedPos };
     });
@@ -920,6 +932,22 @@ export default function KelolaSertifikatGuruView() {
                     className="px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-xs font-bold"
                   />
                 </div>
+                <div className="grid grid-cols-2 gap-2 mt-1">
+                  <input
+                    type="text"
+                    placeholder="Kolom Tambahan 1 (misal: NIP. ...)"
+                    value={config.ttd1SubText1 || ""}
+                    onChange={(e) => setConfig(prev => ({ ...prev, ttd1SubText1: e.target.value }))}
+                    className="px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-xs font-semibold"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Kolom Tambahan 2 (opsional)"
+                    value={config.ttd1SubText2 || ""}
+                    onChange={(e) => setConfig(prev => ({ ...prev, ttd1SubText2: e.target.value }))}
+                    className="px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-xs font-semibold"
+                  />
+                </div>
               </div>
 
               {/* Upload TTD 2 (Jika Jumlah TTD >= 2) */}
@@ -961,6 +989,22 @@ export default function KelolaSertifikatGuruView() {
                       value={config.ttd2Jabatan}
                       onChange={(e) => setConfig(prev => ({ ...prev, ttd2Jabatan: e.target.value }))}
                       className="px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-xs font-bold"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 mt-1">
+                    <input
+                      type="text"
+                      placeholder="Kolom Tambahan 1 (misal: NIP. ...)"
+                      value={config.ttd2SubText1 || ""}
+                      onChange={(e) => setConfig(prev => ({ ...prev, ttd2SubText1: e.target.value }))}
+                      className="px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-xs font-semibold"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Kolom Tambahan 2 (opsional)"
+                      value={config.ttd2SubText2 || ""}
+                      onChange={(e) => setConfig(prev => ({ ...prev, ttd2SubText2: e.target.value }))}
+                      className="px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-xs font-semibold"
                     />
                   </div>
                 </div>
@@ -1005,6 +1049,22 @@ export default function KelolaSertifikatGuruView() {
                       value={config.ttd3Jabatan}
                       onChange={(e) => setConfig(prev => ({ ...prev, ttd3Jabatan: e.target.value }))}
                       className="px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-xs font-bold"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 mt-1">
+                    <input
+                      type="text"
+                      placeholder="Kolom Tambahan 1 (misal: NIP. ...)"
+                      value={config.ttd3SubText1 || ""}
+                      onChange={(e) => setConfig(prev => ({ ...prev, ttd3SubText1: e.target.value }))}
+                      className="px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-xs font-semibold"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Kolom Tambahan 2 (opsional)"
+                      value={config.ttd3SubText2 || ""}
+                      onChange={(e) => setConfig(prev => ({ ...prev, ttd3SubText2: e.target.value }))}
+                      className="px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-xs font-semibold"
                     />
                   </div>
                 </div>
@@ -1177,6 +1237,8 @@ export default function KelolaSertifikatGuruView() {
                   const ttdNum = selectedElement === "ttd1" ? "1" : selectedElement === "ttd2" ? "2" : "3";
                   const posKey = `ttd${ttdNum}NamaPos`;
                   const jabKey = `ttd${ttdNum}JabatanPos`;
+                  const s1Key = `ttd${ttdNum}SubText1Pos`;
+                  const s2Key = `ttd${ttdNum}SubText2Pos`;
                   const imgPosKey = `ttd${ttdNum}ImagePos`;
 
                   const elemPos = (config.positions as any)[posKey];
@@ -1204,6 +1266,8 @@ export default function KelolaSertifikatGuruView() {
                                 ...prev.positions,
                                 [posKey]: { ...elemPos, xPercent: val },
                                 [jabKey]: { ...(prev.positions as any)[jabKey], xPercent: val },
+                                [s1Key]: { ...(prev.positions as any)[s1Key], xPercent: val },
+                                [s2Key]: { ...(prev.positions as any)[s2Key], xPercent: val },
                                 [imgPosKey]: { ...imgPos, xPercent: val }
                               }
                             }));
@@ -1231,12 +1295,103 @@ export default function KelolaSertifikatGuruView() {
                                 ...prev.positions,
                                 [posKey]: { ...elemPos, yPercent: val },
                                 [jabKey]: { ...(prev.positions as any)[jabKey], yPercent: val + 3 },
+                                [s1Key]: { ...(prev.positions as any)[s1Key], yPercent: val + 6 },
+                                [s2Key]: { ...(prev.positions as any)[s2Key], yPercent: val + 9 },
                                 [imgPosKey]: { ...imgPos, yPercent: val - 11.5 }
                               }
                             }));
                           }}
                           className="w-full accent-brand-600 cursor-pointer"
                         />
+                      </div>
+
+                      {/* Ukuran Font TTD & Sub-Kolom */}
+                      <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100">
+                        <div>
+                          <label className="text-[10px] font-bold text-slate-500 block">Font Nama TTD (px)</label>
+                          <input
+                            type="number"
+                            min="10"
+                            max="60"
+                            value={elemPos.fontSize}
+                            onChange={(e) => {
+                              const val = parseInt(e.target.value) || 24;
+                              setConfig(prev => ({
+                                ...prev,
+                                positions: {
+                                  ...prev.positions,
+                                  [posKey]: { ...elemPos, fontSize: val }
+                                }
+                              }));
+                            }}
+                            className="w-full p-2 bg-slate-50 rounded-xl border border-slate-200 text-xs font-bold text-center"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-[10px] font-bold text-slate-500 block">Font Jabatan TTD (px)</label>
+                          <input
+                            type="number"
+                            min="10"
+                            max="60"
+                            value={(config.positions as any)[jabKey].fontSize}
+                            onChange={(e) => {
+                              const val = parseInt(e.target.value) || 18;
+                              setConfig(prev => ({
+                                ...prev,
+                                positions: {
+                                  ...prev.positions,
+                                  [jabKey]: { ...(prev.positions as any)[jabKey], fontSize: val }
+                                }
+                              }));
+                            }}
+                            className="w-full p-2 bg-slate-50 rounded-xl border border-slate-200 text-xs font-bold text-center"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3 pt-2">
+                        <div>
+                          <label className="text-[10px] font-bold text-slate-500 block">Font Tambahan 1 (px)</label>
+                          <input
+                            type="number"
+                            min="10"
+                            max="60"
+                            value={(config.positions as any)[s1Key].fontSize}
+                            onChange={(e) => {
+                              const val = parseInt(e.target.value) || 18;
+                              setConfig(prev => ({
+                                ...prev,
+                                positions: {
+                                  ...prev.positions,
+                                  [s1Key]: { ...(prev.positions as any)[s1Key], fontSize: val }
+                                }
+                              }));
+                            }}
+                            className="w-full p-2 bg-slate-50 rounded-xl border border-slate-200 text-xs font-bold text-center"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-[10px] font-bold text-slate-500 block">Font Tambahan 2 (px)</label>
+                          <input
+                            type="number"
+                            min="10"
+                            max="60"
+                            value={(config.positions as any)[s2Key].fontSize}
+                            onChange={(e) => {
+                              const val = parseInt(e.target.value) || 18;
+                              setConfig(prev => ({
+                                ...prev,
+                                positions: {
+                                  ...prev.positions,
+                                  [s2Key]: { ...(prev.positions as any)[s2Key], fontSize: val }
+                                }
+                              }));
+                            }}
+                            className="w-full p-2 bg-slate-50 rounded-xl border border-slate-200 text-xs font-bold text-center"
+                          />
+                        </div>
                       </div>
                     </div>
                   );

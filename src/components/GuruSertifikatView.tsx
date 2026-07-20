@@ -211,39 +211,102 @@ export function drawCertificateOnCanvas(
     }
   };
 
+  const drawTtdTextAndSubtext = (
+    nameText: string,
+    jabatanText: string,
+    subText1: string,
+    subText2: string,
+    namePos: any,
+    jabatanPos: any,
+    subText1Pos: any,
+    subText2Pos: any
+  ) => {
+    drawTtdUnderline(namePos);
+    drawStyledText(toSentenceCase(nameText), namePos);
+    drawStyledText(jabatanText, jabatanPos);
+    if (subText1) {
+      drawStyledText(subText1, subText1Pos);
+    }
+    if (subText2) {
+      drawStyledText(subText2, subText2Pos);
+    }
+  };
+
   if (jumlahTtd === 1) {
     // Single TTD (Center / Configured)
     if (ttd1Img) drawTtdImg(ttd1Img, pos.ttd1ImagePos);
-    drawTtdUnderline(pos.ttd1NamaPos);
-    drawStyledText(toSentenceCase(config.ttd1Nama), pos.ttd1NamaPos);
-    drawStyledText(config.ttd1Jabatan, pos.ttd1JabatanPos);
+    drawTtdTextAndSubtext(
+      config.ttd1Nama,
+      config.ttd1Jabatan,
+      config.ttd1SubText1,
+      config.ttd1SubText2,
+      pos.ttd1NamaPos,
+      pos.ttd1JabatanPos,
+      pos.ttd1SubText1Pos,
+      pos.ttd1SubText2Pos
+    );
   } else if (jumlahTtd === 2) {
     // 2 TTD (Kiri & Kanan)
     if (ttd1Img) drawTtdImg(ttd1Img, pos.ttd1ImagePos);
-    drawTtdUnderline(pos.ttd1NamaPos);
-    drawStyledText(toSentenceCase(config.ttd1Nama), pos.ttd1NamaPos);
-    drawStyledText(config.ttd1Jabatan, pos.ttd1JabatanPos);
+    drawTtdTextAndSubtext(
+      config.ttd1Nama,
+      config.ttd1Jabatan,
+      config.ttd1SubText1,
+      config.ttd1SubText2,
+      pos.ttd1NamaPos,
+      pos.ttd1JabatanPos,
+      pos.ttd1SubText1Pos,
+      pos.ttd1SubText2Pos
+    );
 
     if (ttd2Img) drawTtdImg(ttd2Img, pos.ttd2ImagePos);
-    drawTtdUnderline(pos.ttd2NamaPos);
-    drawStyledText(toSentenceCase(config.ttd2Nama), pos.ttd2NamaPos);
-    drawStyledText(config.ttd2Jabatan, pos.ttd2JabatanPos);
+    drawTtdTextAndSubtext(
+      config.ttd2Nama,
+      config.ttd2Jabatan,
+      config.ttd2SubText1,
+      config.ttd2SubText2,
+      pos.ttd2NamaPos,
+      pos.ttd2JabatanPos,
+      pos.ttd2SubText1Pos,
+      pos.ttd2SubText2Pos
+    );
   } else if (jumlahTtd === 3) {
     // 3 TTD (Kiri, Tengah, Kanan)
     if (ttd1Img) drawTtdImg(ttd1Img, pos.ttd1ImagePos);
-    drawTtdUnderline(pos.ttd1NamaPos);
-    drawStyledText(toSentenceCase(config.ttd1Nama), pos.ttd1NamaPos);
-    drawStyledText(config.ttd1Jabatan, pos.ttd1JabatanPos);
+    drawTtdTextAndSubtext(
+      config.ttd1Nama,
+      config.ttd1Jabatan,
+      config.ttd1SubText1,
+      config.ttd1SubText2,
+      pos.ttd1NamaPos,
+      pos.ttd1JabatanPos,
+      pos.ttd1SubText1Pos,
+      pos.ttd1SubText2Pos
+    );
 
     if (ttd3Img) drawTtdImg(ttd3Img, pos.ttd3ImagePos);
-    drawTtdUnderline(pos.ttd3NamaPos);
-    drawStyledText(toSentenceCase(config.ttd3Nama), pos.ttd3NamaPos);
-    drawStyledText(config.ttd3Jabatan, pos.ttd3JabatanPos);
+    drawTtdTextAndSubtext(
+      config.ttd3Nama,
+      config.ttd3Jabatan,
+      config.ttd3SubText1,
+      config.ttd3SubText2,
+      pos.ttd3NamaPos,
+      pos.ttd3JabatanPos,
+      pos.ttd3SubText1Pos,
+      pos.ttd3SubText2Pos
+    );
 
     if (ttd2Img) drawTtdImg(ttd2Img, pos.ttd2ImagePos);
-    drawTtdUnderline(pos.ttd2NamaPos);
-    drawStyledText(toSentenceCase(config.ttd2Nama), pos.ttd2NamaPos);
-    drawStyledText(config.ttd2Jabatan, pos.ttd2JabatanPos);
+    drawTtdTextAndSubtext(
+      config.ttd2Nama,
+      config.ttd2Jabatan,
+      config.ttd2SubText1,
+      config.ttd2SubText2,
+      pos.ttd2NamaPos,
+      pos.ttd2JabatanPos,
+      pos.ttd2SubText1Pos,
+      pos.ttd2SubText2Pos
+    );
   }
 }
 

@@ -33,16 +33,22 @@ export interface SertifikatLayoutConfig {
   ttd1Image: string | null;
   ttd1Nama: string;
   ttd1Jabatan: string;
+  ttd1SubText1: string; // Opsional Kolom Tambahan 1 (misal NIP)
+  ttd1SubText2: string; // Opsional Kolom Tambahan 2 (misal Instansi)
 
   // TTD 2
   ttd2Image: string | null;
   ttd2Nama: string;
   ttd2Jabatan: string;
+  ttd2SubText1: string;
+  ttd2SubText2: string;
 
   // TTD 3
   ttd3Image: string | null;
   ttd3Nama: string;
   ttd3Jabatan: string;
+  ttd3SubText1: string;
+  ttd3SubText2: string;
 
   // Template Deskripsi Kustom (Mendukung Markdown **bold**)
   deskripsiTemplate: string;
@@ -58,16 +64,22 @@ export interface SertifikatLayoutConfig {
     ttd1ImagePos: TtdElementPosition;
     ttd1NamaPos: ElementPosition;
     ttd1JabatanPos: ElementPosition;
+    ttd1SubText1Pos: ElementPosition;
+    ttd1SubText2Pos: ElementPosition;
 
     // TTD 2
     ttd2ImagePos: TtdElementPosition;
     ttd2NamaPos: ElementPosition;
     ttd2JabatanPos: ElementPosition;
+    ttd2SubText1Pos: ElementPosition;
+    ttd2SubText2Pos: ElementPosition;
 
     // TTD 3
     ttd3ImagePos: TtdElementPosition;
     ttd3NamaPos: ElementPosition;
     ttd3JabatanPos: ElementPosition;
+    ttd3SubText1Pos: ElementPosition;
+    ttd3SubText2Pos: ElementPosition;
   };
 }
 
@@ -86,14 +98,20 @@ export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
   ttd1Image: null,
   ttd1Nama: "Ben Harrington",
   ttd1Jabatan: "CEO",
+  ttd1SubText1: "",
+  ttd1SubText2: "",
 
   ttd2Image: null,
   ttd2Nama: "Sameer Shah",
   ttd2Jabatan: "Manager",
+  ttd2SubText1: "",
+  ttd2SubText2: "",
 
   ttd3Image: null,
   ttd3Nama: "Drs. H. Sukarno, M.Pd.",
   ttd3Jabatan: "Kepala SMAN 19 Bandung",
+  ttd3SubText1: "",
+  ttd3SubText2: "",
 
   deskripsiTemplate: 'Atas partisipasi aktifnya sebagai **{peran}** dalam kegiatan **"{nama_kegiatan}"** yang diselenggarakan oleh **{penyelenggara}**.',
 
@@ -158,6 +176,22 @@ export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
       align: "center",
       fontWeight: "normal"
     },
+    ttd1SubText1Pos: {
+      xPercent: 27,
+      yPercent: 91.5,
+      fontSize: 18,
+      color: "#64748b",
+      align: "center",
+      fontWeight: "normal"
+    },
+    ttd1SubText2Pos: {
+      xPercent: 27,
+      yPercent: 94.5,
+      fontSize: 18,
+      color: "#64748b",
+      align: "center",
+      fontWeight: "normal"
+    },
 
     // TTD 2
     ttd2ImagePos: {
@@ -176,6 +210,22 @@ export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
     ttd2JabatanPos: {
       xPercent: 73,
       yPercent: 88.5,
+      fontSize: 18,
+      color: "#64748b",
+      align: "center",
+      fontWeight: "normal"
+    },
+    ttd2SubText1Pos: {
+      xPercent: 73,
+      yPercent: 91.5,
+      fontSize: 18,
+      color: "#64748b",
+      align: "center",
+      fontWeight: "normal"
+    },
+    ttd2SubText2Pos: {
+      xPercent: 73,
+      yPercent: 94.5,
       fontSize: 18,
       color: "#64748b",
       align: "center",
@@ -203,12 +253,28 @@ export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
       color: "#64748b",
       align: "center",
       fontWeight: "normal"
+    },
+    ttd3SubText1Pos: {
+      xPercent: 50,
+      yPercent: 91.5,
+      fontSize: 18,
+      color: "#64748b",
+      align: "center",
+      fontWeight: "normal"
+    },
+    ttd3SubText2Pos: {
+      xPercent: 50,
+      yPercent: 94.5,
+      fontSize: 18,
+      color: "#64748b",
+      align: "center",
+      fontWeight: "normal"
     }
   }
 };
 
-const CONFIG_STORAGE_KEY = "nineteen_points_sertifikat_config_v6";
-const DB_NAME = "NineteenPointsSertifikatDB_v6";
+const CONFIG_STORAGE_KEY = "nineteen_points_sertifikat_config_v7";
+const DB_NAME = "NineteenPointsSertifikatDB_v7";
 const STORE_NAME = "config_store";
 
 // Memory cache for synchronous instant access

@@ -32,6 +32,11 @@ self.addEventListener("activate", (e) => {
 });
 
 self.addEventListener("fetch", (e) => {
+  // Only handle http and https requests, ignore chrome-extension:// etc.
+  if (!e.request.url.startsWith("http")) {
+    return;
+  }
+
   // Skip supabase and non-GET requests
   if (
     e.request.url.includes("supabase.co") ||

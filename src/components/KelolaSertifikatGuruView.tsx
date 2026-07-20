@@ -781,34 +781,102 @@ export default function KelolaSertifikatGuruView() {
                 <label className="text-[10.5px] font-bold text-slate-700 block">
                   Tampilkan Garis Otomatis:
                 </label>
-                <div className="space-y-2 bg-slate-50 p-3 rounded-2xl border border-slate-200">
-                  <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={config.showJudulLine}
-                      onChange={(e) => setConfig(prev => ({ ...prev, showJudulLine: e.target.checked }))}
-                      className="w-4 h-4 accent-brand-600 rounded cursor-pointer"
-                    />
-                    <span>Garis Bawah Nomor/Judul Sertifikat</span>
-                  </label>
-                  <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={config.showNamaLine}
-                      onChange={(e) => setConfig(prev => ({ ...prev, showNamaLine: e.target.checked }))}
-                      className="w-4 h-4 accent-brand-600 rounded cursor-pointer"
-                    />
-                    <span>Garis Bawah Kolom Nama</span>
-                  </label>
-                  <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={config.showTtdLines}
-                      onChange={(e) => setConfig(prev => ({ ...prev, showTtdLines: e.target.checked }))}
-                      className="w-4 h-4 accent-brand-600 rounded cursor-pointer"
-                    />
-                    <span>Garis Bawah Tanda Tangan (TTD)</span>
-                  </label>
+                <div className="space-y-3 bg-slate-50 p-3 rounded-2xl border border-slate-200">
+                  <div className="space-y-1.5">
+                    <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={config.showJudulLine}
+                        onChange={(e) => setConfig(prev => ({ ...prev, showJudulLine: e.target.checked }))}
+                        className="w-4 h-4 accent-brand-600 rounded cursor-pointer"
+                      />
+                      <span>Garis Bawah Nomor/Judul Sertifikat</span>
+                    </label>
+                    {config.showJudulLine && (
+                      <div className="pl-6 space-y-1">
+                        <div className="flex justify-between text-[10px] font-bold text-slate-500">
+                          <span>Lebar Garis Judul</span>
+                          <span className="font-mono text-brand-600">{config.judulLineWidth || 980}px</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="200"
+                          max="1800"
+                          step="10"
+                          value={config.judulLineWidth || 980}
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value);
+                            setConfig(prev => ({ ...prev, judulLineWidth: val }));
+                          }}
+                          className="w-full accent-brand-600 cursor-pointer"
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-1.5 pt-2 border-t border-slate-200/50">
+                    <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={config.showNamaLine}
+                        onChange={(e) => setConfig(prev => ({ ...prev, showNamaLine: e.target.checked }))}
+                        className="w-4 h-4 accent-brand-600 rounded cursor-pointer"
+                      />
+                      <span>Garis Bawah Kolom Nama</span>
+                    </label>
+                    {config.showNamaLine && (
+                      <div className="pl-6 space-y-1">
+                        <div className="flex justify-between text-[10px] font-bold text-slate-500">
+                          <span>Lebar Garis Nama</span>
+                          <span className="font-mono text-brand-600">{config.namaLineWidth || 1260}px</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="200"
+                          max="1800"
+                          step="10"
+                          value={config.namaLineWidth || 1260}
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value);
+                            setConfig(prev => ({ ...prev, namaLineWidth: val }));
+                          }}
+                          className="w-full accent-brand-600 cursor-pointer"
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-1.5 pt-2 border-t border-slate-200/50">
+                    <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={config.showTtdLines}
+                        onChange={(e) => setConfig(prev => ({ ...prev, showTtdLines: e.target.checked }))}
+                        className="w-4 h-4 accent-brand-600 rounded cursor-pointer"
+                      />
+                      <span>Garis Bawah Tanda Tangan (TTD)</span>
+                    </label>
+                    {config.showTtdLines && (
+                      <div className="pl-6 space-y-1">
+                        <div className="flex justify-between text-[10px] font-bold text-slate-500">
+                          <span>Lebar Garis TTD</span>
+                          <span className="font-mono text-brand-600">{config.ttdLineWidth || 390}px</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="100"
+                          max="800"
+                          step="10"
+                          value={config.ttdLineWidth || 390}
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value);
+                            setConfig(prev => ({ ...prev, ttdLineWidth: val }));
+                          }}
+                          className="w-full accent-brand-600 cursor-pointer"
+                        />
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 

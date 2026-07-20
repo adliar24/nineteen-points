@@ -105,7 +105,8 @@ export function drawCertificateOnCanvas(
 
   // Draw Title Underline if configured (Below No Sertifikat / Title)
   if (config.showJudulLine) {
-    drawAutoLine(50, pos.noSertifikat.yPercent + 2.5, 980, 4, pos.noSertifikat.color || "#284478");
+    const lineW = config.judulLineWidth !== undefined ? config.judulLineWidth : 980;
+    drawAutoLine(50, pos.noSertifikat.yPercent + 2.5, lineW, 4, pos.noSertifikat.color || "#284478");
   }
 
   // 3. Prefix Nama ("Diberikan kepada:" / "We proudly present to:")
@@ -117,7 +118,8 @@ export function drawCertificateOnCanvas(
 
   // Draw Name Underline if configured (Below Participant Name)
   if (config.showNamaLine) {
-    drawAutoLine(50, pos.namaGuru.yPercent + 5.5, 1260, 3.5, "#2d5ca8");
+    const lineW = config.namaLineWidth !== undefined ? config.namaLineWidth : 1260;
+    drawAutoLine(50, pos.namaGuru.yPercent + 5.5, lineW, 3.5, "#2d5ca8");
   }
 
   // 5. Deskripsi Kegiatan (Formatted Template & Bold Support)
@@ -204,7 +206,8 @@ export function drawCertificateOnCanvas(
   // Helper for drawing a signature underline
   const drawTtdUnderline = (namePos: any) => {
     if (config.showTtdLines) {
-      drawAutoLine(namePos.xPercent, namePos.yPercent - 2.5, 390, 3, namePos.color || "#284478");
+      const lineW = config.ttdLineWidth !== undefined ? config.ttdLineWidth : 390;
+      drawAutoLine(namePos.xPercent, namePos.yPercent - 2.5, lineW, 3, namePos.color || "#284478");
     }
   };
 

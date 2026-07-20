@@ -23,8 +23,11 @@ export interface SertifikatLayoutConfig {
 
   // Garis otomatis
   showJudulLine: boolean;
+  judulLineWidth: number;
   showNamaLine: boolean;
+  namaLineWidth: number;
   showTtdLines: boolean;
+  ttdLineWidth: number;
 
   // TTD 1
   ttd1Image: string | null;
@@ -74,8 +77,11 @@ export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
   jumlahTtd: 2,
 
   showJudulLine: true,
+  judulLineWidth: 980,
   showNamaLine: true,
+  namaLineWidth: 1260,
   showTtdLines: true,
+  ttdLineWidth: 390,
 
   ttd1Image: null,
   ttd1Nama: "Ben Harrington",

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "motion/react";
 import { Award, Plus, Trash2, Search, X, Check, RefreshCw, Layout, Upload, Save, RotateCcw, Move, Edit3, Image as ImageIcon, Users, CheckSquare, Square, FileText, AlignLeft } from "lucide-react";
-import { getAllKegiatanGuru, getTeacherProfiles, addKegiatanGuruBulk, deleteKegiatanGuru } from "../dbStore";
+import { getAllKegiatanGuru, getTeacherProfiles, addKegiatanGuruBulk, deleteKegiatanGuru, deleteKegiatanGuruBulk, deleteAllKegiatanGuru } from "../dbStore";
 import ModalPortal from "./ModalPortal";
 import { toSentenceCase } from "../formatName";
 import { getSertifikatConfigAsync, saveSertifikatConfigAsync, resetSertifikatConfigAsync, SertifikatLayoutConfig, DEFAULT_SERTIFIKAT_CONFIG } from "../sertifikatConfig";
@@ -179,6 +179,49 @@ export default function KelolaSertifikatGuruView() {
     const confirm = window.confirm(`Apakah Anda yakin ingin menghapus data sertifikat untuk "${toSentenceCase(name)}"?`);
     if (confirm) {
       deleteMutation.mutate(id);
+    }
+  };
+
+  // Selected certificates in the table
+  const [selectedCertIds, setSelectedCertIds] = useState<string[]>([]);
+
+  const deleteSelectedMutation = useMutation({
+    mutationFn: () => deleteKegiatanGuruBulk(selectedCertIds),
+    onSuccess: () => {
+      setSuccessMsg(`Berhasil menghapus ${selectedCertIds.length} sertifikat.`);
+      setSelectedCertIds([]);
+      refetchKegiatan();
+      setTimeout(() => setSuccessMsg(null), 4000);
+    },
+    onError: (err: any) => {
+      alert("Gagal menghapus sertifikat terpilih: " + err.message);
+    }
+  });
+
+  const handleDeleteSelected = () => {
+    const confirm = window.confirm(`Apakah Anda yakin ingin menghapus ${selectedCertIds.length} sertifikat terpilih?`);
+    if (confirm) {
+      deleteSelectedMutation.mutate();
+    }
+  };
+
+  const deleteAllMutation = useMutation({
+    mutationFn: () => deleteAllKegiatanGuru(),
+    onSuccess: () => {
+      setSuccessMsg("Berhasil menghapus semua sertifikat.");
+      setSelectedCertIds([]);
+      refetchKegiatan();
+      setTimeout(() => setSuccessMsg(null), 4000);
+    },
+    onError: (err: any) => {
+      alert("Gagal menghapus semua sertifikat: " + err.message);
+    }
+  });
+
+  const handleDeleteAll = () => {
+    const confirm = window.confirm("PERINGATAN: Apakah Anda yakin ingin menghapus SEMUA sertifikat yang terdaftar di sistem? Tindakan ini tidak dapat dibatalkan.");
+    if (confirm) {
+      deleteAllMutation.mutate();
     }
   };
 
@@ -510,12 +553,50 @@ export default function KelolaSertifikatGuruView() {
             </div>
           </div>
 
+          {/* BULK ACTIONS BAR */}
+          {selectedCertIds.length > 0 && (
+            <div className="bg-rose-50 border border-rose-100 p-4 rounded-3xl flex items-center justify-between gap-4 animate-fade-in">
+              <span className="text-xs font-bold text-rose-800">
+                Terpilih {selectedCertIds.length} dari {filteredList.length} sertifikat
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setSelectedCertIds([])}
+                  className="px-4 py-2 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-bold transition-all cursor-pointer bg-transparent border-0"
+                >
+                  Batal Pilihan
+                </button>
+                <button
+                  onClick={handleDeleteSelected}
+                  className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-black shadow-xs transition-all cursor-pointer border-0 flex items-center gap-1.5"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  Hapus Terpilih ({selectedCertIds.length})
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* TABLE OF ISSUED CERTIFICATES */}
           <div className="bg-white rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs font-semibold text-brand-950">
                 <thead className="bg-brand-50/60 border-b border-brand-100 text-[10px] font-black uppercase text-brand-400 tracking-wider">
                   <tr>
+                    <th className="py-4 px-6 w-12 text-center">
+                      <input
+                        type="checkbox"
+                        checked={filteredList.length > 0 && selectedCertIds.length === filteredList.length}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedCertIds(filteredList.map(row => row.id));
+                          } else {
+                            setSelectedCertIds([]);
+                          }
+                        }}
+                        className="w-4 h-4 rounded cursor-pointer accent-brand-600"
+                      />
+                    </th>
                     <th className="py-4 px-6">Guru / Peserta</th>
                     <th className="py-4 px-6">Nama Kegiatan</th>
                     <th className="py-4 px-6">Peran</th>
@@ -526,7 +607,7 @@ export default function KelolaSertifikatGuruView() {
                 <tbody className="divide-y divide-brand-50">
                   {loadingKegiatan ? (
                     <tr>
-                      <td colSpan={5} className="text-center py-12">
+                      <td colSpan={6} className="text-center py-12">
                         <RefreshCw className="w-6 h-6 animate-spin mx-auto text-brand-500" />
                         <p className="text-xs font-bold text-brand-400 mt-2">Memuat list sertifikat...</p>
                       </td>
@@ -534,6 +615,18 @@ export default function KelolaSertifikatGuruView() {
                   ) : filteredList.length > 0 ? (
                     filteredList.map((row) => (
                       <tr key={row.id} className="hover:bg-brand-50/30 transition-colors">
+                        <td className="py-4 px-6 w-12 text-center">
+                          <input
+                            type="checkbox"
+                            checked={selectedCertIds.includes(row.id)}
+                            onChange={() => {
+                              setSelectedCertIds(prev => 
+                                prev.includes(row.id) ? prev.filter(id => id !== row.id) : [...prev, row.id]
+                              );
+                            }}
+                            className="w-4 h-4 rounded cursor-pointer accent-brand-600"
+                          />
+                        </td>
                         <td className="py-4 px-6">
                           <div className="font-bold text-brand-950">{toSentenceCase(row.user_nama)}</div>
                           <div className="text-[10px] text-slate-400">{row.user_email}</div>
@@ -565,7 +658,7 @@ export default function KelolaSertifikatGuruView() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={5} className="text-center py-12 text-slate-400 font-semibold">
+                      <td colSpan={6} className="text-center py-12 text-slate-400 font-semibold">
                         Belum ada data sertifikat diterbitkan atau cocok dengan filter.
                       </td>
                     </tr>
@@ -574,6 +667,20 @@ export default function KelolaSertifikatGuruView() {
               </table>
             </div>
           </div>
+
+          {/* DANGER AREA ACTIONS */}
+          {filteredList.length > 0 && (
+            <div className="flex justify-end pt-2">
+              <button
+                type="button"
+                onClick={handleDeleteAll}
+                className="px-4 py-2.5 text-rose-500 hover:text-rose-700 bg-rose-50/50 hover:bg-rose-50 rounded-2xl text-[11px] font-black uppercase tracking-wider transition-all cursor-pointer border border-rose-250/30 flex items-center gap-1.5"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                Hapus Semua Sertifikat ({filteredList.length})
+              </button>
+            </div>
+          )}
         </>
       )}
 

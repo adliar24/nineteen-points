@@ -894,6 +894,24 @@ export const deleteKegiatanGuru = async (id: string): Promise<void> => {
   if (error) throw error;
 };
 
+export const deleteKegiatanGuruBulk = async (ids: string[]): Promise<void> => {
+  const { error } = await supabase
+    .from("kegiatan_guru")
+    .delete()
+    .in("id", ids);
+
+  if (error) throw error;
+};
+
+export const deleteAllKegiatanGuru = async (): Promise<void> => {
+  const { error } = await supabase
+    .from("kegiatan_guru")
+    .delete()
+    .neq("id", "00000000-0000-0000-0000-000000000000");
+
+  if (error) throw error;
+};
+
 // =========================================================================
 // JADWAL GURU DATABASE SERVICES
 // =========================================================================

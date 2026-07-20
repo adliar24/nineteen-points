@@ -143,7 +143,8 @@ export function drawCertificateOnCanvas(
   ctx.textBaseline = "middle";
 
   const maxWidth = canvasWidth * 0.75;
-  const spaceWidth = ctx.measureText(" ").width;
+  const wordSpacingMultiplier = pos.deskripsi.wordSpacingMultiplier || 1.0;
+  const spaceWidth = ctx.measureText(" ").width * wordSpacingMultiplier;
 
   // Build wrapped lines of words
   interface LineWord {

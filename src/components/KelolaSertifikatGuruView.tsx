@@ -1204,30 +1204,57 @@ export default function KelolaSertifikatGuruView() {
                         </div>
                       </div>
 
-                      {/* Jarak Spasi Baris / Line Height */}
-                      <div className="pt-2 border-t border-slate-100">
-                        <div className="flex justify-between text-[11px] font-bold text-slate-600">
-                          <span>Jarak Spasi Baris (Line Height)</span>
-                          <span className="font-mono text-brand-600">{(elemPos.lineHeightMultiplier || 1.45).toFixed(2)}x</span>
+                      {/* Jarak Spasi Baris / Line Height & Jarak Spasi Kata */}
+                      <div className="pt-2 border-t border-slate-100 space-y-3">
+                        <div>
+                          <div className="flex justify-between text-[11px] font-bold text-slate-600">
+                            <span>Jarak Spasi Baris (Line Height)</span>
+                            <span className="font-mono text-brand-600">{(elemPos.lineHeightMultiplier || 1.45).toFixed(2)}x</span>
+                          </div>
+                          <input
+                            type="range"
+                            min="1.0"
+                            max="2.5"
+                            step="0.05"
+                            value={elemPos.lineHeightMultiplier || 1.45}
+                            onChange={(e) => {
+                              const val = parseFloat(e.target.value);
+                              setConfig(prev => ({
+                                ...prev,
+                                positions: {
+                                  ...prev.positions,
+                                  [elemKey]: { ...elemPos, lineHeightMultiplier: val }
+                                }
+                              }));
+                            }}
+                            className="w-full accent-brand-600 cursor-pointer"
+                          />
                         </div>
-                        <input
-                          type="range"
-                          min="1.0"
-                          max="2.5"
-                          step="0.05"
-                          value={elemPos.lineHeightMultiplier || 1.45}
-                          onChange={(e) => {
-                            const val = parseFloat(e.target.value);
-                            setConfig(prev => ({
-                              ...prev,
-                              positions: {
-                                ...prev.positions,
-                                [elemKey]: { ...elemPos, lineHeightMultiplier: val }
-                              }
-                            }));
-                          }}
-                          className="w-full accent-brand-600 cursor-pointer"
-                        />
+
+                        <div>
+                          <div className="flex justify-between text-[11px] font-bold text-slate-600">
+                            <span>Jarak Spasi Kata (Word Spacing)</span>
+                            <span className="font-mono text-brand-600">{(elemPos.wordSpacingMultiplier || 1.0).toFixed(2)}x</span>
+                          </div>
+                          <input
+                            type="range"
+                            min="0.5"
+                            max="3.0"
+                            step="0.05"
+                            value={elemPos.wordSpacingMultiplier || 1.0}
+                            onChange={(e) => {
+                              const val = parseFloat(e.target.value);
+                              setConfig(prev => ({
+                                ...prev,
+                                positions: {
+                                  ...prev.positions,
+                                  [elemKey]: { ...elemPos, wordSpacingMultiplier: val }
+                                }
+                              }));
+                            }}
+                            className="w-full accent-brand-600 cursor-pointer"
+                          />
+                        </div>
                       </div>
                     </div>
                   );

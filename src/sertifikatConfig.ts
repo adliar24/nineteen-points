@@ -7,6 +7,7 @@ export interface ElementPosition {
   fontWeight?: string;
   fontStyle?: string;
   lineHeightMultiplier?: number; // Spasi antar baris (misal 1.0 - 2.5)
+  wordSpacingMultiplier?: number; // Spasi antar kata (misal 0.5 - 3.0)
 }
 
 export interface TtdElementPosition {

@@ -48,10 +48,7 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
   const isPiket = userSession.role === "piket";
   const isAdmin = userSession.role === "super_admin" || userSession.role === "kepala_sekolah";
 
-  // Tab states
-  // Piket: "scan" (QR code scanner & manual input), "rekap"
-  // Admin: "rekap", "aturan"
-  const [activeTab, setActiveTab] = useState<string>(isPiket ? "scan" : "rekap");
+  const [activeTab, setActiveTab] = useState<string>("rekap");
 
   // Core Data Queries
   const { data: siswaList = [] } = useQuery({
@@ -601,55 +598,27 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
 
       {/* Tabs */}
       <div className="flex border-b border-brand-100 pb-px gap-1 overflow-x-auto scrollbar-none">
-        {isPiket && (
-          <>
-            <button
-              onClick={() => setActiveTab("scan")}
-              className={`px-5 py-3 text-xs font-black uppercase tracking-wider border-b-2 cursor-pointer transition-all ${
-                activeTab === "scan"
-                  ? "border-brand-600 text-brand-800"
-                  : "border-transparent text-slate-400 hover:text-slate-600"
-              }`}
-            >
-              Scan & Input Hadir
-            </button>
-            <button
-              onClick={() => { setActiveTab("rekap"); refetchKehadiran(); }}
-              className={`px-5 py-3 text-xs font-black uppercase tracking-wider border-b-2 cursor-pointer transition-all ${
-                activeTab === "rekap"
-                  ? "border-brand-600 text-brand-800"
-                  : "border-transparent text-slate-400 hover:text-slate-600"
-              }`}
-            >
-              Tabel Rekap Kehadiran
-            </button>
-          </>
-        )}
-        {isAdmin && (
-          <>
-            <button
-              onClick={() => { setActiveTab("rekap"); refetchKehadiran(); }}
-              className={`px-5 py-3 text-xs font-black uppercase tracking-wider border-b-2 cursor-pointer transition-all ${
-                activeTab === "rekap"
-                  ? "border-brand-600 text-brand-800"
-                  : "border-transparent text-slate-400 hover:text-slate-600"
-              }`}
-            >
-              Monitoring Absensi
-            </button>
-            {userSession.role === "super_admin" && (
-              <button
-                onClick={() => setActiveTab("aturan")}
-                className={`px-5 py-3 text-xs font-black uppercase tracking-wider border-b-2 cursor-pointer transition-all ${
-                  activeTab === "aturan"
-                    ? "border-brand-600 text-brand-800"
-                    : "border-transparent text-slate-400 hover:text-slate-600"
-                }`}
-              >
-                Aturan & Poin Absen
-              </button>
-            )}
-          </>
+        <button
+          onClick={() => { setActiveTab("rekap"); refetchKehadiran(); }}
+          className={`px-5 py-3 text-xs font-black uppercase tracking-wider border-b-2 cursor-pointer transition-all ${
+            activeTab === "rekap"
+              ? "border-brand-600 text-brand-800"
+              : "border-transparent text-slate-400 hover:text-slate-600"
+          }`}
+        >
+          Monitoring Absensi Murid
+        </button>
+        {userSession.role === "super_admin" && (
+          <button
+            onClick={() => setActiveTab("aturan")}
+            className={`px-5 py-3 text-xs font-black uppercase tracking-wider border-b-2 cursor-pointer transition-all ${
+              activeTab === "aturan"
+                ? "border-brand-600 text-brand-800"
+                : "border-transparent text-slate-400 hover:text-slate-600"
+            }`}
+          >
+            Aturan & Poin Absen
+          </button>
         )}
       </div>
 

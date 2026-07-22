@@ -58,6 +58,7 @@ export interface SertifikatLayoutConfig {
 
   // Tempat & Tanggal Halaman Depan
   tempatTanggalTemplate: string;
+  tempatTanggalJpTemplate?: string;
 
   // Halaman Belakang (JP)
   hasJpPage: boolean;
@@ -141,6 +142,7 @@ export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
 
   deskripsiTemplate: 'Atas partisipasi aktifnya sebagai **{peran}** dalam kegiatan **"{nama_kegiatan}"** yang diselenggarakan oleh **{penyelenggara}**.',
   tempatTanggalTemplate: 'Bandung, {tanggal}',
+  tempatTanggalJpTemplate: 'Bandung, {tanggal}',
 
   hasJpPage: false,
   templateJpUrl: null,

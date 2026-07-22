@@ -498,19 +498,25 @@ export function drawJpTablePageOnCanvas(
   }
 
   // Main Title
-  ctx.font = `bold ${titleFontSize}px sans-serif`;
-  const jpTitle = replaceVars(config.jpHeaderTitle || "STRUKTUR PROGRAM DAN MATERI PELATIHAN");
-  ctx.fillText(jpTitle.toUpperCase(), titleX, titleY);
+  const jpTitle = config.jpHeaderTitle !== undefined ? replaceVars(config.jpHeaderTitle) : "STRUKTUR PROGRAM DAN MATERI PELATIHAN";
+  if (jpTitle.trim() !== "") {
+    ctx.font = `bold ${titleFontSize}px sans-serif`;
+    ctx.fillText(jpTitle.toUpperCase(), titleX, titleY);
+  }
 
   // Subtitle (Activity Name)
-  ctx.font = `bold ${subtitleFontSize}px sans-serif`;
-  const jpSubtitle = replaceVars(config.jpHeaderSubtitle || "{nama_kegiatan}");
-  ctx.fillText(jpSubtitle.toUpperCase(), subtitleX, subtitleY);
+  const jpSubtitle = config.jpHeaderSubtitle !== undefined ? replaceVars(config.jpHeaderSubtitle) : "{nama_kegiatan}";
+  if (jpSubtitle.trim() !== "") {
+    ctx.font = `bold ${subtitleFontSize}px sans-serif`;
+    ctx.fillText(jpSubtitle.toUpperCase(), subtitleX, subtitleY);
+  }
 
   // Organizer / Subtext 2
-  ctx.font = `bold ${organizerFontSize}px sans-serif`;
-  const jpSub2 = replaceVars(config.jpHeaderSub2 || "{penyelenggara}");
-  ctx.fillText(jpSub2.toUpperCase(), organizerX, organizerY);
+  const jpSub2 = config.jpHeaderSub2 !== undefined ? replaceVars(config.jpHeaderSub2) : "{penyelenggara}";
+  if (jpSub2.trim() !== "") {
+    ctx.font = `bold ${organizerFontSize}px sans-serif`;
+    ctx.fillText(jpSub2.toUpperCase(), organizerX, organizerY);
+  }
 
   // Draw Header background
   ctx.fillStyle = "#284478";
@@ -648,7 +654,7 @@ export function drawJpTablePageOnCanvas(
   ctx.font = `${sigPos.fontWeight || "normal"} ${sigPos.fontSize || 18}px sans-serif`;
   ctx.fillStyle = sigPos.color || "#1e1b4b";
   ctx.textBaseline = "middle";
-  const dateTemplate = config.tempatTanggalTemplate || "Bandung, {tanggal}";
+  const dateTemplate = config.tempatTanggalJpTemplate || config.tempatTanggalTemplate || "Bandung, {tanggal}";
   const dateText = dateTemplate.replace(/{tanggal}/gi, formattedDateStr);
   ctx.fillText(dateText, sigX, sigY);
 

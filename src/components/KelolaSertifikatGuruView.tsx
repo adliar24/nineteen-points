@@ -72,6 +72,7 @@ export default function KelolaSertifikatGuruView() {
   const [config, setConfig] = useState<SertifikatLayoutConfig>(DEFAULT_SERTIFIKAT_CONFIG);
   const [selectedElement, setSelectedElement] = useState<string>("namaGuru");
   const [desainerPage, setDesainerPage] = useState<1 | 2>(1);
+  const [sidebarTab, setSidebarTab] = useState<"konten" | "posisi" | "jp">("konten");
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // Load config from IndexedDB on mount
@@ -1109,8 +1110,44 @@ export default function KelolaSertifikatGuruView() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* LEFT PANEL: UPLOAD, DESKRIPSI & ELEMENT POSITIONS CONTROL (5 COLS) */}
           <div className="lg:col-span-5 space-y-6">
-            {/* 1. KUSTOMISASI DESKRIPSI SERTIFIKAT (MENDUKUNG **BOLD**) */}
-            <div className="bg-white p-5 rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 space-y-3">
+            {/* Tab Navigation for Sidebar */}
+            <div className="flex bg-slate-100 p-1 rounded-2xl border border-slate-200/60 gap-1 shadow-sm">
+              <button
+                type="button"
+                onClick={() => setSidebarTab("konten")}
+                className={`flex-1 py-2 rounded-xl text-xs font-black transition-all cursor-pointer border-0 flex items-center justify-center gap-1.5 ${
+                  sidebarTab === "konten" ? "bg-white text-brand-950 shadow-sm" : "bg-transparent text-slate-500 hover:text-slate-900"
+                }`}
+              >
+                <FileText className="w-3.5 h-3.5" />
+                Konten Depan
+              </button>
+              <button
+                type="button"
+                onClick={() => setSidebarTab("posisi")}
+                className={`flex-1 py-2 rounded-xl text-xs font-black transition-all cursor-pointer border-0 flex items-center justify-center gap-1.5 ${
+                  sidebarTab === "posisi" ? "bg-white text-brand-950 shadow-sm" : "bg-transparent text-slate-500 hover:text-slate-900"
+                }`}
+              >
+                <Move className="w-3.5 h-3.5" />
+                Posisi Elemen
+              </button>
+              <button
+                type="button"
+                onClick={() => setSidebarTab("jp")}
+                className={`flex-1 py-2 rounded-xl text-xs font-black transition-all cursor-pointer border-0 flex items-center justify-center gap-1.5 ${
+                  sidebarTab === "jp" ? "bg-white text-brand-950 shadow-sm" : "bg-transparent text-slate-500 hover:text-slate-900"
+                }`}
+              >
+                <Layout className="w-3.5 h-3.5" />
+                Halaman JP
+              </button>
+            </div>
+
+            {sidebarTab === "konten" && (
+              <div className="space-y-6 animate-fade-in">
+                {/* 1. KUSTOMISASI DESKRIPSI SERTIFIKAT (MENDUKUNG **BOLD**) */}
+                <div className="bg-white p-5 rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 space-y-3">
               <h3 className="text-xs font-black uppercase tracking-wider text-brand-900 flex items-center gap-2">
                 <FileText className="w-4 h-4 text-brand-600" />
                 Edit Kalimat Deskripsi & Format Tebal
@@ -1524,13 +1561,17 @@ export default function KelolaSertifikatGuruView() {
                 </div>
               )}
             </div>
+          </div>
+        )}
 
-            {/* 3. ELEMENT POSITION EDITOR CONTROLS */}
-            <div className="bg-white p-5 rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 space-y-4">
-              <h3 className="text-xs font-black uppercase tracking-wider text-brand-900 flex items-center gap-2">
-                <Move className="w-4 h-4 text-brand-600" />
-                Pengaturan Posisi, Font & Spasi Elemen
-              </h3>
+          {sidebarTab === "posisi" && (
+            <div className="space-y-6 animate-fade-in">
+              {/* 3. ELEMENT POSITION EDITOR CONTROLS */}
+              <div className="bg-white p-5 rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 space-y-4">
+                <h3 className="text-xs font-black uppercase tracking-wider text-brand-900 flex items-center gap-2">
+                  <Move className="w-4 h-4 text-brand-600" />
+                  Pengaturan Posisi, Font & Spasi Elemen
+                </h3>
 
               {/* Selector Elemen */}
               <div className="space-y-1">
@@ -1566,7 +1607,7 @@ export default function KelolaSertifikatGuruView() {
               {!selectedElement.startsWith("ttd") && selectedElement !== "jpTtd" ? (
                 (() => {
                   const elemKey = selectedElement as keyof typeof config.positions;
-                  const elemPos = (config.positions as any)[elemKey];
+                  const elemPos = (config.positions as any)[elemKey] || (DEFAULT_SERTIFIKAT_CONFIG.positions as any)[elemKey];
                   if (!elemPos) return null;
 
                   return (
@@ -1733,8 +1774,8 @@ export default function KelolaSertifikatGuruView() {
                   const s2Key = isJpTtd ? "jpTtdSubText2Pos" : `ttd${ttdNum}SubText2Pos`;
                   const imgPosKey = isJpTtd ? "jpTtdImagePos" : `ttd${ttdNum}ImagePos`;
 
-                  const elemPos = (config.positions as any)[posKey];
-                  const imgPos = (config.positions as any)[imgPosKey];
+                  const elemPos = (config.positions as any)[posKey] || (DEFAULT_SERTIFIKAT_CONFIG.positions as any)[posKey];
+                  const imgPos = (config.positions as any)[imgPosKey] || (DEFAULT_SERTIFIKAT_CONFIG.positions as any)[imgPosKey];
                   if (!elemPos) return null;
 
                   return (
@@ -1970,9 +2011,13 @@ export default function KelolaSertifikatGuruView() {
                   );
                 })()
               )}
+            </div>
+          </div>
+        )}
 
-              {/* KUSTOMISASI HALAMAN 2 (JP) */}
-              <div className="space-y-4 pt-4 border-t border-slate-100">
+          {sidebarTab === "jp" && (
+            <div className="space-y-6 animate-fade-in">
+              <div className="bg-white p-5 rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 space-y-4">
                 <h3 className="text-xs font-black uppercase tracking-wider text-brand-900 flex items-center gap-2">
                   <FileText className="w-4 h-4 text-brand-600" />
                   Konfigurasi Halaman Belakang (JP)
@@ -2023,6 +2068,16 @@ export default function KelolaSertifikatGuruView() {
                           value={config.jpHeaderSub2 || ""}
                           onChange={(e) => setConfig(prev => ({ ...prev, jpHeaderSub2: e.target.value }))}
                           placeholder="Gunakan {penyelenggara} untuk penyelenggara dinamis"
+                          className="w-full px-2.5 py-1.5 bg-white rounded-lg border border-slate-200 text-xs font-semibold text-brand-950 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-black text-slate-500 uppercase block">Format Tempat & Tanggal Belakang:</label>
+                        <input
+                          type="text"
+                          value={config.tempatTanggalJpTemplate || ""}
+                          onChange={(e) => setConfig(prev => ({ ...prev, tempatTanggalJpTemplate: e.target.value }))}
+                          placeholder="Bandung, {tanggal}"
                           className="w-full px-2.5 py-1.5 bg-white rounded-lg border border-slate-200 text-xs font-semibold text-brand-950 focus:outline-none focus:ring-1 focus:ring-brand-500"
                         />
                       </div>
@@ -2140,9 +2195,11 @@ export default function KelolaSertifikatGuruView() {
                   </div>
                 )}
               </div>
+            </div>
+          )}
 
-              {/* SAVE / RESET BUTTONS */}
-              <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-3">
+          {/* SAVE / RESET BUTTONS */}
+          <div className="bg-white p-5 rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 flex items-center justify-between gap-3">
                 <button
                   type="button"
                   onClick={handleResetConfig}
@@ -2162,7 +2219,6 @@ export default function KelolaSertifikatGuruView() {
                 </button>
               </div>
             </div>
-          </div>
 
           {/* RIGHT PANEL: LIVE INTERACTIVE CANVAS PREVIEW (7 COLS) */}
           <div className="lg:col-span-7 bg-slate-950 p-6 rounded-3xl border border-slate-800 shadow-2xl flex flex-col items-center justify-center relative min-h-[450px]">

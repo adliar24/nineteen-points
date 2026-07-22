@@ -60,6 +60,9 @@ export interface SertifikatLayoutConfig {
   hasJpPage: boolean;
   templateJpUrl: string | null;
   materiJpRows: { materi: string; jp: number }[];
+  jpHeaderTitle?: string;
+  jpHeaderSubtitle?: string;
+  jpHeaderSub2?: string;
 
   // Posisi & Styling Elemen
   positions: {
@@ -132,6 +135,9 @@ export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
     { materi: "Pemanfaatan Platform Merdeka Mengajar (PMM)", jp: 6 },
     { materi: "Pembuatan Projek Penguatan Profil Pelajar Pancasila (P5)", jp: 6 }
   ],
+  jpHeaderTitle: "STRUKTUR PROGRAM DAN MATERI PELATIHAN",
+  jpHeaderSubtitle: "{nama_kegiatan}",
+  jpHeaderSub2: "{penyelenggara}",
 
   positions: {
     noSertifikat: {

@@ -323,6 +323,14 @@ export function drawJpTablePageOnCanvas(
   ttd3Img?: HTMLImageElement | null,
   templateJpImg?: HTMLImageElement | null
 ) {
+  // Helper to replace variable placeholders
+  const replaceVars = (text: string) => {
+    return (text || "")
+      .replace(/{nama_kegiatan}/gi, kegiatan.nama_kegiatan)
+      .replace(/{penyelenggara}/gi, kegiatan.penyelenggara || "SMAN 19 Bandung")
+      .replace(/{peran}/gi, kegiatan.peran);
+  };
+
   // 1. Draw Background
   if (config.templateJpUrl && templateJpImg) {
     ctx.drawImage(templateJpImg, 0, 0, canvasWidth, canvasHeight);
@@ -339,36 +347,28 @@ export function drawJpTablePageOnCanvas(
     ctx.strokeRect(40, 40, canvasWidth - 80, canvasHeight - 80);
   }
 
-  // Titles
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillStyle = "#1e1b4b";
+  // Smart Detection Layout Adjustments
+  let tableFontSize = 18;
+  let headerFontSize = 20;
+  let titleFontSize = 38;
+  let subtitleFontSize = 28;
+  let organizerFontSize = 24;
+  let tableX = 150;
+  let tableWidth = canvasWidth - 300; // 1700px
+  let startY = 270;
+  let headerHeight = 60;
+  let rowPaddingY = 24;
+  let sigSpacing = 50;
 
-  // Main title
-  ctx.font = "bold 38px sans-serif";
-  ctx.fillText("STRUKTUR PROGRAM DAN MATERI PELATIHAN", canvasWidth / 2, 110);
-
-  // Subtitle (Activity Name)
-  ctx.font = "bold 28px sans-serif";
-  const rawActivityName = kegiatan.nama_kegiatan.toUpperCase();
-  ctx.fillText(rawActivityName, canvasWidth / 2, 165);
-
-  // Organizer
-  ctx.font = "bold 24px sans-serif";
-  const organizerText = (kegiatan.penyelenggara || "SMAN 19 Bandung").toUpperCase();
-  ctx.fillText(organizerText, canvasWidth / 2, 215);
-
-  // 2. Draw Table
-  const tableX = 150;
-  const tableWidth = canvasWidth - 300; // 1700px
-  const startY = 270;
-  const col1Width = 100; // No
-  const col3Width = 250; // JP
-  const col2Width = tableWidth - col1Width - col3Width; // 1350px
+  // Columns Width
+  let col1Width = 100; // No
+  let col3Width = 250; // JP
+  let col2Width = tableWidth - col1Width - col3Width; // 1350px
   const paddingX = 25;
 
   // Word Wrapping Helper
-  function getWrappedLines(text: string, maxWidth: number): string[] {
+  function getWrappedLines(text: string, maxWidth: number, font: string): string[] {
+    ctx.font = font;
     const words = (text || "").split(" ");
     const lines: string[] = [];
     let currentLine = "";
@@ -390,20 +390,91 @@ export function drawJpTablePageOnCanvas(
   }
 
   const rows = kegiatan.materi_jp || [];
-  const headerHeight = 60;
+  interface PreparedRow {
+    materi: string;
+    jp: number;
+    lines: string[];
+    height: number;
+  }
+  let rowsData: PreparedRow[] = [];
 
-  // Pre-calculate wrapped lines and heights for each row
-  ctx.font = "18px sans-serif";
-  const rowsData = rows.map((r) => {
-    const lines = getWrappedLines(r.materi, col2Width - paddingX * 2);
-    const calculatedHeight = Math.max(54, lines.length * 28 + 24);
-    return {
-      materi: r.materi,
-      jp: r.jp,
-      lines,
-      height: calculatedHeight
-    };
-  });
+  // Loop Smart Detection (Max 4 iterations) to fit everything in canvasHeight
+  let fitIndex = 0;
+  const maxFitIterations = 4;
+  
+  while (fitIndex < maxFitIterations) {
+    col2Width = tableWidth - col1Width - col3Width;
+    const fontStr = `${tableFontSize}px sans-serif`;
+    
+    rowsData = rows.map((r) => {
+      const lines = getWrappedLines(r.materi, col2Width - paddingX * 2, fontStr);
+      const calculatedHeight = Math.max(tableFontSize * 1.5 + 20, lines.length * (tableFontSize + 10) + rowPaddingY);
+      return {
+        materi: r.materi,
+        jp: r.jp,
+        lines,
+        height: calculatedHeight
+      };
+    });
+
+    const totalTableRowsHeight = rowsData.reduce((acc, r) => acc + r.height, 0);
+    const totalTableHeight = headerHeight + totalTableRowsHeight + 54; // header + rows + total row
+    
+    // Estimate total page height needed
+    // startY + tableHeight + sigSpacing + date line + principal signature height (approx 220px) + bottom margin
+    const totalPageHeightNeeded = startY + totalTableHeight + sigSpacing + 30 + 160 + 80;
+
+    if (totalPageHeightNeeded <= canvasHeight - 80) {
+      break; // It fits!
+    }
+
+    // Shrink layout dynamically
+    fitIndex++;
+    if (fitIndex === 1) {
+      // Step 1: Make table wider (decrease margins) & push startY up
+      tableX = 80;
+      tableWidth = canvasWidth - 160;
+      startY = 240;
+    } else if (fitIndex === 2) {
+      // Step 2: Decrease table font size & row padding
+      tableFontSize = 15;
+      headerFontSize = 18;
+      rowPaddingY = 16;
+      sigSpacing = 35;
+      startY = 220;
+    } else if (fitIndex === 3) {
+      // Step 3: Scale down top titles, decrease header height and shrink spacing to minimum
+      tableFontSize = 13;
+      headerFontSize = 15;
+      titleFontSize = 32;
+      subtitleFontSize = 24;
+      organizerFontSize = 20;
+      rowPaddingY = 12;
+      headerHeight = 50;
+      sigSpacing = 20;
+      startY = 200;
+    }
+  }
+
+  // Titles Rendering
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillStyle = "#1e1b4b";
+
+  // Main Title
+  ctx.font = `bold ${titleFontSize}px sans-serif`;
+  const jpTitle = replaceVars(config.jpHeaderTitle || "STRUKTUR PROGRAM DAN MATERI PELATIHAN");
+  ctx.fillText(jpTitle.toUpperCase(), canvasWidth / 2, startY - 160);
+
+  // Subtitle (Activity Name)
+  ctx.font = `bold ${subtitleFontSize}px sans-serif`;
+  const jpSubtitle = replaceVars(config.jpHeaderSubtitle || "{nama_kegiatan}");
+  ctx.fillText(jpSubtitle.toUpperCase(), canvasWidth / 2, startY - 105);
+
+  // Organizer / Subtext 2
+  ctx.font = `bold ${organizerFontSize}px sans-serif`;
+  const jpSub2 = replaceVars(config.jpHeaderSub2 || "{penyelenggara}");
+  ctx.fillText(jpSub2.toUpperCase(), canvasWidth / 2, startY - 55);
 
   // Draw Header background
   ctx.fillStyle = "#284478";
@@ -411,7 +482,7 @@ export function drawJpTablePageOnCanvas(
 
   // Header Texts
   ctx.fillStyle = "#ffffff";
-  ctx.font = "bold 20px sans-serif";
+  ctx.font = `bold ${headerFontSize}px sans-serif`;
   ctx.fillText("No.", tableX + col1Width / 2, startY + headerHeight / 2);
   ctx.fillText("Materi Pelatihan", tableX + col1Width + col2Width / 2, startY + headerHeight / 2);
   ctx.fillText("Jam Pelatihan (JP)", tableX + col1Width + col2Width + col3Width / 2, startY + headerHeight / 2);
@@ -434,24 +505,26 @@ export function drawJpTablePageOnCanvas(
     // Cell Texts
     ctx.fillStyle = "#000000";
     ctx.textAlign = "center";
-    ctx.font = "18px sans-serif";
+    ctx.font = `${tableFontSize}px sans-serif`;
     ctx.fillText(`${idx + 1}`, tableX + col1Width / 2, currentY + row.height / 2);
     
     // Wrapped Material Text
     ctx.textAlign = "left";
-    const lineStartOffset = currentY + (row.height - (row.lines.length * 28)) / 2 + 14;
+    const lineSpacing = tableFontSize + 10;
+    const lineStartOffset = currentY + (row.height - (row.lines.length * lineSpacing)) / 2 + tableFontSize / 2 + 3;
     row.lines.forEach((line, lineIdx) => {
-      ctx.fillText(line, tableX + col1Width + paddingX, lineStartOffset + lineIdx * 28);
+      ctx.fillText(line, tableX + col1Width + paddingX, lineStartOffset + lineIdx * lineSpacing);
     });
 
     ctx.textAlign = "center";
-    ctx.font = "bold 18px sans-serif";
+    ctx.font = `bold ${tableFontSize}px sans-serif`;
     ctx.fillText(`${row.jp} JP`, tableX + col1Width + col2Width + col3Width / 2, currentY + row.height / 2);
 
     currentY += row.height;
   });
 
   // Header Border
+  ctx.strokeStyle = "#1e1b4b";
   ctx.strokeRect(tableX, startY, tableWidth, headerHeight);
 
   // Total JP Row
@@ -462,7 +535,7 @@ export function drawJpTablePageOnCanvas(
   ctx.strokeRect(tableX, currentY, tableWidth, totalRowHeight);
 
   ctx.textAlign = "left";
-  ctx.font = "bold 18px sans-serif";
+  ctx.font = `bold ${tableFontSize}px sans-serif`;
   ctx.fillText("Jumlah Jam Pelatihan (JP)", tableX + col1Width + paddingX, currentY + totalRowHeight / 2);
 
   const totalJp = rows.reduce((acc, curr) => acc + (Number(curr.jp) || 0), 0);
@@ -470,7 +543,6 @@ export function drawJpTablePageOnCanvas(
   ctx.fillText(`${totalJp} JP`, tableX + col1Width + col2Width + col3Width / 2, currentY + totalRowHeight / 2);
 
   // Draw Vertical lines for columns inside table
-  ctx.strokeStyle = "#1e1b4b";
   ctx.beginPath();
   // Col 1 line
   ctx.moveTo(tableX + col1Width, startY);
@@ -482,8 +554,7 @@ export function drawJpTablePageOnCanvas(
 
   // 3. Signature & Date Section (Bottom Right)
   const sigAreaX = canvasWidth - 550;
-  // Dynamic Y starting position after table to avoid overlaps
-  const sigAreaY = currentY + totalRowHeight + 50;
+  const sigAreaY = currentY + totalRowHeight + sigSpacing;
 
   // Format Date (Indonesian style)
   const formattedDateStr = new Date(kegiatan.tanggal_kegiatan).toLocaleDateString("id-ID", {

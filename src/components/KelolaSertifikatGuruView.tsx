@@ -1880,6 +1880,40 @@ export default function KelolaSertifikatGuruView() {
 
                 {config.hasJpPage && (
                   <div className="space-y-4 bg-slate-50 p-4 rounded-2xl border border-slate-200 animate-fade-in">
+                    {/* Input Edit Judul/Teks Atas Halaman 2 */}
+                    <div className="space-y-3 pb-2 border-b border-slate-200/50">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-black text-slate-500 uppercase block">Judul Halaman belakang:</label>
+                        <input
+                          type="text"
+                          value={config.jpHeaderTitle || ""}
+                          onChange={(e) => setConfig(prev => ({ ...prev, jpHeaderTitle: e.target.value }))}
+                          placeholder="STRUKTUR PROGRAM DAN MATERI PELATIHAN"
+                          className="w-full px-2.5 py-1.5 bg-white rounded-lg border border-slate-200 text-xs font-semibold text-brand-950 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-black text-slate-500 uppercase block">Subjudul (Baris 2):</label>
+                        <input
+                          type="text"
+                          value={config.jpHeaderSubtitle || ""}
+                          onChange={(e) => setConfig(prev => ({ ...prev, jpHeaderSubtitle: e.target.value }))}
+                          placeholder="Gunakan {nama_kegiatan} untuk nama kegiatan dinamis"
+                          className="w-full px-2.5 py-1.5 bg-white rounded-lg border border-slate-200 text-xs font-semibold text-brand-950 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-black text-slate-500 uppercase block">Keterangan / Instansi (Baris 3):</label>
+                        <input
+                          type="text"
+                          value={config.jpHeaderSub2 || ""}
+                          onChange={(e) => setConfig(prev => ({ ...prev, jpHeaderSub2: e.target.value }))}
+                          placeholder="Gunakan {penyelenggara} untuk penyelenggara dinamis"
+                          className="w-full px-2.5 py-1.5 bg-white rounded-lg border border-slate-200 text-xs font-semibold text-brand-950 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                        />
+                      </div>
+                    </div>
+
                     {/* Upload Background Halaman Belakang */}
                     <div className="space-y-1.5">
                       <label className="text-[10.5px] font-black text-slate-500 uppercase block">Background Halaman 2 (Kustom):</label>

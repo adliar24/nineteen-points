@@ -2201,6 +2201,83 @@ export default function KelolaSertifikatGuruView() {
                         </span>
                       </div>
                     </div>
+
+                    {/* Kustomisasi Ukuran & Tata Letak Tabel JP */}
+                    <div className="space-y-3 pt-3 border-t border-slate-200/50">
+                      <label className="text-[10.5px] font-black text-slate-500 uppercase block">Pengaturan Dimensi & Posisi Tabel:</label>
+                      
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <div className="flex justify-between text-[10px] font-bold text-slate-500 mb-1">
+                            <span>Lebar Tabel (px)</span>
+                            <span className="font-mono text-brand-600">{config.jpTableWidth || 1700}px</span>
+                          </div>
+                          <input
+                            type="range"
+                            min="1000"
+                            max="1950"
+                            step="10"
+                            value={config.jpTableWidth || 1700}
+                            onChange={(e) => {
+                              const val = parseInt(e.target.value);
+                              setConfig(prev => ({ ...prev, jpTableWidth: val }));
+                            }}
+                            className="w-full accent-brand-600 cursor-pointer"
+                          />
+                        </div>
+
+                        <div>
+                          <div className="flex justify-between text-[10px] font-bold text-slate-500 mb-1">
+                            <span>Posisi Vertikal Y (px)</span>
+                            <span className="font-mono text-brand-600">{config.jpTableY || 270}px</span>
+                          </div>
+                          <input
+                            type="range"
+                            min="150"
+                            max="700"
+                            step="5"
+                            value={config.jpTableY || 270}
+                            onChange={(e) => {
+                              const val = parseInt(e.target.value);
+                              setConfig(prev => ({ ...prev, jpTableY: val }));
+                            }}
+                            className="w-full accent-brand-600 cursor-pointer"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-[10px] font-bold text-slate-500 block mb-1">Font Tabel (px)</label>
+                          <input
+                            type="number"
+                            min="8"
+                            max="36"
+                            value={config.jpTableFontSize || 18}
+                            onChange={(e) => {
+                              const val = parseInt(e.target.value) || 18;
+                              setConfig(prev => ({ ...prev, jpTableFontSize: val }));
+                            }}
+                            className="w-full p-2 bg-white rounded-xl border border-slate-200 text-xs font-bold text-center focus:outline-none focus:ring-1 focus:ring-brand-500"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-[10px] font-bold text-slate-500 block mb-1">Tinggi Baris (Padding Y)</label>
+                          <input
+                            type="number"
+                            min="4"
+                            max="60"
+                            value={config.jpTableRowPaddingY || 24}
+                            onChange={(e) => {
+                              const val = parseInt(e.target.value) || 24;
+                              setConfig(prev => ({ ...prev, jpTableRowPaddingY: val }));
+                            }}
+                            className="w-full p-2 bg-white rounded-xl border border-slate-200 text-xs font-bold text-center focus:outline-none focus:ring-1 focus:ring-brand-500"
+                          />
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>

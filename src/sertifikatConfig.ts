@@ -65,8 +65,11 @@ export interface SertifikatLayoutConfig {
   templateJpUrl: string | null;
   materiJpRows: { materi: string; jp: number }[];
   jpHeaderTitle?: string;
-  jpHeaderSubtitle?: string;
   jpHeaderSub2?: string;
+  jpTableWidth?: number;
+  jpTableY?: number;
+  jpTableFontSize?: number;
+  jpTableRowPaddingY?: number;
 
   // Posisi & Styling Elemen
   positions: {
@@ -154,8 +157,11 @@ export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
     { materi: "Pembuatan Projek Penguatan Profil Pelajar Pancasila (P5)", jp: 6 }
   ],
   jpHeaderTitle: "STRUKTUR PROGRAM DAN MATERI PELATIHAN",
-  jpHeaderSubtitle: "{nama_kegiatan}",
   jpHeaderSub2: "{penyelenggara}",
+  jpTableWidth: 1700,
+  jpTableY: 270,
+  jpTableFontSize: 18,
+  jpTableRowPaddingY: 24,
 
   positions: {
     noSertifikat: {

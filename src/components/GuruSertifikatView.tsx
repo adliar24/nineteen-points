@@ -378,44 +378,43 @@ export function drawJpTablePageOnCanvas(
     fitIndex = 3;
   }
 
-  let tableFontSize = 18;
-  let headerFontSize = 20;
+  let tableFontSize = config.jpTableFontSize || 18;
+  let headerFontSize = tableFontSize + 2;
   let titleFontSize = baseTitleSize;
   let subtitleFontSize = baseSubtitleSize;
   let organizerFontSize = baseOrganizerSize;
-  let tableX = 150;
-  let tableWidth = canvasWidth - 300; // 1700px
-  let startY = 270;
+  let tableWidth = config.jpTableWidth || (canvasWidth - 300);
+  let startY = config.jpTableY || 270;
   let headerHeight = 60;
-  let rowPaddingY = 24;
+  let rowPaddingY = config.jpTableRowPaddingY || 24;
   let sigSpacing = 50;
 
   // Apply proactive scaling parameters initially
   if (fitIndex === 1) {
-    tableX = 80;
-    tableWidth = canvasWidth - 160;
-    startY = 240;
+    if (tableWidth === 1700) tableWidth = canvasWidth - 160;
+    if (startY === 270) startY = 240;
   } else if (fitIndex === 2) {
-    tableX = 80;
-    tableWidth = canvasWidth - 160;
-    tableFontSize = 15;
-    headerFontSize = 18;
-    rowPaddingY = 16;
+    if (tableWidth === 1700) tableWidth = canvasWidth - 160;
+    if (startY === 270) startY = 220;
+    tableFontSize = Math.min(tableFontSize, 15);
+    headerFontSize = Math.min(headerFontSize, 18);
+    rowPaddingY = Math.min(rowPaddingY, 16);
     sigSpacing = 35;
-    startY = 220;
   } else if (fitIndex === 3) {
-    tableX = 80;
-    tableWidth = canvasWidth - 160;
-    tableFontSize = 13;
-    headerFontSize = 15;
+    if (tableWidth === 1700) tableWidth = canvasWidth - 160;
+    if (startY === 270) startY = 200;
+    tableFontSize = Math.min(tableFontSize, 13);
+    headerFontSize = Math.min(headerFontSize, 15);
     titleFontSize = Math.min(32, baseTitleSize * 0.85);
     subtitleFontSize = Math.min(24, baseSubtitleSize * 0.85);
     organizerFontSize = Math.min(20, baseOrganizerSize * 0.85);
-    rowPaddingY = 12;
+    rowPaddingY = Math.min(rowPaddingY, 12);
     headerHeight = 50;
     sigSpacing = 20;
     startY = 200;
   }
+
+  let tableX = (canvasWidth - tableWidth) / 2;
 
   // Columns Width
   let col1Width = 100; // No
@@ -486,26 +485,25 @@ export function drawJpTablePageOnCanvas(
     // Shrink layout dynamically
     fitIndex++;
     if (fitIndex === 1) {
-      // Step 1: Make table wider (decrease margins) & push startY up
-      tableX = 80;
-      tableWidth = canvasWidth - 160;
-      startY = 240;
+      if (tableWidth === 1700) tableWidth = canvasWidth - 160;
+      if (startY === 270) startY = 240;
     } else if (fitIndex === 2) {
-      // Step 2: Decrease table font size & row padding
-      tableFontSize = 15;
-      headerFontSize = 18;
-      rowPaddingY = 16;
+      if (tableWidth === 1700) tableWidth = canvasWidth - 160;
+      if (startY === 270) startY = 220;
+      tableFontSize = Math.min(tableFontSize, 15);
+      headerFontSize = Math.min(headerFontSize, 18);
+      rowPaddingY = Math.min(rowPaddingY, 16);
       sigSpacing = 35;
-      startY = 220;
     } else if (fitIndex === 3) {
-      // Step 3: Scale down top titles, decrease header height and shrink spacing to minimum
-      tableFontSize = 13;
-      headerFontSize = 15;
-      rowPaddingY = 12;
+      if (tableWidth === 1700) tableWidth = canvasWidth - 160;
+      if (startY === 270) startY = 200;
+      tableFontSize = Math.min(tableFontSize, 13);
+      headerFontSize = Math.min(headerFontSize, 15);
+      rowPaddingY = Math.min(rowPaddingY, 12);
       headerHeight = 50;
       sigSpacing = 20;
-      startY = 200;
     }
+    tableX = (canvasWidth - tableWidth) / 2;
   }
 
   // Titles Rendering

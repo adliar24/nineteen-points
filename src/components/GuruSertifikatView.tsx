@@ -320,20 +320,26 @@ export function drawJpTablePageOnCanvas(
   config: SertifikatLayoutConfig,
   ttd1Img?: HTMLImageElement | null,
   ttd2Img?: HTMLImageElement | null,
-  ttd3Img?: HTMLImageElement | null
+  ttd3Img?: HTMLImageElement | null,
+  templateJpImg?: HTMLImageElement | null
 ) {
-  // Clear canvas to white background
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+  // 1. Draw Background
+  if (config.templateJpUrl && templateJpImg) {
+    ctx.drawImage(templateJpImg, 0, 0, canvasWidth, canvasHeight);
+  } else {
+    // Clear canvas to white background
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-  // Decorative border or header (classic Indonesian certificate style: double lines at top and bottom)
-  ctx.strokeStyle = "#1e1b4b";
-  ctx.lineWidth = 6;
-  ctx.strokeRect(30, 30, canvasWidth - 60, canvasHeight - 60);
-  ctx.lineWidth = 2;
-  ctx.strokeRect(40, 40, canvasWidth - 80, canvasHeight - 80);
+    // Decorative border or header (classic Indonesian certificate style)
+    ctx.strokeStyle = "#1e1b4b";
+    ctx.lineWidth = 6;
+    ctx.strokeRect(30, 30, canvasWidth - 60, canvasHeight - 60);
+    ctx.lineWidth = 2;
+    ctx.strokeRect(40, 40, canvasWidth - 80, canvasHeight - 80);
+  }
 
-  // 1. Titles
+  // Titles
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillStyle = "#1e1b4b";
@@ -359,19 +365,49 @@ export function drawJpTablePageOnCanvas(
   const col1Width = 100; // No
   const col3Width = 250; // JP
   const col2Width = tableWidth - col1Width - col3Width; // 1350px
+  const paddingX = 25;
+
+  // Word Wrapping Helper
+  function getWrappedLines(text: string, maxWidth: number): string[] {
+    const words = (text || "").split(" ");
+    const lines: string[] = [];
+    let currentLine = "";
+
+    for (let i = 0; i < words.length; i++) {
+      const testLine = currentLine ? currentLine + " " + words[i] : words[i];
+      const metrics = ctx.measureText(testLine);
+      if (metrics.width > maxWidth && currentLine) {
+        lines.push(currentLine);
+        currentLine = words[i];
+      } else {
+        currentLine = testLine;
+      }
+    }
+    if (currentLine) {
+      lines.push(currentLine);
+    }
+    return lines;
+  }
 
   const rows = kegiatan.materi_jp || [];
   const headerHeight = 60;
-  const rowHeight = 54;
-  const totalHeight = headerHeight + rows.length * rowHeight + rowHeight;
+
+  // Pre-calculate wrapped lines and heights for each row
+  ctx.font = "18px sans-serif";
+  const rowsData = rows.map((r) => {
+    const lines = getWrappedLines(r.materi, col2Width - paddingX * 2);
+    const calculatedHeight = Math.max(54, lines.length * 28 + 24);
+    return {
+      materi: r.materi,
+      jp: r.jp,
+      lines,
+      height: calculatedHeight
+    };
+  });
 
   // Draw Header background
   ctx.fillStyle = "#284478";
   ctx.fillRect(tableX, startY, tableWidth, headerHeight);
-
-  // Grid border setup
-  ctx.strokeStyle = "#1e1b4b";
-  ctx.lineWidth = 2;
 
   // Header Texts
   ctx.fillStyle = "#ffffff";
@@ -380,67 +416,74 @@ export function drawJpTablePageOnCanvas(
   ctx.fillText("Materi Pelatihan", tableX + col1Width + col2Width / 2, startY + headerHeight / 2);
   ctx.fillText("Jam Pelatihan (JP)", tableX + col1Width + col2Width + col3Width / 2, startY + headerHeight / 2);
 
-  // Draw rows
-  ctx.fillStyle = "#000000";
-  ctx.font = "medium 18px sans-serif";
+  // Draw rows dynamically
+  let currentY = startY + headerHeight;
 
-  rows.forEach((r, idx) => {
-    const curY = startY + headerHeight + idx * rowHeight;
-    // Draw row background alternate color
+  rowsData.forEach((row, idx) => {
+    // Row background alternate color
     if (idx % 2 === 1) {
       ctx.fillStyle = "#f8fafc";
-      ctx.fillRect(tableX, curY, tableWidth, rowHeight);
-      ctx.fillStyle = "#000000";
+      ctx.fillRect(tableX, currentY, tableWidth, row.height);
     }
 
     // Border lines
-    ctx.strokeRect(tableX, curY, tableWidth, rowHeight);
+    ctx.strokeStyle = "#1e1b4b";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(tableX, currentY, tableWidth, row.height);
 
     // Cell Texts
+    ctx.fillStyle = "#000000";
     ctx.textAlign = "center";
     ctx.font = "18px sans-serif";
-    ctx.fillText(`${idx + 1}`, tableX + col1Width / 2, curY + rowHeight / 2);
+    ctx.fillText(`${idx + 1}`, tableX + col1Width / 2, currentY + row.height / 2);
     
+    // Wrapped Material Text
     ctx.textAlign = "left";
-    ctx.font = "18px sans-serif";
-    ctx.fillText(r.materi, tableX + col1Width + 25, curY + rowHeight / 2);
+    const lineStartOffset = currentY + (row.height - (row.lines.length * 28)) / 2 + 14;
+    row.lines.forEach((line, lineIdx) => {
+      ctx.fillText(line, tableX + col1Width + paddingX, lineStartOffset + lineIdx * 28);
+    });
 
     ctx.textAlign = "center";
     ctx.font = "bold 18px sans-serif";
-    ctx.fillText(`${r.jp} JP`, tableX + col1Width + col2Width + col3Width / 2, curY + rowHeight / 2);
+    ctx.fillText(`${row.jp} JP`, tableX + col1Width + col2Width + col3Width / 2, currentY + row.height / 2);
+
+    currentY += row.height;
   });
 
   // Header Border
   ctx.strokeRect(tableX, startY, tableWidth, headerHeight);
 
   // Total JP Row
-  const totalY = startY + headerHeight + rows.length * rowHeight;
+  const totalRowHeight = 54;
   ctx.fillStyle = "#f1f5f9";
-  ctx.fillRect(tableX, totalY, tableWidth, rowHeight);
+  ctx.fillRect(tableX, currentY, tableWidth, totalRowHeight);
   ctx.fillStyle = "#000000";
-  ctx.strokeRect(tableX, totalY, tableWidth, rowHeight);
+  ctx.strokeRect(tableX, currentY, tableWidth, totalRowHeight);
 
   ctx.textAlign = "left";
   ctx.font = "bold 18px sans-serif";
-  ctx.fillText("Jumlah Jam Pelatihan (JP)", tableX + col1Width + 25, totalY + rowHeight / 2);
+  ctx.fillText("Jumlah Jam Pelatihan (JP)", tableX + col1Width + paddingX, currentY + totalRowHeight / 2);
 
   const totalJp = rows.reduce((acc, curr) => acc + (Number(curr.jp) || 0), 0);
   ctx.textAlign = "center";
-  ctx.fillText(`${totalJp} JP`, tableX + col1Width + col2Width + col3Width / 2, totalY + rowHeight / 2);
+  ctx.fillText(`${totalJp} JP`, tableX + col1Width + col2Width + col3Width / 2, currentY + totalRowHeight / 2);
 
   // Draw Vertical lines for columns inside table
+  ctx.strokeStyle = "#1e1b4b";
   ctx.beginPath();
   // Col 1 line
   ctx.moveTo(tableX + col1Width, startY);
-  ctx.lineTo(tableX + col1Width, totalY + rowHeight);
+  ctx.lineTo(tableX + col1Width, currentY + totalRowHeight);
   // Col 2 line
   ctx.moveTo(tableX + col1Width + col2Width, startY);
-  ctx.lineTo(tableX + col1Width + col2Width, totalY + rowHeight);
+  ctx.lineTo(tableX + col1Width + col2Width, currentY + totalRowHeight);
   ctx.stroke();
 
   // 3. Signature & Date Section (Bottom Right)
   const sigAreaX = canvasWidth - 550;
-  const sigAreaY = totalY + rowHeight + 80;
+  // Dynamic Y starting position after table to avoid overlaps
+  const sigAreaY = currentY + totalRowHeight + 50;
 
   // Format Date (Indonesian style)
   const formattedDateStr = new Date(kegiatan.tanggal_kegiatan).toLocaleDateString("id-ID", {
@@ -462,35 +505,35 @@ export function drawJpTablePageOnCanvas(
 
   const pTtd = getPrincipalTtd();
 
-  ctx.fillText(pTtd.jabatan || "Kepala Sekolah", sigAreaX, sigAreaY + 35);
+  ctx.fillText(pTtd.jabatan || "Kepala Sekolah", sigAreaX, sigAreaY + 30);
 
   // TTD Image
   if (pTtd.img) {
     const imgW = 200;
     const aspect = pTtd.img.naturalWidth ? pTtd.img.naturalHeight / pTtd.img.naturalWidth : 0.5;
     const imgH = imgW * aspect;
-    ctx.drawImage(pTtd.img, sigAreaX - imgW / 2, sigAreaY + 55, imgW, imgH);
+    ctx.drawImage(pTtd.img, sigAreaX - imgW / 2, sigAreaY + 45, imgW, imgH);
   }
 
   // Underlined Name
   ctx.font = "bold 20px sans-serif";
-  ctx.fillText(toSentenceCase(pTtd.nama), sigAreaX, sigAreaY + 195);
+  ctx.fillText(toSentenceCase(pTtd.nama), sigAreaX, sigAreaY + 160);
   // draw name line
   const nameWidth = ctx.measureText(toSentenceCase(pTtd.nama)).width;
   ctx.strokeStyle = "#000000";
   ctx.lineWidth = 2;
   ctx.beginPath();
-  ctx.moveTo(sigAreaX - nameWidth / 2, sigAreaY + 208);
-  ctx.lineTo(sigAreaX + nameWidth / 2, sigAreaY + 208);
+  ctx.moveTo(sigAreaX - nameWidth / 2, sigAreaY + 172);
+  ctx.lineTo(sigAreaX + nameWidth / 2, sigAreaY + 172);
   ctx.stroke();
 
   // NIP / Subtext
   ctx.font = "16px sans-serif";
   if (pTtd.sub1) {
-    ctx.fillText(pTtd.sub1, sigAreaX, sigAreaY + 230);
+    ctx.fillText(pTtd.sub1, sigAreaX, sigAreaY + 195);
   }
   if (pTtd.sub2) {
-    ctx.fillText(pTtd.sub2, sigAreaX, sigAreaY + 252);
+    ctx.fillText(pTtd.sub2, sigAreaX, sigAreaY + 218);
   }
 }
 
@@ -557,6 +600,7 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
       const ttd1Img = await loadImg(config.ttd1Image);
       const ttd2Img = await loadImg(config.ttd2Image);
       const ttd3Img = await loadImg(config.ttd3Image);
+      const templateJpImg = await loadImg(config.templateJpUrl);
 
       canvas.width = templateImg.naturalWidth || 2000;
       canvas.height = templateImg.naturalHeight || 1414;
@@ -594,7 +638,8 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
           config,
           ttd1Img,
           ttd2Img,
-          ttd3Img
+          ttd3Img,
+          templateJpImg
         );
 
         // Gabungkan ke file PDF 2 halaman
@@ -659,7 +704,8 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
         loadImg(currentConfig.ttd1Image),
         loadImg(currentConfig.ttd2Image),
         loadImg(currentConfig.ttd3Image),
-      ]).then(([_, ttd1Img, ttd2Img, ttd3Img]) => {
+        loadImg(currentConfig.templateJpUrl),
+      ]).then(([_, ttd1Img, ttd2Img, ttd3Img, templateJpImg]) => {
         canvas.width = templateImg.naturalWidth || 2000;
         canvas.height = templateImg.naturalHeight || 1414;
 
@@ -676,7 +722,8 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
             currentConfig,
             ttd1Img,
             ttd2Img,
-            ttd3Img
+            ttd3Img,
+            templateJpImg
           );
         } else {
           drawCertificateOnCanvas(

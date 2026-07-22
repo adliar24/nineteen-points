@@ -67,18 +67,11 @@ export default function KelolaSertifikatGuruView() {
   const [customPeran, setCustomPeran] = useState("");
   const [noSertifikat, setNoSertifikat] = useState("");
   const [penyelenggara, setPenyelenggara] = useState("SMAN 19 Bandung");
-  const [hasJpPage, setHasJpPage] = useState(false);
-  const [materiJpRows, setMateriJpRows] = useState<{ materi: string; jp: number }[]>([
-    { materi: "Pembelajaran Paradigma Baru", jp: 4 },
-    { materi: "Asesmen Pembelajaran Kurikulum Merdeka", jp: 8 },
-    { materi: "Penyusunan Kurikulum Satuan Pendidikan (KSP)", jp: 8 },
-    { materi: "Pemanfaatan Platform Merdeka Mengajar (PMM)", jp: 6 },
-    { materi: "Pembuatan Projek Penguatan Profil Pelajar Pancasila (P5)", jp: 6 }
-  ]);
 
   // Designer State
   const [config, setConfig] = useState<SertifikatLayoutConfig>(DEFAULT_SERTIFIKAT_CONFIG);
   const [selectedElement, setSelectedElement] = useState<string>("namaGuru");
+  const [desainerPage, setDesainerPage] = useState<1 | 2>(1);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // Load config from IndexedDB on mount
@@ -152,12 +145,13 @@ export default function KelolaSertifikatGuruView() {
     enabled: isAddModalOpen,
   });
 
-  const totalJp = materiJpRows.reduce((acc, row) => acc + (Number(row.jp) || 0), 0);
-
   // Mutations
   const addMutation = useMutation({
     mutationFn: async () => {
       const finalPeran = peran === "Lainnya" ? customPeran : peran;
+      const calculatedTotalJp = config.hasJpPage
+        ? (config.materiJpRows || []).reduce((acc, row) => acc + (Number(row.jp) || 0), 0)
+        : undefined;
       return addKegiatanGuruBulk(
         selectedTeacherIds,
         namaKegiatan,
@@ -165,8 +159,8 @@ export default function KelolaSertifikatGuruView() {
         finalPeran,
         noSertifikat,
         penyelenggara,
-        hasJpPage ? totalJp : undefined,
-        hasJpPage ? materiJpRows : null
+        calculatedTotalJp,
+        config.hasJpPage ? config.materiJpRows : null
       );
     },
     onSuccess: () => {
@@ -183,14 +177,6 @@ export default function KelolaSertifikatGuruView() {
       setCustomPeran("");
       setNoSertifikat("");
       setPenyelenggara("SMAN 19 Bandung");
-      setHasJpPage(false);
-      setMateriJpRows([
-        { materi: "Pembelajaran Paradigma Baru", jp: 4 },
-        { materi: "Asesmen Pembelajaran Kurikulum Merdeka", jp: 8 },
-        { materi: "Penyusunan Kurikulum Satuan Pendidikan (KSP)", jp: 8 },
-        { materi: "Pemanfaatan Platform Merdeka Mengajar (PMM)", jp: 6 },
-        { materi: "Pembuatan Projek Penguatan Profil Pelajar Pancasila (P5)", jp: 6 }
-      ]);
 
       setTimeout(() => setSuccessMsg(null), 4000);
     },
@@ -313,7 +299,8 @@ export default function KelolaSertifikatGuruView() {
         loadImg(config.ttd1Image),
         loadImg(config.ttd2Image),
         loadImg(config.ttd3Image),
-      ]).then(([_, ttd1Img, ttd2Img, ttd3Img]) => {
+        loadImg(config.templateJpUrl),
+      ]).then(([_, ttd1Img, ttd2Img, ttd3Img, templateJpImg]) => {
         canvas.width = templateImg.naturalWidth || 2000;
         canvas.height = templateImg.naturalHeight || 1414;
 
@@ -326,60 +313,75 @@ export default function KelolaSertifikatGuruView() {
           no_sertifikat: "SR.098979898666968968",
           penyelenggara: "SMAN 19 Bandung",
           durasi_jam: null,
+          materi_jp: config.materiJpRows || [],
           created_at: new Date().toISOString()
         };
 
-        drawCertificateOnCanvas(
-          ctx,
-          canvas.width,
-          canvas.height,
-          templateImg,
-          dummyKegiatan,
-          "Joseph Adeyemi",
-          config,
-          ttd1Img,
-          ttd2Img,
-          ttd3Img
-        );
+        if (desainerPage === 2 && config.hasJpPage) {
+          drawJpTablePageOnCanvas(
+            ctx,
+            canvas.width,
+            canvas.height,
+            dummyKegiatan,
+            config,
+            ttd1Img,
+            ttd2Img,
+            ttd3Img,
+            templateJpImg
+          );
+        } else {
+          drawCertificateOnCanvas(
+            ctx,
+            canvas.width,
+            canvas.height,
+            templateImg,
+            dummyKegiatan,
+            "Joseph Adeyemi, S.Pd.",
+            config,
+            ttd1Img,
+            ttd2Img,
+            ttd3Img
+          );
 
-        // Highlight selected element position with a target indicator
-        const pos = config.positions;
-        let targetX = canvas.width / 2;
-        let targetY = canvas.height / 2;
+          // Highlight selected element position with a target indicator
+          const pos = config.positions;
+          let targetX = canvas.width / 2;
+          let targetY = canvas.height / 2;
 
-        if (selectedElement === "noSertifikat") {
-          targetX = (pos.noSertifikat.xPercent / 100) * canvas.width;
-          targetY = (pos.noSertifikat.yPercent / 100) * canvas.height;
-        } else if (selectedElement === "prefixNama") {
-          targetX = (pos.prefixNama.xPercent / 100) * canvas.width;
-          targetY = (pos.prefixNama.yPercent / 100) * canvas.height;
-        } else if (selectedElement === "namaGuru") {
-          targetX = (pos.namaGuru.xPercent / 100) * canvas.width;
-          targetY = (pos.namaGuru.yPercent / 100) * canvas.height;
-        } else if (selectedElement === "deskripsi") {
-          targetX = (pos.deskripsi.xPercent / 100) * canvas.width;
-          targetY = (pos.deskripsi.yPercent / 100) * canvas.height;
-        } else if (selectedElement === "ttd1") {
-          targetX = (pos.ttd1NamaPos.xPercent / 100) * canvas.width;
-          targetY = (pos.ttd1NamaPos.yPercent / 100) * canvas.height;
-        } else if (selectedElement === "ttd2") {
-          targetX = (pos.ttd2NamaPos.xPercent / 100) * canvas.width;
-          targetY = (pos.ttd2NamaPos.yPercent / 100) * canvas.height;
-        } else if (selectedElement === "ttd3") {
-          targetX = (pos.ttd3NamaPos.xPercent / 100) * canvas.width;
-          targetY = (pos.ttd3NamaPos.yPercent / 100) * canvas.height;
+          if (selectedElement === "noSertifikat") {
+            targetX = (pos.noSertifikat.xPercent / 100) * canvas.width;
+            targetY = (pos.noSertifikat.yPercent / 100) * canvas.height;
+          } else if (selectedElement === "prefixNama") {
+            targetX = (pos.prefixNama.xPercent / 100) * canvas.width;
+            targetY = (pos.prefixNama.yPercent / 100) * canvas.height;
+          } else if (selectedElement === "namaGuru") {
+            targetX = (pos.namaGuru.xPercent / 100) * canvas.width;
+            targetY = (pos.namaGuru.yPercent / 100) * canvas.height;
+          } else if (selectedElement === "deskripsi") {
+            targetX = (pos.deskripsi.xPercent / 100) * canvas.width;
+            targetY = (pos.deskripsi.yPercent / 100) * canvas.height;
+          } else if (selectedElement === "ttd1") {
+            targetX = (pos.ttd1NamaPos.xPercent / 100) * canvas.width;
+            targetY = (pos.ttd1NamaPos.yPercent / 100) * canvas.height;
+          } else if (selectedElement === "ttd2") {
+            targetX = (pos.ttd2NamaPos.xPercent / 100) * canvas.width;
+            targetY = (pos.ttd2NamaPos.yPercent / 100) * canvas.height;
+          } else if (selectedElement === "ttd3") {
+            targetX = (pos.ttd3NamaPos.xPercent / 100) * canvas.width;
+            targetY = (pos.ttd3NamaPos.yPercent / 100) * canvas.height;
+          }
+
+          ctx.strokeStyle = "#3b82f6";
+          ctx.lineWidth = 4;
+          ctx.setLineDash([8, 8]);
+          ctx.beginPath();
+          ctx.arc(targetX, targetY, 24, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.setLineDash([]);
         }
-
-        ctx.strokeStyle = "#3b82f6";
-        ctx.lineWidth = 4;
-        ctx.setLineDash([8, 8]);
-        ctx.beginPath();
-        ctx.arc(targetX, targetY, 24, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.setLineDash([]);
       });
     }
-  }, [activeTab, config, selectedElement]);
+  }, [activeTab, config, selectedElement, desainerPage]);
 
   // Upload & Optimize Template Image
   const handleTemplateUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -580,6 +582,7 @@ export default function KelolaSertifikatGuruView() {
       const ttd1Img = await loadImg(config.ttd1Image);
       const ttd2Img = await loadImg(config.ttd2Image);
       const ttd3Img = await loadImg(config.ttd3Image);
+      const templateJpImg = await loadImg(config.templateJpUrl);
 
       canvas.width = templateImg.naturalWidth || 2000;
       canvas.height = templateImg.naturalHeight || 1414;
@@ -616,7 +619,8 @@ export default function KelolaSertifikatGuruView() {
           config,
           ttd1Img,
           ttd2Img,
-          ttd3Img
+          ttd3Img,
+          templateJpImg
         );
 
         const pdf = new jsPDF({
@@ -670,6 +674,7 @@ export default function KelolaSertifikatGuruView() {
       const ttd1Img = await loadImg(config.ttd1Image);
       const ttd2Img = await loadImg(config.ttd2Image);
       const ttd3Img = await loadImg(config.ttd3Image);
+      const templateJpImg = await loadImg(config.templateJpUrl);
 
       const canvasWidth = templateImg.naturalWidth || 2000;
       const canvasHeight = templateImg.naturalHeight || 1414;
@@ -716,7 +721,8 @@ export default function KelolaSertifikatGuruView() {
             config,
             ttd1Img,
             ttd2Img,
-            ttd3Img
+            ttd3Img,
+            templateJpImg
           );
 
           const pdf = new jsPDF({
@@ -1851,9 +1857,146 @@ export default function KelolaSertifikatGuruView() {
                 })()
               )}
 
+              {/* KUSTOMISASI HALAMAN 2 (JP) */}
+              <div className="space-y-4 pt-4 border-t border-slate-100">
+                <h3 className="text-xs font-black uppercase tracking-wider text-brand-900 flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-brand-600" />
+                  Konfigurasi Halaman Belakang (JP)
+                </h3>
+
+                <label className="flex items-center gap-2.5 text-xs font-bold text-slate-700 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={config.hasJpPage || false}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      setConfig(prev => ({ ...prev, hasJpPage: checked }));
+                      if (!checked) setDesainerPage(1);
+                    }}
+                    className="w-4 h-4 accent-brand-600 rounded cursor-pointer"
+                  />
+                  <span>Aktifkan Halaman Belakang (JP)</span>
+                </label>
+
+                {config.hasJpPage && (
+                  <div className="space-y-4 bg-slate-50 p-4 rounded-2xl border border-slate-200 animate-fade-in">
+                    {/* Upload Background Halaman Belakang */}
+                    <div className="space-y-1.5">
+                      <label className="text-[10.5px] font-black text-slate-500 uppercase block">Background Halaman 2 (Kustom):</label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="file"
+                          accept="image/png, image/jpeg"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            try {
+                              const optimizedUrl = await optimizeImageDataUrl(file, 2000);
+                              const newConfig = { ...config, templateJpUrl: optimizedUrl };
+                              setConfig(newConfig);
+                              await saveSertifikatConfigAsync(newConfig);
+                              setSuccessMsg("Background Halaman Belakang berhasil disimpan!");
+                              setTimeout(() => setSuccessMsg(null), 3000);
+                            } catch (err: any) {
+                              alert("Gagal mengunggah background: " + err.message);
+                            }
+                          }}
+                          id="upload-template-jp-bg"
+                          className="hidden"
+                        />
+                        <label
+                          htmlFor="upload-template-jp-bg"
+                          className="px-4 py-2.5 bg-brand-50 hover:bg-brand-100 border border-brand-100 rounded-xl text-brand-700 text-xs font-bold flex items-center gap-2 cursor-pointer transition-all flex-1"
+                        >
+                          <Upload className="w-4 h-4" />
+                          Ganti Bg Halaman 2
+                        </label>
+                        {config.templateJpUrl && (
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              const newConfig = { ...config, templateJpUrl: null };
+                              setConfig(newConfig);
+                              await saveSertifikatConfigAsync(newConfig);
+                            }}
+                            className="p-2.5 bg-rose-50 text-rose-600 rounded-xl hover:bg-rose-100 border border-rose-100 cursor-pointer"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Form Input Materi JP */}
+                    <div className="space-y-3 pt-2 border-t border-slate-200/50">
+                      <div className="flex justify-between items-center">
+                        <label className="text-[10.5px] font-black text-slate-500 uppercase">Daftar Materi & Durasi (JP):</label>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newRows = [...(config.materiJpRows || [])];
+                            newRows.push({ materi: "Materi Pelatihan Baru", jp: 4 });
+                            setConfig(prev => ({ ...prev, materiJpRows: newRows }));
+                          }}
+                          className="px-2.5 py-1 bg-brand-50 hover:bg-brand-100 text-brand-700 rounded-lg text-[10px] font-black uppercase cursor-pointer border border-brand-150"
+                        >
+                          + Tambah Baris
+                        </button>
+                      </div>
+
+                      <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
+                        {(config.materiJpRows || []).map((row, idx) => (
+                          <div key={idx} className="flex gap-2 items-center bg-white p-2 rounded-xl border border-slate-200 shadow-xs">
+                            <input
+                              type="text"
+                              value={row.materi}
+                              onChange={(e) => {
+                                const newRows = [...(config.materiJpRows || [])];
+                                newRows[idx].materi = e.target.value;
+                                setConfig(prev => ({ ...prev, materiJpRows: newRows }));
+                              }}
+                              placeholder="Nama materi/topik..."
+                              className="flex-1 px-2.5 py-1.5 bg-slate-50 rounded-lg border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-brand-500 focus:bg-white text-brand-950"
+                            />
+                            <input
+                              type="number"
+                              value={row.jp}
+                              onChange={(e) => {
+                                const newRows = [...(config.materiJpRows || [])];
+                                newRows[idx].jp = parseInt(e.target.value) || 0;
+                                setConfig(prev => ({ ...prev, materiJpRows: newRows }));
+                              }}
+                              className="w-16 px-2.5 py-1.5 bg-slate-50 rounded-lg border border-slate-200 text-xs font-bold text-center focus:outline-none focus:ring-1 focus:ring-brand-500 focus:bg-white text-brand-950"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newRows = (config.materiJpRows || []).filter((_, i) => i !== idx);
+                                setConfig(prev => ({ ...prev, materiJpRows: newRows }));
+                              }}
+                              className="p-1.5 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100 border border-transparent cursor-pointer"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="bg-brand-50 p-2.5 rounded-xl border border-brand-100 flex justify-between items-center text-xs font-bold text-brand-900">
+                        <span>Total Jam Pelajaran:</span>
+                        <span className="font-mono bg-white px-2 py-0.5 rounded-lg border border-brand-200">
+                          {(config.materiJpRows || []).reduce((acc, curr) => acc + (Number(curr.jp) || 0), 0)} JP
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* SAVE / RESET BUTTONS */}
               <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-3">
                 <button
+                  type="button"
                   onClick={handleResetConfig}
                   className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-2xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all"
                 >
@@ -1862,6 +2005,7 @@ export default function KelolaSertifikatGuruView() {
                 </button>
 
                 <button
+                  type="button"
                   onClick={handleSaveConfig}
                   className="px-5 py-2.5 brand-gradient text-white rounded-2xl text-xs font-black flex items-center gap-2 cursor-pointer shadow-md transition-all hover:scale-[1.02]"
                 >
@@ -1885,7 +2029,30 @@ export default function KelolaSertifikatGuruView() {
               </span>
             </div>
 
-            <div className="w-full h-full flex items-center justify-center pt-8">
+            {config.hasJpPage && (
+              <div className="flex gap-2 bg-slate-900/95 p-1.5 rounded-2xl border border-slate-800 shadow-lg mt-14 mb-2 z-10 self-center">
+                <button
+                  type="button"
+                  onClick={() => setDesainerPage(1)}
+                  className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer border-0 ${
+                    desainerPage === 1 ? "bg-brand-600 text-white shadow-md" : "text-slate-400 hover:text-white bg-transparent"
+                  }`}
+                >
+                  Halaman 1 (Depan)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDesainerPage(2)}
+                  className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer border-0 ${
+                    desainerPage === 2 ? "bg-brand-600 text-white shadow-md" : "text-slate-400 hover:text-white bg-transparent"
+                  }`}
+                >
+                  Halaman 2 (Tabel JP)
+                </button>
+              </div>
+            )}
+
+            <div className={`w-full h-full flex items-center justify-center ${config.hasJpPage ? 'pt-2' : 'pt-8'}`}>
               <canvas
                 ref={canvasRef}
                 onClick={handleCanvasClick}
@@ -2086,83 +2253,10 @@ export default function KelolaSertifikatGuruView() {
             />
           </div>
 
-          {/* Checkbox JP */}
-          <div className="flex items-center gap-2 py-2">
-            <input
-              type="checkbox"
-              id="hasJpPage"
-              checked={hasJpPage}
-              onChange={(e) => setHasJpPage(e.target.checked)}
-              className="w-4.5 h-4.5 accent-brand-600 rounded cursor-pointer"
-            />
-            <label htmlFor="hasJpPage" className="text-xs font-bold text-slate-700 cursor-pointer select-none">
-              Sertifikat memiliki halaman JP (2 Halaman)
-            </label>
-          </div>
-
-          {hasJpPage && (
-            <div className="space-y-3 bg-brand-50/30 p-4 rounded-2xl border border-brand-100">
-              <div className="flex justify-between items-center">
-                <span className="text-[10px] font-black text-brand-500 uppercase tracking-widest">
-                  Detail Materi & Jam Pelajaran (JP)
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setMateriJpRows([...materiJpRows, { materi: "", jp: 2 }])}
-                  className="px-2.5 py-1 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-[10px] font-bold transition-all cursor-pointer border-0 flex items-center gap-1"
-                >
-                  <Plus className="w-3.5 h-3.5" /> Tambah
-                </button>
-              </div>
-
-              <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
-                {materiJpRows.map((row, index) => (
-                  <div key={index} className="flex items-center gap-2 bg-white p-2 rounded-xl border border-brand-100/50 shadow-xs">
-                    <span className="text-xs font-bold text-slate-400 w-5 text-center">{index + 1}</span>
-                    <input
-                      type="text"
-                      placeholder="Nama Materi / Modul..."
-                      value={row.materi}
-                      onChange={(e) => {
-                        const newRows = [...materiJpRows];
-                        newRows[index].materi = e.target.value;
-                        setMateriJpRows(newRows);
-                      }}
-                      required
-                      className="flex-1 px-3 py-1.5 bg-brand-50/10 rounded-lg border border-brand-100 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-brand-500 text-brand-950 placeholder-brand-500/20"
-                    />
-                    <input
-                      type="number"
-                      placeholder="JP"
-                      value={row.jp}
-                      onChange={(e) => {
-                        const newRows = [...materiJpRows];
-                        newRows[index].jp = parseInt(e.target.value) || 0;
-                        setMateriJpRows(newRows);
-                      }}
-                      required
-                      min="1"
-                      className="w-16 px-2 py-1.5 bg-brand-50/10 rounded-lg border border-brand-100 text-xs font-bold text-center focus:outline-none focus:ring-1 focus:ring-brand-500 text-brand-950"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const newRows = materiJpRows.filter((_, i) => i !== index);
-                        setMateriJpRows(newRows);
-                      }}
-                      disabled={materiJpRows.length <= 1}
-                      className="p-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-lg transition-colors border-0 disabled:opacity-40 cursor-pointer"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-
-              <div className="flex justify-between items-center text-xs font-black text-brand-950 pt-2 border-t border-brand-100/80">
-                <span>TOTAL JAM PELAJARAN:</span>
-                <span className="bg-brand-100 text-brand-800 px-3 py-1 rounded-lg font-black">{totalJp} JP</span>
-              </div>
+          {/* Note informing about JP settings */}
+          {config.hasJpPage && (
+            <div className="p-3 bg-emerald-50 border border-emerald-100 text-emerald-800 rounded-2xl text-[10.5px] font-semibold">
+              ℹ️ Sertifikat ini otomatis diterbitkan dengan <strong>Halaman Belakang (Detail JP)</strong> yang telah dikonfigurasi di menu desainer template.
             </div>
           )}
 

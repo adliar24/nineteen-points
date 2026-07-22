@@ -56,6 +56,11 @@ export interface SertifikatLayoutConfig {
   // Template Deskripsi Kustom (Mendukung Markdown **bold**)
   deskripsiTemplate: string;
 
+  // Halaman Belakang (JP)
+  hasJpPage: boolean;
+  templateJpUrl: string | null;
+  materiJpRows: { materi: string; jp: number }[];
+
   // Posisi & Styling Elemen
   positions: {
     noSertifikat: ElementPosition;
@@ -117,6 +122,16 @@ export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
   ttd3SubText2: "",
 
   deskripsiTemplate: 'Atas partisipasi aktifnya sebagai **{peran}** dalam kegiatan **"{nama_kegiatan}"** yang diselenggarakan oleh **{penyelenggara}**.',
+
+  hasJpPage: false,
+  templateJpUrl: null,
+  materiJpRows: [
+    { materi: "Pembelajaran Paradigma Baru", jp: 4 },
+    { materi: "Asesmen Pembelajaran Kurikulum Merdeka", jp: 8 },
+    { materi: "Penyusunan Kurikulum Satuan Pendidikan (KSP)", jp: 8 },
+    { materi: "Pemanfaatan Platform Merdeka Mengajar (PMM)", jp: 6 },
+    { materi: "Pembuatan Projek Penguatan Profil Pelajar Pancasila (P5)", jp: 6 }
+  ],
 
   positions: {
     noSertifikat: {
@@ -424,6 +439,7 @@ export async function saveSertifikatConfigAsync(config: SertifikatLayoutConfig):
       const lightConfig = {
         ...config,
         templateUrl: config.templateUrl && config.templateUrl.length > 500000 ? null : config.templateUrl,
+        templateJpUrl: config.templateJpUrl && config.templateJpUrl.length > 500000 ? null : config.templateJpUrl,
         ttd1Image: config.ttd1Image && config.ttd1Image.length > 500000 ? null : config.ttd1Image,
         ttd2Image: config.ttd2Image && config.ttd2Image.length > 500000 ? null : config.ttd2Image,
         ttd3Image: config.ttd3Image && config.ttd3Image.length > 500000 ? null : config.ttd3Image,

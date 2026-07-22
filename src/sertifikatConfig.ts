@@ -1,3 +1,5 @@
+import { supabase } from "./supabaseClient";
+
 export interface ElementPosition {
   xPercent: number; // 0 - 100%
   yPercent: number; // 0 - 100%
@@ -321,6 +323,42 @@ export function getSertifikatConfig(): SertifikatLayoutConfig {
 export async function getSertifikatConfigAsync(): Promise<SertifikatLayoutConfig> {
   if (cachedConfig) return cachedConfig;
 
+  // 1. Coba ambil dari Supabase terlebih dahulu
+  try {
+    const { data, error } = await supabase
+      .from("sertifikat_config")
+      .select("config")
+      .eq("id", "default")
+      .maybeSingle();
+
+    if (data && data.config) {
+      cachedConfig = {
+        ...DEFAULT_SERTIFIKAT_CONFIG,
+        ...data.config,
+        positions: {
+          ...DEFAULT_SERTIFIKAT_CONFIG.positions,
+          ...(data.config.positions || {})
+        }
+      };
+
+      // Simpan salinan ke lokal untuk cadangan/offline
+      try {
+        localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(cachedConfig));
+        const db = await openDB();
+        const tx = db.transaction(STORE_NAME, "readwrite");
+        const store = tx.objectStore(STORE_NAME);
+        store.put(cachedConfig, CONFIG_STORAGE_KEY);
+      } catch (localErr) {
+        console.warn("Gagal menyimpan cadangan lokal:", localErr);
+      }
+
+      return cachedConfig;
+    }
+  } catch (e) {
+    console.error("Gagal memuat konfigurasi dari Supabase, beralih ke lokal:", e);
+  }
+
+  // 2. Fallback ke IndexedDB lokal jika Supabase gagal/belum ada datanya
   try {
     const db = await openDB();
     const tx = db.transaction(STORE_NAME, "readonly");
@@ -352,6 +390,23 @@ export async function getSertifikatConfigAsync(): Promise<SertifikatLayoutConfig
 export async function saveSertifikatConfigAsync(config: SertifikatLayoutConfig): Promise<void> {
   cachedConfig = config;
 
+  // 1. Simpan ke Supabase agar tersinkronisasi antar device
+  try {
+    const { error } = await supabase
+      .from("sertifikat_config")
+      .upsert({
+        id: "default",
+        config: config,
+        updated_at: new Date().toISOString()
+      });
+    if (error) {
+      console.error("Gagal menyimpan ke Supabase:", error);
+    }
+  } catch (e) {
+    console.error("Gagal menyimpan ke Supabase:", e);
+  }
+
+  // 2. Simpan secara lokal (IndexedDB)
   try {
     const db = await openDB();
     const tx = db.transaction(STORE_NAME, "readwrite");
@@ -361,6 +416,7 @@ export async function saveSertifikatConfigAsync(config: SertifikatLayoutConfig):
     console.error("Gagal menyimpan ke IndexedDB:", e);
   }
 
+  // 3. Simpan ke localStorage
   try {
     localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(config));
   } catch (e) {
@@ -389,6 +445,24 @@ export function saveSertifikatConfig(config: SertifikatLayoutConfig): void {
 
 export async function resetSertifikatConfigAsync(): Promise<SertifikatLayoutConfig> {
   cachedConfig = DEFAULT_SERTIFIKAT_CONFIG;
+
+  // 1. Reset di Supabase
+  try {
+    const { error } = await supabase
+      .from("sertifikat_config")
+      .upsert({
+        id: "default",
+        config: DEFAULT_SERTIFIKAT_CONFIG,
+        updated_at: new Date().toISOString()
+      });
+    if (error) {
+      console.error("Gagal mereset di Supabase:", error);
+    }
+  } catch (e) {
+    console.error("Gagal mereset di Supabase:", e);
+  }
+
+  // 2. Reset di lokal
   try {
     localStorage.removeItem(CONFIG_STORAGE_KEY);
     const db = await openDB();

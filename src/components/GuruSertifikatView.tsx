@@ -417,10 +417,10 @@ export function drawJpTablePageOnCanvas(
   let tableX = (canvasWidth - tableWidth) / 2;
 
   // Columns Width
-  let col1Width = 100; // No
-  let col3Width = 250; // JP
-  let col2Width = tableWidth - col1Width - col3Width; // 1350px
-  const paddingX = 25;
+  let col1Width = Math.max(50, Math.round(tableWidth * 0.08)); // No
+  let col3Width = Math.max(100, Math.round(tableWidth * 0.18)); // JP
+  let col2Width = tableWidth - col1Width - col3Width;
+  const paddingX = Math.min(25, Math.max(10, Math.round(tableWidth * 0.02)));
 
   // Word Wrapping Helper
   function getWrappedLines(text: string, maxWidth: number, font: string): string[] {

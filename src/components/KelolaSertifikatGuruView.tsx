@@ -2214,7 +2214,7 @@ export default function KelolaSertifikatGuruView() {
                           </div>
                           <input
                             type="range"
-                            min="1000"
+                            min="400"
                             max="1950"
                             step="10"
                             value={config.jpTableWidth || 1700}

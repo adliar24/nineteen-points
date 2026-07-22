@@ -360,11 +360,23 @@ export function drawJpTablePageOnCanvas(
     ctx.strokeRect(40, 40, canvasWidth - 80, canvasHeight - 80);
   }
 
+  const rows = kegiatan.materi_jp || [];
+
   // Smart Detection Layout Adjustments
   const pos = config.positions;
   const baseTitleSize = pos.jpHeaderTitlePos?.fontSize || 38;
   const baseSubtitleSize = pos.jpHeaderSubtitlePos?.fontSize || 28;
   const baseOrganizerSize = pos.jpHeaderSub2Pos?.fontSize || 24;
+
+  // Proactively set fitIndex based on the number of rows
+  let fitIndex = 0;
+  if (rows.length === 6) {
+    fitIndex = 1;
+  } else if (rows.length === 7) {
+    fitIndex = 2;
+  } else if (rows.length >= 8) {
+    fitIndex = 3;
+  }
 
   let tableFontSize = 18;
   let headerFontSize = 20;
@@ -377,6 +389,33 @@ export function drawJpTablePageOnCanvas(
   let headerHeight = 60;
   let rowPaddingY = 24;
   let sigSpacing = 50;
+
+  // Apply proactive scaling parameters initially
+  if (fitIndex === 1) {
+    tableX = 80;
+    tableWidth = canvasWidth - 160;
+    startY = 240;
+  } else if (fitIndex === 2) {
+    tableX = 80;
+    tableWidth = canvasWidth - 160;
+    tableFontSize = 15;
+    headerFontSize = 18;
+    rowPaddingY = 16;
+    sigSpacing = 35;
+    startY = 220;
+  } else if (fitIndex === 3) {
+    tableX = 80;
+    tableWidth = canvasWidth - 160;
+    tableFontSize = 13;
+    headerFontSize = 15;
+    titleFontSize = Math.min(32, baseTitleSize * 0.85);
+    subtitleFontSize = Math.min(24, baseSubtitleSize * 0.85);
+    organizerFontSize = Math.min(20, baseOrganizerSize * 0.85);
+    rowPaddingY = 12;
+    headerHeight = 50;
+    sigSpacing = 20;
+    startY = 200;
+  }
 
   // Columns Width
   let col1Width = 100; // No
@@ -407,7 +446,6 @@ export function drawJpTablePageOnCanvas(
     return lines;
   }
 
-  const rows = kegiatan.materi_jp || [];
   interface PreparedRow {
     materi: string;
     jp: number;
@@ -417,7 +455,6 @@ export function drawJpTablePageOnCanvas(
   let rowsData: PreparedRow[] = [];
 
   // Loop Smart Detection (Max 4 iterations) to fit everything in canvasHeight
-  let fitIndex = 0;
   const maxFitIterations = 4;
   
   while (fitIndex < maxFitIterations) {

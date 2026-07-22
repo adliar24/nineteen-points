@@ -501,9 +501,6 @@ export function drawJpTablePageOnCanvas(
       // Step 3: Scale down top titles, decrease header height and shrink spacing to minimum
       tableFontSize = 13;
       headerFontSize = 15;
-      titleFontSize = 32;
-      subtitleFontSize = 24;
-      organizerFontSize = 20;
       rowPaddingY = 12;
       headerHeight = 50;
       sigSpacing = 20;
@@ -524,15 +521,6 @@ export function drawJpTablePageOnCanvas(
 
   let organizerX = ((pos.jpHeaderSub2Pos?.xPercent || 50) / 100) * canvasWidth;
   let organizerY = ((pos.jpHeaderSub2Pos?.yPercent || 15.2) / 100) * canvasHeight;
-
-  if (fitIndex === 3) {
-    titleFontSize = Math.min(32, baseTitleSize * 0.85);
-    subtitleFontSize = Math.min(24, baseSubtitleSize * 0.85);
-    organizerFontSize = Math.min(20, baseOrganizerSize * 0.85);
-    titleY = startY - 140;
-    subtitleY = startY - 95;
-    organizerY = startY - 50;
-  }
 
   // Main Title
   const jpTitle = config.jpHeaderTitle !== undefined ? replaceVars(config.jpHeaderTitle) : "STRUKTUR PROGRAM DAN MATERI PELATIHAN";
@@ -674,17 +662,7 @@ export function drawJpTablePageOnCanvas(
   let sub2X = (sub2Pos.xPercent / 100) * canvasWidth;
   let sub2Y = (sub2Pos.yPercent / 100) * canvasHeight;
 
-  // Collision prevention with table
-  const minSigY = currentY + totalRowHeight + Math.max(30, sigSpacing);
-  if (sigY < minSigY) {
-    const deltaY = minSigY - sigY;
-    sigY += deltaY;
-    jabY += deltaY;
-    imgY += deltaY;
-    nameY += deltaY;
-    sub1Y += deltaY;
-    sub2Y += deltaY;
-  }
+
 
   // Draw Date/Place
   ctx.textAlign = sigPos.align || "center";

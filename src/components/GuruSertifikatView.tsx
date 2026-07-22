@@ -589,9 +589,6 @@ export function drawJpTablePageOnCanvas(
   ctx.stroke();
 
   // 3. Signature & Date Section (Bottom Right)
-  const sigAreaX = canvasWidth - 550;
-  const sigAreaY = currentY + totalRowHeight + sigSpacing;
-
   // Format Date (Indonesian style)
   const formattedDateStr = new Date(kegiatan.tanggal_kegiatan).toLocaleDateString("id-ID", {
     day: "numeric",
@@ -599,11 +596,6 @@ export function drawJpTablePageOnCanvas(
     year: "numeric",
   });
 
-  ctx.textAlign = "center";
-  ctx.font = "18px sans-serif";
-  ctx.fillText(`Bandung, ${formattedDateStr}`, sigAreaX, sigAreaY);
-
-  // Get Principal / Rightmost TTD details
   const getPrincipalTtd = () => {
     if (config.jumlahTtd === 3) return { img: ttd3Img, nama: config.ttd3Nama, jabatan: config.ttd3Jabatan, sub1: config.ttd3SubText1, sub2: config.ttd3SubText2 };
     if (config.jumlahTtd === 2) return { img: ttd2Img, nama: config.ttd2Nama, jabatan: config.ttd2Jabatan, sub1: config.ttd2SubText1, sub2: config.ttd2SubText2 };
@@ -612,35 +604,100 @@ export function drawJpTablePageOnCanvas(
 
   const pTtd = getPrincipalTtd();
 
-  ctx.fillText(pTtd.jabatan || "Kepala Sekolah", sigAreaX, sigAreaY + 30);
+  // Read configured signature positions
+  const sigPos = pos.jpTanggalPos || { xPercent: 72.5, yPercent: 80.0, fontSize: 18, color: "#1e1b4b" };
+  const jabPos = pos.jpTtdJabatanPos || { xPercent: 72.5, yPercent: 82.5, fontSize: 18, color: "#1e1b4b" };
+  const imgPos = pos.jpTtdImagePos || { xPercent: 72.5, yPercent: 87.5, widthPercent: 12 };
+  const namePos = pos.jpTtdNamaPos || { xPercent: 72.5, yPercent: 94.5, fontSize: 20, color: "#1e1b4b" };
+  const sub1Pos = pos.jpTtdSubText1Pos || { xPercent: 72.5, yPercent: 97.0, fontSize: 16, color: "#1e1b4b" };
+  const sub2Pos = pos.jpTtdSubText2Pos || { xPercent: 72.5, yPercent: 99.0, fontSize: 16, color: "#1e1b4b" };
 
-  // TTD Image
+  // Calculate actual pixel coordinates
+  let sigX = (sigPos.xPercent / 100) * canvasWidth;
+  let sigY = (sigPos.yPercent / 100) * canvasHeight;
+
+  let jabX = (jabPos.xPercent / 100) * canvasWidth;
+  let jabY = (jabPos.yPercent / 100) * canvasHeight;
+
+  let imgX = (imgPos.xPercent / 100) * canvasWidth;
+  let imgY = (imgPos.yPercent / 100) * canvasHeight;
+
+  let nameX = (namePos.xPercent / 100) * canvasWidth;
+  let nameY = (namePos.yPercent / 100) * canvasHeight;
+
+  let sub1X = (sub1Pos.xPercent / 100) * canvasWidth;
+  let sub1Y = (sub1Pos.yPercent / 100) * canvasHeight;
+
+  let sub2X = (sub2Pos.xPercent / 100) * canvasWidth;
+  let sub2Y = (sub2Pos.yPercent / 100) * canvasHeight;
+
+  // Collision prevention with table
+  const minSigY = currentY + totalRowHeight + Math.max(30, sigSpacing);
+  if (sigY < minSigY) {
+    const deltaY = minSigY - sigY;
+    sigY += deltaY;
+    jabY += deltaY;
+    imgY += deltaY;
+    nameY += deltaY;
+    sub1Y += deltaY;
+    sub2Y += deltaY;
+  }
+
+  // Draw Date/Place
+  ctx.textAlign = sigPos.align || "center";
+  ctx.font = `${sigPos.fontWeight || "normal"} ${sigPos.fontSize || 18}px sans-serif`;
+  ctx.fillStyle = sigPos.color || "#1e1b4b";
+  ctx.textBaseline = "middle";
+  const dateTemplate = config.tempatTanggalTemplate || "Bandung, {tanggal}";
+  const dateText = dateTemplate.replace(/{tanggal}/gi, formattedDateStr);
+  ctx.fillText(dateText, sigX, sigY);
+
+  // Draw Jabatan
+  ctx.textAlign = jabPos.align || "center";
+  ctx.font = `${jabPos.fontWeight || "normal"} ${jabPos.fontSize || 18}px sans-serif`;
+  ctx.fillStyle = jabPos.color || "#1e1b4b";
+  ctx.fillText(pTtd.jabatan || "Kepala Sekolah", jabX, jabY);
+
+  // Draw TTD Image
   if (pTtd.img) {
-    const imgW = 200;
+    const imgW = (imgPos.widthPercent / 100) * canvasWidth;
     const aspect = pTtd.img.naturalWidth ? pTtd.img.naturalHeight / pTtd.img.naturalWidth : 0.5;
     const imgH = imgW * aspect;
-    ctx.drawImage(pTtd.img, sigAreaX - imgW / 2, sigAreaY + 45, imgW, imgH);
+    ctx.drawImage(pTtd.img, imgX - imgW / 2, imgY - imgH / 2, imgW, imgH);
   }
 
-  // Underlined Name
-  ctx.font = "bold 20px sans-serif";
-  ctx.fillText(toSentenceCase(pTtd.nama), sigAreaX, sigAreaY + 160);
-  // draw name line
-  const nameWidth = ctx.measureText(toSentenceCase(pTtd.nama)).width;
-  ctx.strokeStyle = "#000000";
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(sigAreaX - nameWidth / 2, sigAreaY + 172);
-  ctx.lineTo(sigAreaX + nameWidth / 2, sigAreaY + 172);
-  ctx.stroke();
+  // Draw Underlined Name
+  ctx.textAlign = namePos.align || "center";
+  ctx.font = `bold ${namePos.fontSize || 20}px sans-serif`;
+  ctx.fillStyle = namePos.color || "#1e1b4b";
+  const nameString = toSentenceCase(pTtd.nama);
+  ctx.fillText(nameString, nameX, nameY);
 
-  // NIP / Subtext
-  ctx.font = "16px sans-serif";
+  // Underline line
+  if (config.showTtdLines) {
+    const nameWidth = ctx.measureText(nameString).width;
+    ctx.strokeStyle = namePos.color || "#1e1b4b";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(nameX - nameWidth / 2, nameY + (namePos.fontSize || 20) * 0.6);
+    ctx.lineTo(nameX + nameWidth / 2, nameY + (namePos.fontSize || 20) * 0.6);
+    ctx.stroke();
+  }
+
+  // Draw Subtext 1 (NIP)
   if (pTtd.sub1) {
-    ctx.fillText(pTtd.sub1, sigAreaX, sigAreaY + 195);
+    ctx.textAlign = sub1Pos.align || "center";
+    ctx.font = `${sub1Pos.fontWeight || "normal"} ${sub1Pos.fontSize || 16}px sans-serif`;
+    ctx.fillStyle = sub1Pos.color || "#1e1b4b";
+    ctx.fillText(pTtd.sub1, sub1X, sub1Y);
   }
+
+  // Draw Subtext 2
   if (pTtd.sub2) {
-    ctx.fillText(pTtd.sub2, sigAreaX, sigAreaY + 218);
+    ctx.textAlign = sub2Pos.align || "center";
+    ctx.font = `${sub2Pos.fontWeight || "normal"} ${sub2Pos.fontSize || 16}px sans-serif`;
+    ctx.fillStyle = sub2Pos.color || "#1e1b4b";
+    ctx.fillText(pTtd.sub2, sub2X, sub2Y);
   }
 }
 

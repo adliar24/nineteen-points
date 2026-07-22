@@ -100,6 +100,12 @@ export interface SertifikatLayoutConfig {
     jpHeaderTitlePos: ElementPosition;
     jpHeaderSubtitlePos: ElementPosition;
     jpHeaderSub2Pos: ElementPosition;
+    jpTanggalPos: ElementPosition;
+    jpTtdImagePos: TtdElementPosition;
+    jpTtdNamaPos: ElementPosition;
+    jpTtdJabatanPos: ElementPosition;
+    jpTtdSubText1Pos: ElementPosition;
+    jpTtdSubText2Pos: ElementPosition;
   };
 }
 
@@ -335,6 +341,51 @@ export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
       color: "#1e1b4b",
       align: "center",
       fontWeight: "bold"
+    },
+    jpTanggalPos: {
+      xPercent: 72.5,
+      yPercent: 80.0,
+      fontSize: 18,
+      color: "#1e1b4b",
+      align: "center",
+      fontWeight: "normal"
+    },
+    jpTtdImagePos: {
+      xPercent: 72.5,
+      yPercent: 87.5,
+      widthPercent: 12
+    },
+    jpTtdNamaPos: {
+      xPercent: 72.5,
+      yPercent: 94.5,
+      fontSize: 20,
+      color: "#1e1b4b",
+      align: "center",
+      fontWeight: "bold"
+    },
+    jpTtdJabatanPos: {
+      xPercent: 72.5,
+      yPercent: 82.5,
+      fontSize: 18,
+      color: "#1e1b4b",
+      align: "center",
+      fontWeight: "normal"
+    },
+    jpTtdSubText1Pos: {
+      xPercent: 72.5,
+      yPercent: 97.0,
+      fontSize: 16,
+      color: "#1e1b4b",
+      align: "center",
+      fontWeight: "normal"
+    },
+    jpTtdSubText2Pos: {
+      xPercent: 72.5,
+      yPercent: 99.0,
+      fontSize: 16,
+      color: "#1e1b4b",
+      align: "center",
+      fontWeight: "normal"
     }
   }
 };

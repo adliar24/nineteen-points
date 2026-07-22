@@ -348,6 +348,14 @@ export default function KelolaSertifikatGuruView() {
             targetX = (pos.jpHeaderSub2Pos.xPercent / 100) * canvas.width;
             targetY = (pos.jpHeaderSub2Pos.yPercent / 100) * canvas.height;
             showTarget = true;
+          } else if (selectedElement === "jpTanggalPos" && pos.jpTanggalPos) {
+            targetX = (pos.jpTanggalPos.xPercent / 100) * canvas.width;
+            targetY = (pos.jpTanggalPos.yPercent / 100) * canvas.height;
+            showTarget = true;
+          } else if (selectedElement === "jpTtd" && pos.jpTtdNamaPos) {
+            targetX = (pos.jpTtdNamaPos.xPercent / 100) * canvas.width;
+            targetY = (pos.jpTtdNamaPos.yPercent / 100) * canvas.height;
+            showTarget = true;
           }
 
           if (showTarget) {
@@ -525,6 +533,14 @@ export default function KelolaSertifikatGuruView() {
         updatedPos.jpHeaderSubtitlePos = { ...updatedPos.jpHeaderSubtitlePos, xPercent, yPercent };
       } else if (selectedElement === "jpHeaderSub2Pos") {
         updatedPos.jpHeaderSub2Pos = { ...updatedPos.jpHeaderSub2Pos, xPercent, yPercent };
+      } else if (selectedElement === "jpTanggalPos") {
+        updatedPos.jpTanggalPos = { ...updatedPos.jpTanggalPos, xPercent, yPercent };
+      } else if (selectedElement === "jpTtd") {
+        updatedPos.jpTtdImagePos = { ...updatedPos.jpTtdImagePos, xPercent, yPercent: yPercent - 7 };
+        updatedPos.jpTtdNamaPos = { ...updatedPos.jpTtdNamaPos, xPercent, yPercent: yPercent + 7 };
+        updatedPos.jpTtdJabatanPos = { ...updatedPos.jpTtdJabatanPos, xPercent, yPercent: yPercent - 5 };
+        updatedPos.jpTtdSubText1Pos = { ...updatedPos.jpTtdSubText1Pos, xPercent, yPercent: yPercent + 9.5 };
+        updatedPos.jpTtdSubText2Pos = { ...updatedPos.jpTtdSubText2Pos, xPercent, yPercent: yPercent + 11.5 };
       } else if (selectedElement === "ttd1") {
         updatedPos.ttd1ImagePos = { ...updatedPos.ttd1ImagePos, xPercent, yPercent: yPercent - 10 };
         updatedPos.ttd1NamaPos = { ...updatedPos.ttd1NamaPos, xPercent, yPercent };
@@ -1539,13 +1555,15 @@ export default function KelolaSertifikatGuruView() {
                       <option value="jpHeaderTitlePos">Halaman Belakang: Judul JP</option>
                       <option value="jpHeaderSubtitlePos">Halaman Belakang: Subjudul JP</option>
                       <option value="jpHeaderSub2Pos">Halaman Belakang: Instansi JP</option>
+                      <option value="jpTanggalPos">Halaman Belakang: Tempat & Tanggal</option>
+                      <option value="jpTtd">Halaman Belakang: TTD - Posisi & Teks</option>
                     </>
                   )}
                 </select>
               </div>
 
               {/* Slider Posisi X & Y */}
-              {!selectedElement.startsWith("ttd") ? (
+              {!selectedElement.startsWith("ttd") && selectedElement !== "jpTtd" ? (
                 (() => {
                   const elemKey = selectedElement as keyof typeof config.positions;
                   const elemPos = (config.positions as any)[elemKey];
@@ -1707,12 +1725,13 @@ export default function KelolaSertifikatGuruView() {
                 })()
               ) : (
                 (() => {
-                  const ttdNum = selectedElement === "ttd1" ? "1" : selectedElement === "ttd2" ? "2" : "3";
-                  const posKey = `ttd${ttdNum}NamaPos`;
-                  const jabKey = `ttd${ttdNum}JabatanPos`;
-                  const s1Key = `ttd${ttdNum}SubText1Pos`;
-                  const s2Key = `ttd${ttdNum}SubText2Pos`;
-                  const imgPosKey = `ttd${ttdNum}ImagePos`;
+                  const isJpTtd = selectedElement === "jpTtd";
+                  const ttdNum = isJpTtd ? "Halaman Belakang (JP)" : (selectedElement === "ttd1" ? "1" : selectedElement === "ttd2" ? "2" : "3");
+                  const posKey = isJpTtd ? "jpTtdNamaPos" : `ttd${ttdNum}NamaPos`;
+                  const jabKey = isJpTtd ? "jpTtdJabatanPos" : `ttd${ttdNum}JabatanPos`;
+                  const s1Key = isJpTtd ? "jpTtdSubText1Pos" : `ttd${ttdNum}SubText1Pos`;
+                  const s2Key = isJpTtd ? "jpTtdSubText2Pos" : `ttd${ttdNum}SubText2Pos`;
+                  const imgPosKey = isJpTtd ? "jpTtdImagePos" : `ttd${ttdNum}ImagePos`;
 
                   const elemPos = (config.positions as any)[posKey];
                   const imgPos = (config.positions as any)[imgPosKey];

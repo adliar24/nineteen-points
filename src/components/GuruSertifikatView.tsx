@@ -659,10 +659,13 @@ export function drawJpTablePageOnCanvas(
   ctx.fillText(dateText, sigX, sigY);
 
   // Draw Jabatan
-  ctx.textAlign = jabPos.align || "center";
-  ctx.font = `${jabPos.fontWeight || "normal"} ${jabPos.fontSize || 18}px sans-serif`;
-  ctx.fillStyle = jabPos.color || "#1e1b4b";
-  ctx.fillText(pTtd.jabatan || "Kepala Sekolah", jabX, jabY);
+  const jabText = pTtd.jabatan !== undefined ? pTtd.jabatan : "Kepala Sekolah";
+  if (jabText && jabText.trim() !== "") {
+    ctx.textAlign = jabPos.align || "center";
+    ctx.font = `${jabPos.fontWeight || "normal"} ${jabPos.fontSize || 18}px sans-serif`;
+    ctx.fillStyle = jabPos.color || "#1e1b4b";
+    ctx.fillText(jabText, jabX, jabY);
+  }
 
   // Draw TTD Image
   if (pTtd.img) {

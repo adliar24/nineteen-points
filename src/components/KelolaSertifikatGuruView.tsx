@@ -1580,7 +1580,16 @@ export default function KelolaSertifikatGuruView() {
                 </label>
                 <select
                   value={selectedElement}
-                  onChange={(e) => setSelectedElement(e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setSelectedElement(val);
+                    const isJpElement = ["jpHeaderTitlePos", "jpHeaderSubtitlePos", "jpHeaderSub2Pos", "jpTanggalPos", "jpTtd"].includes(val);
+                    if (isJpElement) {
+                      setDesainerPage(2);
+                    } else {
+                      setDesainerPage(1);
+                    }
+                  }}
                   className="w-full p-3 bg-brand-50 rounded-2xl border border-brand-200 text-xs font-bold text-brand-950 focus:outline-none focus:ring-2 focus:ring-brand-500"
                 >
                   <option value="namaGuru">Nama Guru / Peserta</option>

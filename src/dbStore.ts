@@ -842,7 +842,8 @@ export const addKegiatanGuru = async (
   peran: string,
   noSertifikat: string,
   penyelenggara: string,
-  durasiJam?: number
+  durasiJam?: number,
+  materiJp?: any[] | null
 ): Promise<void> => {
   const { error } = await supabase
     .from("kegiatan_guru")
@@ -853,7 +854,8 @@ export const addKegiatanGuru = async (
       peran,
       no_sertifikat: noSertifikat || null,
       penyelenggara,
-      durasi_jam: durasiJam || null
+      durasi_jam: durasiJam || null,
+      materi_jp: materiJp || null
     });
 
   if (error) throw error;
@@ -865,7 +867,9 @@ export const addKegiatanGuruBulk = async (
   tanggalKegiatan: string,
   peran: string,
   noSertifikat: string,
-  penyelenggara: string
+  penyelenggara: string,
+  durasiJam?: number,
+  materiJp?: any[] | null
 ): Promise<void> => {
   if (userIds.length === 0) return;
   const rows = userIds.map(userId => ({
@@ -875,7 +879,8 @@ export const addKegiatanGuruBulk = async (
     peran,
     no_sertifikat: noSertifikat || null,
     penyelenggara,
-    durasi_jam: null
+    durasi_jam: durasiJam || null,
+    materi_jp: materiJp || null
   }));
 
   const { error } = await supabase

@@ -68,6 +68,7 @@ export interface KegiatanGuru {
   no_sertifikat: string | null;
   penyelenggara: string;
   durasi_jam: number | null;
+  materi_jp?: { materi: string; jp: number }[] | null;
   created_at: string;
   user_nama?: string;
   user_email?: string;

@@ -62,6 +62,14 @@ export default function KelolaSertifikatGuruView() {
   const [customPeran, setCustomPeran] = useState("");
   const [noSertifikat, setNoSertifikat] = useState("");
   const [penyelenggara, setPenyelenggara] = useState("SMAN 19 Bandung");
+  const [hasJpPage, setHasJpPage] = useState(false);
+  const [materiJpRows, setMateriJpRows] = useState<{ materi: string; jp: number }[]>([
+    { materi: "Pembelajaran Paradigma Baru", jp: 4 },
+    { materi: "Asesmen Pembelajaran Kurikulum Merdeka", jp: 8 },
+    { materi: "Penyusunan Kurikulum Satuan Pendidikan (KSP)", jp: 8 },
+    { materi: "Pemanfaatan Platform Merdeka Mengajar (PMM)", jp: 6 },
+    { materi: "Pembuatan Projek Penguatan Profil Pelajar Pancasila (P5)", jp: 6 }
+  ]);
 
   // Designer State
   const [config, setConfig] = useState<SertifikatLayoutConfig>(DEFAULT_SERTIFIKAT_CONFIG);
@@ -139,6 +147,8 @@ export default function KelolaSertifikatGuruView() {
     enabled: isAddModalOpen,
   });
 
+  const totalJp = materiJpRows.reduce((acc, row) => acc + (Number(row.jp) || 0), 0);
+
   // Mutations
   const addMutation = useMutation({
     mutationFn: async () => {
@@ -149,7 +159,9 @@ export default function KelolaSertifikatGuruView() {
         tanggalKegiatan,
         finalPeran,
         noSertifikat,
-        penyelenggara
+        penyelenggara,
+        hasJpPage ? totalJp : undefined,
+        hasJpPage ? materiJpRows : null
       );
     },
     onSuccess: () => {
@@ -166,6 +178,14 @@ export default function KelolaSertifikatGuruView() {
       setCustomPeran("");
       setNoSertifikat("");
       setPenyelenggara("SMAN 19 Bandung");
+      setHasJpPage(false);
+      setMateriJpRows([
+        { materi: "Pembelajaran Paradigma Baru", jp: 4 },
+        { materi: "Asesmen Pembelajaran Kurikulum Merdeka", jp: 8 },
+        { materi: "Penyusunan Kurikulum Satuan Pendidikan (KSP)", jp: 8 },
+        { materi: "Pemanfaatan Platform Merdeka Mengajar (PMM)", jp: 6 },
+        { materi: "Pembuatan Projek Penguatan Profil Pelajar Pancasila (P5)", jp: 6 }
+      ]);
 
       setTimeout(() => setSuccessMsg(null), 4000);
     },
@@ -1740,6 +1760,86 @@ export default function KelolaSertifikatGuruView() {
               className="w-full p-3 bg-brand-50/40 rounded-2xl border border-brand-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 text-brand-950"
             />
           </div>
+
+          {/* Checkbox JP */}
+          <div className="flex items-center gap-2 py-2">
+            <input
+              type="checkbox"
+              id="hasJpPage"
+              checked={hasJpPage}
+              onChange={(e) => setHasJpPage(e.target.checked)}
+              className="w-4.5 h-4.5 accent-brand-600 rounded cursor-pointer"
+            />
+            <label htmlFor="hasJpPage" className="text-xs font-bold text-slate-700 cursor-pointer select-none">
+              Sertifikat memiliki halaman JP (2 Halaman)
+            </label>
+          </div>
+
+          {hasJpPage && (
+            <div className="space-y-3 bg-brand-50/30 p-4 rounded-2xl border border-brand-100">
+              <div className="flex justify-between items-center">
+                <span className="text-[10px] font-black text-brand-500 uppercase tracking-widest">
+                  Detail Materi & Jam Pelajaran (JP)
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setMateriJpRows([...materiJpRows, { materi: "", jp: 2 }])}
+                  className="px-2.5 py-1 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-[10px] font-bold transition-all cursor-pointer border-0 flex items-center gap-1"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Tambah
+                </button>
+              </div>
+
+              <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                {materiJpRows.map((row, index) => (
+                  <div key={index} className="flex items-center gap-2 bg-white p-2 rounded-xl border border-brand-100/50 shadow-xs">
+                    <span className="text-xs font-bold text-slate-400 w-5 text-center">{index + 1}</span>
+                    <input
+                      type="text"
+                      placeholder="Nama Materi / Modul..."
+                      value={row.materi}
+                      onChange={(e) => {
+                        const newRows = [...materiJpRows];
+                        newRows[index].materi = e.target.value;
+                        setMateriJpRows(newRows);
+                      }}
+                      required
+                      className="flex-1 px-3 py-1.5 bg-brand-50/10 rounded-lg border border-brand-100 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-brand-500 text-brand-950 placeholder-brand-500/20"
+                    />
+                    <input
+                      type="number"
+                      placeholder="JP"
+                      value={row.jp}
+                      onChange={(e) => {
+                        const newRows = [...materiJpRows];
+                        newRows[index].jp = parseInt(e.target.value) || 0;
+                        setMateriJpRows(newRows);
+                      }}
+                      required
+                      min="1"
+                      className="w-16 px-2 py-1.5 bg-brand-50/10 rounded-lg border border-brand-100 text-xs font-bold text-center focus:outline-none focus:ring-1 focus:ring-brand-500 text-brand-950"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newRows = materiJpRows.filter((_, i) => i !== index);
+                        setMateriJpRows(newRows);
+                      }}
+                      disabled={materiJpRows.length <= 1}
+                      className="p-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-lg transition-colors border-0 disabled:opacity-40 cursor-pointer"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex justify-between items-center text-xs font-black text-brand-950 pt-2 border-t border-brand-100/80">
+                <span>TOTAL JAM PELAJARAN:</span>
+                <span className="bg-brand-100 text-brand-800 px-3 py-1 rounded-lg font-black">{totalJp} JP</span>
+              </div>
+            </div>
+          )}
 
           {/* Modal Footer */}
           <div className="pt-4 border-t border-brand-100 flex items-center justify-end gap-3">

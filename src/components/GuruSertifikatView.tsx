@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Award, Download, Calendar, RefreshCw, FileText, Search, Eye, X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { jsPDF } from "jspdf";
 import { getKegiatanGuruList } from "../dbStore";
 import { UserSession, KegiatanGuru } from "../types";
 import { getSertifikatConfigAsync, getSertifikatConfig, SertifikatLayoutConfig } from "../sertifikatConfig";
@@ -311,6 +312,188 @@ export function drawCertificateOnCanvas(
   }
 }
 
+export function drawJpTablePageOnCanvas(
+  ctx: CanvasRenderingContext2D,
+  canvasWidth: number,
+  canvasHeight: number,
+  kegiatan: KegiatanGuru,
+  config: SertifikatLayoutConfig,
+  ttd1Img?: HTMLImageElement | null,
+  ttd2Img?: HTMLImageElement | null,
+  ttd3Img?: HTMLImageElement | null
+) {
+  // Clear canvas to white background
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+  // Decorative border or header (classic Indonesian certificate style: double lines at top and bottom)
+  ctx.strokeStyle = "#1e1b4b";
+  ctx.lineWidth = 6;
+  ctx.strokeRect(30, 30, canvasWidth - 60, canvasHeight - 60);
+  ctx.lineWidth = 2;
+  ctx.strokeRect(40, 40, canvasWidth - 80, canvasHeight - 80);
+
+  // 1. Titles
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillStyle = "#1e1b4b";
+
+  // Main title
+  ctx.font = "bold 38px sans-serif";
+  ctx.fillText("STRUKTUR PROGRAM DAN MATERI PELATIHAN", canvasWidth / 2, 110);
+
+  // Subtitle (Activity Name)
+  ctx.font = "bold 28px sans-serif";
+  const rawActivityName = kegiatan.nama_kegiatan.toUpperCase();
+  ctx.fillText(rawActivityName, canvasWidth / 2, 165);
+
+  // Organizer
+  ctx.font = "bold 24px sans-serif";
+  const organizerText = (kegiatan.penyelenggara || "SMAN 19 Bandung").toUpperCase();
+  ctx.fillText(organizerText, canvasWidth / 2, 215);
+
+  // 2. Draw Table
+  const tableX = 150;
+  const tableWidth = canvasWidth - 300; // 1700px
+  const startY = 270;
+  const col1Width = 100; // No
+  const col3Width = 250; // JP
+  const col2Width = tableWidth - col1Width - col3Width; // 1350px
+
+  const rows = kegiatan.materi_jp || [];
+  const headerHeight = 60;
+  const rowHeight = 54;
+  const totalHeight = headerHeight + rows.length * rowHeight + rowHeight;
+
+  // Draw Header background
+  ctx.fillStyle = "#284478";
+  ctx.fillRect(tableX, startY, tableWidth, headerHeight);
+
+  // Grid border setup
+  ctx.strokeStyle = "#1e1b4b";
+  ctx.lineWidth = 2;
+
+  // Header Texts
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "bold 20px sans-serif";
+  ctx.fillText("No.", tableX + col1Width / 2, startY + headerHeight / 2);
+  ctx.fillText("Materi Pelatihan", tableX + col1Width + col2Width / 2, startY + headerHeight / 2);
+  ctx.fillText("Jam Pelatihan (JP)", tableX + col1Width + col2Width + col3Width / 2, startY + headerHeight / 2);
+
+  // Draw rows
+  ctx.fillStyle = "#000000";
+  ctx.font = "medium 18px sans-serif";
+
+  rows.forEach((r, idx) => {
+    const curY = startY + headerHeight + idx * rowHeight;
+    // Draw row background alternate color
+    if (idx % 2 === 1) {
+      ctx.fillStyle = "#f8fafc";
+      ctx.fillRect(tableX, curY, tableWidth, rowHeight);
+      ctx.fillStyle = "#000000";
+    }
+
+    // Border lines
+    ctx.strokeRect(tableX, curY, tableWidth, rowHeight);
+
+    // Cell Texts
+    ctx.textAlign = "center";
+    ctx.font = "18px sans-serif";
+    ctx.fillText(`${idx + 1}`, tableX + col1Width / 2, curY + rowHeight / 2);
+    
+    ctx.textAlign = "left";
+    ctx.font = "18px sans-serif";
+    ctx.fillText(r.materi, tableX + col1Width + 25, curY + rowHeight / 2);
+
+    ctx.textAlign = "center";
+    ctx.font = "bold 18px sans-serif";
+    ctx.fillText(`${r.jp} JP`, tableX + col1Width + col2Width + col3Width / 2, curY + rowHeight / 2);
+  });
+
+  // Header Border
+  ctx.strokeRect(tableX, startY, tableWidth, headerHeight);
+
+  // Total JP Row
+  const totalY = startY + headerHeight + rows.length * rowHeight;
+  ctx.fillStyle = "#f1f5f9";
+  ctx.fillRect(tableX, totalY, tableWidth, rowHeight);
+  ctx.fillStyle = "#000000";
+  ctx.strokeRect(tableX, totalY, tableWidth, rowHeight);
+
+  ctx.textAlign = "left";
+  ctx.font = "bold 18px sans-serif";
+  ctx.fillText("Jumlah Jam Pelatihan (JP)", tableX + col1Width + 25, totalY + rowHeight / 2);
+
+  const totalJp = rows.reduce((acc, curr) => acc + (Number(curr.jp) || 0), 0);
+  ctx.textAlign = "center";
+  ctx.fillText(`${totalJp} JP`, tableX + col1Width + col2Width + col3Width / 2, totalY + rowHeight / 2);
+
+  // Draw Vertical lines for columns inside table
+  ctx.beginPath();
+  // Col 1 line
+  ctx.moveTo(tableX + col1Width, startY);
+  ctx.lineTo(tableX + col1Width, totalY + rowHeight);
+  // Col 2 line
+  ctx.moveTo(tableX + col1Width + col2Width, startY);
+  ctx.lineTo(tableX + col1Width + col2Width, totalY + rowHeight);
+  ctx.stroke();
+
+  // 3. Signature & Date Section (Bottom Right)
+  const sigAreaX = canvasWidth - 550;
+  const sigAreaY = totalY + rowHeight + 80;
+
+  // Format Date (Indonesian style)
+  const formattedDateStr = new Date(kegiatan.tanggal_kegiatan).toLocaleDateString("id-ID", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+
+  ctx.textAlign = "center";
+  ctx.font = "18px sans-serif";
+  ctx.fillText(`Bandung, ${formattedDateStr}`, sigAreaX, sigAreaY);
+
+  // Get Principal / Rightmost TTD details
+  const getPrincipalTtd = () => {
+    if (config.jumlahTtd === 3) return { img: ttd3Img, nama: config.ttd3Nama, jabatan: config.ttd3Jabatan, sub1: config.ttd3SubText1, sub2: config.ttd3SubText2 };
+    if (config.jumlahTtd === 2) return { img: ttd2Img, nama: config.ttd2Nama, jabatan: config.ttd2Jabatan, sub1: config.ttd2SubText1, sub2: config.ttd2SubText2 };
+    return { img: ttd1Img, nama: config.ttd1Nama, jabatan: config.ttd1Jabatan, sub1: config.ttd1SubText1, sub2: config.ttd1SubText2 };
+  };
+
+  const pTtd = getPrincipalTtd();
+
+  ctx.fillText(pTtd.jabatan || "Kepala Sekolah", sigAreaX, sigAreaY + 35);
+
+  // TTD Image
+  if (pTtd.img) {
+    const imgW = 200;
+    const aspect = pTtd.img.naturalWidth ? pTtd.img.naturalHeight / pTtd.img.naturalWidth : 0.5;
+    const imgH = imgW * aspect;
+    ctx.drawImage(pTtd.img, sigAreaX - imgW / 2, sigAreaY + 55, imgW, imgH);
+  }
+
+  // Underlined Name
+  ctx.font = "bold 20px sans-serif";
+  ctx.fillText(toSentenceCase(pTtd.nama), sigAreaX, sigAreaY + 195);
+  // draw name line
+  const nameWidth = ctx.measureText(toSentenceCase(pTtd.nama)).width;
+  ctx.strokeStyle = "#000000";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(sigAreaX - nameWidth / 2, sigAreaY + 208);
+  ctx.lineTo(sigAreaX + nameWidth / 2, sigAreaY + 208);
+  ctx.stroke();
+
+  // NIP / Subtext
+  ctx.font = "16px sans-serif";
+  if (pTtd.sub1) {
+    ctx.fillText(pTtd.sub1, sigAreaX, sigAreaY + 230);
+  }
+  if (pTtd.sub2) {
+    ctx.fillText(pTtd.sub2, sigAreaX, sigAreaY + 252);
+  }
+}
+
 export default function GuruSertifikatView({ userSession }: GuruSertifikatViewProps) {
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -393,11 +576,50 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
         ttd3Img
       );
 
-      const dataUrl = canvas.toDataURL("image/png");
-      const link = document.createElement("a");
-      link.href = dataUrl;
-      link.download = `SERTIFIKAT_${kegiatan.nama_kegiatan.toUpperCase().replace(/\s+/g, "_")}_${toSentenceCase(nameText).replace(/\s+/g, "_")}.png`;
-      link.click();
+      const hasJp = kegiatan.materi_jp && kegiatan.materi_jp.length > 0;
+
+      if (hasJp) {
+        // Halaman 2: Tabel Jam Pelajaran (JP)
+        const canvas2 = document.createElement("canvas");
+        const ctx2 = canvas2.getContext("2d");
+        if (!ctx2) throw new Error("Gagal menginisialisasi canvas untuk halaman belakang");
+        canvas2.width = canvas.width;
+        canvas2.height = canvas.height;
+
+        drawJpTablePageOnCanvas(
+          ctx2,
+          canvas2.width,
+          canvas2.height,
+          kegiatan,
+          config,
+          ttd1Img,
+          ttd2Img,
+          ttd3Img
+        );
+
+        // Gabungkan ke file PDF 2 halaman
+        const pdf = new jsPDF({
+          orientation: "landscape",
+          unit: "px",
+          format: [canvas.width, canvas.height]
+        });
+
+        const imgData1 = canvas.toDataURL("image/png");
+        pdf.addImage(imgData1, "PNG", 0, 0, canvas.width, canvas.height);
+
+        pdf.addPage();
+        const imgData2 = canvas2.toDataURL("image/png");
+        pdf.addImage(imgData2, "PNG", 0, 0, canvas.width, canvas.height);
+
+        pdf.save(`SERTIFIKAT_${kegiatan.nama_kegiatan.toUpperCase().replace(/\s+/g, "_")}_${toSentenceCase(nameText).replace(/\s+/g, "_")}.pdf`);
+      } else {
+        // Hanya 1 halaman: Simpan sebagai gambar PNG
+        const dataUrl = canvas.toDataURL("image/png");
+        const link = document.createElement("a");
+        link.href = dataUrl;
+        link.download = `SERTIFIKAT_${kegiatan.nama_kegiatan.toUpperCase().replace(/\s+/g, "_")}_${toSentenceCase(nameText).replace(/\s+/g, "_")}.png`;
+        link.click();
+      }
     } catch (err: any) {
       alert("Gagal mengunduh sertifikat: " + err.message);
     } finally {
@@ -405,7 +627,10 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
     }
   };
 
-  // Render preview canvas whenever modal opens
+  // State untuk berpindah halaman pada pratinjau
+  const [previewPage, setPreviewPage] = useState<1 | 2>(1);
+
+  // Render preview canvas whenever modal opens or page changes
   useEffect(() => {
     if (previewKegiatan && previewCanvasRef.current) {
       const canvas = previewCanvasRef.current;
@@ -440,21 +665,36 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
 
         const nameText = userSession.fullName || userSession.email;
 
-        drawCertificateOnCanvas(
-          ctx,
-          canvas.width,
-          canvas.height,
-          templateImg,
-          previewKegiatan,
-          nameText,
-          currentConfig,
-          ttd1Img,
-          ttd2Img,
-          ttd3Img
-        );
+        const hasJp = previewKegiatan.materi_jp && previewKegiatan.materi_jp.length > 0;
+
+        if (previewPage === 2 && hasJp) {
+          drawJpTablePageOnCanvas(
+            ctx,
+            canvas.width,
+            canvas.height,
+            previewKegiatan,
+            currentConfig,
+            ttd1Img,
+            ttd2Img,
+            ttd3Img
+          );
+        } else {
+          drawCertificateOnCanvas(
+            ctx,
+            canvas.width,
+            canvas.height,
+            templateImg,
+            previewKegiatan,
+            nameText,
+            currentConfig,
+            ttd1Img,
+            ttd2Img,
+            ttd3Img
+          );
+        }
       });
     }
-  }, [previewKegiatan, userSession, currentConfig]);
+  }, [previewKegiatan, previewPage, userSession, currentConfig]);
 
   const filteredList = list.filter(k => 
     k.nama_kegiatan.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -540,7 +780,10 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
 
               <div className="pt-5 mt-4 relative z-10 grid grid-cols-2 gap-2">
                 <button
-                  onClick={() => setPreviewKegiatan(kegiatan)}
+                  onClick={() => {
+                    setPreviewPage(1);
+                    setPreviewKegiatan(kegiatan);
+                  }}
                   className="py-3 bg-brand-50 hover:bg-brand-100 border border-brand-100 rounded-2xl text-brand-700 text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   <Eye className="w-4 h-4" />
@@ -556,7 +799,7 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
                   ) : (
                     <>
                       <Download className="w-4 h-4" />
-                      Unduh PNG
+                      {kegiatan.materi_jp && kegiatan.materi_jp.length > 0 ? "Unduh PDF" : "Unduh PNG"}
                     </>
                   )}
                 </button>
@@ -599,10 +842,31 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
                 </button>
               </div>
 
-              <div className="p-6 overflow-y-auto flex-1 flex items-center justify-center bg-slate-900">
+              <div className="p-6 overflow-y-auto flex-1 flex flex-col items-center justify-center bg-slate-900 gap-4">
+                {previewKegiatan.materi_jp && previewKegiatan.materi_jp.length > 0 && (
+                  <div className="flex gap-2 bg-slate-800 p-1.5 rounded-2xl border border-slate-700 w-fit">
+                    <button
+                      onClick={() => setPreviewPage(1)}
+                      className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer border-0 ${
+                        previewPage === 1 ? "bg-brand-600 text-white shadow-md" : "text-slate-400 hover:text-white bg-transparent"
+                      }`}
+                    >
+                      Halaman 1 (Depan)
+                    </button>
+                    <button
+                      onClick={() => setPreviewPage(2)}
+                      className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer border-0 ${
+                        previewPage === 2 ? "bg-brand-600 text-white shadow-md" : "text-slate-400 hover:text-white bg-transparent"
+                      }`}
+                    >
+                      Halaman 2 (Tabel JP)
+                    </button>
+                  </div>
+                )}
+                
                 <canvas
                   ref={previewCanvasRef}
-                  className="w-full h-auto max-h-[60vh] object-contain rounded-xl shadow-2xl border border-slate-700"
+                  className="w-full h-auto max-h-[52vh] object-contain rounded-xl shadow-2xl border border-slate-700"
                 />
               </div>
 
@@ -619,7 +883,7 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
                   className="px-5 py-2.5 rounded-2xl bg-brand-600 hover:bg-brand-750 text-white font-bold text-sm shadow-md transition-all cursor-pointer border-0 flex items-center gap-2"
                 >
                   <Download className="w-4 h-4" />
-                  Unduh Sertifikat PNG
+                  {previewKegiatan.materi_jp && previewKegiatan.materi_jp.length > 0 ? "Unduh Sertifikat PDF" : "Unduh Sertifikat PNG"}
                 </button>
               </div>
             </motion.div>

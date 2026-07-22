@@ -353,19 +353,19 @@ export default function App() {
           setActiveTab("siswa_stats");
         }
       } else if (userSession.role === "piket") {
-        if (!["kehadiran", "kelola_kehadiran_guru", "input_kehadiran", "change_password"].includes(activeTab)) {
+        if (!["kehadiran", "input_kehadiran", "change_password"].includes(activeTab)) {
           setActiveTab("input_kehadiran");
         }
       } else if (userSession.role === "guru") {
-        if (!["input", "students", "history", "change_password", "guru_kehadiran", "guru_sertifikat", "guru_jadwal", "guru_kartu"].includes(activeTab)) {
-          setActiveTab("guru_kehadiran");
+        if (!["input", "students", "history", "change_password", "guru_sertifikat", "guru_kartu"].includes(activeTab)) {
+          setActiveTab("input");
         }
       } else if (userSession.role === "kepala_sekolah") {
-        if (!["input_kehadiran", "input", "kehadiran", "students", "history", "change_password", "kelola_kehadiran_guru", "kelola_jadwal_guru"].includes(activeTab)) {
+        if (!["input_kehadiran", "input", "kehadiran", "students", "history", "change_password"].includes(activeTab)) {
           setActiveTab("input_kehadiran");
         }
       } else {
-        if (!["stats", "input_kehadiran", "input", "kehadiran", "students", "history", "rules", "users", "change_password", "kelola_kehadiran_guru", "kelola_sertifikat_guru", "kelola_jadwal_guru"].includes(activeTab)) {
+        if (!["stats", "input_kehadiran", "input", "kehadiran", "students", "history", "rules", "users", "change_password", "kelola_sertifikat_guru"].includes(activeTab)) {
           setActiveTab("stats");
         }
       }
@@ -395,14 +395,17 @@ export default function App() {
     sidebarElements = [
       { type: "item", id: "input_kehadiran", label: "Input Kehadiran", icon: ClipboardCheck, description: "Scan QR & input absen harian" },
       { type: "item", id: "kehadiran", label: "Kehadiran Murid", icon: Users, description: "Rekap absensi & poin murid" },
-      { type: "item", id: "kelola_kehadiran_guru", label: "Kehadiran Guru", icon: Calendar, description: "Monitoring absensi guru" },
+      // Sembunyikan sementara: Kehadiran Guru
+      // { type: "item", id: "kelola_kehadiran_guru", label: "Kehadiran Guru", icon: Calendar, description: "Monitoring absensi guru" },
       { type: "item", id: "change_password", label: "Tema & Keamanan", icon: Settings, description: "Ubah warna tema aplikasi" }
     ];
   } else if (userSession.role === "guru") {
     sidebarElements = [
-      { type: "item", id: "guru_kehadiran", label: "Kehadiran Saya", icon: Calendar, description: "Absen masuk & pulang" },
+      // Sembunyikan sementara: Kehadiran Saya
+      // { type: "item", id: "guru_kehadiran", label: "Kehadiran Saya", icon: Calendar, description: "Absen masuk & pulang" },
       { type: "item", id: "guru_sertifikat", label: "Sertifikat Kegiatan", icon: Award, description: "Unduh sertifikat pelatihan" },
-      { type: "item", id: "guru_jadwal", label: "Jadwal Mengajar", icon: Calendar, description: "Jadwal mengajar Anda" },
+      // Sembunyikan sementara: Jadwal Mengajar
+      // { type: "item", id: "guru_jadwal", label: "Jadwal Mengajar", icon: Calendar, description: "Jadwal mengajar Anda" },
       { type: "item", id: "guru_kartu", label: "Kartu Guru", icon: CreditCard, description: "QR Kartu Guru Digital" },
       { type: "item", id: "input", label: "Input Poin", icon: ClipboardCheck, description: "Catat via QR atau pencarian" },
       { type: "item", id: "history", label: "Riwayat Poin", icon: Calendar, description: "Audit trail pencatatan" },
@@ -422,10 +425,12 @@ export default function App() {
         ]
       },
       { type: "item", id: "kehadiran", label: "Kehadiran Murid", icon: Users, description: "Monitoring absensi murid" },
-      { type: "item", id: "kelola_kehadiran_guru", label: "Kehadiran Guru", icon: Calendar, description: "Monitoring absensi guru" },
+      // Sembunyikan sementara: Kehadiran Guru
+      // { type: "item", id: "kelola_kehadiran_guru", label: "Kehadiran Guru", icon: Calendar, description: "Monitoring absensi guru" },
       { type: "item", id: "history", label: "Riwayat Poin", icon: Calendar, description: "Audit trail pencatatan" },
       { type: "item", id: "students", label: "Data Murid", icon: Users, description: "Lihat database & kartu pelajar" },
-      { type: "item", id: "kelola_jadwal_guru", label: "Jadwal Guru", icon: Calendar, description: "Manajemen jadwal mengajar guru" },
+      // Sembunyikan sementara: Jadwal Guru
+      // { type: "item", id: "kelola_jadwal_guru", label: "Jadwal Guru", icon: Calendar, description: "Manajemen jadwal mengajar guru" },
       { type: "item", id: "change_password", label: "Tema & Keamanan", icon: Settings, description: "Ubah sandi & tema warna" }
     ];
   } else if (userSession.role === "super_admin") {
@@ -442,7 +447,8 @@ export default function App() {
         ]
       },
       { type: "item", id: "kehadiran", label: "Kehadiran Murid", icon: Users, description: "Rekap absensi murid" },
-      { type: "item", id: "kelola_kehadiran_guru", label: "Kehadiran Guru", icon: Calendar, description: "Monitoring absensi guru" },
+      // Sembunyikan sementara: Kehadiran Guru
+      // { type: "item", id: "kelola_kehadiran_guru", label: "Kehadiran Guru", icon: Calendar, description: "Monitoring absensi guru" },
       { type: "item", id: "history", label: "Riwayat Poin", icon: Calendar, description: "Audit trail pencatatan" },
       {
         type: "group",
@@ -451,7 +457,8 @@ export default function App() {
         icon: FolderOpen,
         items: [
           { id: "students", label: "Kelola Murid", icon: Users, description: "Database & kartu pelajar" },
-          { id: "kelola_jadwal_guru", label: "Jadwal Guru", icon: Calendar, description: "Manajemen jadwal mengajar guru" },
+          // Sembunyikan sementara: Jadwal Guru
+          // { id: "kelola_jadwal_guru", label: "Jadwal Guru", icon: Calendar, description: "Manajemen jadwal mengajar guru" },
           { id: "kelola_sertifikat_guru", label: "Sertifikat Guru", icon: Award, description: "Kelola kegiatan & sertifikat" },
           { id: "rules", label: "Pengaturan Poin", icon: Settings, description: "Atur sanksi & prestasi" }
         ]

@@ -56,6 +56,9 @@ export interface SertifikatLayoutConfig {
   // Template Deskripsi Kustom (Mendukung Markdown **bold**)
   deskripsiTemplate: string;
 
+  // Tempat & Tanggal Halaman Depan
+  tempatTanggalTemplate: string;
+
   // Halaman Belakang (JP)
   hasJpPage: boolean;
   templateJpUrl: string | null;
@@ -70,6 +73,7 @@ export interface SertifikatLayoutConfig {
     prefixNama: ElementPosition; // e.g., "Diberikan kepada:"
     namaGuru: ElementPosition;
     deskripsi: ElementPosition;
+    tanggalKegiatan: ElementPosition; // Tempat & Tanggal
     
     // TTD 1
     ttd1ImagePos: TtdElementPosition;
@@ -91,6 +95,11 @@ export interface SertifikatLayoutConfig {
     ttd3JabatanPos: ElementPosition;
     ttd3SubText1Pos: ElementPosition;
     ttd3SubText2Pos: ElementPosition;
+
+    // Halaman Belakang (JP)
+    jpHeaderTitlePos: ElementPosition;
+    jpHeaderSubtitlePos: ElementPosition;
+    jpHeaderSub2Pos: ElementPosition;
   };
 }
 
@@ -125,6 +134,7 @@ export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
   ttd3SubText2: "",
 
   deskripsiTemplate: 'Atas partisipasi aktifnya sebagai **{peran}** dalam kegiatan **"{nama_kegiatan}"** yang diselenggarakan oleh **{penyelenggara}**.',
+  tempatTanggalTemplate: 'Bandung, {tanggal}',
 
   hasJpPage: false,
   templateJpUrl: null,
@@ -176,6 +186,14 @@ export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
       align: "center",
       fontWeight: "normal",
       lineHeightMultiplier: 1.45
+    },
+    tanggalKegiatan: {
+      xPercent: 50,
+      yPercent: 68.0,
+      fontSize: 18,
+      color: "#1e1b4b",
+      align: "center",
+      fontWeight: "normal"
     },
     
     // TTD 1
@@ -293,6 +311,30 @@ export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
       color: "#64748b",
       align: "center",
       fontWeight: "normal"
+    },
+    jpHeaderTitlePos: {
+      xPercent: 50,
+      yPercent: 7.7,
+      fontSize: 38,
+      color: "#1e1b4b",
+      align: "center",
+      fontWeight: "bold"
+    },
+    jpHeaderSubtitlePos: {
+      xPercent: 50,
+      yPercent: 11.6,
+      fontSize: 28,
+      color: "#1e1b4b",
+      align: "center",
+      fontWeight: "bold"
+    },
+    jpHeaderSub2Pos: {
+      xPercent: 50,
+      yPercent: 15.2,
+      fontSize: 24,
+      color: "#1e1b4b",
+      align: "center",
+      fontWeight: "bold"
     }
   }
 };

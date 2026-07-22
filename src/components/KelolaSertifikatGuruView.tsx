@@ -329,6 +329,36 @@ export default function KelolaSertifikatGuruView() {
             ttd3Img,
             templateJpImg
           );
+
+          // Highlight selected element position with a target indicator on page 2
+          const pos = config.positions;
+          let targetX = canvas.width / 2;
+          let targetY = canvas.height / 2;
+          let showTarget = false;
+
+          if (selectedElement === "jpHeaderTitlePos" && pos.jpHeaderTitlePos) {
+            targetX = (pos.jpHeaderTitlePos.xPercent / 100) * canvas.width;
+            targetY = (pos.jpHeaderTitlePos.yPercent / 100) * canvas.height;
+            showTarget = true;
+          } else if (selectedElement === "jpHeaderSubtitlePos" && pos.jpHeaderSubtitlePos) {
+            targetX = (pos.jpHeaderSubtitlePos.xPercent / 100) * canvas.width;
+            targetY = (pos.jpHeaderSubtitlePos.yPercent / 100) * canvas.height;
+            showTarget = true;
+          } else if (selectedElement === "jpHeaderSub2Pos" && pos.jpHeaderSub2Pos) {
+            targetX = (pos.jpHeaderSub2Pos.xPercent / 100) * canvas.width;
+            targetY = (pos.jpHeaderSub2Pos.yPercent / 100) * canvas.height;
+            showTarget = true;
+          }
+
+          if (showTarget) {
+            ctx.strokeStyle = "#3b82f6";
+            ctx.lineWidth = 4;
+            ctx.setLineDash([8, 8]);
+            ctx.beginPath();
+            ctx.arc(targetX, targetY, 24, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.setLineDash([]);
+          }
         } else {
           drawCertificateOnCanvas(
             ctx,
@@ -360,6 +390,9 @@ export default function KelolaSertifikatGuruView() {
           } else if (selectedElement === "deskripsi") {
             targetX = (pos.deskripsi.xPercent / 100) * canvas.width;
             targetY = (pos.deskripsi.yPercent / 100) * canvas.height;
+          } else if (selectedElement === "tanggalKegiatan" && pos.tanggalKegiatan) {
+            targetX = (pos.tanggalKegiatan.xPercent / 100) * canvas.width;
+            targetY = (pos.tanggalKegiatan.yPercent / 100) * canvas.height;
           } else if (selectedElement === "ttd1") {
             targetX = (pos.ttd1NamaPos.xPercent / 100) * canvas.width;
             targetY = (pos.ttd1NamaPos.yPercent / 100) * canvas.height;
@@ -484,6 +517,14 @@ export default function KelolaSertifikatGuruView() {
         updatedPos.namaGuru = { ...updatedPos.namaGuru, xPercent, yPercent };
       } else if (selectedElement === "deskripsi") {
         updatedPos.deskripsi = { ...updatedPos.deskripsi, xPercent, yPercent };
+      } else if (selectedElement === "tanggalKegiatan") {
+        updatedPos.tanggalKegiatan = { ...updatedPos.tanggalKegiatan, xPercent, yPercent };
+      } else if (selectedElement === "jpHeaderTitlePos") {
+        updatedPos.jpHeaderTitlePos = { ...updatedPos.jpHeaderTitlePos, xPercent, yPercent };
+      } else if (selectedElement === "jpHeaderSubtitlePos") {
+        updatedPos.jpHeaderSubtitlePos = { ...updatedPos.jpHeaderSubtitlePos, xPercent, yPercent };
+      } else if (selectedElement === "jpHeaderSub2Pos") {
+        updatedPos.jpHeaderSub2Pos = { ...updatedPos.jpHeaderSub2Pos, xPercent, yPercent };
       } else if (selectedElement === "ttd1") {
         updatedPos.ttd1ImagePos = { ...updatedPos.ttd1ImagePos, xPercent, yPercent: yPercent - 10 };
         updatedPos.ttd1NamaPos = { ...updatedPos.ttd1NamaPos, xPercent, yPercent };
@@ -1068,6 +1109,22 @@ export default function KelolaSertifikatGuruView() {
                 placeholder='Atas partisipasi aktifnya sebagai **{peran}** dalam kegiatan **"{nama_kegiatan}"** yang diselenggarakan oleh **{penyelenggara}**.'
                 className="w-full p-3 bg-brand-50/30 rounded-2xl border border-brand-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 text-brand-950 leading-relaxed"
               />
+
+              <div className="space-y-1.5 pt-2 border-t border-slate-100">
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">
+                  Format Tempat & Tanggal Depan:
+                </label>
+                <input
+                  type="text"
+                  value={config.tempatTanggalTemplate || ""}
+                  onChange={(e) => setConfig(prev => ({ ...prev, tempatTanggalTemplate: e.target.value }))}
+                  placeholder="Bandung, {tanggal}"
+                  className="w-full p-3 bg-brand-50/30 rounded-2xl border border-brand-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 text-brand-950"
+                />
+                <p className="text-[9px] text-slate-400 font-medium mt-0.5">
+                  Gunakan <code className="bg-slate-100 px-1 py-0.5 rounded font-mono">&#123;tanggal&#125;</code> untuk tanggal kegiatan dinamis.
+                </p>
+              </div>
             </div>
 
             {/* 2. TEMPLATE & JUMLAH TTD SECTION */}
@@ -1264,7 +1321,17 @@ export default function KelolaSertifikatGuruView() {
                     Upload Gambar TTD 1
                   </label>
                   {config.ttd1Image && (
-                    <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2.5 py-1 rounded-xl">TTD Ready</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2.5 py-1 rounded-xl">TTD Ready</span>
+                      <button
+                        type="button"
+                        onClick={() => setConfig(prev => ({ ...prev, ttd1Image: null }))}
+                        className="p-1 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg border border-rose-100 cursor-pointer"
+                        title="Hapus gambar TTD 1"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
                   )}
                 </div>
                 <div className="grid grid-cols-2 gap-2 mt-1">
@@ -1323,7 +1390,17 @@ export default function KelolaSertifikatGuruView() {
                       Upload Gambar TTD 2
                     </label>
                     {config.ttd2Image && (
-                      <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2.5 py-1 rounded-xl">TTD Ready</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2.5 py-1 rounded-xl">TTD Ready</span>
+                        <button
+                          type="button"
+                          onClick={() => setConfig(prev => ({ ...prev, ttd2Image: null }))}
+                          className="p-1 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg border border-rose-100 cursor-pointer"
+                          title="Hapus gambar TTD 2"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
                     )}
                   </div>
                   <div className="grid grid-cols-2 gap-2 mt-1">
@@ -1383,7 +1460,17 @@ export default function KelolaSertifikatGuruView() {
                       Upload Gambar TTD 3
                     </label>
                     {config.ttd3Image && (
-                      <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2.5 py-1 rounded-xl">TTD Ready</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2.5 py-1 rounded-xl">TTD Ready</span>
+                        <button
+                          type="button"
+                          onClick={() => setConfig(prev => ({ ...prev, ttd3Image: null }))}
+                          className="p-1 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg border border-rose-100 cursor-pointer"
+                          title="Hapus gambar TTD 3"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
                     )}
                   </div>
                   <div className="grid grid-cols-2 gap-2 mt-1">
@@ -1443,9 +1530,17 @@ export default function KelolaSertifikatGuruView() {
                   <option value="prefixNama">Label "Diberikan kepada:"</option>
                   <option value="noSertifikat">Nomor Surat Sertifikat</option>
                   <option value="deskripsi">Deskripsi & Peran Kegiatan</option>
+                  <option value="tanggalKegiatan">Halaman Depan: Tempat & Tanggal</option>
                   <option value="ttd1">TTD 1 - Posisi & Teks</option>
                   {config.jumlahTtd >= 2 && <option value="ttd2">TTD 2 - Posisi & Teks</option>}
                   {config.jumlahTtd === 3 && <option value="ttd3">TTD 3 - Posisi & Teks</option>}
+                  {config.hasJpPage && (
+                    <>
+                      <option value="jpHeaderTitlePos">Halaman Belakang: Judul JP</option>
+                      <option value="jpHeaderSubtitlePos">Halaman Belakang: Subjudul JP</option>
+                      <option value="jpHeaderSub2Pos">Halaman Belakang: Instansi JP</option>
+                    </>
+                  )}
                 </select>
               </div>
 

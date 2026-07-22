@@ -310,6 +310,19 @@ export function drawCertificateOnCanvas(
       pos.ttd2SubText2Pos
     );
   }
+
+  // 7. Tempat & Tanggal Halaman Depan
+  if (pos.tanggalKegiatan) {
+    const rawDate = kegiatan.tanggal_kegiatan;
+    const formattedDate = new Date(rawDate).toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "long",
+      year: "numeric"
+    });
+    const template = config.tempatTanggalTemplate || "Bandung, {tanggal}";
+    const tempatTanggalText = template.replace(/{tanggal}/gi, formattedDate);
+    drawStyledText(tempatTanggalText, pos.tanggalKegiatan);
+  }
 }
 
 export function drawJpTablePageOnCanvas(
@@ -348,11 +361,16 @@ export function drawJpTablePageOnCanvas(
   }
 
   // Smart Detection Layout Adjustments
+  const pos = config.positions;
+  const baseTitleSize = pos.jpHeaderTitlePos?.fontSize || 38;
+  const baseSubtitleSize = pos.jpHeaderSubtitlePos?.fontSize || 28;
+  const baseOrganizerSize = pos.jpHeaderSub2Pos?.fontSize || 24;
+
   let tableFontSize = 18;
   let headerFontSize = 20;
-  let titleFontSize = 38;
-  let subtitleFontSize = 28;
-  let organizerFontSize = 24;
+  let titleFontSize = baseTitleSize;
+  let subtitleFontSize = baseSubtitleSize;
+  let organizerFontSize = baseOrganizerSize;
   let tableX = 150;
   let tableWidth = canvasWidth - 300; // 1700px
   let startY = 270;
@@ -461,20 +479,38 @@ export function drawJpTablePageOnCanvas(
   ctx.textBaseline = "middle";
   ctx.fillStyle = "#1e1b4b";
 
+  let titleX = ((pos.jpHeaderTitlePos?.xPercent || 50) / 100) * canvasWidth;
+  let titleY = ((pos.jpHeaderTitlePos?.yPercent || 7.7) / 100) * canvasHeight;
+
+  let subtitleX = ((pos.jpHeaderSubtitlePos?.xPercent || 50) / 100) * canvasWidth;
+  let subtitleY = ((pos.jpHeaderSubtitlePos?.yPercent || 11.6) / 100) * canvasHeight;
+
+  let organizerX = ((pos.jpHeaderSub2Pos?.xPercent || 50) / 100) * canvasWidth;
+  let organizerY = ((pos.jpHeaderSub2Pos?.yPercent || 15.2) / 100) * canvasHeight;
+
+  if (fitIndex === 3) {
+    titleFontSize = Math.min(32, baseTitleSize * 0.85);
+    subtitleFontSize = Math.min(24, baseSubtitleSize * 0.85);
+    organizerFontSize = Math.min(20, baseOrganizerSize * 0.85);
+    titleY = startY - 140;
+    subtitleY = startY - 95;
+    organizerY = startY - 50;
+  }
+
   // Main Title
   ctx.font = `bold ${titleFontSize}px sans-serif`;
   const jpTitle = replaceVars(config.jpHeaderTitle || "STRUKTUR PROGRAM DAN MATERI PELATIHAN");
-  ctx.fillText(jpTitle.toUpperCase(), canvasWidth / 2, startY - 160);
+  ctx.fillText(jpTitle.toUpperCase(), titleX, titleY);
 
   // Subtitle (Activity Name)
   ctx.font = `bold ${subtitleFontSize}px sans-serif`;
   const jpSubtitle = replaceVars(config.jpHeaderSubtitle || "{nama_kegiatan}");
-  ctx.fillText(jpSubtitle.toUpperCase(), canvasWidth / 2, startY - 105);
+  ctx.fillText(jpSubtitle.toUpperCase(), subtitleX, subtitleY);
 
   // Organizer / Subtext 2
   ctx.font = `bold ${organizerFontSize}px sans-serif`;
   const jpSub2 = replaceVars(config.jpHeaderSub2 || "{penyelenggara}");
-  ctx.fillText(jpSub2.toUpperCase(), canvasWidth / 2, startY - 55);
+  ctx.fillText(jpSub2.toUpperCase(), organizerX, organizerY);
 
   // Draw Header background
   ctx.fillStyle = "#284478";

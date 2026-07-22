@@ -1,13 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "motion/react";
-import { Award, Plus, Trash2, Search, X, Check, RefreshCw, Layout, Upload, Save, RotateCcw, Move, Edit3, Image as ImageIcon, Users, CheckSquare, Square, FileText, AlignLeft } from "lucide-react";
+import { Award, Plus, Trash2, Search, X, Check, RefreshCw, Layout, Upload, Save, RotateCcw, Move, Edit3, Image as ImageIcon, Users, CheckSquare, Square, FileText, AlignLeft, Folder, FolderOpen, ArrowLeft, Download } from "lucide-react";
 import { getAllKegiatanGuru, getTeacherProfiles, addKegiatanGuruBulk, deleteKegiatanGuru, deleteKegiatanGuruBulk, deleteAllKegiatanGuru } from "../dbStore";
 import ModalPortal from "./ModalPortal";
 import { toSentenceCase } from "../formatName";
 import { getSertifikatConfigAsync, saveSertifikatConfigAsync, resetSertifikatConfigAsync, SertifikatLayoutConfig, DEFAULT_SERTIFIKAT_CONFIG } from "../sertifikatConfig";
-import { drawCertificateOnCanvas } from "./GuruSertifikatView";
+import { drawCertificateOnCanvas, drawJpTablePageOnCanvas } from "./GuruSertifikatView";
 import { KegiatanGuru } from "../types";
+import { jsPDF } from "jspdf";
+import JSZip from "jszip";
 
 // Helper function to compress/resize uploaded image data to max 2000px width
 function optimizeImageDataUrl(file: File, maxWidth = 2000): Promise<string> {
@@ -52,6 +54,9 @@ export default function KelolaSertifikatGuruView() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [selectedActivityFolder, setSelectedActivityFolder] = useState<string | null>(null);
+  const [zipDownloadingId, setZipDownloadingId] = useState<string | null>(null);
+  const [zipProgress, setZipProgress] = useState<{ current: number; total: number } | null>(null);
 
   // Form State for publishing certificate
   const [selectedTeacherIds, setSelectedTeacherIds] = useState<string[]>([]);
@@ -500,6 +505,252 @@ export default function KelolaSertifikatGuruView() {
     row.peran.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Group activities by their name (folder)
+  const groupedActivities = React.useMemo(() => {
+    const groups: { [key: string]: KegiatanGuru[] } = {};
+    kegiatanList.forEach((row) => {
+      const key = (row.nama_kegiatan || "").trim();
+      if (!groups[key]) {
+        groups[key] = [];
+      }
+      groups[key].push(row);
+    });
+
+    return Object.keys(groups).map((name) => {
+      const items = groups[name];
+      const hasJp = items.some(item => item.materi_jp && item.materi_jp.length > 0);
+      return {
+        nama_kegiatan: name,
+        items,
+        tanggal_kegiatan: items[0].tanggal_kegiatan,
+        penyelenggara: items[0].penyelenggara,
+        materi_jp: items[0].materi_jp,
+        isJp: hasJp,
+        total_jp: items[0].materi_jp ? items[0].materi_jp.reduce((acc: number, curr: any) => acc + (Number(curr.jp) || 0), 0) : 0
+      };
+    });
+  }, [kegiatanList]);
+
+  const filteredGroupedActivities = React.useMemo(() => {
+    if (!searchQuery) return groupedActivities;
+    return groupedActivities.filter(g =>
+      g.nama_kegiatan.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [groupedActivities, searchQuery]);
+
+  const folderItems = React.useMemo(() => {
+    if (!selectedActivityFolder) return [];
+    const matchedGroup = groupedActivities.find(g => g.nama_kegiatan === selectedActivityFolder);
+    if (!matchedGroup) return [];
+    
+    // Filter inside folder by teacher name or role
+    if (!searchQuery) return matchedGroup.items;
+    return matchedGroup.items.filter(item =>
+      item.user_nama.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.peran.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [selectedActivityFolder, groupedActivities, searchQuery]);
+
+  const handleDownloadSingle = async (kegiatan: KegiatanGuru) => {
+    const config = await getSertifikatConfigAsync();
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const templateImg = new Image();
+    templateImg.src = config.templateUrl || "/sertifikat_template.png";
+
+    const loadImg = (src: string | null): Promise<HTMLImageElement | null> => {
+      if (!src) return Promise.resolve(null);
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => resolve(img);
+        img.onerror = () => resolve(null);
+        img.src = src;
+      });
+    };
+
+    try {
+      await new Promise<void>((resolve, reject) => {
+        templateImg.onload = () => resolve();
+        templateImg.onerror = () => reject(new Error("Gagal memuat template sertifikat"));
+      });
+
+      const ttd1Img = await loadImg(config.ttd1Image);
+      const ttd2Img = await loadImg(config.ttd2Image);
+      const ttd3Img = await loadImg(config.ttd3Image);
+
+      canvas.width = templateImg.naturalWidth || 2000;
+      canvas.height = templateImg.naturalHeight || 1414;
+
+      const nameText = kegiatan.user_nama || "Guru SMAN 19";
+
+      drawCertificateOnCanvas(
+        ctx,
+        canvas.width,
+        canvas.height,
+        templateImg,
+        kegiatan,
+        nameText,
+        config,
+        ttd1Img,
+        ttd2Img,
+        ttd3Img
+      );
+
+      const hasJp = kegiatan.materi_jp && kegiatan.materi_jp.length > 0;
+
+      if (hasJp) {
+        const canvas2 = document.createElement("canvas");
+        const ctx2 = canvas2.getContext("2d");
+        if (!ctx2) throw new Error("Gagal");
+        canvas2.width = canvas.width;
+        canvas2.height = canvas.height;
+
+        drawJpTablePageOnCanvas(
+          ctx2,
+          canvas2.width,
+          canvas2.height,
+          kegiatan,
+          config,
+          ttd1Img,
+          ttd2Img,
+          ttd3Img
+        );
+
+        const pdf = new jsPDF({
+          orientation: "landscape",
+          unit: "px",
+          format: [canvas.width, canvas.height]
+        });
+
+        pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, canvas.width, canvas.height);
+        pdf.addPage();
+        pdf.addImage(canvas2.toDataURL("image/png"), "PNG", 0, 0, canvas.width, canvas.height);
+
+        pdf.save(`SERTIFIKAT_${kegiatan.nama_kegiatan.toUpperCase().replace(/\s+/g, "_")}_${toSentenceCase(nameText).replace(/\s+/g, "_")}.pdf`);
+      } else {
+        const link = document.createElement("a");
+        link.href = canvas.toDataURL("image/png");
+        link.download = `SERTIFIKAT_${kegiatan.nama_kegiatan.toUpperCase().replace(/\s+/g, "_")}_${toSentenceCase(nameText).replace(/\s+/g, "_")}.png`;
+        link.click();
+      }
+    } catch (e: any) {
+      alert("Gagal mengunduh: " + e.message);
+    }
+  };
+
+  const handleDownloadAllAsZip = async (folderName: string, items: KegiatanGuru[]) => {
+    setZipDownloadingId(folderName);
+    setZipProgress({ current: 0, total: items.length });
+
+    const config = await getSertifikatConfigAsync();
+    const zip = new JSZip();
+
+    const loadImg = (src: string | null): Promise<HTMLImageElement | null> => {
+      if (!src) return Promise.resolve(null);
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => resolve(img);
+        img.onerror = () => resolve(null);
+        img.src = src;
+      });
+    };
+
+    try {
+      const templateImg = new Image();
+      templateImg.src = config.templateUrl || "/sertifikat_template.png";
+      await new Promise<void>((resolve, reject) => {
+        templateImg.onload = () => resolve();
+        templateImg.onerror = () => reject(new Error("Gagal memuat template"));
+      });
+
+      const ttd1Img = await loadImg(config.ttd1Image);
+      const ttd2Img = await loadImg(config.ttd2Image);
+      const ttd3Img = await loadImg(config.ttd3Image);
+
+      const canvasWidth = templateImg.naturalWidth || 2000;
+      const canvasHeight = templateImg.naturalHeight || 1414;
+
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        setZipProgress({ current: i + 1, total: items.length });
+
+        const canvas = document.createElement("canvas");
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) continue;
+
+        const nameText = item.user_nama || "Guru SMAN 19";
+        drawCertificateOnCanvas(
+          ctx,
+          canvasWidth,
+          canvasHeight,
+          templateImg,
+          item,
+          nameText,
+          config,
+          ttd1Img,
+          ttd2Img,
+          ttd3Img
+        );
+
+        const hasJp = item.materi_jp && item.materi_jp.length > 0;
+        const safeName = toSentenceCase(nameText).replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_");
+
+        if (hasJp) {
+          const canvas2 = document.createElement("canvas");
+          canvas2.width = canvasWidth;
+          canvas2.height = canvasHeight;
+          const ctx2 = canvas2.getContext("2d");
+          if (!ctx2) continue;
+
+          drawJpTablePageOnCanvas(
+            ctx2,
+            canvasWidth,
+            canvasHeight,
+            item,
+            config,
+            ttd1Img,
+            ttd2Img,
+            ttd3Img
+          );
+
+          const pdf = new jsPDF({
+            orientation: "landscape",
+            unit: "px",
+            format: [canvasWidth, canvasHeight]
+          });
+          pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, canvasWidth, canvasHeight);
+          pdf.addPage();
+          pdf.addImage(canvas2.toDataURL("image/png"), "PNG", 0, 0, canvasWidth, canvasHeight);
+
+          const pdfOutput = pdf.output("arraybuffer");
+          zip.file(`SERTIFIKAT_${safeName}.pdf`, pdfOutput);
+        } else {
+          const imgData = canvas.toDataURL("image/png").split(',')[1];
+          zip.file(`SERTIFIKAT_${safeName}.png`, imgData, { base64: true });
+        }
+      }
+
+      const zipContent = await zip.generateAsync({ type: "blob" });
+      const safeFolder = folderName.replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_");
+      
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(zipContent);
+      link.download = `Sertifikat_${safeFolder}.zip`;
+      link.click();
+    } catch (err: any) {
+      alert("Gagal mengunduh ZIP: " + err.message);
+    } finally {
+      setZipDownloadingId(null);
+      setZipProgress(null);
+    }
+  };
+
   return (
     <div className="space-y-6 pb-12 animate-fade-in font-sans">
       {/* Header & Mode Switcher */}
@@ -513,59 +764,92 @@ export default function KelolaSertifikatGuruView() {
           </p>
         </div>
 
-        {/* Tab Selector */}
-        <div className="flex bg-brand-50 p-1.5 rounded-2xl border border-brand-100/80 shadow-inner">
+        <div className="flex bg-brand-100/50 p-1.5 rounded-2xl border border-brand-200/40 self-stretch sm:self-auto">
           <button
             onClick={() => setActiveTab("riwayat")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+            className={`flex-1 sm:flex-initial px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer border-0 ${
               activeTab === "riwayat"
-                ? "bg-white text-brand-900 shadow-sm border border-brand-100"
-                : "text-brand-600 hover:text-brand-900"
+                ? "bg-white text-brand-850 shadow-md"
+                : "text-brand-500 hover:text-brand-800 bg-transparent"
             }`}
           >
-            <Award className="w-4 h-4 text-brand-500" />
             Riwayat & Terbitkan
           </button>
           <button
             onClick={() => setActiveTab("desainer")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+            className={`flex-1 sm:flex-initial px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer border-0 ${
               activeTab === "desainer"
-                ? "bg-white text-brand-900 shadow-sm border border-brand-100"
-                : "text-brand-600 hover:text-brand-900"
+                ? "bg-white text-brand-850 shadow-md"
+                : "text-brand-500 hover:text-brand-800 bg-transparent"
             }`}
           >
-            <Layout className="w-4 h-4 text-brand-500" />
-            Desainer Template & Posisi
+            Desainer Template
           </button>
         </div>
       </div>
 
-      {/* ALERT SUCCESS */}
-      {successMsg && (
-        <div className="p-4 bg-emerald-50 border border-emerald-100 text-emerald-800 rounded-2xl text-xs font-bold flex items-center gap-3 shadow-md">
-          <div className="w-6 h-6 bg-emerald-500 rounded-lg text-white flex items-center justify-center flex-shrink-0">
-            <Check className="w-3.5 h-3.5" />
+      {/* Progress ZIP overlay */}
+      <AnimatePresence>
+        {zipProgress && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-brand-950/70 backdrop-blur-xs">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl space-y-4 border border-brand-100"
+            >
+              <RefreshCw className="w-10 h-10 animate-spin mx-auto text-brand-600" />
+              <h4 className="text-sm font-extrabold text-brand-950">Menyiapkan Berkas ZIP</h4>
+              <p className="text-xs text-slate-500 font-semibold leading-relaxed">
+                Sedang memproses dan merender sertifikat untuk seluruh guru penerima kegiatan ini...
+              </p>
+              <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden relative">
+                <div 
+                  className="bg-brand-600 h-full rounded-full transition-all duration-300"
+                  style={{ width: `${(zipProgress.current / zipProgress.total) * 100}%` }}
+                />
+              </div>
+              <span className="text-[10px] font-black text-brand-600 block bg-brand-50 py-1.5 px-3 rounded-xl w-fit mx-auto">
+                PROSES: {zipProgress.current} / {zipProgress.total} GURU
+              </span>
+            </motion.div>
           </div>
-          <span>{successMsg}</span>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
 
       {/* TAB 1: RIWAYAT & TERBITKAN SERTIFIKAT */}
       {activeTab === "riwayat" && (
         <>
+          {/* Back button if inside folder */}
+          {selectedActivityFolder && (
+            <button
+              onClick={() => {
+                setSelectedActivityFolder(null);
+                setSearchQuery("");
+              }}
+              className="flex items-center gap-2 text-xs font-black text-brand-700 hover:text-brand-950 cursor-pointer bg-transparent border-0 self-start"
+            >
+              <ArrowLeft className="w-4.5 h-4.5" />
+              Kembali ke Daftar Kegiatan
+            </button>
+          )}
+
           {/* CONTROLS BAR */}
           <div className="bg-white p-5 rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="relative flex-1 w-full">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-500/50 w-5 h-5" />
               <input
                 type="text"
-                placeholder="Cari berdasarkan nama guru, kegiatan, atau peran..."
+                placeholder={
+                  selectedActivityFolder 
+                    ? "Cari nama atau email guru penerima..." 
+                    : "Cari berdasarkan nama kegiatan..."
+                }
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-11 pr-4 py-3 bg-brand-50/20 rounded-2xl border border-brand-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all text-brand-950 placeholder-brand-500/30"
               />
             </div>
-
             <div className="flex items-center gap-3.5 w-full md:w-auto justify-end">
               <motion.button
                 whileHover={{ scale: 1.02 }}
@@ -585,137 +869,178 @@ export default function KelolaSertifikatGuruView() {
             </div>
           </div>
 
-          {/* BULK ACTIONS BAR */}
-          {selectedCertIds.length > 0 && (
-            <div className="bg-rose-50 border border-rose-100 p-4 rounded-3xl flex items-center justify-between gap-4 animate-fade-in">
-              <span className="text-xs font-bold text-rose-800">
-                Terpilih {selectedCertIds.length} dari {filteredList.length} sertifikat
-              </span>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setSelectedCertIds([])}
-                  className="px-4 py-2 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-bold transition-all cursor-pointer bg-transparent border-0"
-                >
-                  Batal Pilihan
-                </button>
-                <button
-                  onClick={handleDeleteSelected}
-                  className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-black shadow-xs transition-all cursor-pointer border-0 flex items-center gap-1.5"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                  Hapus Terpilih ({selectedCertIds.length})
-                </button>
-              </div>
+          {/* FOLDER VIEW (Tampilan Utama Riwayat) */}
+          {!selectedActivityFolder && (
+            <div className="space-y-6">
+              {loadingKegiatan ? (
+                <div className="bg-white rounded-3xl p-16 text-center border border-brand-100 shadow-xl shadow-brand-900/5">
+                  <RefreshCw className="w-8 h-8 animate-spin mx-auto text-brand-500" />
+                  <p className="text-xs font-bold text-brand-400 mt-2">Memuat daftar kegiatan...</p>
+                </div>
+              ) : filteredGroupedActivities.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredGroupedActivities.map((folder) => (
+                    <div
+                      key={folder.nama_kegiatan}
+                      className="bg-white rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 p-6 hover:scale-[1.01] hover:shadow-2xl transition-all relative overflow-hidden group flex flex-col justify-between"
+                    >
+                      {/* Folder Icon Decoration */}
+                      <div className="absolute top-0 right-0 w-24 h-24 bg-brand-600/5 rounded-full filter blur-xl translate-x-6 -translate-y-6 group-hover:scale-125 transition-transform" />
+
+                      <div className="space-y-4 relative z-10">
+                        <div className="flex justify-between items-start">
+                          <div className="w-12 h-12 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center">
+                            <Folder className="w-7 h-7" />
+                          </div>
+                          <span className="text-[10px] font-black uppercase bg-brand-50 text-brand-700 border border-brand-200 px-2.5 py-1 rounded-xl">
+                            {folder.items.length} Guru
+                          </span>
+                        </div>
+
+                        <div className="space-y-1">
+                          <h4 
+                            onClick={() => {
+                              setSelectedActivityFolder(folder.nama_kegiatan);
+                              setSearchQuery("");
+                            }}
+                            className="font-extrabold text-sm text-brand-950 group-hover:text-brand-600 transition-colors line-clamp-2 leading-snug cursor-pointer"
+                          >
+                            {folder.nama_kegiatan}
+                          </h4>
+                          <p className="text-[10px] text-slate-400 font-bold">{folder.penyelenggara}</p>
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-50">
+                          <span className="text-[9px] font-bold text-slate-400">
+                            {new Date(folder.tanggal_kegiatan).toLocaleDateString("id-ID", { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </span>
+                          {folder.isJp && (
+                            <span className="text-[9px] font-black uppercase bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-lg">
+                              JP ({folder.total_jp} JP)
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="pt-5 mt-4 border-t border-slate-50 flex gap-2">
+                        <button
+                          onClick={() => {
+                            setSelectedActivityFolder(folder.nama_kegiatan);
+                            setSearchQuery("");
+                          }}
+                          className="flex-1 py-3 bg-brand-50 hover:bg-brand-100 border border-brand-100 rounded-2xl text-brand-700 text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                        >
+                          <FolderOpen className="w-4 h-4" />
+                          Buka Folder
+                        </button>
+                        <button
+                          onClick={() => handleDownloadAllAsZip(folder.nama_kegiatan, folder.items)}
+                          disabled={zipDownloadingId !== null}
+                          className="flex-1 py-3 bg-brand-600 hover:bg-brand-750 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md disabled:opacity-50"
+                        >
+                          <Download className="w-4 h-4" />
+                          Unduh ZIP
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="bg-white rounded-3xl p-16 text-center border border-brand-100 shadow-xl shadow-brand-900/5 max-w-md mx-auto space-y-3">
+                  <Folder className="w-10 h-10 text-brand-300 mx-auto" />
+                  <h4 className="text-xs font-black text-brand-500 uppercase tracking-widest">Folder Kosong</h4>
+                  <p className="text-[10px] text-brand-400 font-semibold leading-relaxed">
+                    Belum ada data sertifikat diterbitkan.
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
-          {/* TABLE OF ISSUED CERTIFICATES */}
-          <div className="bg-white rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs font-semibold text-brand-950">
-                <thead className="bg-brand-50/60 border-b border-brand-100 text-[10px] font-black uppercase text-brand-400 tracking-wider">
-                  <tr>
-                    <th className="py-4 px-6 w-12 text-center">
-                      <input
-                        type="checkbox"
-                        checked={filteredList.length > 0 && selectedCertIds.length === filteredList.length}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setSelectedCertIds(filteredList.map(row => row.id));
-                          } else {
-                            setSelectedCertIds([]);
-                          }
-                        }}
-                        className="w-4 h-4 rounded cursor-pointer accent-brand-600"
-                      />
-                    </th>
-                    <th className="py-4 px-6">Guru / Peserta</th>
-                    <th className="py-4 px-6">Nama Kegiatan</th>
-                    <th className="py-4 px-6">Peran</th>
-                    <th className="py-4 px-6">Tanggal</th>
-                    <th className="py-4 px-6 text-right">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-brand-50">
-                  {loadingKegiatan ? (
-                    <tr>
-                      <td colSpan={6} className="text-center py-12">
-                        <RefreshCw className="w-6 h-6 animate-spin mx-auto text-brand-500" />
-                        <p className="text-xs font-bold text-brand-400 mt-2">Memuat list sertifikat...</p>
-                      </td>
-                    </tr>
-                  ) : filteredList.length > 0 ? (
-                    filteredList.map((row) => (
-                      <tr key={row.id} className="hover:bg-brand-50/30 transition-colors">
-                        <td className="py-4 px-6 w-12 text-center">
-                          <input
-                            type="checkbox"
-                            checked={selectedCertIds.includes(row.id)}
-                            onChange={() => {
-                              setSelectedCertIds(prev => 
-                                prev.includes(row.id) ? prev.filter(id => id !== row.id) : [...prev, row.id]
-                              );
-                            }}
-                            className="w-4 h-4 rounded cursor-pointer accent-brand-600"
-                          />
-                        </td>
-                        <td className="py-4 px-6">
-                          <div className="font-bold text-brand-950">{toSentenceCase(row.user_nama)}</div>
-                          <div className="text-[10px] text-slate-400">{row.user_email}</div>
-                        </td>
-                        <td className="py-4 px-6">
-                          <div className="font-bold text-brand-900 line-clamp-2 max-w-xs">{row.nama_kegiatan}</div>
-                          {row.no_sertifikat && (
-                            <span className="text-[10px] text-slate-400 font-mono block mt-1">No: {row.no_sertifikat}</span>
-                          )}
-                        </td>
-                        <td className="py-4 px-6">
-                          <span className="inline-block px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-xl text-[10px] font-black uppercase">
-                            {row.peran}
-                          </span>
-                        </td>
-                        <td className="py-4 px-6 text-slate-500">
-                          {new Date(row.tanggal_kegiatan).toLocaleDateString("id-ID", { day: 'numeric', month: 'short', year: 'numeric' })}
-                        </td>
-                        <td className="py-4 px-6 text-right">
-                          <button
-                            onClick={() => handleDelete(row.id, row.user_nama)}
-                            className="p-2 text-rose-500 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer border-0 bg-transparent"
-                            title="Hapus Sertifikat"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={6} className="text-center py-12 text-slate-400 font-semibold">
-                        Belum ada data sertifikat diterbitkan atau cocok dengan filter.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          {/* DETAIL VIEW INSIDE FOLDER */}
+          {selectedActivityFolder && (
+            <div className="space-y-6">
+              <div className="bg-brand-50 p-6 rounded-3xl border border-brand-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                  <span className="text-[10px] font-black text-brand-500 uppercase tracking-widest block">Folder Kegiatan</span>
+                  <h3 className="text-base font-extrabold text-brand-950 leading-snug mt-1">{selectedActivityFolder}</h3>
+                  <p className="text-[10.5px] text-slate-500 font-bold mt-1">
+                    Total: {folderItems.length} Guru penerima
+                  </p>
+                </div>
+                <button
+                  onClick={() => handleDownloadAllAsZip(selectedActivityFolder, folderItems)}
+                  disabled={zipDownloadingId !== null}
+                  className="px-5 py-3.5 bg-brand-600 hover:bg-brand-750 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md"
+                >
+                  <Download className="w-4.5 h-4.5" />
+                  Unduh Semua ZIP
+                </button>
+              </div>
 
-          {/* DANGER AREA ACTIONS */}
-          {filteredList.length > 0 && (
-            <div className="flex justify-end pt-2">
-              <button
-                type="button"
-                onClick={handleDeleteAll}
-                className="px-4 py-2.5 text-rose-500 hover:text-rose-700 bg-rose-50/50 hover:bg-rose-50 rounded-2xl text-[11px] font-black uppercase tracking-wider transition-all cursor-pointer border border-rose-250/30 flex items-center gap-1.5"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                Hapus Semua Sertifikat ({filteredList.length})
-              </button>
+              {/* TABLE OF RECIPIENTS */}
+              <div className="bg-white rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs font-semibold text-brand-950">
+                    <thead className="bg-brand-50/60 border-b border-brand-100 text-[10px] font-black uppercase text-brand-400 tracking-wider">
+                      <tr>
+                        <th className="py-4 px-6">No.</th>
+                        <th className="py-4 px-6">Guru / Penerima</th>
+                        <th className="py-4 px-6">Nomor Sertifikat</th>
+                        <th className="py-4 px-6">Peran</th>
+                        <th className="py-4 px-6 text-right">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-brand-50">
+                      {folderItems.length > 0 ? (
+                        folderItems.map((row, idx) => (
+                          <tr key={row.id} className="hover:bg-brand-50/30 transition-colors">
+                            <td className="py-4 px-6 w-12 text-slate-400 font-bold">{idx + 1}</td>
+                            <td className="py-4 px-6">
+                              <div className="font-bold text-brand-950">{toSentenceCase(row.user_nama)}</div>
+                              <div className="text-[10px] text-slate-400">{row.user_email}</div>
+                            </td>
+                            <td className="py-4 px-6 font-mono text-[10px] text-slate-500">
+                              {row.no_sertifikat || "-"}
+                            </td>
+                            <td className="py-4 px-6">
+                              <span className="inline-block px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-xl text-[10px] font-black uppercase">
+                                {row.peran}
+                              </span>
+                            </td>
+                            <td className="py-4 px-6 text-right space-x-2">
+                              <button
+                                onClick={() => handleDownloadSingle(row)}
+                                className="p-2 text-brand-600 hover:bg-brand-50 rounded-xl transition-colors cursor-pointer border-0 bg-transparent"
+                                title="Unduh Sertifikat"
+                              >
+                                <Download className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(row.id, row.user_nama)}
+                                className="p-2 text-rose-500 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer border-0 bg-transparent"
+                                title="Hapus Sertifikat"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan={5} className="text-center py-12 text-slate-400 font-semibold">
+                            Tidak ada data penerima ditemukan.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
           )}
         </>
       )}
-
       {/* TAB 2: DESAINER TEMPLATE & POSISI ELEMEN */}
       {activeTab === "desainer" && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">

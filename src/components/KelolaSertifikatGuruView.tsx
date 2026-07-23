@@ -1902,7 +1902,7 @@ export default function KelolaSertifikatGuruView() {
                               <input
                                 type="number"
                                 min="10"
-                                max="120"
+                                max="250"
                                 value={elemPos.fontSize}
                                 onChange={(e) => {
                                   const val = parseInt(e.target.value) || 24;
@@ -2476,7 +2476,7 @@ export default function KelolaSertifikatGuruView() {
                           <input
                             type="number"
                             min="8"
-                            max="36"
+                            max="80"
                             value={config.jpTableFontSize || 18}
                             onChange={(e) => {
                               const val = parseInt(e.target.value) || 18;

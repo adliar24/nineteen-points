@@ -301,7 +301,9 @@ export default function KelolaSertifikatGuruView() {
         loadImg(config.ttd2Image),
         loadImg(config.ttd3Image),
         loadImg(config.templateJpUrl),
-      ]).then(([_, ttd1Img, ttd2Img, ttd3Img, templateJpImg]) => {
+        loadImg(config.logoFrontImage),
+        loadImg(config.logoBackImage),
+      ]).then(([_, ttd1Img, ttd2Img, ttd3Img, templateJpImg, logoFrontImg, logoBackImg]) => {
         canvas.width = templateImg.naturalWidth || 2000;
         canvas.height = templateImg.naturalHeight || 1414;
 
@@ -328,7 +330,8 @@ export default function KelolaSertifikatGuruView() {
             ttd1Img,
             ttd2Img,
             ttd3Img,
-            templateJpImg
+            templateJpImg,
+            logoBackImg
           );
 
           // Highlight selected element position with a target indicator on page 2
@@ -357,6 +360,10 @@ export default function KelolaSertifikatGuruView() {
             targetX = (pos.jpTtdNamaPos.xPercent / 100) * canvas.width;
             targetY = (pos.jpTtdNamaPos.yPercent / 100) * canvas.height;
             showTarget = true;
+          } else if (selectedElement === "logoBackPos" && pos.logoBackPos) {
+            targetX = (pos.logoBackPos.xPercent / 100) * canvas.width;
+            targetY = (pos.logoBackPos.yPercent / 100) * canvas.height;
+            showTarget = true;
           }
 
           if (showTarget) {
@@ -379,7 +386,8 @@ export default function KelolaSertifikatGuruView() {
             config,
             ttd1Img,
             ttd2Img,
-            ttd3Img
+            ttd3Img,
+            logoFrontImg
           );
 
           // Highlight selected element position with a target indicator
@@ -402,6 +410,12 @@ export default function KelolaSertifikatGuruView() {
           } else if (selectedElement === "tanggalKegiatan" && pos.tanggalKegiatan) {
             targetX = (pos.tanggalKegiatan.xPercent / 100) * canvas.width;
             targetY = (pos.tanggalKegiatan.yPercent / 100) * canvas.height;
+          } else if (selectedElement === "sertifikatTitlePos" && pos.sertifikatTitlePos) {
+            targetX = (pos.sertifikatTitlePos.xPercent / 100) * canvas.width;
+            targetY = (pos.sertifikatTitlePos.yPercent / 100) * canvas.height;
+          } else if (selectedElement === "logoFrontPos" && pos.logoFrontPos) {
+            targetX = (pos.logoFrontPos.xPercent / 100) * canvas.width;
+            targetY = (pos.logoFrontPos.yPercent / 100) * canvas.height;
           } else if (selectedElement === "ttd1") {
             targetX = (pos.ttd1NamaPos.xPercent / 100) * canvas.width;
             targetY = (pos.ttd1NamaPos.yPercent / 100) * canvas.height;
@@ -489,6 +503,38 @@ export default function KelolaSertifikatGuruView() {
     }
   };
 
+  // Upload Logo Front Image
+  const handleLogoFrontUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const optimizedUrl = await optimizeImageDataUrl(file, 800);
+      const newConfig = { ...config, logoFrontImage: optimizedUrl };
+      setConfig(newConfig);
+      await saveSertifikatConfigAsync(newConfig);
+      setSuccessMsg("Logo Depan berhasil diunggah & disimpan!");
+      setTimeout(() => setSuccessMsg(null), 3000);
+    } catch (err: any) {
+      alert("Gagal mengunggah Logo Depan: " + err.message);
+    }
+  };
+
+  // Upload Logo Back Image
+  const handleLogoBackUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const optimizedUrl = await optimizeImageDataUrl(file, 800);
+      const newConfig = { ...config, logoBackImage: optimizedUrl };
+      setConfig(newConfig);
+      await saveSertifikatConfigAsync(newConfig);
+      setSuccessMsg("Logo Belakang berhasil diunggah & disimpan!");
+      setTimeout(() => setSuccessMsg(null), 3000);
+    } catch (err: any) {
+      alert("Gagal mengunggah Logo Belakang: " + err.message);
+    }
+  };
+
   // Save Designer Config
   const handleSaveConfig = async () => {
     await saveSertifikatConfigAsync(config);
@@ -528,6 +574,12 @@ export default function KelolaSertifikatGuruView() {
         updatedPos.deskripsi = { ...updatedPos.deskripsi, xPercent, yPercent };
       } else if (selectedElement === "tanggalKegiatan") {
         updatedPos.tanggalKegiatan = { ...updatedPos.tanggalKegiatan, xPercent, yPercent };
+      } else if (selectedElement === "sertifikatTitlePos") {
+        updatedPos.sertifikatTitlePos = { ...updatedPos.sertifikatTitlePos, xPercent, yPercent };
+      } else if (selectedElement === "logoFrontPos") {
+        updatedPos.logoFrontPos = { ...updatedPos.logoFrontPos, xPercent, yPercent };
+      } else if (selectedElement === "logoBackPos") {
+        updatedPos.logoBackPos = { ...updatedPos.logoBackPos, xPercent, yPercent };
       } else if (selectedElement === "jpHeaderTitlePos") {
         updatedPos.jpHeaderTitlePos = { ...updatedPos.jpHeaderTitlePos, xPercent, yPercent };
       } else if (selectedElement === "jpHeaderSubtitlePos") {
@@ -641,6 +693,8 @@ export default function KelolaSertifikatGuruView() {
       const ttd2Img = await loadImg(config.ttd2Image);
       const ttd3Img = await loadImg(config.ttd3Image);
       const templateJpImg = await loadImg(config.templateJpUrl);
+      const logoFrontImg = await loadImg(config.logoFrontImage);
+      const logoBackImg = await loadImg(config.logoBackImage);
 
       canvas.width = templateImg.naturalWidth || 2000;
       canvas.height = templateImg.naturalHeight || 1414;
@@ -657,7 +711,8 @@ export default function KelolaSertifikatGuruView() {
         config,
         ttd1Img,
         ttd2Img,
-        ttd3Img
+        ttd3Img,
+        logoFrontImg
       );
 
       const hasJp = kegiatan.materi_jp && kegiatan.materi_jp.length > 0;
@@ -678,7 +733,8 @@ export default function KelolaSertifikatGuruView() {
           ttd1Img,
           ttd2Img,
           ttd3Img,
-          templateJpImg
+          templateJpImg,
+          logoBackImg
         );
 
         const pdf = new jsPDF({
@@ -733,6 +789,8 @@ export default function KelolaSertifikatGuruView() {
       const ttd2Img = await loadImg(config.ttd2Image);
       const ttd3Img = await loadImg(config.ttd3Image);
       const templateJpImg = await loadImg(config.templateJpUrl);
+      const logoFrontImg = await loadImg(config.logoFrontImage);
+      const logoBackImg = await loadImg(config.logoBackImage);
 
       const canvasWidth = templateImg.naturalWidth || 2000;
       const canvasHeight = templateImg.naturalHeight || 1414;
@@ -758,7 +816,8 @@ export default function KelolaSertifikatGuruView() {
           config,
           ttd1Img,
           ttd2Img,
-          ttd3Img
+          ttd3Img,
+          logoFrontImg
         );
 
         const hasJp = item.materi_jp && item.materi_jp.length > 0;
@@ -780,7 +839,8 @@ export default function KelolaSertifikatGuruView() {
             ttd1Img,
             ttd2Img,
             ttd3Img,
-            templateJpImg
+            templateJpImg,
+            logoBackImg
           );
 
           const pdf = new jsPDF({
@@ -1178,13 +1238,38 @@ export default function KelolaSertifikatGuruView() {
                   Gunakan <code className="bg-slate-100 px-1 py-0.5 rounded font-mono">&#123;tanggal&#125;</code> untuk tanggal kegiatan dinamis.
                 </p>
               </div>
+
+              {/* Teks Judul SERTIFIKAT */}
+              <div className="space-y-2 pt-3 border-t border-slate-100">
+                <label className="flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={config.showSertifikatText}
+                    onChange={(e) => setConfig(prev => ({ ...prev, showSertifikatText: e.target.checked }))}
+                    className="w-4 h-4 accent-brand-600 rounded cursor-pointer"
+                  />
+                  <span>Tampilkan Teks Judul "SERTIFIKAT"</span>
+                </label>
+                {config.showSertifikatText && (
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-slate-500 uppercase block">Isi Teks Judul:</label>
+                    <input
+                      type="text"
+                      value={config.sertifikatText || ""}
+                      onChange={(e) => setConfig(prev => ({ ...prev, sertifikatText: e.target.value }))}
+                      placeholder="SERTIFIKAT"
+                      className="w-full p-3 bg-brand-50/30 rounded-2xl border border-brand-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 text-brand-950"
+                    />
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* 2. TEMPLATE & JUMLAH TTD SECTION */}
             <div className="bg-white p-5 rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 space-y-4">
               <h3 className="text-xs font-black uppercase tracking-wider text-brand-900 flex items-center gap-2">
                 <ImageIcon className="w-4 h-4 text-brand-600" />
-                Upload Template & Jumlah Tanda Tangan
+                Upload Template, Logo & Jumlah TTD
               </h3>
 
               {/* Upload Template Background */}
@@ -1209,6 +1294,80 @@ export default function KelolaSertifikatGuruView() {
                   </label>
                   {config.templateUrl && (
                     <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2.5 py-1 rounded-xl">Kustom Active</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Upload Logo Depan */}
+              <div className="space-y-1.5 pt-2 border-t border-slate-100">
+                <label className="text-[10.5px] font-bold text-slate-500 block">
+                  Logo Halaman Depan
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="file"
+                    accept="image/png, image/jpeg"
+                    onChange={handleLogoFrontUpload}
+                    id="upload-logo-front"
+                    className="hidden"
+                  />
+                  <label
+                    htmlFor="upload-logo-front"
+                    className="px-4 py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-250 rounded-2xl text-slate-700 text-xs font-bold flex items-center gap-2 cursor-pointer transition-all flex-1"
+                  >
+                    <Upload className="w-4 h-4" />
+                    Upload Logo Depan
+                  </label>
+                  {config.logoFrontImage ? (
+                    <div className="flex items-center gap-1">
+                      <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2.5 py-1 rounded-xl">Ready</span>
+                      <button
+                        type="button"
+                        onClick={() => setConfig(prev => ({ ...prev, logoFrontImage: null }))}
+                        className="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg border border-rose-100 cursor-pointer"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ) : (
+                    <span className="text-[10px] text-slate-400 font-bold bg-slate-100 px-2.5 py-1 rounded-xl">Kosong</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Upload Logo Belakang */}
+              <div className="space-y-1.5 pt-2 border-t border-slate-100">
+                <label className="text-[10.5px] font-bold text-slate-500 block">
+                  Logo Halaman Belakang (JP)
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="file"
+                    accept="image/png, image/jpeg"
+                    onChange={handleLogoBackUpload}
+                    id="upload-logo-back"
+                    className="hidden"
+                  />
+                  <label
+                    htmlFor="upload-logo-back"
+                    className="px-4 py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-250 rounded-2xl text-slate-700 text-xs font-bold flex items-center gap-2 cursor-pointer transition-all flex-1"
+                  >
+                    <Upload className="w-4 h-4" />
+                    Upload Logo Belakang
+                  </label>
+                  {config.logoBackImage ? (
+                    <div className="flex items-center gap-1">
+                      <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2.5 py-1 rounded-xl">Ready</span>
+                      <button
+                        type="button"
+                        onClick={() => setConfig(prev => ({ ...prev, logoBackImage: null }))}
+                        className="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg border border-rose-100 cursor-pointer"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ) : (
+                    <span className="text-[10px] text-slate-400 font-bold bg-slate-100 px-2.5 py-1 rounded-xl">Kosong</span>
                   )}
                 </div>
               </div>
@@ -1583,7 +1742,7 @@ export default function KelolaSertifikatGuruView() {
                   onChange={(e) => {
                     const val = e.target.value;
                     setSelectedElement(val);
-                    const isJpElement = ["jpHeaderTitlePos", "jpHeaderSubtitlePos", "jpHeaderSub2Pos", "jpTanggalPos", "jpTtd"].includes(val);
+                    const isJpElement = ["jpHeaderTitlePos", "jpHeaderSubtitlePos", "jpHeaderSub2Pos", "jpTanggalPos", "jpTtd", "logoBackPos"].includes(val);
                     if (isJpElement) {
                       setDesainerPage(2);
                     } else {
@@ -1592,6 +1751,9 @@ export default function KelolaSertifikatGuruView() {
                   }}
                   className="w-full p-3 bg-brand-50 rounded-2xl border border-brand-200 text-xs font-bold text-brand-950 focus:outline-none focus:ring-2 focus:ring-brand-500"
                 >
+                  <option value="sertifikatTitlePos">Teks Judul "SERTIFIKAT"</option>
+                  <option value="logoFrontPos">Logo Halaman Depan</option>
+                  {config.hasJpPage && <option value="logoBackPos">Logo Halaman Belakang (JP)</option>}
                   <option value="namaGuru">Nama Guru / Peserta</option>
                   <option value="prefixNama">Label "Diberikan kepada:"</option>
                   <option value="noSertifikat">Nomor Surat Sertifikat</option>
@@ -1618,6 +1780,8 @@ export default function KelolaSertifikatGuruView() {
                   const elemKey = selectedElement as keyof typeof config.positions;
                   const elemPos = (config.positions as any)[elemKey] || (DEFAULT_SERTIFIKAT_CONFIG.positions as any)[elemKey];
                   if (!elemPos) return null;
+
+                  const isLogo = elemKey === "logoFrontPos" || elemKey === "logoBackPos";
 
                   return (
                     <div className="space-y-3 pt-2 border-t border-slate-100">
@@ -1673,103 +1837,163 @@ export default function KelolaSertifikatGuruView() {
                         />
                       </div>
 
-                      {/* Ukuran Font & Warna */}
-                      <div className="grid grid-cols-2 gap-3 pt-2">
+                      {isLogo ? (
+                        /* Ukuran Lebar Gambar Logo */
                         <div>
-                          <label className="text-[10px] font-bold text-slate-500 block">Ukuran Font (px)</label>
+                          <div className="flex justify-between text-[11px] font-bold text-slate-600">
+                            <span>Lebar Gambar Logo (%)</span>
+                            <span className="font-mono text-brand-600">{elemPos.widthPercent}%</span>
+                          </div>
                           <input
-                            type="number"
-                            min="10"
-                            max="120"
-                            value={elemPos.fontSize}
+                            type="range"
+                            min="2"
+                            max="50"
+                            step="0.5"
+                            value={elemPos.widthPercent}
                             onChange={(e) => {
-                              const val = parseInt(e.target.value) || 24;
+                              const val = parseFloat(e.target.value);
                               setConfig(prev => ({
                                 ...prev,
                                 positions: {
                                   ...prev.positions,
-                                  [elemKey]: { ...elemPos, fontSize: val }
+                                  [elemKey]: { ...elemPos, widthPercent: val }
                                 }
                               }));
                             }}
-                            className="w-full p-2.5 bg-slate-50 rounded-xl border border-slate-200 text-xs font-bold text-center"
+                            className="w-full accent-brand-600 cursor-pointer"
                           />
                         </div>
-
-                        <div>
-                          <label className="text-[10px] font-bold text-slate-500 block">Warna Teks</label>
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="color"
-                              value={elemPos.color}
+                      ) : (
+                        <>
+                          {/* Font Family (Gaya Font) Dropdown - Hanya untuk Teks */}
+                          <div>
+                            <label className="text-[10.5px] font-bold text-slate-500 block mb-1">Gaya Font (Font Family)</label>
+                            <select
+                              value={elemPos.fontFamily || "sans-serif"}
                               onChange={(e) => {
                                 setConfig(prev => ({
                                   ...prev,
                                   positions: {
                                     ...prev.positions,
-                                    [elemKey]: { ...elemPos, color: e.target.value }
+                                    [elemKey]: { ...elemPos, fontFamily: e.target.value }
                                   }
                                 }));
                               }}
-                              className="w-8 h-9 bg-transparent border-0 cursor-pointer rounded"
-                            />
-                            <span className="text-[11px] font-mono text-slate-600 uppercase font-bold">{elemPos.color}</span>
+                              className="w-full p-2.5 bg-slate-50 rounded-xl border border-slate-200 text-xs font-bold text-brand-950 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                            >
+                              <option value="sans-serif">Sans-serif (Standard)</option>
+                              <option value="serif">Serif (Standard)</option>
+                              <option value="monospace">Monospace (Standard)</option>
+                              <option value="'Cinzel', serif">Cinzel (Elegant Classic)</option>
+                              <option value="'Playfair Display', serif">Playfair Display (Serif Premium)</option>
+                              <option value="'Montserrat', sans-serif">Montserrat (Modern Bold)</option>
+                              <option value="'Great Vibes', cursive">Great Vibes (Calligraphy)</option>
+                              <option value="'Alex Brush', cursive">Alex Brush (Cursive Handwriting)</option>
+                              <option value="'Parisienne', cursive">Parisienne (Cursive Elegant)</option>
+                              <option value="'Dancing Script', cursive">Dancing Script (Handwritten)</option>
+                              <option value="'Cormorant Garamond', serif">Cormorant Garamond (Formal Serif)</option>
+                            </select>
                           </div>
-                        </div>
-                      </div>
 
-                      {/* Jarak Spasi Baris / Line Height & Jarak Spasi Kata */}
-                      <div className="pt-2 border-t border-slate-100 space-y-3">
-                        <div>
-                          <div className="flex justify-between text-[11px] font-bold text-slate-600">
-                            <span>Jarak Spasi Baris (Line Height)</span>
-                            <span className="font-mono text-brand-600">{(elemPos.lineHeightMultiplier || 1.45).toFixed(2)}x</span>
-                          </div>
-                          <input
-                            type="range"
-                            min="1.0"
-                            max="2.5"
-                            step="0.05"
-                            value={elemPos.lineHeightMultiplier || 1.45}
-                            onChange={(e) => {
-                              const val = parseFloat(e.target.value);
-                              setConfig(prev => ({
-                                ...prev,
-                                positions: {
-                                  ...prev.positions,
-                                  [elemKey]: { ...elemPos, lineHeightMultiplier: val }
-                                }
-                              }));
-                            }}
-                            className="w-full accent-brand-600 cursor-pointer"
-                          />
-                        </div>
+                          {/* Ukuran Font & Warna */}
+                          <div className="grid grid-cols-2 gap-3 pt-2">
+                            <div>
+                              <label className="text-[10px] font-bold text-slate-500 block">Ukuran Font (px)</label>
+                              <input
+                                type="number"
+                                min="10"
+                                max="120"
+                                value={elemPos.fontSize}
+                                onChange={(e) => {
+                                  const val = parseInt(e.target.value) || 24;
+                                  setConfig(prev => ({
+                                    ...prev,
+                                    positions: {
+                                      ...prev.positions,
+                                      [elemKey]: { ...elemPos, fontSize: val }
+                                    }
+                                  }));
+                                }}
+                                className="w-full p-2.5 bg-slate-50 rounded-xl border border-slate-200 text-xs font-bold text-center"
+                              />
+                            </div>
 
-                        <div>
-                          <div className="flex justify-between text-[11px] font-bold text-slate-600">
-                            <span>Jarak Spasi Kata (Word Spacing)</span>
-                            <span className="font-mono text-brand-600">{(elemPos.wordSpacingMultiplier || 1.0).toFixed(2)}x</span>
+                            <div>
+                              <label className="text-[10px] font-bold text-slate-500 block">Warna Teks</label>
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type="color"
+                                  value={elemPos.color}
+                                  onChange={(e) => {
+                                    setConfig(prev => ({
+                                      ...prev,
+                                      positions: {
+                                        ...prev.positions,
+                                        [elemKey]: { ...elemPos, color: e.target.value }
+                                      }
+                                    }));
+                                  }}
+                                  className="w-8 h-9 bg-transparent border-0 cursor-pointer rounded"
+                                />
+                                <span className="text-[11px] font-mono text-slate-600 uppercase font-bold">{elemPos.color}</span>
+                              </div>
+                            </div>
                           </div>
-                          <input
-                            type="range"
-                            min="0.5"
-                            max="3.0"
-                            step="0.05"
-                            value={elemPos.wordSpacingMultiplier || 1.0}
-                            onChange={(e) => {
-                              const val = parseFloat(e.target.value);
-                              setConfig(prev => ({
-                                ...prev,
-                                positions: {
-                                  ...prev.positions,
-                                  [elemKey]: { ...elemPos, wordSpacingMultiplier: val }
-                                }
-                              }));
-                            }}
-                            className="w-full accent-brand-600 cursor-pointer"
-                          />
-                        </div>
-                      </div>
+
+                          {/* Jarak Spasi Baris / Line Height & Jarak Spasi Kata */}
+                          <div className="pt-2 border-t border-slate-100 space-y-3">
+                            <div>
+                              <div className="flex justify-between text-[11px] font-bold text-slate-600">
+                                <span>Jarak Spasi Baris (Line Height)</span>
+                                <span className="font-mono text-brand-600">{(elemPos.lineHeightMultiplier || 1.45).toFixed(2)}x</span>
+                              </div>
+                              <input
+                                type="range"
+                                min="1.0"
+                                max="2.5"
+                                step="0.05"
+                                value={elemPos.lineHeightMultiplier || 1.45}
+                                onChange={(e) => {
+                                  const val = parseFloat(e.target.value);
+                                  setConfig(prev => ({
+                                    ...prev,
+                                    positions: {
+                                      ...prev.positions,
+                                      [elemKey]: { ...elemPos, lineHeightMultiplier: val }
+                                    }
+                                  }));
+                                }}
+                                className="w-full accent-brand-600 cursor-pointer"
+                              />
+                            </div>
+
+                            <div>
+                              <div className="flex justify-between text-[11px] font-bold text-slate-600">
+                                <span>Jarak Spasi Kata (Word Spacing)</span>
+                                <span className="font-mono text-brand-600">{(elemPos.wordSpacingMultiplier || 1.0).toFixed(2)}x</span>
+                              </div>
+                              <input
+                                type="range"
+                                min="0.5"
+                                max="3.0"
+                                step="0.05"
+                                value={elemPos.wordSpacingMultiplier || 1.0}
+                                onChange={(e) => {
+                                  const val = parseFloat(e.target.value);
+                                  setConfig(prev => ({
+                                    ...prev,
+                                    positions: {
+                                      ...prev.positions,
+                                      [elemKey]: { ...elemPos, wordSpacingMultiplier: val }
+                                    }
+                                  }));
+                                }}
+                                className="w-full accent-brand-600 cursor-pointer"
+                              />
+                            </div>
+                          </div>
+                        </>
+                      )}
                     </div>
                   );
                 })()

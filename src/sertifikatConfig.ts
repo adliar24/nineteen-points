@@ -8,6 +8,7 @@ export interface ElementPosition {
   align: "center" | "left" | "right";
   fontWeight?: string;
   fontStyle?: string;
+  fontFamily?: string;
   lineHeightMultiplier?: number; // Spasi antar baris (misal 1.0 - 2.5)
   wordSpacingMultiplier?: number; // Spasi antar kata (misal 0.5 - 3.0)
 }
@@ -21,9 +22,14 @@ export interface TtdElementPosition {
 export interface SertifikatLayoutConfig {
   templateUrl: string | null; // Data URL or relative URL
   
+  logoFrontImage: string | null; // Front logo (base64)
+  logoBackImage: string | null;  // Back logo (base64)
+  sertifikatText: string;        // Text "SERTIFIKAT"
+  showSertifikatText: boolean;   // Draw the text or not
+  
   // Jumlah TTD (1, 2, atau 3)
   jumlahTtd: 1 | 2 | 3;
-
+  
   // Garis otomatis
   showJudulLine: boolean;
   judulLineWidth: number;
@@ -65,6 +71,7 @@ export interface SertifikatLayoutConfig {
   templateJpUrl: string | null;
   materiJpRows: { materi: string; jp: number }[];
   jpHeaderTitle?: string;
+  jpHeaderSubtitle?: string;
   jpHeaderSub2?: string;
   jpTableWidth?: number;
   jpTableY?: number;
@@ -73,6 +80,9 @@ export interface SertifikatLayoutConfig {
 
   // Posisi & Styling Elemen
   positions: {
+    sertifikatTitlePos: ElementPosition;
+    logoFrontPos: TtdElementPosition;
+    logoBackPos: TtdElementPosition;
     noSertifikat: ElementPosition;
     prefixNama: ElementPosition; // e.g., "Diberikan kepada:"
     namaGuru: ElementPosition;
@@ -116,6 +126,11 @@ export interface SertifikatLayoutConfig {
 export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
   templateUrl: null, // Default uses /sertifikat_template.png
   
+  logoFrontImage: null,
+  logoBackImage: null,
+  sertifikatText: "SERTIFIKAT",
+  showSertifikatText: true,
+  
   jumlahTtd: 2,
 
   showJudulLine: true,
@@ -157,6 +172,7 @@ export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
     { materi: "Pembuatan Projek Penguatan Profil Pelajar Pancasila (P5)", jp: 6 }
   ],
   jpHeaderTitle: "STRUKTUR PROGRAM DAN MATERI PELATIHAN",
+  jpHeaderSubtitle: "{nama_kegiatan}",
   jpHeaderSub2: "{penyelenggara}",
   jpTableWidth: 1700,
   jpTableY: 270,
@@ -164,6 +180,26 @@ export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
   jpTableRowPaddingY: 24,
 
   positions: {
+    sertifikatTitlePos: {
+      xPercent: 50,
+      yPercent: 15.0,
+      fontSize: 56,
+      color: "#1e1b4b",
+      align: "center",
+      fontWeight: "bold",
+      fontFamily: "'Cinzel', serif",
+      lineHeightMultiplier: 1.2
+    },
+    logoFrontPos: {
+      xPercent: 50,
+      yPercent: 7.5,
+      widthPercent: 7
+    },
+    logoBackPos: {
+      xPercent: 50,
+      yPercent: 7.5,
+      widthPercent: 7
+    },
     noSertifikat: {
       xPercent: 50,
       yPercent: 22.5,

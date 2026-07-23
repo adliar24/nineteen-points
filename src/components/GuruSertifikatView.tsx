@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { jsPDF } from "jspdf";
 import { getKegiatanGuruList } from "../dbStore";
 import { UserSession, KegiatanGuru } from "../types";
-import { getSertifikatConfigAsync, getSertifikatConfig, SertifikatLayoutConfig } from "../sertifikatConfig";
+import { getSertifikatConfigAsync, getSertifikatConfig, SertifikatLayoutConfig, ElementPosition, TtdElementPosition } from "../sertifikatConfig";
 import { toSentenceCase } from "../formatName";
 
 interface GuruSertifikatViewProps {
@@ -51,7 +51,8 @@ export function drawCertificateOnCanvas(
   config: SertifikatLayoutConfig,
   ttd1Img?: HTMLImageElement | null,
   ttd2Img?: HTMLImageElement | null,
-  ttd3Img?: HTMLImageElement | null
+  ttd3Img?: HTMLImageElement | null,
+  logoFrontImg?: HTMLImageElement | null
 ) {
   // 1. Clear & Draw background template
   ctx.clearRect(0, 0, canvasWidth, canvasHeight);
@@ -65,7 +66,7 @@ export function drawCertificateOnCanvas(
     const fontStyle = elemPos.fontStyle || "normal";
     const fontWeight = elemPos.fontWeight || "normal";
     const fontSize = elemPos.fontSize || 24;
-    const fontFamily = "sans-serif";
+    const fontFamily = elemPos.fontFamily || "sans-serif";
 
     ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px ${fontFamily}`;
     ctx.fillStyle = elemPos.color || "#000000";
@@ -80,6 +81,7 @@ export function drawCertificateOnCanvas(
 
   // Helper for drawing TTD Image
   const drawTtdImg = (img: HTMLImageElement, elemPos: any) => {
+    if (!elemPos) return;
     const imgW = (elemPos.widthPercent / 100) * canvasWidth;
     const aspect = img.naturalWidth ? img.naturalHeight / img.naturalWidth : 0.5;
     const imgH = imgW * aspect;
@@ -87,6 +89,28 @@ export function drawCertificateOnCanvas(
     const imgY = (elemPos.yPercent / 100) * canvasHeight - imgH / 2;
     ctx.drawImage(img, imgX, imgY, imgW, imgH);
   };
+
+  // Helper for drawing Logo Image
+  const drawLogoImg = (img: HTMLImageElement, elemPos: any) => {
+    if (!elemPos) return;
+    const imgW = (elemPos.widthPercent / 100) * canvasWidth;
+    const aspect = img.naturalWidth ? img.naturalHeight / img.naturalWidth : 1.0;
+    const imgH = imgW * aspect;
+    const imgX = (elemPos.xPercent / 100) * canvasWidth - imgW / 2;
+    const imgY = (elemPos.yPercent / 100) * canvasHeight - imgH / 2;
+    ctx.drawImage(img, imgX, imgY, imgW, imgH);
+  };
+
+  // Draw Logo Front if provided
+  if (logoFrontImg && pos.logoFrontPos) {
+    drawLogoImg(logoFrontImg, pos.logoFrontPos);
+  }
+
+  // Draw Title Teks SERTIFIKAT if enabled
+  if (config.showSertifikatText !== false && pos.sertifikatTitlePos) {
+    const certTitleText = config.sertifikatText || "SERTIFIKAT";
+    drawStyledText(certTitleText, pos.sertifikatTitlePos);
+  }
 
   // Helper for drawing auto underlines
   const drawAutoLine = (xCenterPercent: number, yPercent: number, widthPx: number, thicknessPx: number, color: string) => {
@@ -334,7 +358,8 @@ export function drawJpTablePageOnCanvas(
   ttd1Img?: HTMLImageElement | null,
   ttd2Img?: HTMLImageElement | null,
   ttd3Img?: HTMLImageElement | null,
-  templateJpImg?: HTMLImageElement | null
+  templateJpImg?: HTMLImageElement | null,
+  logoBackImg?: HTMLImageElement | null
 ) {
   // Helper to replace variable placeholders
   const replaceVars = (text: string) => {
@@ -360,10 +385,20 @@ export function drawJpTablePageOnCanvas(
     ctx.strokeRect(40, 40, canvasWidth - 80, canvasHeight - 80);
   }
 
+  // Draw Logo Back if provided
+  const pos = config.positions;
+  if (logoBackImg && pos && pos.logoBackPos) {
+    const imgW = (pos.logoBackPos.widthPercent / 100) * canvasWidth;
+    const aspect = logoBackImg.naturalWidth ? logoBackImg.naturalHeight / logoBackImg.naturalWidth : 1.0;
+    const imgH = imgW * aspect;
+    const imgX = (pos.logoBackPos.xPercent / 100) * canvasWidth - imgW / 2;
+    const imgY = (pos.logoBackPos.yPercent / 100) * canvasHeight - imgH / 2;
+    ctx.drawImage(logoBackImg, imgX, imgY, imgW, imgH);
+  }
+
   const rows = kegiatan.materi_jp || [];
 
   // Smart Detection Layout Adjustments
-  const pos = config.positions;
   const baseTitleSize = pos.jpHeaderTitlePos?.fontSize || 38;
   const baseSubtitleSize = pos.jpHeaderSubtitlePos?.fontSize || 28;
   const baseOrganizerSize = pos.jpHeaderSub2Pos?.fontSize || 24;
@@ -634,12 +669,12 @@ export function drawJpTablePageOnCanvas(
   const pTtd = getPrincipalTtd();
 
   // Read configured signature positions
-  const sigPos = pos.jpTanggalPos || { xPercent: 72.5, yPercent: 80.0, fontSize: 18, color: "#1e1b4b" };
-  const jabPos = pos.jpTtdJabatanPos || { xPercent: 72.5, yPercent: 82.5, fontSize: 18, color: "#1e1b4b" };
-  const imgPos = pos.jpTtdImagePos || { xPercent: 72.5, yPercent: 87.5, widthPercent: 12 };
-  const namePos = pos.jpTtdNamaPos || { xPercent: 72.5, yPercent: 94.5, fontSize: 20, color: "#1e1b4b" };
-  const sub1Pos = pos.jpTtdSubText1Pos || { xPercent: 72.5, yPercent: 97.0, fontSize: 16, color: "#1e1b4b" };
-  const sub2Pos = pos.jpTtdSubText2Pos || { xPercent: 72.5, yPercent: 99.0, fontSize: 16, color: "#1e1b4b" };
+  const sigPos: ElementPosition = pos.jpTanggalPos || { xPercent: 72.5, yPercent: 80.0, fontSize: 18, color: "#1e1b4b", align: "center" };
+  const jabPos: ElementPosition = pos.jpTtdJabatanPos || { xPercent: 72.5, yPercent: 82.5, fontSize: 18, color: "#1e1b4b", align: "center" };
+  const imgPos: TtdElementPosition = pos.jpTtdImagePos || { xPercent: 72.5, yPercent: 87.5, widthPercent: 12 };
+  const namePos: ElementPosition = pos.jpTtdNamaPos || { xPercent: 72.5, yPercent: 94.5, fontSize: 20, color: "#1e1b4b", align: "center" };
+  const sub1Pos: ElementPosition = pos.jpTtdSubText1Pos || { xPercent: 72.5, yPercent: 97.0, fontSize: 16, color: "#1e1b4b", align: "center" };
+  const sub2Pos: ElementPosition = pos.jpTtdSubText2Pos || { xPercent: 72.5, yPercent: 99.0, fontSize: 16, color: "#1e1b4b", align: "center" };
 
   // Calculate actual pixel coordinates
   let sigX = (sigPos.xPercent / 100) * canvasWidth;
@@ -787,6 +822,8 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
       const ttd2Img = await loadImg(config.ttd2Image);
       const ttd3Img = await loadImg(config.ttd3Image);
       const templateJpImg = await loadImg(config.templateJpUrl);
+      const logoFrontImg = await loadImg(config.logoFrontImage);
+      const logoBackImg = await loadImg(config.logoBackImage);
 
       canvas.width = templateImg.naturalWidth || 2000;
       canvas.height = templateImg.naturalHeight || 1414;
@@ -803,7 +840,8 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
         config,
         ttd1Img,
         ttd2Img,
-        ttd3Img
+        ttd3Img,
+        logoFrontImg
       );
 
       const hasJp = kegiatan.materi_jp && kegiatan.materi_jp.length > 0;
@@ -825,7 +863,8 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
           ttd1Img,
           ttd2Img,
           ttd3Img,
-          templateJpImg
+          templateJpImg,
+          logoBackImg
         );
 
         // Gabungkan ke file PDF 2 halaman
@@ -891,7 +930,9 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
         loadImg(currentConfig.ttd2Image),
         loadImg(currentConfig.ttd3Image),
         loadImg(currentConfig.templateJpUrl),
-      ]).then(([_, ttd1Img, ttd2Img, ttd3Img, templateJpImg]) => {
+        loadImg(currentConfig.logoFrontImage),
+        loadImg(currentConfig.logoBackImage),
+      ]).then(([_, ttd1Img, ttd2Img, ttd3Img, templateJpImg, logoFrontImg, logoBackImg]) => {
         canvas.width = templateImg.naturalWidth || 2000;
         canvas.height = templateImg.naturalHeight || 1414;
 
@@ -909,7 +950,8 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
             ttd1Img,
             ttd2Img,
             ttd3Img,
-            templateJpImg
+            templateJpImg,
+            logoBackImg
           );
         } else {
           drawCertificateOnCanvas(
@@ -922,7 +964,8 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
             currentConfig,
             ttd1Img,
             ttd2Img,
-            ttd3Img
+            ttd3Img,
+            logoFrontImg
           );
         }
       });

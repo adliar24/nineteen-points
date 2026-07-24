@@ -2472,32 +2472,40 @@ export default function KelolaSertifikatGuruView() {
 
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="text-[10px] font-bold text-slate-500 block mb-1">Font Tabel (px)</label>
+                          <div className="flex justify-between text-[10px] font-bold text-slate-500 mb-1">
+                            <span>Font Tabel (px)</span>
+                            <span className="font-mono text-brand-600">{config.jpTableFontSize || 18}px</span>
+                          </div>
                           <input
-                            type="number"
+                            type="range"
                             min="8"
                             max="80"
+                            step="1"
                             value={config.jpTableFontSize || 18}
                             onChange={(e) => {
-                              const val = parseInt(e.target.value) || 18;
+                              const val = parseInt(e.target.value);
                               setConfig(prev => ({ ...prev, jpTableFontSize: val }));
                             }}
-                            className="w-full p-2 bg-white rounded-xl border border-slate-200 text-xs font-bold text-center focus:outline-none focus:ring-1 focus:ring-brand-500"
+                            className="w-full accent-brand-600 cursor-pointer"
                           />
                         </div>
 
                         <div>
-                          <label className="text-[10px] font-bold text-slate-500 block mb-1">Tinggi Baris (Padding Y)</label>
+                          <div className="flex justify-between text-[10px] font-bold text-slate-500 mb-1">
+                            <span>Tinggi Baris / Tabel (px)</span>
+                            <span className="font-mono text-brand-600">{config.jpTableRowPaddingY || 24}px</span>
+                          </div>
                           <input
-                            type="number"
+                            type="range"
                             min="4"
-                            max="60"
+                            max="120"
+                            step="2"
                             value={config.jpTableRowPaddingY || 24}
                             onChange={(e) => {
-                              const val = parseInt(e.target.value) || 24;
+                              const val = parseInt(e.target.value);
                               setConfig(prev => ({ ...prev, jpTableRowPaddingY: val }));
                             }}
-                            className="w-full p-2 bg-white rounded-xl border border-slate-200 text-xs font-bold text-center focus:outline-none focus:ring-1 focus:ring-brand-500"
+                            className="w-full accent-brand-600 cursor-pointer"
                           />
                         </div>
                       </div>

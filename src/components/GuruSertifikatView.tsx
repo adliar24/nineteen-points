@@ -889,6 +889,7 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
     };
 
     try {
+      await document.fonts.ready;
       await new Promise<void>((resolve, reject) => {
         templateImg.onload = () => resolve();
         templateImg.onerror = () => reject(new Error("Gagal memuat template sertifikat"));
@@ -998,6 +999,7 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
       };
 
       Promise.all([
+        document.fonts.ready,
         new Promise<void>((resolve) => {
           templateImg.onload = () => resolve();
           templateImg.onerror = () => resolve();
@@ -1008,7 +1010,7 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
         loadImg(currentConfig.templateJpUrl),
         loadImg(currentConfig.logoFrontImage),
         loadImg(currentConfig.logoBackImage),
-      ]).then(([_, ttd1Img, ttd2Img, ttd3Img, templateJpImg, logoFrontImg, logoBackImg]) => {
+      ]).then(([___, _, ttd1Img, ttd2Img, ttd3Img, templateJpImg, logoFrontImg, logoBackImg]) => {
         canvas.width = templateImg.naturalWidth || 2000;
         canvas.height = templateImg.naturalHeight || 1414;
 

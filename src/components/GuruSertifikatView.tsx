@@ -687,14 +687,6 @@ export function drawJpTablePageOnCanvas(
     year: "numeric",
   });
 
-  const getPrincipalTtd = () => {
-    if (config.jumlahTtd === 3) return { img: ttd3Img, nama: config.ttd3Nama, jabatan: config.ttd3Jabatan, sub1: config.ttd3SubText1, sub2: config.ttd3SubText2 };
-    if (config.jumlahTtd === 2) return { img: ttd2Img, nama: config.ttd2Nama, jabatan: config.ttd2Jabatan, sub1: config.ttd2SubText1, sub2: config.ttd2SubText2 };
-    return { img: ttd1Img, nama: config.ttd1Nama, jabatan: config.ttd1Jabatan, sub1: config.ttd1SubText1, sub2: config.ttd1SubText2 };
-  };
-
-  const pTtd = getPrincipalTtd();
-
   // Read configured signature positions
   const sigPos: ElementPosition = pos.jpTanggalPos || { xPercent: 72.5, yPercent: 80.0, fontSize: 18, color: "#1e1b4b", align: "center" };
   const jabPos: ElementPosition = pos.jpTtdJabatanPos || { xPercent: 72.5, yPercent: 82.5, fontSize: 18, color: "#1e1b4b", align: "center" };
@@ -703,28 +695,87 @@ export function drawJpTablePageOnCanvas(
   const sub1Pos: ElementPosition = pos.jpTtdSubText1Pos || { xPercent: 72.5, yPercent: 97.0, fontSize: 16, color: "#1e1b4b", align: "center" };
   const sub2Pos: ElementPosition = pos.jpTtdSubText2Pos || { xPercent: 72.5, yPercent: 99.0, fontSize: 16, color: "#1e1b4b", align: "center" };
 
-  // Calculate actual pixel coordinates
+  // Helper function to draw a single signature block
+  const drawBackSignature = (
+    img: HTMLImageElement | null | undefined,
+    nama: string,
+    jabatan: string,
+    sub1: string,
+    sub2: string,
+    xPercent: number
+  ) => {
+    let jX = (xPercent / 100) * canvasWidth;
+    let jY = (jabPos.yPercent / 100) * canvasHeight;
+
+    let iX = (xPercent / 100) * canvasWidth;
+    let iY = (imgPos.yPercent / 100) * canvasHeight;
+
+    let nX = (xPercent / 100) * canvasWidth;
+    let nY = (namePos.yPercent / 100) * canvasHeight;
+
+    let s1X = (xPercent / 100) * canvasWidth;
+    let s1Y = (sub1Pos.yPercent / 100) * canvasHeight;
+
+    let s2X = (xPercent / 100) * canvasWidth;
+    let s2Y = (sub2Pos.yPercent / 100) * canvasHeight;
+
+    // Draw Jabatan
+    if (jabatan && jabatan.trim() !== "") {
+      ctx.textAlign = jabPos.align || "center";
+      ctx.font = `${jabPos.fontWeight || "normal"} ${jabPos.fontSize || 18}px sans-serif`;
+      ctx.fillStyle = jabPos.color || "#1e1b4b";
+      ctx.fillText(jabatan, jX, jY);
+    }
+
+    // Draw TTD Image
+    if (img) {
+      const imgW = (imgPos.widthPercent / 100) * canvasWidth;
+      const aspect = img.naturalWidth ? img.naturalHeight / img.naturalWidth : 0.5;
+      const imgH = imgW * aspect;
+      ctx.drawImage(img, iX - imgW / 2, iY - imgH / 2, imgW, imgH);
+    }
+
+    // Draw Underlined Name
+    ctx.textAlign = namePos.align || "center";
+    ctx.font = `bold ${namePos.fontSize || 20}px sans-serif`;
+    ctx.fillStyle = namePos.color || "#1e1b4b";
+    const nameString = toSentenceCase(nama);
+    ctx.fillText(nameString, nX, nY);
+
+    if (config.showTtdLines) {
+      const nameWidth = ctx.measureText(nameString).width;
+      ctx.strokeStyle = namePos.color || "#1e1b4b";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(nX - nameWidth / 2, nY + (namePos.fontSize || 20) * 0.6);
+      ctx.lineTo(nX + nameWidth / 2, nY + (namePos.fontSize || 20) * 0.6);
+      ctx.stroke();
+    }
+
+    // Draw Subtexts
+    if (sub1) {
+      ctx.textAlign = sub1Pos.align || "center";
+      ctx.font = `${sub1Pos.fontWeight || "normal"} ${sub1Pos.fontSize || 16}px sans-serif`;
+      ctx.fillStyle = sub1Pos.color || "#1e1b4b";
+      ctx.fillText(sub1, s1X, s1Y);
+    }
+    if (sub2) {
+      ctx.textAlign = sub2Pos.align || "center";
+      ctx.font = `${sub2Pos.fontWeight || "normal"} ${sub2Pos.fontSize || 16}px sans-serif`;
+      ctx.fillStyle = sub2Pos.color || "#1e1b4b";
+      ctx.fillText(sub2, s2X, s2Y);
+    }
+  };
+
+  // Draw Date/Place (always relative to where TTD 2 or rightmost signature is, or jpTanggalPos)
   let sigX = (sigPos.xPercent / 100) * canvasWidth;
+  if (config.jumlahTtd === 2) {
+    sigX = ((pos.ttd2NamaPos?.xPercent ?? 73) / 100) * canvasWidth;
+  } else if (config.jumlahTtd === 3) {
+    sigX = ((pos.ttd2NamaPos?.xPercent ?? 80) / 100) * canvasWidth;
+  }
   let sigY = (sigPos.yPercent / 100) * canvasHeight;
 
-  let jabX = (jabPos.xPercent / 100) * canvasWidth;
-  let jabY = (jabPos.yPercent / 100) * canvasHeight;
-
-  let imgX = (imgPos.xPercent / 100) * canvasWidth;
-  let imgY = (imgPos.yPercent / 100) * canvasHeight;
-
-  let nameX = (namePos.xPercent / 100) * canvasWidth;
-  let nameY = (namePos.yPercent / 100) * canvasHeight;
-
-  let sub1X = (sub1Pos.xPercent / 100) * canvasWidth;
-  let sub1Y = (sub1Pos.yPercent / 100) * canvasHeight;
-
-  let sub2X = (sub2Pos.xPercent / 100) * canvasWidth;
-  let sub2Y = (sub2Pos.yPercent / 100) * canvasHeight;
-
-
-
-  // Draw Date/Place
   ctx.textAlign = sigPos.align || "center";
   ctx.font = `${sigPos.fontWeight || "normal"} ${sigPos.fontSize || 18}px sans-serif`;
   ctx.fillStyle = sigPos.color || "#1e1b4b";
@@ -733,55 +784,58 @@ export function drawJpTablePageOnCanvas(
   const dateText = dateTemplate.replace(/{tanggal}/gi, formattedDateStr);
   ctx.fillText(dateText, sigX, sigY);
 
-  // Draw Jabatan
-  const jabText = pTtd.jabatan !== undefined ? pTtd.jabatan : "Kepala Sekolah";
-  if (jabText && jabText.trim() !== "") {
-    ctx.textAlign = jabPos.align || "center";
-    ctx.font = `${jabPos.fontWeight || "normal"} ${jabPos.fontSize || 18}px sans-serif`;
-    ctx.fillStyle = jabPos.color || "#1e1b4b";
-    ctx.fillText(jabText, jabX, jabY);
-  }
-
-  // Draw TTD Image
-  if (pTtd.img) {
-    const imgW = (imgPos.widthPercent / 100) * canvasWidth;
-    const aspect = pTtd.img.naturalWidth ? pTtd.img.naturalHeight / pTtd.img.naturalWidth : 0.5;
-    const imgH = imgW * aspect;
-    ctx.drawImage(pTtd.img, imgX - imgW / 2, imgY - imgH / 2, imgW, imgH);
-  }
-
-  // Draw Underlined Name
-  ctx.textAlign = namePos.align || "center";
-  ctx.font = `bold ${namePos.fontSize || 20}px sans-serif`;
-  ctx.fillStyle = namePos.color || "#1e1b4b";
-  const nameString = toSentenceCase(pTtd.nama);
-  ctx.fillText(nameString, nameX, nameY);
-
-  // Underline line
-  if (config.showTtdLines) {
-    const nameWidth = ctx.measureText(nameString).width;
-    ctx.strokeStyle = namePos.color || "#1e1b4b";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(nameX - nameWidth / 2, nameY + (namePos.fontSize || 20) * 0.6);
-    ctx.lineTo(nameX + nameWidth / 2, nameY + (namePos.fontSize || 20) * 0.6);
-    ctx.stroke();
-  }
-
-  // Draw Subtext 1 (NIP)
-  if (pTtd.sub1) {
-    ctx.textAlign = sub1Pos.align || "center";
-    ctx.font = `${sub1Pos.fontWeight || "normal"} ${sub1Pos.fontSize || 16}px sans-serif`;
-    ctx.fillStyle = sub1Pos.color || "#1e1b4b";
-    ctx.fillText(pTtd.sub1, sub1X, sub1Y);
-  }
-
-  // Draw Subtext 2
-  if (pTtd.sub2) {
-    ctx.textAlign = sub2Pos.align || "center";
-    ctx.font = `${sub2Pos.fontWeight || "normal"} ${sub2Pos.fontSize || 16}px sans-serif`;
-    ctx.fillStyle = sub2Pos.color || "#1e1b4b";
-    ctx.fillText(pTtd.sub2, sub2X, sub2Y);
+  // Render signatures based on jumlahTtd
+  if (config.jumlahTtd === 1) {
+    drawBackSignature(
+      ttd1Img,
+      config.ttd1Nama,
+      config.ttd1Jabatan,
+      config.ttd1SubText1,
+      config.ttd1SubText2,
+      sigPos.xPercent
+    );
+  } else if (config.jumlahTtd === 2) {
+    drawBackSignature(
+      ttd1Img,
+      config.ttd1Nama,
+      config.ttd1Jabatan,
+      config.ttd1SubText1,
+      config.ttd1SubText2,
+      pos.ttd1NamaPos?.xPercent ?? 27
+    );
+    drawBackSignature(
+      ttd2Img,
+      config.ttd2Nama,
+      config.ttd2Jabatan,
+      config.ttd2SubText1,
+      config.ttd2SubText2,
+      pos.ttd2NamaPos?.xPercent ?? 73
+    );
+  } else if (config.jumlahTtd === 3) {
+    drawBackSignature(
+      ttd1Img,
+      config.ttd1Nama,
+      config.ttd1Jabatan,
+      config.ttd1SubText1,
+      config.ttd1SubText2,
+      pos.ttd1NamaPos?.xPercent ?? 20
+    );
+    drawBackSignature(
+      ttd3Img,
+      config.ttd3Nama,
+      config.ttd3Jabatan,
+      config.ttd3SubText1,
+      config.ttd3SubText2,
+      pos.ttd3NamaPos?.xPercent ?? 50
+    );
+    drawBackSignature(
+      ttd2Img,
+      config.ttd2Nama,
+      config.ttd2Jabatan,
+      config.ttd2SubText1,
+      config.ttd2SubText2,
+      pos.ttd2NamaPos?.xPercent ?? 80
+    );
   }
 }
 

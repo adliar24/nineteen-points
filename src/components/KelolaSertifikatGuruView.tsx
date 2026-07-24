@@ -606,6 +606,14 @@ export default function KelolaSertifikatGuruView() {
         updatedPos.ttd3ImagePos = { ...updatedPos.ttd3ImagePos, xPercent, yPercent: yPercent - 10 };
         updatedPos.ttd3NamaPos = { ...updatedPos.ttd3NamaPos, xPercent, yPercent };
         updatedPos.ttd3JabatanPos = { ...updatedPos.ttd3JabatanPos, xPercent, yPercent: yPercent + 3 };
+      } else if (selectedElement === "ttd1JabatanPos") {
+        updatedPos.ttd1JabatanPos = { ...updatedPos.ttd1JabatanPos, xPercent, yPercent };
+      } else if (selectedElement === "ttd2JabatanPos") {
+        updatedPos.ttd2JabatanPos = { ...updatedPos.ttd2JabatanPos, xPercent, yPercent };
+      } else if (selectedElement === "ttd3JabatanPos") {
+        updatedPos.ttd3JabatanPos = { ...updatedPos.ttd3JabatanPos, xPercent, yPercent };
+      } else if (selectedElement === "jpTtdJabatanPos") {
+        updatedPos.jpTtdJabatanPos = { ...updatedPos.jpTtdJabatanPos, xPercent, yPercent };
       }
       return { ...prev, positions: updatedPos };
     });
@@ -1742,7 +1750,7 @@ export default function KelolaSertifikatGuruView() {
                   onChange={(e) => {
                     const val = e.target.value;
                     setSelectedElement(val);
-                    const isJpElement = ["jpHeaderTitlePos", "jpHeaderSubtitlePos", "jpHeaderSub2Pos", "jpTanggalPos", "jpTtd", "logoBackPos"].includes(val);
+                    const isJpElement = ["jpHeaderTitlePos", "jpHeaderSubtitlePos", "jpHeaderSub2Pos", "jpTanggalPos", "jpTtd", "jpTtdJabatanPos", "logoBackPos"].includes(val);
                     if (isJpElement) {
                       setDesainerPage(2);
                     } else {
@@ -1759,23 +1767,35 @@ export default function KelolaSertifikatGuruView() {
                   <option value="noSertifikat">Nomor Surat Sertifikat</option>
                   <option value="deskripsi">Deskripsi & Peran Kegiatan</option>
                   <option value="tanggalKegiatan">Halaman Depan: Tempat & Tanggal</option>
-                  <option value="ttd1">TTD 1 - Posisi & Teks</option>
-                  {config.jumlahTtd >= 2 && <option value="ttd2">TTD 2 - Posisi & Teks</option>}
-                  {config.jumlahTtd === 3 && <option value="ttd3">TTD 3 - Posisi & Teks</option>}
+                  <option value="ttd1">TTD 1 - Posisi Grup (Gambar & Nama)</option>
+                  <option value="ttd1JabatanPos">TTD 1 - Posisi Jabatan</option>
+                  {config.jumlahTtd >= 2 && (
+                    <>
+                      <option value="ttd2">TTD 2 - Posisi Grup (Gambar & Nama)</option>
+                      <option value="ttd2JabatanPos">TTD 2 - Posisi Jabatan</option>
+                    </>
+                  )}
+                  {config.jumlahTtd === 3 && (
+                    <>
+                      <option value="ttd3">TTD 3 - Posisi Grup (Gambar & Nama)</option>
+                      <option value="ttd3JabatanPos">TTD 3 - Posisi Jabatan</option>
+                    </>
+                  )}
                   {config.hasJpPage && (
                     <>
                       <option value="jpHeaderTitlePos">Halaman Belakang: Judul JP</option>
                       <option value="jpHeaderSubtitlePos">Halaman Belakang: Subjudul JP</option>
                       <option value="jpHeaderSub2Pos">Halaman Belakang: Instansi JP</option>
                       <option value="jpTanggalPos">Halaman Belakang: Tempat & Tanggal</option>
-                      <option value="jpTtd">Halaman Belakang: TTD - Posisi & Teks</option>
+                      <option value="jpTtd">Halaman Belakang: TTD Grup (Gambar & Nama)</option>
+                      <option value="jpTtdJabatanPos">Halaman Belakang: TTD Posisi Jabatan</option>
                     </>
                   )}
                 </select>
               </div>
 
               {/* Slider Posisi X & Y */}
-              {!selectedElement.startsWith("ttd") && selectedElement !== "jpTtd" ? (
+              {!["ttd1", "ttd2", "ttd3", "jpTtd"].includes(selectedElement) ? (
                 (() => {
                   const elemKey = selectedElement as keyof typeof config.positions;
                   const elemPos = (config.positions as any)[elemKey] || (DEFAULT_SERTIFIKAT_CONFIG.positions as any)[elemKey];

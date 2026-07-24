@@ -767,13 +767,8 @@ export function drawJpTablePageOnCanvas(
     }
   };
 
-  // Draw Date/Place (always relative to where TTD 2 or rightmost signature is, or jpTanggalPos)
+  // Draw Date/Place
   let sigX = (sigPos.xPercent / 100) * canvasWidth;
-  if (config.jumlahTtd === 2) {
-    sigX = ((pos.ttd2NamaPos?.xPercent ?? 73) / 100) * canvasWidth;
-  } else if (config.jumlahTtd === 3) {
-    sigX = ((pos.ttd2NamaPos?.xPercent ?? 80) / 100) * canvasWidth;
-  }
   let sigY = (sigPos.yPercent / 100) * canvasHeight;
 
   ctx.textAlign = sigPos.align || "center";

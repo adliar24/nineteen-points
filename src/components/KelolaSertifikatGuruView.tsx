@@ -89,6 +89,9 @@ export default function KelolaSertifikatGuruView() {
         updatedPos.ttd1JabatanPos.xPercent = 50;
         updatedPos.ttd1SubText1Pos.xPercent = 50;
         updatedPos.ttd1SubText2Pos.xPercent = 50;
+        if (updatedPos.jpTanggalPos) {
+          updatedPos.jpTanggalPos.xPercent = 72.5;
+        }
       } else if (count === 2) {
         updatedPos.ttd1ImagePos.xPercent = 27;
         updatedPos.ttd1NamaPos.xPercent = 27;
@@ -101,6 +104,9 @@ export default function KelolaSertifikatGuruView() {
         updatedPos.ttd2JabatanPos.xPercent = 73;
         updatedPos.ttd2SubText1Pos.xPercent = 73;
         updatedPos.ttd2SubText2Pos.xPercent = 73;
+        if (updatedPos.jpTanggalPos) {
+          updatedPos.jpTanggalPos.xPercent = 73;
+        }
       } else if (count === 3) {
         updatedPos.ttd1ImagePos.xPercent = 20;
         updatedPos.ttd1NamaPos.xPercent = 20;
@@ -119,6 +125,9 @@ export default function KelolaSertifikatGuruView() {
         updatedPos.ttd2JabatanPos.xPercent = 80;
         updatedPos.ttd2SubText1Pos.xPercent = 80;
         updatedPos.ttd2SubText2Pos.xPercent = 80;
+        if (updatedPos.jpTanggalPos) {
+          updatedPos.jpTanggalPos.xPercent = 80;
+        }
       }
       return { ...prev, jumlahTtd: count, positions: updatedPos };
     });

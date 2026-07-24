@@ -1,0 +1,2235 @@
+{
+  "profiles": [
+    {
+      "id": "413a2bc2-935e-4cfe-8099-bc9a84ded62c",
+      "nama": "MUHAMMAD RAKA FEBRIANSYAH",
+      "email": "242510130@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "97bc3891-96f9-4510-91ac-544b9c6f296a",
+      "nama": "RADITYA BAGAS ARIS SAPUTRA",
+      "email": "242510310@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "0488fb2d-3c0a-4628-9d63-0599b34b5700",
+      "nama": "Super Admin SMAN 19",
+      "email": "admin19@sch.id",
+      "role": "super_admin"
+    },
+    {
+      "id": "d93a1c0b-24ac-4447-b9f3-ca02f704cd2a",
+      "nama": "NAYSHILA NOVIA",
+      "email": "242510239@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "c1c272cd-9763-49b1-a9b0-ea8bbe8573a9",
+      "nama": "NAZARANI ADILA",
+      "email": "242510203@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "d347ed68-5b11-45a9-9ea9-9356197d585c",
+      "nama": "QAISRA ROLINA PUTRI NUGRAHA",
+      "email": "242510168@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "449651e6-af03-4a11-9c2a-b7059c88857f",
+      "nama": "NICKYA PUTRI RAMADHAN",
+      "email": "242510061@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "abdb73c4-852e-4f35-a9bf-0196e520bc62",
+      "nama": "NAURA FATHIYAHUTAMA",
+      "email": "242510132@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "6d818c29-0571-4b38-82c8-dc6af93fbdbf",
+      "nama": "SILVI",
+      "email": "242510319@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "266ae54e-9764-4362-be04-dba55b52ee73",
+      "nama": "WINEU AGUSTIN",
+      "email": "242510286@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "3a384669-c7d7-4786-81ee-97dddf5a561d",
+      "nama": "ADITYA FATHIR RAHMAN",
+      "email": "242510001@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "f595736f-8b09-4bb2-a22e-d29cedbe714b",
+      "nama": "ABYYASHA DWI PUTRA NUGRAHA",
+      "email": "242510072@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "ee2f0b4f-2c24-4df2-b09b-00b0d99f3df2",
+      "nama": "ABDUL NAWI",
+      "email": "242510180@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "28750bbf-9b62-4cdb-a38b-4f2e7968533d",
+      "nama": "ADITYA SAPUTRA",
+      "email": "242510252@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "50d084a7-90ce-4dc0-ab6a-fac73ec0f49d",
+      "nama": "ALIFAH RAISA KAMILA FIRDAUS",
+      "email": "242510112@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "6302caf1-9510-4c41-bb04-cf63e4d7e4ae",
+      "nama": "BILLGY JAGYAGA",
+      "email": "242510256@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "c7373ac3-4763-41d0-af0a-f157cdaceb4a",
+      "nama": "CHEISSA VIOLA NUGRAHA",
+      "email": "242510292@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "ffebc31e-111b-4bd0-865d-591f9ef6602f",
+      "nama": "FAZRI PRATAMA",
+      "email": "242510258@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "14f65ab5-6b73-40c9-a496-bf1818eb07fa",
+      "nama": "DWIKY ROPIANSYAH",
+      "email": "242510047@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "d45069e7-50c7-4279-90bc-dcbf08015360",
+      "nama": "KHAIRINNISA SALSABILA",
+      "email": "242510299@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "c6256587-0193-4058-9e60-2a8072f3584c",
+      "nama": "INGGIT DESVINA",
+      "email": "242510228@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "c4a65841-34e9-4147-bd59-52f76b400d26",
+      "nama": "FIVY NATALIA",
+      "email": "242510086@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "a3af149a-2e27-4d18-873a-77f046ed47c7",
+      "nama": "KEYSHA DEALITA PUTRI",
+      "email": "242510230@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "734f6b9d-5726-4fb0-b12a-3e8905b48482",
+      "nama": "KHAIRUNNISA ARRIFA ANANTA",
+      "email": "242510089@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "82ed4e84-230c-45a8-b096-819c76224452",
+      "nama": "MARIO ERNANDHO",
+      "email": "242510054@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "c901ebc0-69e3-4ff6-803d-a7a236c13fc9",
+      "nama": "MELIANA ROSDIANSAH",
+      "email": "242510055@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "97f2ee32-5f82-4540-9721-319f02c82c5d",
+      "nama": "MUHAMMAD RIDZWAN",
+      "email": "242510270@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "11b5b12f-db14-414b-a5d3-fd3564b38f94",
+      "nama": "MUHAMMAD SULTHON YASIR DIJAYANA",
+      "email": "242510271@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "4e2f399b-535d-4224-9939-987edc5bbeac",
+      "nama": "MUHAMMAD ADRIAN MULYA WIBAWA",
+      "email": "242510128@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "7bc317ee-6ee1-44ed-9dc1-d9b0add8baab",
+      "nama": "IHSAN RAFI MUSTHOFA",
+      "email": "242510018@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "4bb504e8-5be2-4a83-bf66-b56fac054941",
+      "nama": "LUVI NOVALLINO",
+      "email": "242510022@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "5bc95074-22a0-4457-9394-253eb45244b2",
+      "nama": "MUHAMAD IBRAHIM FAUZI",
+      "email": "242510303@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "aef394f6-ae23-4ecc-8fb7-44d74c7c1971",
+      "nama": "MUHAMMAD FAATHIR ANDRIANA",
+      "email": "242510305@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "3f99d85b-17bd-4b99-9f89-b3457da29868",
+      "nama": "NAYSILA ARISTA",
+      "email": "242510060@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "7b18bb57-2909-485d-9f26-58b67b4de8e1",
+      "nama": "NAZREY ANSHAR APARID",
+      "email": "242510028@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "39eb9061-9665-464d-8c88-453368bdb3c9",
+      "nama": "NOVANDRA JULIANA PUTRA",
+      "email": "242510275@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "4031e116-47b3-4c91-a69e-1356f913d3fc",
+      "nama": "AKBAR JUANLI",
+      "email": "242510004@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "80e4bff3-e528-4455-a0e6-4ade0a73cd53",
+      "nama": "ALIVIA PUTRI HENDRIANTI",
+      "email": "242510146@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "7e912d17-6733-403b-8eb4-9923d5976020",
+      "nama": "RAIHAN AFRIYANSYAH PRATAMA",
+      "email": "242510206@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "2b01faca-f800-4e6b-9f9a-5e99460a91c6",
+      "nama": "FADHIL BIANCIANELLO SUDRAJAT",
+      "email": "242510085@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "51667d32-8a79-43f0-b301-94ed503dede0",
+      "nama": "REVALINA VEGA PRAMADHITA",
+      "email": "242510208@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "ec261ecf-ec13-4645-89bd-f6bfa5524bfb",
+      "nama": "RIKI HAMZAN",
+      "email": "242510280@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "b4f63b64-4c05-4501-a4e2-8fff2126622e",
+      "nama": "RIZKI RAMADHAN",
+      "email": "242510282@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "351d7ef3-5bc6-40a3-b2e0-98994046eac0",
+      "nama": "SATRIA PRATAMA",
+      "email": "242510139@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "206da0c3-10f4-442a-a208-3ec0c92ad205",
+      "nama": "MUHAMAD IQBAL MAULANA",
+      "email": "242510304@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "2099b7e8-e450-40c1-bc9d-9f24b2e28cf1",
+      "nama": "TEGUH SAPUTRA",
+      "email": "242510321@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "aa417554-952b-43bd-a075-d6b46a82bd29",
+      "nama": "YARA PUTRI YULISTIANI",
+      "email": "242510142@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "2054050c-8355-41c1-a229-828c7ad1bb0b",
+      "nama": "AGNI AGIA QIRANISA",
+      "email": "242510181@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "bbda01f5-77a3-4771-b178-29790cd5bbc6",
+      "nama": "SALSABILA ASTIANI FEBRIAN",
+      "email": "242510032@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "2309cd61-aa04-45b1-b34a-8893fd4a4116",
+      "nama": "SYADIA NIDA NAZIHAH",
+      "email": "242510033@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "8691916c-5e0b-4af0-ae0e-8087a4bef274",
+      "nama": "YASMIN CAMILLA",
+      "email": "242510036@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "153958a4-61d7-4552-bb8d-9ef02f8b292d",
+      "nama": "AKBAR RIFKY RAMDHANI",
+      "email": "242510182@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "618447cb-a2be-44c0-a312-e3c40800874c",
+      "nama": "AULIA LAILIKA ABADI KIRANA PUTRI",
+      "email": "242510008@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "687b292c-8563-4f55-a19a-f9e872ac76fe",
+      "nama": "AZARIA AKHDAN ZAKI NUGROHO",
+      "email": "242510009@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "61459a6c-7efe-4af2-ab96-9aa4a26ee5b1",
+      "nama": "FATHINAH MAULIDA LATIF",
+      "email": "242510014@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "106d6d64-ac44-4c28-9292-6330849c6a7b",
+      "nama": "MUHAMMAD NABIL TSABITUL AZMI",
+      "email": "242510201@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "08f564f5-194f-4b4d-bd59-696ef79dbfca",
+      "nama": "AL FAHRI HUSAINI KAMAL",
+      "email": "242510217@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "b4fd6dc6-e1aa-43a3-ad54-951b6c10c1c3",
+      "nama": "ARNOLDUS MARYEN",
+      "email": "242510005@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "e8044467-f3e5-4605-86fe-6959ce94cf40",
+      "nama": "BUNGA ANNISA",
+      "email": "242510221@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "011d7357-989e-462e-b765-d1900e36b8a9",
+      "nama": "ELSA APRIANI PUTRI",
+      "email": "242510152@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "3ce81111-26ad-4468-9acf-e331f1d21469",
+      "nama": "DECA ALIVIANI",
+      "email": "242510188@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "970f37af-5064-478c-aa75-130eb2ac6b61",
+      "nama": "FIRENSYA DARA YOPIKANIA",
+      "email": "242510226@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "a6e2bee4-3555-40c0-80ae-c31da8cea3b8",
+      "nama": "DETA KESYA PUSPITA",
+      "email": "242510083@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "d8ce336c-eb36-45a8-aa0a-1fb8e9b01a36",
+      "nama": "LEVVYA WAFFA SYAHISMA",
+      "email": "242510264@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "d230713c-386d-4d75-a835-80282e0252f5",
+      "nama": "FAJAR RAMADHAN",
+      "email": "242510050@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "cd9da54f-e222-45ba-9c69-6cec0c476fa7",
+      "nama": "INTAN KHOFIFA MASYUDI",
+      "email": "242510229@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "236aa961-7a76-4096-960a-31b86e245b82",
+      "nama": "MOCHAMMAD FADLYANSYAH DWI PUTERA KUSUMAH",
+      "email": "242510267@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "b830aef8-0657-4248-ad92-e4aeeb861690",
+      "nama": "MEGA SEPTIA RAMADHANI",
+      "email": "242510091@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "86367f98-5d2d-45c4-be49-94f4f4042580",
+      "nama": "MUHAMMAD RIZKY N",
+      "email": "242510163@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "7745fb87-8e21-406f-87e4-a92f9b6d58ab",
+      "nama": "NABILA RIZKY NURFAIZA",
+      "email": "242510164@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "b74d76a7-acb0-45ae-a884-c582cea3b2d8",
+      "nama": "NURR ASSYFFA",
+      "email": "242510309@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "6a5779ff-bc53-477f-bbf2-da187131b9e8",
+      "nama": "MUTHI'AH KHAIRUNNISA SAERA",
+      "email": "242510238@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "41c3ce4b-0a31-44f8-8f2c-f5d09995119d",
+      "nama": "RAHMADINA",
+      "email": "242510311@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "15cbd7d8-eb23-4e90-ab40-5cb9cc2b7c96",
+      "nama": "NIKITA AULIA PUTRI",
+      "email": "242510204@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "bbfc1bb0-673e-485b-8258-09b748b92f49",
+      "nama": "ASYA CALLYSTA HERMANSYAH",
+      "email": "242510254@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "c6566236-ecdd-4ab9-9d0c-2f6de775fb78",
+      "nama": "PUTRI NOOR GASHANI",
+      "email": "242510134@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "f311582e-b381-47cc-8928-cb16ae119f2e",
+      "nama": "RAYA AIDUL ADYA",
+      "email": "242510243@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "c4c524c4-869b-4dd7-a86a-8a5dcd3f35e3",
+      "nama": "SARRAH ADIYA YASYFI",
+      "email": "242510172@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "e3497a7b-c71a-430a-869a-54919b8e3d97",
+      "nama": "RIPAL APRILIANSYAH",
+      "email": "242510281@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "5f0744aa-fa51-47e3-9b54-1417ead2b211",
+      "nama": "SYAFA HANIFAH",
+      "email": "242510285@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "4d8335a8-b79a-413c-a295-d6580243ad91",
+      "nama": "FRANSISCO AGUERO",
+      "email": "242510324@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "f686df23-2e6d-4e0a-acf2-f394886e1c80",
+      "nama": "GHANIYA KEYSA SULISTYA",
+      "email": "242510016@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "6e8fd61f-f391-444b-9ed6-a6484d2dbcba",
+      "nama": "ZAIKRA IFTINA ZALFA",
+      "email": "242510071@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "f17d1ade-c591-4aa7-958b-bac4ba589876",
+      "nama": "LADISTA KAYLA TAHZANI",
+      "email": "242510196@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "b0b8b6bf-ff79-4eac-9ca0-82c03be78f7a",
+      "nama": "AIRA ARTI HADI",
+      "email": "242510002@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "30e68300-b513-4d45-8ebd-5b8fae6e0801",
+      "nama": "ARINI RANDIYANTI",
+      "email": "242510115@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "e09620ed-7928-42ae-baa8-a671bf678be8",
+      "nama": "NUR AZIZAH ARDIANTO SAPUTRI",
+      "email": "242510240@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "176bbd6d-f9c9-4d69-91b7-436df7d5bb15",
+      "nama": "SALSABILA ANATASYA",
+      "email": "242510031@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "4a89f24e-9614-49bd-b4d5-0d11cd2691b1",
+      "nama": "YUQA HASNA NABILAH",
+      "email": "242510287@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "aa35abb0-f41d-48a3-a565-2685db342144",
+      "nama": "AISYAWARAI KHAIRUNISA",
+      "email": "242510003@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "502e046d-3ec5-46e7-ae33-87cbfaba0f77",
+      "nama": "LIA KHOIRUNISA",
+      "email": "242510021@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "c77e3cee-cfb6-4ba7-b1ee-645ab6046a99",
+      "nama": "ALZENA SAFA BAYUNA",
+      "email": "242510253@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "52faad47-2ef5-49d7-90da-c1503002b519",
+      "nama": "ADIT ISWANDA APTAMA PUTRA",
+      "email": "242510110@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "346550ca-6b14-4abf-9acb-9b0c1c44854e",
+      "nama": "ANDINI MEISHA RAHMAWATI",
+      "email": "242510041@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "ebf8a789-89da-4b99-8be5-d350a9951475",
+      "nama": "AULIA SOLEHAH",
+      "email": "242510042@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "b4c2da4d-d05d-4a1b-b1ef-b72e35895fae",
+      "nama": "CHUSNIA IZZATI GAMARI",
+      "email": "242510149@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "3609371c-de7c-45fd-9761-d317ae1e1390",
+      "nama": "DYMAS SURYA PUTRA",
+      "email": "242510151@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "34f4357e-95f4-44bc-a95a-d39d8acafb81",
+      "nama": "DAVINA AURELLIA RIYANDI PUTRI",
+      "email": "242510223@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "46c8ea6b-8f7f-4c26-a8c1-208bea0b43f5",
+      "nama": "ASTI DIANTI ANARGYA",
+      "email": "242510116@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "96d79ce3-bc90-441e-88db-a05a424eab0c",
+      "nama": "CIKA DENISA",
+      "email": "242510117@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "211ff966-7971-47a1-ba66-38bc3f52e5fb",
+      "nama": "FAHRIO ADITYA ARSHAVIN",
+      "email": "242510225@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "f1ce25bb-10b3-4e52-b80b-914abd899f68",
+      "nama": "ELFA HOIRUN NISA",
+      "email": "242510048@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "81c04a50-ac62-4963-ba6b-0a6d008e695a",
+      "nama": "FAEZAH GHINA PUTRI HERMAWAN",
+      "email": "242510049@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "03e13466-0774-45e5-be49-ae5e9e5b03e5",
+      "nama": "MARVA GRANIA",
+      "email": "242510301@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "d2039cf9-e8af-4efb-9410-1dad58b6fef5",
+      "nama": "MARSHA ANANTASYA",
+      "email": "242510231@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "e924dd80-98a9-4e59-9d89-122f398cd524",
+      "nama": "LUJENG NILANSARI",
+      "email": "242510126@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "261546eb-d882-4415-856f-207a1754c9f6",
+      "nama": "MUHAMMAD ISYRAF FAIRUZ",
+      "email": "242510236@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "0b3e6126-79f2-4787-a47c-b471a600058b",
+      "nama": "NUMAN SULAEMAN",
+      "email": "242510167@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "c5e56123-85bc-46d5-8666-3bbd1f3fcaf0",
+      "nama": "NAZFAL ARAFANI",
+      "email": "242510133@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "c23f9306-0ae0-4212-b87b-35a8a5668cea",
+      "nama": "RAI AFFAN MARTIAN",
+      "email": "242510170@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "51ee560b-5cb3-4ffe-b41b-fdabde25edd6",
+      "nama": "RAFLI HASBI ASSIDDIQI",
+      "email": "242510100@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "a945198f-f101-45af-a2a8-be569bafd86e",
+      "nama": "RIFA SYAQILA YOVITA",
+      "email": "242510102@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "ebbcb547-69e0-4aab-8cd5-b5998650f76d",
+      "nama": "SHELVY FEBRIANTI NURFAIZAH",
+      "email": "242510067@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "57015356-45db-40d4-977b-28b511fe2628",
+      "nama": "SILFI ARYANTI KURNIA",
+      "email": "242510210@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "1a559c94-20ad-44e9-9380-6daee8c1bf5f",
+      "nama": "SYAFIQ AHMAD SYALABY",
+      "email": "242510247@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "635e3608-1266-4975-aba9-8d196450d119",
+      "nama": "CLEDY SAINA AFDIRA",
+      "email": "242510118@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "cc12e437-2eea-4d15-bcbc-490111566dfa",
+      "nama": "SYAREEFA ALLAIYA ZAHRAN PRADJA",
+      "email": "242510212@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "24c7eca6-76f9-4706-babd-ee56d6bf9c48",
+      "nama": "ZIA MEHLIKA PURNAMA",
+      "email": "242510179@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "991dde4b-f57f-4070-98a0-1e772dc88852",
+      "nama": "ZEN MAULA DZIKRAN",
+      "email": "242510215@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "be399159-88af-4f35-bee4-97f308f54ec0",
+      "nama": "KIRANA DARA PUSPITA",
+      "email": "242510019@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "ef475ace-9eb2-409a-a378-f111f41c5c5c",
+      "nama": "ATTAYA PRATAMA PUTRA HARSA",
+      "email": "242510007@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "194acc16-30d9-47c8-978c-02c2b6979d17",
+      "nama": "MOCHAMMAD ILHAM NURALI",
+      "email": "242510302@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "8face616-726e-4463-8124-0d98694e5e75",
+      "nama": "MUHAMMAD NAJA JAKASATRIA",
+      "email": "242510025@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "ae87800d-6eb9-4fc6-8ccc-831b22907918",
+      "nama": "ARYANTI NURJANAH",
+      "email": "242510006@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "2ddf0c43-f56e-4a5c-9dd8-7e0599fe91e0",
+      "nama": "FARIZA SANIA",
+      "email": "242510013@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "d4770c82-1c65-447d-9916-8855fa90b407",
+      "nama": "GEISYA RACHMA ADRIAN PUTRI",
+      "email": "242510015@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "0892b5be-6ab8-473c-b40a-3ff78ceb96fc",
+      "nama": "AGIRA OCTORA FAUZAN",
+      "email": "242510144@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "8755e7dc-9b9a-4339-8a63-62ed9a263f19",
+      "nama": "ALLENA BERYL SULAEMAN",
+      "email": "242510218@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "899013b5-45ee-4cca-989d-c94e7e7a8e8d",
+      "nama": "ANDIKA DWI KURNIANSYAH",
+      "email": "242510219@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "9c8700b8-813a-4629-90be-138c222c8737",
+      "nama": "DAVINA ALMAQHVIRA",
+      "email": "242510293@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "3d01609e-ff20-4433-9b8b-37bb39e494dc",
+      "nama": "BIA TESHA AURORA",
+      "email": "242510186@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "22a0eda9-969a-46e9-9f90-5d48822b211e",
+      "nama": "DANENDRA FAEYZA AFFIQ",
+      "email": "242510045@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "efe8fbdc-d092-45c1-9aae-fd38ad03f110",
+      "nama": "IHSAN RHAMDANI",
+      "email": "242510297@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "8c08a215-a372-41b1-8ae6-ac0a86fa59b7",
+      "nama": "JULIA JAYANTI HASANAH",
+      "email": "242510262@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "0cd476e1-c386-4b5d-a503-adabe9fdce2c",
+      "nama": "JIBRIL ALBAR",
+      "email": "242510157@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "f0db4b90-6b62-4a0d-842a-3725071bff64",
+      "nama": "KANIA HERA",
+      "email": "242510123@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "74e36c51-50c0-4b70-81a9-29c9309111da",
+      "nama": "MUHAMMAD ARSYA GHANI MUGNA",
+      "email": "242510162@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "1b4d49c0-0f7b-4ef0-ad27-2495118e81bd",
+      "nama": "MUHAMMAD HILMAN ARKAN",
+      "email": "242510235@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "af66934b-bedd-409b-ae38-1180bb901d5d",
+      "nama": "NAIFAH ALMIRA MUSTHOFA",
+      "email": "242510165@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "fe246dfa-0b86-45e0-80aa-919a1a263209",
+      "nama": "MUHAMMAD RIZKY HIDAYAT",
+      "email": "242510058@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "7fb7e7b9-0604-470e-ab96-c18fac997612",
+      "nama": "MUHAMMAD SYAMIL BASAYEV",
+      "email": "242510237@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "c08e908b-aee8-41f5-9f27-926ae0f7050e",
+      "nama": "WAQIAH KHOERUNISA",
+      "email": "242510035@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "2b1ed4d5-e65f-48b7-bc98-097786f31d60",
+      "nama": "AFIFAH AZAHRA",
+      "email": "242510288@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "51399e60-49a8-4509-b202-a3339d3360bb",
+      "nama": "RAISYA SRI NURRAHAYU",
+      "email": "242510278@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "e25b0d29-63db-4cc1-a338-a45bb8c4ba30",
+      "nama": "SEPTIAN RAMADHAN",
+      "email": "242510173@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "3900019d-1a9d-46d9-ad7e-b94e104350be",
+      "nama": "SEKAR KINASIH NUR FITRIANI",
+      "email": "242510283@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "d36f527b-201b-466a-9cfa-0dcf9c7f7cf8",
+      "nama": "SHENI DHEPU JAELAN",
+      "email": "242510140@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "96e0d8cd-01be-4fb3-acfa-6108cf46e9be",
+      "nama": "HAFIZ SAPQAT ADZ ZAKIR",
+      "email": "252611324@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "449c0a88-2554-4ec0-bfb3-e0106efaca45",
+      "nama": "JIBRIL AL FARID",
+      "email": "242510088@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "ba498ed1-04ba-467d-9cab-734ef69f6a4d",
+      "nama": "MUHAMAD REZA NUGRAHA",
+      "email": "242510023@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "822cab4f-9e8e-462b-9d80-40d24859150b",
+      "nama": "SYALWA AULIANTI SYAFIRA",
+      "email": "242510248@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "812bf604-c992-41af-a6f0-5ab276430d06",
+      "nama": "NAISHA KHAYIRA NURHASNA",
+      "email": "242510027@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "ace8df75-74f1-491e-8a63-a2e65c549252",
+      "nama": "TIAS REFITASARI",
+      "email": "242510034@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "bb74b863-4459-4f12-a9e5-39add5a5bc5d",
+      "nama": "ADRIEL ALVARO RAHADIAN",
+      "email": "242510037@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "33487723-13f2-483b-b688-1f2678325e33",
+      "nama": "ACCEL HANNANDI RATAMA",
+      "email": "242510108@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "0d0e50f5-e2bc-48c4-a372-670dc331bbf5",
+      "nama": "SITI RAHMA NUR AFIFAH",
+      "email": "242510141@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "bfc2da04-2c90-4b34-996d-27aecd3fbb55",
+      "nama": "AGHNIA FARSYA",
+      "email": "242510216@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "cc426fdc-9fb6-4a0c-9eec-1713c9947e78",
+      "nama": "ADELINE ALIKA PUTRI",
+      "email": "242510073@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "61193fdf-929f-4d35-82f3-a3e633a686fc",
+      "nama": "AL-FARRIBY PUTRA ARDIANSYAH",
+      "email": "242510038@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "d13d95a4-0c79-40af-9a21-34558150a1e5",
+      "nama": "ADHISA SHAFA CHAERUNNISA",
+      "email": "242510109@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "63691d15-187b-4e6c-9872-d87b00032066",
+      "nama": "ALGHA REVAN RAMADHANI",
+      "email": "242510289@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "b4414ce3-70d1-435a-bde1-63d998dd1660",
+      "nama": "ALINZIE ZAHRANI",
+      "email": "242510145@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "d35469de-e0e3-4463-8fba-792e8675afc7",
+      "nama": "AINA NABIHA",
+      "email": "242510074@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "21d9db94-bad3-42be-8416-aad28597b781",
+      "nama": "ALIKA RACHMA SALSABILA",
+      "email": "242510039@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "455b3132-6f91-423f-beb9-5f5a84191bbe",
+      "nama": "CLARA ANNISHA",
+      "email": "242510010@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "dd5fd931-9d63-4a2f-ba61-5da379909122",
+      "nama": "ALMIRA NUR AZMI",
+      "email": "242510290@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "8ee2abdd-08cb-4b98-85c8-8a62ea64db79",
+      "nama": "ALBERTHO MARYEN",
+      "email": "242510075@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "c9567bda-c740-43b5-89e1-29360c8e0a3b",
+      "nama": "ALIKHA REZA PUTRI",
+      "email": "242510040@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "b0d65d20-5dc4-4b98-bafd-9432be5beb47",
+      "nama": "AYESHA MAISA OKTAVIANA",
+      "email": "242510255@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "3660f02c-ca87-4763-8564-bbcb9464dbae",
+      "nama": "CAKRA JAGADDHITA PUTRA SUBANDRIYO",
+      "email": "242510148@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "ccb7a533-be54-493a-8ce9-01d5076d415f",
+      "nama": "ALLFARIEDZA REIVANSYAH",
+      "email": "242510113@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "c38a08c9-a78b-42b8-8b3d-52e40cc2d296",
+      "nama": "ARIFA ZAKIYYA SALSABILA",
+      "email": "242510079@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "530cf289-f533-4754-861d-4566632b037d",
+      "nama": "ERI SAGITA",
+      "email": "242510120@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "6d9f5b4f-8ada-4a63-b51f-2825521f68fa",
+      "nama": "LIYANA PUTRI RUSMAWATI",
+      "email": "242510053@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "3ee3053a-9b7e-4adc-bb96-d654025d3f6c",
+      "nama": "MELY AMELIA AGUSTIN",
+      "email": "242510092@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "0e24a186-7abc-4789-9f89-3cc94e975cb8",
+      "nama": "AISYAH AZ ZAHRA HEIQMEUH",
+      "email": "242510111@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "a72b75eb-dc1c-4099-a7bf-7b352590f130",
+      "nama": "ALTHAF HIBATULLAH ZAIN",
+      "email": "242510291@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "a6c174c3-babb-4292-a8c2-460e9bf5a3fb",
+      "nama": "BELVINA PUTRI KEISYA",
+      "email": "242510147@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "3136506c-0a27-4970-ae5a-27f512189ffd",
+      "nama": "ANDREA FAZA GALIH",
+      "email": "242510220@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "2b46861c-da4e-4d5e-99a2-430008a29d4e",
+      "nama": "ANINDHIYA SALMA",
+      "email": "242510184@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "a4da5a7d-3b9d-48b8-8e65-4537f1ec20db",
+      "nama": "ANISA SABILA RISKA",
+      "email": "242510077@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "0dcd9862-9b04-4865-90ef-7bb2056f0284",
+      "nama": "ARIF RAHMAN RAMADHAN",
+      "email": "242510185@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "e83a97c6-c8d7-41d5-8fe4-e1d0fb1879c9",
+      "nama": "CLARA FITRI FELISA",
+      "email": "242510257@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "65dccf1a-3ea7-4bf3-8654-9c54ee7c3a71",
+      "nama": "ANNIDA NURUL QUR'ANI",
+      "email": "242510078@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "17772ceb-74b8-4ceb-88de-e6d684cee73a",
+      "nama": "ARFA REGIAN PRATAMA",
+      "email": "242510114@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "005e204f-1f4d-46f7-bb59-7933365aa0cf",
+      "nama": "CITRA PUTRI WULANDARI",
+      "email": "242510222@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "57c1335e-fe7e-46bf-83f4-bd15fc5080e3",
+      "nama": "DHAFIN HAFIYYAN RAZAQA",
+      "email": "242510294@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "7c2aae29-9477-40a6-9c9a-560d1f754da5",
+      "nama": "CAEZAR HANIF ANARKITA",
+      "email": "242510044@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "02b0df4f-774f-4e9a-a054-7ae1dba86c10",
+      "nama": "DANIAL FADLY",
+      "email": "242510187@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "cf1f3a4d-c10e-4f27-af28-1fda32d6ccfe",
+      "nama": "FITRIANI MELATI PUTRI",
+      "email": "242510295@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "4f424459-80c7-4845-a42e-5ae98ec6b77c",
+      "nama": "GHINA ROIHANAH KHOIRUNNISAA",
+      "email": "242510259@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "0dea1a08-eeea-416e-99c3-899273ac2d5b",
+      "nama": "AZFA EKA PUTRA",
+      "email": "242510080@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "29cf3ec2-95fa-4847-8490-955e6689cffd",
+      "nama": "DERI ADITIA",
+      "email": "242510224@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "56f50053-ecc5-4b19-ac5b-f0960ee2fdaa",
+      "nama": "FARREL YAZID FITRATULLAH",
+      "email": "242510153@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "3df49614-0bd5-4f13-860a-77ccfd153a14",
+      "nama": "GINGGA ANNEESHA LATHIEVA",
+      "email": "242510260@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "e3b0e9fc-fffa-418e-8018-ae9f6991c71f",
+      "nama": "HAURA DINDA TARISA",
+      "email": "242510296@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "bb0a060c-57ff-4b69-a335-70a232a27071",
+      "nama": "CHEYSA NUR HASYA SUPARMAN",
+      "email": "242510081@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "c6d66a18-9654-47e1-a2c6-b3acfa2c58f5",
+      "nama": "DEVANIE NAFASHA",
+      "email": "242510189@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "8cd6e6a2-f0e0-45e4-b4d4-896bb22d7d9b",
+      "nama": "FAUZIYAH FITRI SYAHIDAH",
+      "email": "242510154@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "7b92bb41-f3d5-43a2-a400-9db09b885c74",
+      "nama": "ISNAENI PUJI RAHAYU",
+      "email": "242510261@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "3282a863-9564-4994-aea8-46be0253871b",
+      "nama": "DAFINA MEYSA SOLIHIN",
+      "email": "242510082@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "5f5f2c28-572b-4085-ab66-3d770401b2d9",
+      "nama": "FAZRY MUTTAQIN",
+      "email": "242510190@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "d854076e-c1c3-4ab9-8266-695a630af798",
+      "nama": "HABIB NIZHAR FADILLAH",
+      "email": "242510155@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "773425a4-2947-48c7-9beb-62212024ac54",
+      "nama": "DINDA CLARA",
+      "email": "242510119@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "00214c72-92ba-4887-b710-0a2a99289cf3",
+      "nama": "FIA FRIDAYANTI",
+      "email": "242510191@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "0880d021-0593-49f3-8231-a673a552314a",
+      "nama": "BIFASHA AIRA SYAHGITA",
+      "email": "242510043@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "0877cd90-d520-427a-aed5-6a134dac5a36",
+      "nama": "DANI SETIA PERMANA",
+      "email": "242510046@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "96d15b4f-4285-46ee-bc7a-3d184154df71",
+      "nama": "DITA NURHUZAIPAH",
+      "email": "242510012@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "f5577b7c-02a3-4948-9583-ba075cefd2ef",
+      "nama": "HERAWATI",
+      "email": "242510227@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "8ff97ee6-b52a-44a9-8ca5-1106be7c11b3",
+      "nama": "HILFI PUTRI NURMAULIDYA",
+      "email": "242510156@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "34a39c14-2cea-4af6-afb7-37e7baefc676",
+      "nama": "DHENAYA SAFIRAPUTRI",
+      "email": "242510084@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "12cc11f1-9a07-44ed-9315-603ca27577a3",
+      "nama": "FIONA CYNTHIA ARTIANI",
+      "email": "242510192@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "9f1b8595-14c7-433e-beb7-18268dfed321",
+      "nama": "LUKMAN SEPTA RAMADHAN",
+      "email": "242510300@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "7bc3c914-650d-4f64-91e5-012a900dd8f7",
+      "nama": "MAHESA AURELIA SENJA PURNOMO",
+      "email": "242510263@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "3af99123-48e8-4d49-9b60-c14dde38bba0",
+      "nama": "HILMAN MUADZANI ABDILLAH",
+      "email": "242510193@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "dcd138f0-8ce0-451a-ab72-e38a20521714",
+      "nama": "KLARISSA PUTRI SEPTIYANI",
+      "email": "242510158@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "83f95aea-8638-4850-a27c-85d29ff27d20",
+      "nama": "GHANNY NUR RIZKI",
+      "email": "242510051@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "ce4595d1-d457-48b4-a43f-96be338d48b4",
+      "nama": "GALICYA BUNGA MUCHTAR",
+      "email": "242510122@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "b913c04b-f6ab-4c94-b436-9be1311ab8c1",
+      "nama": "LAVINA CALLYSTA AZALIA",
+      "email": "242510159@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "7e6a7c12-d4a3-4cf7-aba4-61ca33255594",
+      "nama": "GISSA KHAILLA",
+      "email": "242510052@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "3aadde7b-82f4-4e9e-a199-097807306bb6",
+      "nama": "KIRANA WINDIAFI PUTRI",
+      "email": "242510124@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "c407032b-6d4e-44e4-9007-a0c3008dbc2a",
+      "nama": "MELVA BUNGA YULIANA",
+      "email": "242510161@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "3cfc830f-2c32-458c-9be7-8a1e4fbae6dd",
+      "nama": "MUHAMAD AL GHIFARI ANINDRA",
+      "email": "242510268@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "f5bbcfab-5e50-4e0d-bd2e-96d1c7efc34a",
+      "nama": "LATIFAH NURASNI MUHIDIN",
+      "email": "242510125@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "3ad6bef7-71cd-4a5d-8c88-ea43fa131993",
+      "nama": "MUHAMMAD AZKA AULIA",
+      "email": "242510233@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "84455549-225e-4d9f-9e33-7dfc5414be9c",
+      "nama": "MUHAMMAD DELVAN",
+      "email": "242510234@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "333a59e6-2e3f-4f56-94eb-cf91c8ae71df",
+      "nama": "MELIKA ALAYYA PUTRI",
+      "email": "242510056@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "2c036709-b70d-4c15-a04f-df9c8bcfbc3a",
+      "nama": "MUHAMMAD ARYA SHIDIQ",
+      "email": "242510199@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "a75b6439-ee76-46b7-b18c-f1dc00e921bb",
+      "nama": "NABANI IQBALULA NOERKAMAL",
+      "email": "242510307@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "3ecbeea0-bbfe-46fb-a985-8de3fa4f95de",
+      "nama": "MUHAMMAD ALIF EFFENDI",
+      "email": "242510057@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "278fe999-51e5-4943-8b4c-92133c9462f3",
+      "nama": "MUHAMMAD DHAFIN ALFARISI",
+      "email": "242510200@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "2f798df6-b907-45e5-8b59-27b498cd61f7",
+      "nama": "NAJLA ATHAYA SRI KURNIAWAN",
+      "email": "242510308@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "950a3aa0-b30d-4d29-a7a0-daa518aea0f6",
+      "nama": "NAORA OCTAVIA UTAMI",
+      "email": "242510272@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "5e16b7c2-778a-4de8-af96-56b0f787e640",
+      "nama": "MUHAMAD RIZKI",
+      "email": "242510094@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "271acfbd-ff12-4120-9e2c-ed78f42d683f",
+      "nama": "NASIFA ALYSIA PUTRI",
+      "email": "242510273@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "824aed17-0380-4c42-996a-fc0e7b6b2949",
+      "nama": "NGAHIDA HUSNA",
+      "email": "242510166@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "c8d55338-79bd-4d4c-9bf0-ec7ac5a1b18c",
+      "nama": "MUHAMMAD FALAH AL GHAZI",
+      "email": "242510129@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "3687b730-c0fb-409f-bb69-1153bf183735",
+      "nama": "MUHAMMAD ZAKARIYYA",
+      "email": "242510059@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "5a0c1f86-c369-4d97-8206-3681d8512cce",
+      "nama": "ALKHANZA NUR AZIZAH",
+      "email": "242510183@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "10a73bf6-3659-4d8f-b71d-834f7d759507",
+      "nama": "RAFI RAMADHAN",
+      "email": "242510169@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "c9625978-fd21-45de-b219-4450a5476793",
+      "nama": "RAISTI NURKHOLIFAH",
+      "email": "242510312@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "3b6a09dc-7932-47b0-a24b-b01f0ba48f6b",
+      "nama": "NABILLA CHILANIA YASIN",
+      "email": "242510098@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "233cfa86-61c9-4327-b227-66b229652f45",
+      "nama": "NUR HIDAYAT",
+      "email": "242510062@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "5fb9e097-4e5b-4a2d-9272-947e2ae84007",
+      "nama": "QONITA SHAFINA RIDHWAN",
+      "email": "242510205@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "454db29a-21fc-4db2-939d-9933e67a2f5e",
+      "nama": "PUTREA ADIT PRATAMA",
+      "email": "242510063@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "09805c0a-f3b6-49b1-a126-15fc1abe3fe2",
+      "nama": "PUTRI DESFITA NABILA PRATIWI",
+      "email": "242510099@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "25a90d24-3ffd-4e4e-978d-27b12b2a3148",
+      "nama": "RAYA KIRANI CASMENI",
+      "email": "242510171@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "093490dc-28fe-433a-ae84-2460cc4ef245",
+      "nama": "RAISYA MEILANY",
+      "email": "242510064@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "1dd60912-1f52-466f-9fce-fa3d65c0ed64",
+      "nama": "REISYA NABILAH",
+      "email": "242510207@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "621c079a-0d08-4630-ba75-491f644612c6",
+      "nama": "RIDA NAZA QOMARIAH",
+      "email": "242510315@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "c9724a1c-feec-4dcc-bffc-85155e2ee369",
+      "nama": "REVAN PRATAMA PUTRA",
+      "email": "242510101@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "b9d25b7b-e185-4e9f-a680-6bc051b9a1ff",
+      "nama": "SALSABILLA OCTAVIANY PUTRI HARDIANSYAH",
+      "email": "242510065@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "c8724e78-b003-4ae4-b347-6cd22494b4dd",
+      "nama": "RENATA NUR ANGGRAENI",
+      "email": "242510244@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "f59f2f78-a2b5-4d13-b663-fe51adbbac46",
+      "nama": "RIAN NURDIANSYAH",
+      "email": "242510136@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "7beca212-68a4-4071-8571-3f03f9136aac",
+      "nama": "RINI UNGRAENI",
+      "email": "242510316@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "19a8f747-8a78-4660-bb8a-e57c72d28dbc",
+      "nama": "RIZKY MUHAMMAD ROHMAT",
+      "email": "242510137@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "af54c9d5-8d56-4313-97a4-4721b31f0565",
+      "nama": "RIZKY SATRIA",
+      "email": "242510245@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "4a4c7c35-fbe0-442e-87b1-9b391be29bbf",
+      "nama": "SELLY MARSELINA",
+      "email": "242510209@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "cd44c9af-c6da-43da-841e-a917cdc3d37d",
+      "nama": "SHILLA OKTAVIRA DWISYAHRANI",
+      "email": "242510174@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "fb5434de-54a6-4044-9c50-317524df9a87",
+      "nama": "SALMA OKTAVIANTI PUTRI RUSTIADI",
+      "email": "242510138@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "d4ed08fe-c590-4d9a-80f2-80bfbcdd76c2",
+      "nama": "SILVIA ALMIYANTI",
+      "email": "242510246@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "b706d644-89e5-4218-82e6-9f8e7b959d45",
+      "nama": "SURYA MUSTOPA",
+      "email": "242510175@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "2b736472-1984-48ce-a0d1-d8202f04ef40",
+      "nama": "SITI HASNA HAFIDZAH",
+      "email": "242510104@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "524edb3d-b9bd-46ca-9c99-5b0ffed6c291",
+      "nama": "SURYA ADITYA",
+      "email": "242510068@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "0b6dc244-38bc-45d6-b07f-0846d708ba4d",
+      "nama": "SUKMA NUR HIKMAH MUHAMMAD",
+      "email": "242510211@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "2f6d68cf-a8b2-45aa-8386-348bc2f8ff24",
+      "nama": "TRINITA SEKAR MELATI",
+      "email": "242510176@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "937fe24f-e2a1-4161-81f6-23cc9fefad37",
+      "nama": "SYAHARANI KHAIRUNNISA",
+      "email": "242510105@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "7018a7eb-7cba-4c7f-a13d-4785aabc3b88",
+      "nama": "TSARA FAJWA NUGRAHA",
+      "email": "242510069@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "9cea5c5a-9eb6-4430-aa6a-8d159ad42b54",
+      "nama": "SIERA ANGGUN INDAH PUSPITA",
+      "email": "242510284@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "90f821f4-f890-4e57-9bd1-27ae3ecde5bb",
+      "nama": "SILVIA ANGGITA NOVIZAH PUTRI",
+      "email": "242510320@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "46f4051e-dee2-45b4-b21b-c074b7d96f1a",
+      "nama": "NURHAYATI, S.Pd.",
+      "email": "nurhayati@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "90cb865b-e634-425a-9813-ea51222347c6",
+      "nama": "VINCA DWI SEPTIA",
+      "email": "242510177@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "578af237-11ad-4dc8-a345-a109c0cfdf6a",
+      "nama": "VALENDRA TSAURY VIVALDI",
+      "email": "242510106@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "ea81ea4c-9d6d-43c4-8f48-38fd53820c65",
+      "nama": "TREVAND GESTA SOPYAN",
+      "email": "242510249@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "95735602-2af2-4ef7-8527-7450aa877454",
+      "nama": "ZAHRA AULIA",
+      "email": "242510070@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "cc581bc6-b439-4be1-b5a8-5e40b3c8ebf3",
+      "nama": "ZALFA HUMAIRA GUMILAR",
+      "email": "242510178@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "8de19c86-7517-4cad-a612-a0edf21a7248",
+      "nama": "WISYAH SHAFIYYAH",
+      "email": "242510107@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "70a35445-0c4e-4803-9605-c846272285bf",
+      "nama": "TISHA MARITZA ASHRI",
+      "email": "242510322@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "89a48882-588a-42f0-889e-35259f5aa87a",
+      "nama": "WINA ERNASARI",
+      "email": "242510250@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "b15ff989-5a59-4f71-9fb9-71283cfb71fb",
+      "nama": "ZASKIA GITA AWANIS",
+      "email": "242510214@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "1e71e8c6-d9ce-47cb-b193-d7c5d3c02ed6",
+      "nama": "WINDA SALSABILLA SARI",
+      "email": "242510323@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "5c99b951-7eba-468d-9ccf-ddb58cb5a829",
+      "nama": "ZAIDAN MUZAKI",
+      "email": "242510143@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "783b57fd-722f-4782-8703-a97c7198f4f7",
+      "nama": "FARIQ FIRDAUS RACHMAT",
+      "email": "242510121@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "2cd618ba-12b8-4d76-8b87-ddac80104672",
+      "nama": "IBRAHIM IQBAL",
+      "email": "242510194@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "63ba84f3-1ce3-48aa-b81a-573ab02fa4a0",
+      "nama": "JASMIN MAHARANI",
+      "email": "242510087@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "7271b9fa-14d5-42ab-aeca-46c6ba2ed3f8",
+      "nama": "MARCELLO DAVIE REVALDO",
+      "email": "242510265@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "ca6099aa-29ff-49f4-a35b-4973ef996af1",
+      "nama": "MAULANA HASBI AS-SHIDIQ",
+      "email": "242510197@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "7d1856da-ee6f-4af6-acab-3d68b0a26bbd",
+      "nama": "MEISYA PUTRI APRIANI",
+      "email": "242510198@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "17a24df2-4293-4d41-9479-13e7227c984a",
+      "nama": "MUHAMAD ALIF INDRA FATA",
+      "email": "242510093@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "40fe2e22-3783-4512-ab54-af7e82db5b46",
+      "nama": "MUHAMMAD JAWAD MIGHWARDI",
+      "email": "242510096@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "20634311-4d61-4705-a70b-02de2ed56db6",
+      "nama": "MUHAMMAD SEPTYAN NUR FITRAH",
+      "email": "242510202@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "99bb8f98-9d9e-412e-963d-4f2a19ce71a0",
+      "nama": "NABIL FAREN ARDIYA",
+      "email": "242510097@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "a99b0c27-7f59-4c61-b101-a6b2a35194ac",
+      "nama": "NENG YURIKA SASKIA",
+      "email": "252611323@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "ea58d7a4-bf18-470b-9885-24f5d6c45582",
+      "nama": "PATRA PUTRA PRATAMA SANTOSA",
+      "email": "242510241@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "e37a01cb-b682-4f0a-b6ab-56ba515e7fc5",
+      "nama": "RAKA PRATAMA FEBRIAN",
+      "email": "242510242@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "6f3275eb-6e17-4b37-aa65-0e40624ff301",
+      "nama": "REYSAR JULISTIAN",
+      "email": "242510279@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "d16e8b0a-e6bb-4597-b715-970424bdd5cd",
+      "nama": "RIDHWAN PUTRA FAZA",
+      "email": "242510030@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "e69e83ed-bd64-4f81-b1d1-aad45265f3df",
+      "nama": "RIZKI KOSASIH",
+      "email": "242510318@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "67d51d5e-1400-4e22-bb7d-70376134927b",
+      "nama": "WAFDA AULIA",
+      "email": "242510213@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "ca52f04a-0ba4-4001-864b-8b6fee1569d2",
+      "nama": "GHANNYA MEILINDA PUTRI DENNA",
+      "email": "242510017@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "4604a25f-c870-45ae-aba3-a84c77b90665",
+      "nama": "INDYRA NUR RAHMADANI",
+      "email": "242510195@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "4c0da98f-0592-4505-9e9c-3de9cb44981a",
+      "nama": "KEYCHA RINDANG CEMPAKA",
+      "email": "242510298@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "5979496d-1190-4f54-9d04-9d3af2def473",
+      "nama": "MARLON DEWANTARA",
+      "email": "242510160@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "3778bb2c-7413-4287-be71-b588c164ad27",
+      "nama": "MEGAN PRATAMA",
+      "email": "242510266@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "57899c25-74e5-4c07-943c-3446b23eadab",
+      "nama": "MOCHAMAD ZIBRAN DWI NURFAUZAN",
+      "email": "242510232@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "4a5d32b1-2343-4c11-abc8-ebfd8d717f22",
+      "nama": "MUHAMAD RANDLY DWI SYAHPUTRA",
+      "email": "242510127@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "f2eaa702-f79c-461e-a1de-067637369b17",
+      "nama": "MUHAMMAD REHAN PRATAMA",
+      "email": "242510026@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "74ab2020-49e4-48d9-9f1d-c5420ff347b1",
+      "nama": "MUTIA ADINDA TSULASA",
+      "email": "242510306@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "badcb3e4-77a1-42e7-bc1b-b0f2a440b0fe",
+      "nama": "NADIRA PUTIA ANASTASYA",
+      "email": "242510131@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "0b27b857-29c1-4adf-aa93-cd4833e381e4",
+      "nama": "NEYSA REFA ALDIRA",
+      "email": "242510274@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "72618ec0-b89c-4472-bd26-cb446ca0011d",
+      "nama": "RAFEYFA ASYLA MUMTAZA",
+      "email": "242510276@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "cefae826-bbc5-4bb2-b17f-14c7f061ef85",
+      "nama": "RATU KEISYA AMELIA",
+      "email": "242510135@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "d5a9d0eb-202c-478c-8cd7-aadbbdd81448",
+      "nama": "RIA ANGGRAENI",
+      "email": "242510314@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "396d40eb-2b5d-407a-a9ae-cdd8dba31a5d",
+      "nama": "RIZAL FAADILLAH KURNIA",
+      "email": "242510103@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "50fb7f85-d847-44c0-b798-a84c2f11e1c8",
+      "nama": "SANI SETIAWAN",
+      "email": "242510066@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "a697d8fc-c7aa-482b-84ce-b50ff0b49dd4",
+      "nama": "ZASKIA PUTRI RAHMADINI",
+      "email": "242510251@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "34f09065-0d44-4647-b3d8-918adebe5ccf",
+      "nama": "LANA ALMAIRA DIDEZ",
+      "email": "242510020@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "20a69c47-9642-4dfc-846f-34f41c969da6",
+      "nama": "DHERIZKI IENGGHA ROEHYAT",
+      "email": "242510011@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "98383577-a573-4df1-b968-141701c7d36d",
+      "nama": "MUHAMMAD AR-ROZAQ MALIKI",
+      "email": "242510024@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "276956ba-3d6a-4379-b478-2fe55dd14af7",
+      "nama": "RAAHIIL BILQIS",
+      "email": "242510029@sman19.sch.id",
+      "role": "siswa"
+    },
+    {
+      "id": "8b451e77-5745-4ee2-bbf4-7edaf0473da6",
+      "nama": "DUDUNG SULIMAR, S.S.",
+      "email": "198304042022211000@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "12213247-ff45-4eed-ace7-45367968fe3a",
+      "nama": "DERIS MUSLIM, S.Pd.",
+      "email": "197508202024211002@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "87e3548c-49a8-48c7-a7b6-d0e1ff4197d1",
+      "nama": "VELIANA NURSYAMSIYAH, S.Pd, M.Pd.",
+      "email": "199510082022212015@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "e9a36409-8e75-44d5-9cc3-cf56d24c6b34",
+      "nama": "TRISNO, S.E.",
+      "email": "198006282024211002@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "32d0930c-134d-4987-bc85-0fae2d586fe2",
+      "nama": "YOLANDA NOVITRI SETIAWAN, S.Pd.",
+      "email": "199611152024212020@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "5da4e93a-150b-45f3-a540-ae477fc95d0f",
+      "nama": "DESI ENDAH PUSPITANINGSIH, M.Pd.",
+      "email": "198612082023212030@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "42249b6f-cf96-4aff-af67-8b0d5f8c3e9d",
+      "nama": "INTAN MUTIARA, S.Pd.",
+      "email": "199509032023212022@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "ecd9a19b-50a4-477e-ae4b-04c5351ecee1",
+      "nama": "JAKA KURNIAWAN, S.Pd.",
+      "email": "198910042023211007@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "3de6dfe9-0f64-4003-9df0-fbd1b871190f",
+      "nama": "EVI HENDRAYANI, S.Pd.",
+      "email": "197907152006042011@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "d8824e79-8299-4c0c-851b-4e18d07fa0a1",
+      "nama": "METI JULIATI, S.Pd.",
+      "email": "198007232022212007@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "3c71710b-701e-4229-ad77-17bcf2342f58",
+      "nama": "ROMADONI PRIHATININGSIH, S.Pd.",
+      "email": "198904102020122011@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "70f18c91-c8d0-447c-9b67-69e8ccdc3588",
+      "nama": "ELI HAYATI, S.Pd.",
+      "email": "196908112021212001@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "db41f8f8-37d3-4453-9e97-a30f9ef58716",
+      "nama": "Hj. NENI SURYANI, S.Pd.",
+      "email": "196708041992032015@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "ee2c57e3-f77e-4824-8f6f-7233e10a0771",
+      "nama": "IQBAL ISSAGHOZI, S.Pd., M.Pd.",
+      "email": "198402272009021003@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "21f44230-fb45-45a9-8049-0e136dbc4472",
+      "nama": "FITRIANTI, S.Si.",
+      "email": "197310262008012006@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "499b3293-26b9-4cc0-a1ce-241fd1e1df0a",
+      "nama": "MULYANA KURNIAWAN, S.Th.I.",
+      "email": "198307202024211008@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "e492a8a1-9139-4f9f-b281-6abf9c623de9",
+      "nama": "NINIK SARWIYANI, S.Pd.",
+      "email": "196609021990012002@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "69afb31c-ff33-4a02-b0fb-ccae7366dbfc",
+      "nama": "ZEN FATWA, S.Pd.",
+      "email": "198503282024211011@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "e16c8a3c-de14-4be9-85cc-95745bd4b344",
+      "nama": "STEVANI WULANDARI",
+      "email": "stevaniwulandari@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "5c4c3ba8-5a8c-45d4-9607-06af5bb4d44f",
+      "nama": "UJANG KUSNADI ADAM, S.Pd.",
+      "email": "199808162025211079@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "722dad98-7763-458b-9ccc-3562e233b811",
+      "nama": "BUNGA SUKMAWANGI, S.Pd.",
+      "email": "199906092025212091@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "57c165c1-c75e-4fc1-b1b5-06b275f50069",
+      "nama": "PANDU MUHAMMAD ALFIANSYAH, S.Pd.",
+      "email": "199610062025211106@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "674cfb7a-22bb-48bf-938f-bf0ea89e16b5",
+      "nama": "IRMA PRIMAWATI, S.Pd.I.",
+      "email": "198705142025212098@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "96717fbd-61c9-472a-bb00-c482bac41715",
+      "nama": "AYU PUJI LESTARI, S.Pd.",
+      "email": "199610102025212229@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "ff71e996-3b3f-49a9-8d18-0f7ff713dbf5",
+      "nama": "SITI AZIZAH NURUL FALAH, S.Pd.",
+      "email": "199509202025212139@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "19988d6c-04bc-4c1e-925b-546eb720d2fb",
+      "nama": "RANI RAHAYU NINGSRI, S.Pd.",
+      "email": "19860103202522006@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "f6ef4b7b-fca1-4498-a0c6-aa3989f71f02",
+      "nama": "LIFSA FAUZIAH, S.Pd., S.E.",
+      "email": "199401042025212006@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "335e44e7-2c37-472c-baf0-b9cd5a54ee81",
+      "nama": "YADIN HARDIANA, s.pd.i",
+      "email": "197306222024211001@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "c95d1297-742e-49d6-a0b8-3f8b2986a66f",
+      "nama": "ACHMAD SYAIFUL ANWAR, S.Pd.",
+      "email": "199304122023211012@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "f576a8fc-aca7-461e-8e1a-fc2ba17b5b54",
+      "nama": "MAYA MEISYA, S.Pd.",
+      "email": "199405112023212011@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "7cdca560-dad1-47a1-ac9c-00292dc6106d",
+      "nama": "ERI SAPTARI YUNIRMAN, S.Pd.",
+      "email": "198606192023211007@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "a1e58204-d6aa-4d1c-b46c-88bab4eab0cf",
+      "nama": "SUSI HANDAYANI, S.Pd.",
+      "email": "198912042022212010@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "9eff003e-1713-4897-9306-4a81de6f4605",
+      "nama": "DIETA AYU LESTARY, M.Pd.",
+      "email": "199108272020122022@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "a1bb2570-02d8-4afc-a7c9-61dbc7878302",
+      "nama": "AEP MUTTAQIN, S.Pd.",
+      "email": "197406072014111001@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "d203754b-e2bc-40d2-bdb0-a194058f5f38",
+      "nama": "ROSA ROSMADEWI, S.Pd., M.M.",
+      "email": "198003222010012004@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "8390ec3a-37c0-4948-8ecf-3b0459b6b39b",
+      "nama": "Dra. IMAS KOMALASARI",
+      "email": "196707091995122003@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "0dd8e5e7-36ff-47da-ba97-10aa5e050727",
+      "nama": "Muhammad Adli Abdurrahim, S.Pd.",
+      "email": "199702242023211002@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "f53a90ea-7bd3-4fec-abf9-83629ad4b095",
+      "nama": "INDRI SOFIAH MAHFUDZ, S.Pd.",
+      "email": "199001092024212017@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "ad3bb4f2-b9d5-4039-a69a-0f8ba2b36f19",
+      "nama": "ABDURRASYID MUKHTAR, S.Pd.",
+      "email": "199411232024211009@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "b971ddcb-c042-454b-a234-d2531c9da041",
+      "nama": "DEDE WAHYUDIN, S.Pd.",
+      "email": "197505082024211004@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "0fa7eaa5-3329-4537-b0fc-4cf7d2e11b44",
+      "nama": "SITI WAHYUNI RAHAYU, S.Pd.",
+      "email": "199703052024212027@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "2c666a4a-c1a8-4968-8f8e-4c14f0d6b0a7",
+      "nama": "ANNA MARIAM SOFIARINI, S.Pd.",
+      "email": "199502112024212036@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "8ff8151c-173a-4687-8139-52bfca8cb7f8",
+      "nama": "ANGGIA DEVI CHANDRA  A, S.Pd., Gr., M.Si.",
+      "email": "198901272022212012@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "c4f9dd97-a08a-4d09-afe3-ef85907f2877",
+      "nama": "MEILIN SAHARA, S.Pd, M.M.",
+      "email": "198505232009012006@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "b23de8b6-e7f9-423a-940b-0bcd5b90c468",
+      "nama": "ADI DARMA INDRA, S.Pd, M.Pd.",
+      "email": "199306042020121008@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "eae78bda-75f0-4868-9525-254cca41303d",
+      "nama": "ECIN KURAESIN, S.Pd.",
+      "email": "197207151998022002@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "eb625f00-67b1-4418-868a-ab7ec42ce39e",
+      "nama": "Hj.LAKSMI SUPARTININGSIH, S.Pd.",
+      "email": "196811261994032007@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "1e8cd26f-68f8-4e27-b43a-ec41d75133c1",
+      "nama": "RIZAL RAMDHANI, S.Pd., M.Pd.",
+      "email": "199801212025211076@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "2b5ce392-bae1-49ad-9d65-13b16eaa6564",
+      "nama": "JAKA IRAWAN, S.Pd.",
+      "email": "199009032025211114@sman19.sch.id",
+      "role": "guru"
+    },
+    {
+      "id": "913df237-04d9-4e62-867c-8bdfba634eb2",
+      "nama": "RITA ASMARA MUKTI, S.Pd., M.Pd.",
+      "email": "197404142008012004@sman19.sch.id",
+      "role": "kepala_sekolah"
+    }
+  ],
+  "classes": [
+    "XII-A",
+    "XII-B",
+    "XII-C",
+    "XII-D",
+    "XII-E",
+    "XII-F",
+    "XII-G",
+    "XII-H",
+    "XII-I"
+  ]
+}

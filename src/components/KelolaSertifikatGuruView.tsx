@@ -734,7 +734,7 @@ export default function KelolaSertifikatGuruView() {
         logoFrontImg
       );
 
-      const hasJp = kegiatan.materi_jp && kegiatan.materi_jp.length > 0;
+      const hasJp = config.hasJpPage && config.materiJpRows && config.materiJpRows.length > 0;
 
       if (hasJp) {
         const canvas2 = document.createElement("canvas");
@@ -840,7 +840,7 @@ export default function KelolaSertifikatGuruView() {
           logoFrontImg
         );
 
-        const hasJp = item.materi_jp && item.materi_jp.length > 0;
+        const hasJp = config.hasJpPage && config.materiJpRows && config.materiJpRows.length > 0;
         const safeName = toSentenceCase(nameText).replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_");
 
         if (hasJp) {

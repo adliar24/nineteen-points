@@ -1,0 +1,1319 @@
+KBM TEACHING SCHEDULE EXTRACTION REPORT
+=========================================================================
+Total Schedules Extracted: 1092
+Total Teachers Mapped: 45
+
+TEACHERS & THEIR SCHEDULES SUMMARY
+-------------------------------------------------------------------------
+Guru: Abdurrasyid Mukhtar, S.Pd (Kode: 26)
+Mata Pelajaran: GEOGRAFI
+Total Jam Mengajar: 24 jp (Jam Pelajaran)
+Jadwal:
+  - [Senin] Kelas: XI-A | Waktu: 09:45 - 10:30
+  - [Senin] Kelas: XI-A | Waktu: 10:30 - 11:15
+  - [Senin] Kelas: XI-I | Waktu: 11:15 - 12:00
+  - [Senin] Kelas: XI-I | Waktu: 12:30 - 13:10
+  - [Selasa] Kelas: XI-J | Waktu: 06:45 - 07:30
+  - [Selasa] Kelas: XI-J | Waktu: 07:30 - 08:15
+  - [Selasa] Kelas: XI-F | Waktu: 12:15 - 12:55
+  - [Selasa] Kelas: XI-F | Waktu: 12:55 - 13:35
+  - [Rabu] Kelas: XI-H | Waktu: 06:45 - 07:30
+  - [Rabu] Kelas: XI-H | Waktu: 07:30 - 08:15
+  - [Rabu] Kelas: XI-F | Waktu: 09:30 - 10:15
+  - [Rabu] Kelas: XI-F | Waktu: 10:15 - 11:00
+  - [Rabu] Kelas: XI-G | Waktu: 12:15 - 12:55
+  - [Rabu] Kelas: XI-G | Waktu: 12:55 - 13:35
+  - [Kamis] Kelas: XI-A | Waktu: 07:00 - 07:45
+  - [Kamis] Kelas: XI-A | Waktu: 07:45 - 08:30
+  - [Kamis] Kelas: XI-H | Waktu: 08:30 - 09:15
+  - [Kamis] Kelas: XI-H | Waktu: 09:45 - 10:30
+  - [Kamis] Kelas: XI-I | Waktu: 10:30 - 11:15
+  - [Kamis] Kelas: XI-I | Waktu: 11:15 - 12:00
+  - [Jum'at] Kelas: XI-J | Waktu: 07:00 - 07:45
+  - [Jum'at] Kelas: XI-J | Waktu: 07:45 - 08:30
+  - [Jum'at] Kelas: XI-G | Waktu: 08:30 - 09:15
+  - [Jum'at] Kelas: XI-G | Waktu: 09:45 - 10:30
+
+Guru: Achmad Syaeful A, S.Pd (Kode: 21)
+Mata Pelajaran: SEJARAH
+Total Jam Mengajar: 28 jp (Jam Pelajaran)
+Jadwal:
+  - [Senin] Kelas: XI-I | Waktu: 07:45 - 08:30
+  - [Senin] Kelas: XI-I | Waktu: 08:30 - 09:15
+  - [Senin] Kelas: XI-H | Waktu: 09:45 - 10:30
+  - [Senin] Kelas: XI-H | Waktu: 10:30 - 11:15
+  - [Selasa] Kelas: XII-C | Waktu: 06:45 - 07:30
+  - [Selasa] Kelas: XII-C | Waktu: 07:30 - 08:15
+  - [Selasa] Kelas: XI-G | Waktu: 08:15 - 09:00
+  - [Selasa] Kelas: XI-G | Waktu: 09:30 - 10:15
+  - [Selasa] Kelas: XII-A | Waktu: 10:15 - 11:00
+  - [Selasa] Kelas: XII-A | Waktu: 11:00 - 11:45
+  - [Selasa] Kelas: XI-J | Waktu: 12:15 - 12:55
+  - [Selasa] Kelas: XI-J | Waktu: 12:55 - 13:35
+  - [Rabu] Kelas: XI-J | Waktu: 08:15 - 09:00
+  - [Rabu] Kelas: XI-J | Waktu: 09:30 - 10:15
+  - [Rabu] Kelas: XII-C | Waktu: 10:15 - 11:00
+  - [Rabu] Kelas: XII-C | Waktu: 11:00 - 11:45
+  - [Rabu] Kelas: XI-H | Waktu: 12:15 - 12:55
+  - [Rabu] Kelas: XI-H | Waktu: 12:55 - 13:35
+  - [Kamis] Kelas: XII-A | Waktu: 07:00 - 07:45
+  - [Kamis] Kelas: XII-A | Waktu: 07:45 - 08:30
+  - [Kamis] Kelas: XII-B | Waktu: 08:30 - 09:15
+  - [Kamis] Kelas: XII-B | Waktu: 09:45 - 10:30
+  - [Kamis] Kelas: XI-G | Waktu: 10:30 - 11:15
+  - [Kamis] Kelas: XI-G | Waktu: 11:15 - 12:00
+  - [Jum'at] Kelas: XII-B | Waktu: 07:00 - 07:45
+  - [Jum'at] Kelas: XII-B | Waktu: 07:45 - 08:30
+  - [Jum'at] Kelas: XI-I | Waktu: 09:45 - 10:30
+  - [Jum'at] Kelas: XI-I | Waktu: 10:30 - 11:15
+
+Guru: Aep Mutaqin, S.Pd (Kode: 10)
+Mata Pelajaran: SEJARAH
+Total Jam Mengajar: 30 jp (Jam Pelajaran)
+Jadwal:
+  - [Senin] Kelas: X-F | Waktu: 11:15 - 12:00
+  - [Senin] Kelas: X-F | Waktu: 12:30 - 13:10
+  - [Senin] Kelas: XII-H | Waktu: 13:10 - 13:50
+  - [Senin] Kelas: XII-H | Waktu: 13:50 - 14: 20
+  - [Selasa] Kelas: X-I | Waktu: 06:45 - 07:30
+  - [Selasa] Kelas: X-I | Waktu: 07:30 - 08:15
+  - [Selasa] Kelas: X-J | Waktu: 09:30 - 10:15
+  - [Selasa] Kelas: X-J | Waktu: 10:15 - 11:00
+  - [Selasa] Kelas: XII-I | Waktu: 12:15 - 12:55
+  - [Selasa] Kelas: XII-I | Waktu: 12:55 - 13:35
+  - [Selasa] Kelas: XII-B | Waktu: 13:35 - 14:15
+  - [Selasa] Kelas: XII-B | Waktu: 14:15 - 14:55
+  - [Rabu] Kelas: XII-G | Waktu: 06:45 - 07:30
+  - [Rabu] Kelas: XII-G | Waktu: 07:30 - 08:15
+  - [Rabu] Kelas: X-G | Waktu: 08:15 - 09:00
+  - [Rabu] Kelas: X-G | Waktu: 09:30 - 10:15
+  - [Rabu] Kelas: XII-E | Waktu: 12:15 - 12:55
+  - [Rabu] Kelas: XII-E | Waktu: 12:55 - 13:35
+  - [Rabu] Kelas: XII-A | Waktu: 13:35 - 14:15
+  - [Rabu] Kelas: XII-A | Waktu: 14:15 - 14:55
+  - [Kamis] Kelas: XII-D | Waktu: 07:00 - 07:45
+  - [Kamis] Kelas: XII-D | Waktu: 07:45 - 08:30
+  - [Kamis] Kelas: XII-C | Waktu: 08:30 - 09:15
+  - [Kamis] Kelas: XII-C | Waktu: 09:45 - 10:30
+  - [Kamis] Kelas: X-K | Waktu: 10:30 - 11:15
+  - [Kamis] Kelas: X-K | Waktu: 11:15 - 12:00
+  - [Jum'at] Kelas: X-H | Waktu: 07:00 - 07:45
+  - [Jum'at] Kelas: X-H | Waktu: 07:45 - 08:30
+  - [Jum'at] Kelas: XII-F | Waktu: 09:45 - 10:30
+  - [Jum'at] Kelas: XII-F | Waktu: 10:30 - 11:15
+
+Guru: Anggia Devi Chandra A.,S.Pd.,M.Si. (Kode: 18)
+Mata Pelajaran: KIMIA DAN PKWU
+Total Jam Mengajar: 18 jp (Jam Pelajaran)
+Jadwal:
+  - [Senin] Kelas: X-F | Waktu: 07:45 - 08:30
+  - [Senin] Kelas: X-F | Waktu: 08:30 - 09:15
+  - [Senin] Kelas: X-H | Waktu: 09:45 - 10:30
+  - [Senin] Kelas: X-H | Waktu: 10:30 - 11:15
+  - [Senin] Kelas: X-D | Waktu: 13:10 - 13:50
+  - [Senin] Kelas: X-D | Waktu: 13:50 - 14: 20
+  - [Selasa] Kelas: X-G | Waktu: 09:30 - 10:15
+  - [Selasa] Kelas: X-G | Waktu: 10:15 - 11:00
+  - [Selasa] Kelas: X-B | Waktu: 12:15 - 12:55
+  - [Selasa] Kelas: X-B | Waktu: 12:55 - 13:35
+  - [Rabu] Kelas: X-I | Waktu: 07:30 - 08:15
+  - [Rabu] Kelas: X-I | Waktu: 08:15 - 09:00
+  - [Kamis] Kelas: X-C | Waktu: 08:30 - 09:15
+  - [Kamis] Kelas: X-C | Waktu: 09:45 - 10:30
+  - [Jum'at] Kelas: X-E | Waktu: 07:00 - 07:45
+  - [Jum'at] Kelas: X-E | Waktu: 07:45 - 08:30
+  - [Jum'at] Kelas: X-A | Waktu: 08:30 - 09:15
+  - [Jum'at] Kelas: X-A | Waktu: 09:45 - 10:30
+
+Guru: Anna Mariam Sofiarini, M.Pd (Kode: 35)
+Mata Pelajaran: PJOK
+Total Jam Mengajar: 18 jp (Jam Pelajaran)
+Jadwal:
+  - [Senin] Kelas: XII-C | Waktu: 07:45 - 08:30
+  - [Senin] Kelas: XII-C | Waktu: 08:30 - 09:15
+  - [Senin] Kelas: XII-B | Waktu: 09:45 - 10:30
+  - [Senin] Kelas: XII-B | Waktu: 10:30 - 11:15
+  - [Senin] Kelas: XII-D | Waktu: 13:10 - 13:50
+  - [Senin] Kelas: XII-D | Waktu: 13:50 - 14: 20
+  - [Selasa] Kelas: XI-G | Waktu: 06:45 - 07:30
+  - [Selasa] Kelas: XI-G | Waktu: 07:30 - 08:15
+  - [Selasa] Kelas: XI-F | Waktu: 10:15 - 11:00
+  - [Selasa] Kelas: XI-F | Waktu: 11:00 - 11:45
+  - [Selasa] Kelas: XI-I | Waktu: 12:15 - 12:55
+  - [Selasa] Kelas: XI-I | Waktu: 12:55 - 13:35
+  - [Selasa] Kelas: XI-J | Waktu: 13:35 - 14:15
+  - [Selasa] Kelas: XI-J | Waktu: 14:15 - 14:55
+  - [Jum'at] Kelas: XII-A | Waktu: 07:00 - 07:45
+  - [Jum'at] Kelas: XII-A | Waktu: 07:45 - 08:30
+  - [Jum'at] Kelas: XI-H | Waktu: 09:45 - 10:30
+  - [Jum'at] Kelas: XI-H | Waktu: 10:30 - 11:15
+
+Guru: Dede Wahyudin,S.Pd (Kode: 27)
+Mata Pelajaran: SENI RUPA
+Total Jam Mengajar: 24 jp (Jam Pelajaran)
+Jadwal:
+  - [Senin] Kelas: XII-G | Waktu: 07:45 - 08:30
+  - [Senin] Kelas: XII-G | Waktu: 08:30 - 09:15
+  - [Senin] Kelas: X-I | Waktu: 09:45 - 10:30
+  - [Senin] Kelas: X-G | Waktu: 13:10 - 13:50
+  - [Senin] Kelas: X-G | Waktu: 13:50 - 14: 20
+  - [Selasa] Kelas: X-K | Waktu: 06:45 - 07:30
+  - [Selasa] Kelas: X-K | Waktu: 07:30 - 08:15
+  - [Selasa] Kelas: X-H | Waktu: 08:15 - 09:00
+  - [Selasa] Kelas: X-H | Waktu: 09:30 - 10:15
+  - [Selasa] Kelas: XII-H | Waktu: 10:15 - 11:00
+  - [Selasa] Kelas: XII-H | Waktu: 11:00 - 11:45
+  - [Selasa] Kelas: XII-B | Waktu: 12:15 - 12:55
+  - [Selasa] Kelas: XII-B | Waktu: 12:55 - 13:35
+  - [Selasa] Kelas: XII-A | Waktu: 13:35 - 14:15
+  - [Selasa] Kelas: XII-A | Waktu: 14:15 - 14:55
+  - [Rabu] Kelas: X-J | Waktu: 09:30 - 10:15
+  - [Rabu] Kelas: X-J | Waktu: 10:15 - 11:00
+  - [Kamis] Kelas: XII-I | Waktu: 07:00 - 07:45
+  - [Kamis] Kelas: XII-I | Waktu: 07:45 - 08:30
+  - [Jum'at] Kelas: XII-C | Waktu: 07:00 - 07:45
+  - [Jum'at] Kelas: XII-C | Waktu: 07:45 - 08:30
+  - [Jum'at] Kelas: X-I | Waktu: 08:30 - 09:15
+  - [Jum'at] Kelas: X-F | Waktu: 09:45 - 10:30
+  - [Jum'at] Kelas: X-F | Waktu: 10:30 - 11:15
+
+Guru: Desi Endah P,M.Pd (Kode: 22)
+Mata Pelajaran: BAHASA SUNDA
+Total Jam Mengajar: 32 jp (Jam Pelajaran)
+Jadwal:
+  - [Senin] Kelas: XII-F | Waktu: 07:45 - 08:30
+  - [Senin] Kelas: XII-F | Waktu: 08:30 - 09:15
+  - [Senin] Kelas: XI-D | Waktu: 09:45 - 10:30
+  - [Senin] Kelas: XI-D | Waktu: 10:30 - 11:15
+  - [Senin] Kelas: XI-F | Waktu: 11:15 - 12:00
+  - [Senin] Kelas: XI-F | Waktu: 12:30 - 13:10
+  - [Selasa] Kelas: XI-E | Waktu: 06:45 - 07:30
+  - [Selasa] Kelas: XI-E | Waktu: 07:30 - 08:15
+  - [Selasa] Kelas: XI-H | Waktu: 08:15 - 09:00
+  - [Selasa] Kelas: XI-H | Waktu: 09:30 - 10:15
+  - [Selasa] Kelas: XI-I | Waktu: 10:15 - 11:00
+  - [Selasa] Kelas: XI-I | Waktu: 11:00 - 11:45
+  - [Selasa] Kelas: XII-H | Waktu: 12:15 - 12:55
+  - [Selasa] Kelas: XII-H | Waktu: 12:55 - 13:35
+  - [Rabu] Kelas: XII-A | Waktu: 06:45 - 07:30
+  - [Rabu] Kelas: XII-A | Waktu: 07:30 - 08:15
+  - [Rabu] Kelas: XII-D | Waktu: 08:15 - 09:00
+  - [Rabu] Kelas: XII-D | Waktu: 09:30 - 10:15
+  - [Rabu] Kelas: XI-G | Waktu: 10:15 - 11:00
+  - [Rabu] Kelas: XI-G | Waktu: 11:00 - 11:45
+  - [Rabu] Kelas: XII-G | Waktu: 12:15 - 12:55
+  - [Rabu] Kelas: XII-G | Waktu: 12:55 - 13:35
+  - [Rabu] Kelas: XII-B | Waktu: 13:35 - 14:15
+  - [Rabu] Kelas: XII-B | Waktu: 14:15 - 14:55
+  - [Kamis] Kelas: XII-C | Waktu: 07:00 - 07:45
+  - [Kamis] Kelas: XII-C | Waktu: 07:45 - 08:30
+  - [Kamis] Kelas: XI-J | Waktu: 08:30 - 09:15
+  - [Kamis] Kelas: XI-J | Waktu: 09:45 - 10:30
+  - [Jum'at] Kelas: XII-I | Waktu: 07:45 - 08:30
+  - [Jum'at] Kelas: XII-I | Waktu: 08:30 - 09:15
+  - [Jum'at] Kelas: XII-E | Waktu: 09:45 - 10:30
+  - [Jum'at] Kelas: XII-E | Waktu: 10:30 - 11:15
+
+Guru: Dieta Ayu Lestary,S.Pd (Kode: 11)
+Mata Pelajaran: PENDIDIKAN PANCASILA
+Total Jam Mengajar: 12 jp (Jam Pelajaran)
+Jadwal:
+  - [Senin] Kelas: XII-I | Waktu: 11:15 - 12:00
+  - [Senin] Kelas: XII-I | Waktu: 12:30 - 13:10
+  - [Senin] Kelas: XII-E | Waktu: 13:10 - 13:50
+  - [Senin] Kelas: XII-E | Waktu: 13:50 - 14: 20
+  - [Selasa] Kelas: XII-F | Waktu: 08:15 - 09:00
+  - [Selasa] Kelas: XII-F | Waktu: 09:30 - 10:15
+  - [Selasa] Kelas: XII-G | Waktu: 12:15 - 12:55
+  - [Selasa] Kelas: XII-G | Waktu: 12:55 - 13:35
+  - [Kamis] Kelas: XII-D | Waktu: 08:30 - 09:15
+  - [Kamis] Kelas: XII-D | Waktu: 09:45 - 10:30
+  - [Kamis] Kelas: XII-H | Waktu: 10:30 - 11:15
+  - [Kamis] Kelas: XII-H | Waktu: 11:15 - 12:00
+
+Guru: Dra. Imas Komalasari (Kode: 4)
+Mata Pelajaran: GEOGRAFI
+Total Jam Mengajar: 16 jp (Jam Pelajaran)
+Jadwal:
+  - [Senin] Kelas: XII-B | Waktu: 07:45 - 08:30
+  - [Senin] Kelas: XII-B | Waktu: 08:30 - 09:15
+  - [Senin] Kelas: XII-A | Waktu: 09:45 - 10:30
+  - [Senin] Kelas: XII-A | Waktu: 10:30 - 11:15
+  - [Senin] Kelas: XII-G | Waktu: 13:10 - 13:50
+  - [Senin] Kelas: XII-G | Waktu: 13:50 - 14: 20
+  - [Rabu] Kelas: XII-G | Waktu: 08:15 - 09:00
+  - [Rabu] Kelas: XII-G | Waktu: 09:30 - 10:15
+  - [Rabu] Kelas: XII-B | Waktu: 10:15 - 11:00
+  - [Rabu] Kelas: XII-B | Waktu: 11:00 - 11:45
+  - [Rabu] Kelas: XII-C | Waktu: 12:15 - 12:55
+  - [Rabu] Kelas: XII-C | Waktu: 12:55 - 13:35
+  - [Kamis] Kelas: XII-A | Waktu: 08:30 - 09:15
+  - [Kamis] Kelas: XII-A | Waktu: 09:45 - 10:30
+  - [Kamis] Kelas: XII-C | Waktu: 10:30 - 11:15
+  - [Kamis] Kelas: XII-C | Waktu: 11:15 - 12:00
+
+Guru: Dudung Sulimar,S.S.,M.Pd (Kode: 37)
+Mata Pelajaran: BAHASA INGGRIS
+Total Jam Mengajar: 30 jp (Jam Pelajaran)
+Jadwal:
+  - [Senin] Kelas: XI-C | Waktu: 13:10 - 13:50
+  - [Senin] Kelas: XI-C | Waktu: 13:50 - 14: 20
+  - [Selasa] Kelas: XII-B | Waktu: 06:45 - 07:30
+  - [Selasa] Kelas: XII-B | Waktu: 07:30 - 08:15
+  - [Selasa] Kelas: XII-B | Waktu: 08:15 - 09:00
+  - [Selasa] Kelas: XI-C | Waktu: 09:30 - 10:15
+  - [Selasa] Kelas: XII-D | Waktu: 10:15 - 11:00
+  - [Selasa] Kelas: XII-D | Waktu: 11:00 - 11:45
+  - [Selasa] Kelas: XII-D | Waktu: 12:15 - 12:55
+  - [Selasa] Kelas: XII-C | Waktu: 12:55 - 13:35
+  - [Selasa] Kelas: XII-C | Waktu: 13:35 - 14:15
+  - [Selasa] Kelas: XII-C | Waktu: 14:15 - 14:55
+  - [Rabu] Kelas: XI-F | Waktu: 06:45 - 07:30
+  - [Rabu] Kelas: XI-F | Waktu: 07:30 - 08:15
+  - [Rabu] Kelas: XI-F | Waktu: 08:15 - 09:00
+  - [Rabu] Kelas: XI-D | Waktu: 10:15 - 11:00
+  - [Rabu] Kelas: XI-D | Waktu: 11:00 - 11:45
+  - [Rabu] Kelas: XI-D | Waktu: 12:15 - 12:55
+  - [Rabu] Kelas: XI-A | Waktu: 12:55 - 13:35
+  - [Rabu] Kelas: XI-A | Waktu: 13:35 - 14:15
+  - [Rabu] Kelas: XI-A | Waktu: 14:15 - 14:55
+  - [Kamis] Kelas: XI-B | Waktu: 07:00 - 07:45
+  - [Kamis] Kelas: XI-B | Waktu: 07:45 - 08:30
+  - [Kamis] Kelas: XI-B | Waktu: 08:30 - 09:15
+  - [Kamis] Kelas: XI-E | Waktu: 10:30 - 11:15
+  - [Kamis] Kelas: XI-E | Waktu: 11:15 - 12:00
+  - [Jum'at] Kelas: XI-E | Waktu: 07:00 - 07:45
+  - [Jum'at] Kelas: XII-A | Waktu: 08:30 - 09:15
+  - [Jum'at] Kelas: XII-A | Waktu: 09:45 - 10:30
+  - [Jum'at] Kelas: XII-A | Waktu: 10:30 - 11:15
+
+Guru: Ecin Kuraesin, S.Pd (Kode: 5)
+Mata Pelajaran: BIOLOGI
+Total Jam Mengajar: 32 jp (Jam Pelajaran)
+Jadwal:
+  - [Senin] Kelas: XI-F | Waktu: 07:45 - 08:30
+  - [Senin] Kelas: XI-F | Waktu: 08:30 - 09:15
+  - [Senin] Kelas: X-F | Waktu: 09:45 - 10:30
+  - [Senin] Kelas: X-F | Waktu: 10:30 - 11:15
+  - [Selasa] Kelas: X-H | Waktu: 06:45 - 07:30
+  - [Selasa] Kelas: X-H | Waktu: 07:30 - 08:15
+  - [Selasa] Kelas: X-I | Waktu: 08:15 - 09:00
+  - [Selasa] Kelas: X-I | Waktu: 09:30 - 10:15
+  - [Selasa] Kelas: X-K | Waktu: 10:15 - 11:00
+  - [Selasa] Kelas: X-K | Waktu: 11:00 - 11:45
+  - [Selasa] Kelas: XI-B | Waktu: 13:35 - 14:15
+  - [Selasa] Kelas: XI-B | Waktu: 14:15 - 14:55
+  - [Rabu] Kelas: XI-E | Waktu: 06:45 - 07:30
+  - [Rabu] Kelas: XI-E | Waktu: 07:30 - 08:15
+  - [Rabu] Kelas: XI-D | Waktu: 08:15 - 09:00
+  - [Rabu] Kelas: XI-D | Waktu: 09:30 - 10:15
+  - [Rabu] Kelas: XI-C | Waktu: 10:15 - 11:00
+  - [Rabu] Kelas: XI-C | Waktu: 11:00 - 11:45
+  - [Rabu] Kelas: X-G | Waktu: 12:15 - 12:55
+  - [Rabu] Kelas: X-G | Waktu: 12:55 - 13:35
+  - [Rabu] Kelas: XI-B | Waktu: 13:35 - 14:15
+  - [Rabu] Kelas: XI-B | Waktu: 14:15 - 14:55
+  - [Kamis] Kelas: XI-C | Waktu: 07:00 - 07:45
+  - [Kamis] Kelas: XI-C | Waktu: 07:45 - 08:30
+  - [Kamis] Kelas: XI-D | Waktu: 08:30 - 09:15
+  - [Kamis] Kelas: XI-D | Waktu: 09:45 - 10:30
+  - [Kamis] Kelas: X-J | Waktu: 10:30 - 11:15
+  - [Kamis] Kelas: X-J | Waktu: 11:15 - 12:00
+  - [Jum'at] Kelas: XI-F | Waktu: 07:45 - 08:30
+  - [Jum'at] Kelas: XI-F | Waktu: 08:30 - 09:15
+  - [Jum'at] Kelas: XI-E | Waktu: 09:45 - 10:30
+  - [Jum'at] Kelas: XI-E | Waktu: 10:30 - 11:15
+
+Guru: Eli Hayati, S.Pd (Kode: 14)
+Mata Pelajaran: BAHASA INDONESIA
+Total Jam Mengajar: 21 jp (Jam Pelajaran)
+Jadwal:
+  - [Senin] Kelas: X-E | Waktu: 09:45 - 10:30
+  - [Senin] Kelas: X-E | Waktu: 10:30 - 11:15
+  - [Senin] Kelas: X-E | Waktu: 11:15 - 12:00
+  - [Senin] Kelas: X-I | Waktu: 12:30 - 13:10
+  - [Senin] Kelas: X-I | Waktu: 13:10 - 13:50
+  - [Senin] Kelas: X-I | Waktu: 13:50 - 14: 20
+  - [Selasa] Kelas: X-D | Waktu: 09:30 - 10:15
+  - [Selasa] Kelas: X-D | Waktu: 10:15 - 11:00
+  - [Selasa] Kelas: X-D | Waktu: 11:00 - 11:45
+  - [Selasa] Kelas: X-G | Waktu: 12:55 - 13:35
+  - [Kamis] Kelas: X-F | Waktu: 07:00 - 07:45
+  - [Kamis] Kelas: X-F | Waktu: 07:45 - 08:30
+  - [Kamis] Kelas: X-F | Waktu: 08:30 - 09:15
+  - [Kamis] Kelas: X-H | Waktu: 09:45 - 10:30
+  - [Kamis] Kelas: X-H | Waktu: 10:30 - 11:15
+  - [Kamis] Kelas: X-H | Waktu: 11:15 - 12:00
+  - [Jum'at] Kelas: X-G | Waktu: 07:00 - 07:45
+  - [Jum'at] Kelas: X-G | Waktu: 07:45 - 08:30
+  - [Jum'at] Kelas: X-C | Waktu: 08:30 - 09:15
+  - [Jum'at] Kelas: X-C | Waktu: 09:45 - 10:30
+  - [Jum'at] Kelas: X-C | Waktu: 10:30 - 11:15
+
+Guru: Eri Saptari Yunirman,S.Pd (Kode: 23)
+Mata Pelajaran: PENDIDIKAN PANCASILA
+Total Jam Mengajar: 22 jp (Jam Pelajaran)
+Jadwal:
+  - [Senin] Kelas: X-A | Waktu: 07:45 - 08:30
+  - [Senin] Kelas: X-A | Waktu: 08:30 - 09:15
+  - [Senin] Kelas: X-C | Waktu: 10:30 - 11:15
+  - [Senin] Kelas: X-C | Waktu: 11:15 - 12:00
+  - [Senin] Kelas: X-H | Waktu: 13:10 - 13:50
+  - [Senin] Kelas: X-H | Waktu: 13:50 - 14: 20
+  - [Rabu] Kelas: X-B | Waktu: 06:45 - 07:30
+  - [Rabu] Kelas: X-B | Waktu: 07:30 - 08:15
+  - [Rabu] Kelas: X-K | Waktu: 08:15 - 09:00
+  - [Rabu] Kelas: X-K | Waktu: 09:30 - 10:15
+  - [Rabu] Kelas: X-F | Waktu: 10:15 - 11:00
+  - [Rabu] Kelas: X-F | Waktu: 11:00 - 11:45
+  - [Rabu] Kelas: X-E | Waktu: 12:15 - 12:55
+  - [Rabu] Kelas: X-E | Waktu: 12:55 - 13:35
+  - [Kamis] Kelas: X-I | Waktu: 07:00 - 07:45
+  - [Kamis] Kelas: X-I | Waktu: 07:45 - 08:30
+  - [Kamis] Kelas: X-G | Waktu: 09:45 - 10:30
+  - [Kamis] Kelas: X-G | Waktu: 10:30 - 11:15
+  - [Jum'at] Kelas: X-D | Waktu: 07:00 - 07:45
+  - [Jum'at] Kelas: X-D | Waktu: 08:30 - 09:15
+  - [Jum'at] Kelas: X-J | Waktu: 09:45 - 10:30
+  - [Jum'at] Kelas: X-J | Waktu: 10:30 - 11:15
+
+Guru: Evi Hendrayani, S.Pd (Kode: 6)
+Mata Pelajaran: BAHASA INGGRIS
+Total Jam Mengajar: 30 jp (Jam Pelajaran)
+Jadwal:
+  - [Senin] Kelas: X-C | Waktu: 07:45 - 08:30
+  - [Senin] Kelas: X-C | Waktu: 08:30 - 09:15
+  - [Senin] Kelas: X-C | Waktu: 09:45 - 10:30
+  - [Senin] Kelas: X-E | Waktu: 12:30 - 13:10
+  - [Senin] Kelas: X-E | Waktu: 13:10 - 13:50
+  - [Senin] Kelas: X-E | Waktu: 13:50 - 14: 20
+  - [Selasa] Kelas: X-D | Waktu: 06:45 - 07:30
+  - [Selasa] Kelas: X-D | Waktu: 07:30 - 08:15
+  - [Selasa] Kelas: X-D | Waktu: 08:15 - 09:00
+  - [Selasa] Kelas: X-B | Waktu: 09:30 - 10:15
+  - [Selasa] Kelas: X-B | Waktu: 10:15 - 11:00
+  - [Selasa] Kelas: X-B | Waktu: 11:00 - 11:45
+  - [Selasa] Kelas: X-A | Waktu: 12:15 - 12:55
+  - [Selasa] Kelas: X-A | Waktu: 12:55 - 13:35
+  - [Rabu] Kelas: XII-E | Waktu: 06:45 - 07:30
+  - [Rabu] Kelas: XII-E | Waktu: 07:30 - 08:15
+  - [Rabu] Kelas: XII-E | Waktu: 08:15 - 09:00
+  - [Rabu] Kelas: XII-I | Waktu: 10:15 - 11:00
+  - [Rabu] Kelas: XII-I | Waktu: 11:00 - 11:45
+  - [Rabu] Kelas: XII-I | Waktu: 12:15 - 12:55
+  - [Kamis] Kelas: XII-G | Waktu: 07:00 - 07:45
+  - [Kamis] Kelas: XII-G | Waktu: 07:45 - 08:30
+  - [Kamis] Kelas: XII-G | Waktu: 08:30 - 09:15
+  - [Kamis] Kelas: XII-F | Waktu: 09:45 - 10:30
+  - [Kamis] Kelas: XII-F | Waktu: 10:30 - 11:15
+  - [Kamis] Kelas: XII-F | Waktu: 11:15 - 12:00
+  - [Jum'at] Kelas: XII-H | Waktu: 07:00 - 07:45
+  - [Jum'at] Kelas: XII-H | Waktu: 07:45 - 08:30
+  - [Jum'at] Kelas: XII-H | Waktu: 08:30 - 09:15
+  - [Jum'at] Kelas: X-A | Waktu: 10:30 - 11:15
+
+Guru: Fitriani, S.Si (Kode: 8)
+Mata Pelajaran: BIOLOGI
+Total Jam Mengajar: 30 jp (Jam Pelajaran)
+Jadwal:
+  - [Senin] Kelas: XII-E | Waktu: 07:45 - 08:30
+  - [Senin] Kelas: XII-E | Waktu: 08:30 - 09:15
+  - [Senin] Kelas: X-D | Waktu: 11:15 - 12:00
+  - [Senin] Kelas: X-D | Waktu: 12:30 - 13:10
+  - [Senin] Kelas: XII-I | Waktu: 13:10 - 13:50
+  - [Senin] Kelas: XII-I | Waktu: 13:50 - 14: 20
+  - [Selasa] Kelas: X-C | Waktu: 06:45 - 07:30
+  - [Selasa] Kelas: X-C | Waktu: 07:30 - 08:15
+  - [Selasa] Kelas: X-E | Waktu: 10:15 - 11:00
+  - [Selasa] Kelas: X-E | Waktu: 11:00 - 11:45
+  - [Selasa] Kelas: XII-E | Waktu: 12:15 - 12:55
+  - [Selasa] Kelas: XII-E | Waktu: 12:55 - 13:35
+  - [Selasa] Kelas: XII-F | Waktu: 13:35 - 14:15
+  - [Selasa] Kelas: XII-F | Waktu: 14:15 - 14:55
+  - [Rabu] Kelas: XII-D | Waktu: 06:45 - 07:30
+  - [Rabu] Kelas: XII-D | Waktu: 07:30 - 08:15
+  - [Rabu] Kelas: XII-I | Waktu: 08:15 - 09:00
+  - [Rabu] Kelas: XII-I | Waktu: 09:30 - 10:15
+  - [Rabu] Kelas: XII-F | Waktu: 10:15 - 11:00
+  - [Rabu] Kelas: XII-F | Waktu: 11:00 - 11:45
+  - [Rabu] Kelas: XII-H | Waktu: 12:15 - 12:55
+  - [Rabu] Kelas: XII-H | Waktu: 12:55 - 13:35
+  - [Kamis] Kelas: X-B | Waktu: 07:00 - 07:45
+  - [Kamis] Kelas: X-B | Waktu: 07:45 - 08:30
+  - [Kamis] Kelas: X-A | Waktu: 10:30 - 11:15
+  - [Kamis] Kelas: X-A | Waktu: 11:15 - 12:00
+  - [Jum'at] Kelas: XII-D | Waktu: 07:45 - 08:30
+  - [Jum'at] Kelas: XII-D | Waktu: 08:30 - 09:15
+  - [Jum'at] Kelas: XII-H | Waktu: 09:45 - 10:30
+  - [Jum'at] Kelas: XII-H | Waktu: 10:30 - 11:15
+
+Guru: H. Deris Muslim,S.Si.,S.Pd (Kode: 28)
+Mata Pelajaran: MATEMATIKA
+Total Jam Mengajar: 34 jp (Jam Pelajaran)
+Jadwal:
+  - [Senin] Kelas: XI-F | Waktu: 09:45 - 10:30
+  - [Senin] Kelas: XI-F | Waktu: 10:30 - 11:15
+  - [Senin] Kelas: XI-J | Waktu: 12:30 - 13:10
+  - [Senin] Kelas: XI-J | Waktu: 13:10 - 13:50
+  - [Senin] Kelas: XI-J | Waktu: 13:50 - 14: 20
+  - [Selasa] Kelas: X-G | Waktu: 06:45 - 07:30
+  - [Selasa] Kelas: X-G | Waktu: 07:30 - 08:15
+  - [Selasa] Kelas: X-G | Waktu: 08:15 - 09:00
+  - [Selasa] Kelas: XI-H | Waktu: 10:15 - 11:00
+  - [Selasa] Kelas: XI-H | Waktu: 11:00 - 11:45
+  - [Selasa] Kelas: XI-H | Waktu: 12:15 - 12:55
+  - [Selasa] Kelas: XI-F | Waktu: 13:35 - 14:15
+  - [Selasa] Kelas: XI-F | Waktu: 14:15 - 14:55
+  - [Rabu] Kelas: X-J | Waktu: 06:45 - 07:30
+  - [Rabu] Kelas: X-J | Waktu: 07:30 - 08:15
+  - [Rabu] Kelas: X-J | Waktu: 08:15 - 09:00
+  - [Rabu] Kelas: X-I | Waktu: 09:30 - 10:15
+  - [Rabu] Kelas: X-I | Waktu: 10:15 - 11:00
+  - [Rabu] Kelas: X-I | Waktu: 11:00 - 11:45
+  - [Rabu] Kelas: X-K | Waktu: 12:15 - 12:55
+  - [Rabu] Kelas: X-K | Waktu: 12:55 - 13:35
+  - [Rabu] Kelas: XI-G | Waktu: 13:35 - 14:15
+  - [Rabu] Kelas: XI-G | Waktu: 14:15 - 14:55
+  - [Kamis] Kelas: X-H | Waktu: 07:00 - 07:45
+  - [Kamis] Kelas: X-H | Waktu: 07:45 - 08:30
+  - [Kamis] Kelas: X-H | Waktu: 08:30 - 09:15
+  - [Kamis] Kelas: X-F | Waktu: 09:45 - 10:30
+  - [Kamis] Kelas: X-F | Waktu: 10:30 - 11:15
+  - [Kamis] Kelas: X-F | Waktu: 11:15 - 12:00
+  - [Jum'at] Kelas: XI-I | Waktu: 07:00 - 07:45
+  - [Jum'at] Kelas: XI-I | Waktu: 07:45 - 08:30
+  - [Jum'at] Kelas: XI-I | Waktu: 08:30 - 09:15
+  - [Jum'at] Kelas: X-K | Waktu: 09:45 - 10:30
+  - [Jum'at] Kelas: XI-G | Waktu: 10:30 - 11:15
+
+Guru: Hj. Laksmi Supartiningsih, S.Pd (Kode: 2)
+Mata Pelajaran: BAHASA INDONESIA
+Total Jam Mengajar: 21 jp (Jam Pelajaran)
+Jadwal:
+  - [Senin] Kelas: X-B | Waktu: 07:45 - 08:30
+  - [Senin] Kelas: X-B | Waktu: 08:30 - 09:15
+  - [Senin] Kelas: X-A | Waktu: 12:30 - 13:10
+  - [Senin] Kelas: X-A | Waktu: 13:10 - 13:50
+  - [Senin] Kelas: X-A | Waktu: 13:50 - 14: 20
+  - [Rabu] Kelas: XII-H | Waktu: 06:45 - 07:30
+  - [Rabu] Kelas: XII-H | Waktu: 07:30 - 08:15
+  - [Rabu] Kelas: XII-H | Waktu: 08:15 - 09:00
+  - [Rabu] Kelas: XII-E | Waktu: 09:30 - 10:15
+  - [Rabu] Kelas: XII-E | Waktu: 10:15 - 11:00
+  - [Rabu] Kelas: XII-E | Waktu: 11:00 - 11:45
+  - [Rabu] Kelas: XII-I | Waktu: 12:55 - 13:35
+  - [Rabu] Kelas: XII-I | Waktu: 13:35 - 14:15
+  - [Rabu] Kelas: XII-I | Waktu: 14:15 - 14:55
+  - [Kamis] Kelas: XII-G | Waktu: 09:45 - 10:30
+  - [Kamis] Kelas: XII-G | Waktu: 10:30 - 11:15
+  - [Kamis] Kelas: XII-G | Waktu: 11:15 - 12:00
+  - [Jum'at] Kelas: XII-F | Waktu: 07:00 - 07:45
+  - [Jum'at] Kelas: XII-F | Waktu: 07:45 - 08:30
+  - [Jum'at] Kelas: XII-F | Waktu: 08:30 - 09:15
+  - [Jum'at] Kelas: X-B | Waktu: 10:30 - 11:15
+
+Guru: Hj. Neni Suryani, S.Pd (Kode: 3)
+Mata Pelajaran: MATEMATIKA TL
+Total Jam Mengajar: 30 jp (Jam Pelajaran)
+Jadwal:
+  - [Senin] Kelas: X-A | Waktu: 09:45 - 10:30
+  - [Senin] Kelas: X-A | Waktu: 10:30 - 11:15
+  - [Senin] Kelas: X-A | Waktu: 11:15 - 12:00
+  - [Senin] Kelas: X-C | Waktu: 12:30 - 13:10
+  - [Senin] Kelas: X-C | Waktu: 13:10 - 13:50
+  - [Senin] Kelas: X-C | Waktu: 13:50 - 14: 20
+  - [Selasa] Kelas: X-B | Waktu: 06:45 - 07:30
+  - [Selasa] Kelas: X-B | Waktu: 07:30 - 08:15
+  - [Selasa] Kelas: X-B | Waktu: 08:15 - 09:00
+  - [Selasa] Kelas: XII-B | Waktu: 09:30 - 10:15
+  - [Selasa] Kelas: XII-B | Waktu: 10:15 - 11:00
+  - [Selasa] Kelas: XII-B | Waktu: 11:00 - 11:45
+  - [Selasa] Kelas: XII-D | Waktu: 12:55 - 13:35
+  - [Selasa] Kelas: XII-D | Waktu: 13:35 - 14:15
+  - [Selasa] Kelas: XII-D | Waktu: 14:15 - 14:55
+  - [Rabu] Kelas: XII-A | Waktu: 08:15 - 09:00
+  - [Rabu] Kelas: XII-A | Waktu: 09:30 - 10:15
+  - [Rabu] Kelas: XII-A | Waktu: 10:15 - 11:00
+  - [Rabu] Kelas: X-D | Waktu: 12:15 - 12:55
+  - [Rabu] Kelas: X-D | Waktu: 12:55 - 13:35
+  - [Kamis] Kelas: X-E | Waktu: 07:00 - 07:45
+  - [Kamis] Kelas: X-E | Waktu: 07:45 - 08:30
+  - [Kamis] Kelas: X-E | Waktu: 08:30 - 09:15
+  - [Kamis] Kelas: XII-E | Waktu: 10:30 - 11:15
+  - [Kamis] Kelas: XII-E | Waktu: 11:15 - 12:00
+  - [Jum'at] Kelas: XII-E | Waktu: 07:00 - 07:45
+  - [Jum'at] Kelas: X-D | Waktu: 07:45 - 08:30
+  - [Jum'at] Kelas: XII-C | Waktu: 08:30 - 09:15
+  - [Jum'at] Kelas: XII-C | Waktu: 09:45 - 10:30
+  - [Jum'at] Kelas: XII-C | Waktu: 10:30 - 11:15
+
+Guru: Indri Sofiah Mahfudz,S.Pd (Kode: 29)
+Mata Pelajaran: BAHASA INDONESIA
+Total Jam Mengajar: 24 jp (Jam Pelajaran)
+Jadwal:
+  - [Senin] Kelas: XI-J | Waktu: 09:45 - 10:30
+  - [Senin] Kelas: XI-J | Waktu: 10:30 - 11:15
+  - [Senin] Kelas: XI-J | Waktu: 11:15 - 12:00
+  - [Senin] Kelas: XI-G | Waktu: 12:30 - 13:10
+  - [Senin] Kelas: XI-G | Waktu: 13:10 - 13:50
+  - [Senin] Kelas: XI-G | Waktu: 13:50 - 14: 20
+  - [Selasa] Kelas: XII-C | Waktu: 08:15 - 09:00
+  - [Selasa] Kelas: XII-C | Waktu: 09:30 - 10:15
+  - [Selasa] Kelas: XII-C | Waktu: 10:15 - 11:00
+  - [Selasa] Kelas: XI-H | Waktu: 12:55 - 13:35
+  - [Selasa] Kelas: XI-H | Waktu: 13:35 - 14:15
+  - [Selasa] Kelas: XI-H | Waktu: 14:15 - 14:55
+  - [Rabu] Kelas: XI-I | Waktu: 08:15 - 09:00
+  - [Rabu] Kelas: XI-I | Waktu: 09:30 - 10:15
+  - [Rabu] Kelas: XI-I | Waktu: 10:15 - 11:00
+  - [Rabu] Kelas: XII-A | Waktu: 11:00 - 11:45
+  - [Rabu] Kelas: XII-A | Waktu: 12:15 - 12:55
+  - [Rabu] Kelas: XII-A | Waktu: 12:55 - 13:35
+  - [Kamis] Kelas: XII-D | Waktu: 10:30 - 11:15
+  - [Kamis] Kelas: XII-D | Waktu: 11:15 - 12:00
+  - [Jum'at] Kelas: XII-D | Waktu: 07:00 - 07:45
+  - [Jum'at] Kelas: XII-B | Waktu: 08:30 - 09:15
+  - [Jum'at] Kelas: XII-B | Waktu: 09:45 - 10:30
+  - [Jum'at] Kelas: XII-B | Waktu: 10:30 - 11:15
+
+Guru: Intan Mutiara S.Pd (Kode: 25)
+Mata Pelajaran: GEOGRAFI
+Total Jam Mengajar: 22 jp (Jam Pelajaran)
+Jadwal:
+  - [Senin] Kelas: X-D | Waktu: 07:45 - 08:30
+  - [Senin] Kelas: X-D | Waktu: 08:30 - 09:15
+  - [Senin] Kelas: X-H | Waktu: 11:15 - 12:00
+  - [Senin] Kelas: X-H | Waktu: 12:30 - 13:10
+  - [Selasa] Kelas: X-F | Waktu: 06:45 - 07:30
+  - [Selasa] Kelas: X-F | Waktu: 07:30 - 08:15
+  - [Selasa] Kelas: X-C | Waktu: 08:15 - 09:00
+  - [Selasa] Kelas: X-C | Waktu: 09:30 - 10:15
+  - [Selasa] Kelas: X-I | Waktu: 10:15 - 11:00
+  - [Selasa] Kelas: X-G | Waktu: 11:00 - 11:45
+  - [Selasa] Kelas: X-G | Waktu: 12:15 - 12:55
+  - [Selasa] Kelas: X-I | Waktu: 12:55 - 13:35
+  - [Kamis] Kelas: X-J | Waktu: 07:00 - 07:45
+  - [Kamis] Kelas: X-J | Waktu: 07:45 - 08:30
+  - [Kamis] Kelas: X-A | Waktu: 08:30 - 09:15
+  - [Kamis] Kelas: X-A | Waktu: 09:45 - 10:30
+  - [Kamis] Kelas: X-B | Waktu: 10:30 - 11:15
+  - [Kamis] Kelas: X-B | Waktu: 11:15 - 12:00
+  - [Jum'at] Kelas: X-K | Waktu: 07:00 - 07:45
+  - [Jum'at] Kelas: X-K | Waktu: 07:45 - 08:30
+  - [Jum'at] Kelas: X-E | Waktu: 09:45 - 10:30
+  - [Jum'at] Kelas: X-E | Waktu: 10:30 - 11:15
+
+Guru: Iqbal Issaghozi,S.Pd,M.Pd (Kode: 7)
+Mata Pelajaran: BAHASA JERMAN
+Total Jam Mengajar: 20 jp (Jam Pelajaran)
+Jadwal:
+  - [Senin] Kelas: XI-E | Waktu: 09:45 - 10:30
+  - [Senin] Kelas: XI-E | Waktu: 10:30 - 11:15
+  - [Senin] Kelas: XII-E | Waktu: 11:15 - 12:00
+  - [Senin] Kelas: XII-E | Waktu: 12:30 - 13:10
+  - [Selasa] Kelas: XII-F | Waktu: 06:45 - 07:30
+  - [Selasa] Kelas: XII-F | Waktu: 07:30 - 08:15
+  - [Selasa] Kelas: XII-D | Waktu: 08:15 - 09:00
+  - [Selasa] Kelas: XII-D | Waktu: 09:30 - 10:15
+  - [Selasa] Kelas: XI-D | Waktu: 11:00 - 11:45
+  - [Selasa] Kelas: XI-D | Waktu: 12:15 - 12:55
+  - [Rabu] Kelas: XI-D | Waktu: 06:45 - 07:30
+  - [Rabu] Kelas: XI-D | Waktu: 07:30 - 08:15
+  - [Rabu] Kelas: XII-F | Waktu: 08:15 - 09:00
+  - [Rabu] Kelas: XII-F | Waktu: 09:30 - 10:15
+  - [Rabu] Kelas: XII-D | Waktu: 10:15 - 11:00
+  - [Rabu] Kelas: XII-D | Waktu: 11:00 - 11:45
+  - [Kamis] Kelas: XI-E | Waktu: 07:00 - 07:45
+  - [Kamis] Kelas: XI-E | Waktu: 07:45 - 08:30
+  - [Kamis] Kelas: XII-E | Waktu: 08:30 - 09:15
+  - [Kamis] Kelas: XII-E | Waktu: 09:45 - 10:30
+
+Guru: Irma Primawati, S.Pd.I (Kode: 41)
+Mata Pelajaran: PAIBP
+Total Jam Mengajar: 20 jp (Jam Pelajaran)
+Jadwal:
+  - [Senin] Kelas: X-H | Waktu: 07:45 - 08:30
+  - [Senin] Kelas: X-H | Waktu: 08:30 - 09:15
+  - [Senin] Kelas: X-G | Waktu: 09:45 - 10:30
+  - [Senin] Kelas: X-G | Waktu: 10:30 - 11:15
+  - [Senin] Kelas: XII-D | Waktu: 11:15 - 12:00
+  - [Senin] Kelas: XII-D | Waktu: 12:30 - 13:10
+  - [Senin] Kelas: XII-F | Waktu: 13:10 - 13:50
+  - [Senin] Kelas: XII-F | Waktu: 13:50 - 14: 20
+  - [Selasa] Kelas: X-F | Waktu: 12:15 - 12:55
+  - [Selasa] Kelas: X-F | Waktu: 12:55 - 13:35
+  - [Rabu] Kelas: X-E | Waktu: 06:45 - 07:30
+  - [Rabu] Kelas: X-E | Waktu: 07:30 - 08:15
+  - [Rabu] Kelas: XI-E | Waktu: 08:15 - 09:00
+  - [Rabu] Kelas: XI-E | Waktu: 09:30 - 10:15
+  - [Rabu] Kelas: XI-F | Waktu: 11:00 - 11:45
+  - [Rabu] Kelas: XI-F | Waktu: 12:15 - 12:55
+  - [Rabu] Kelas: XII-E | Waktu: 13:35 - 14:15
+  - [Rabu] Kelas: XII-E | Waktu: 14:15 - 14:55
+  - [Kamis] Kelas: XI-D | Waktu: 07:00 - 07:45
+  - [Kamis] Kelas: XI-D | Waktu: 07:45 - 08:30
+
+Guru: Jaka Irawan,S.Pd (Kode: 44)
+Mata Pelajaran: PJOK
+Total Jam Mengajar: 22 jp (Jam Pelajaran)
+Jadwal:
+  - [Senin] Kelas: X-J | Waktu: 07:45 - 08:30
+  - [Senin] Kelas: X-J | Waktu: 08:30 - 09:15
+  - [Senin] Kelas: X-D | Waktu: 09:45 - 10:30
+  - [Senin] Kelas: X-D | Waktu: 10:30 - 11:15
+  - [Selasa] Kelas: X-E | Waktu: 06:45 - 07:30
+  - [Selasa] Kelas: X-E | Waktu: 07:30 - 08:15
+  - [Selasa] Kelas: X-A | Waktu: 08:15 - 09:00
+  - [Selasa] Kelas: X-A | Waktu: 09:30 - 10:15
+  - [Selasa] Kelas: X-H | Waktu: 12:15 - 12:55
+  - [Selasa] Kelas: X-H | Waktu: 12:55 - 13:35
+  - [Rabu] Kelas: X-G | Waktu: 06:45 - 07:30
+  - [Rabu] Kelas: X-G | Waktu: 07:30 - 08:15
+  - [Rabu] Kelas: X-B | Waktu: 10:15 - 11:00
+  - [Rabu] Kelas: X-B | Waktu: 11:00 - 11:45
+  - [Rabu] Kelas: X-F | Waktu: 12:15 - 12:55
+  - [Rabu] Kelas: X-F | Waktu: 12:55 - 13:35
+  - [Kamis] Kelas: X-K | Waktu: 07:00 - 07:45
+  - [Kamis] Kelas: X-K | Waktu: 07:45 - 08:30
+  - [Kamis] Kelas: X-I | Waktu: 08:30 - 09:15
+  - [Kamis] Kelas: X-I | Waktu: 09:45 - 10:30
+  - [Kamis] Kelas: X-C | Waktu: 10:30 - 11:15
+  - [Kamis] Kelas: X-C | Waktu: 11:15 - 12:00
+
+Guru: Jaka Kurniawan, S.Pd (Kode: 19)
+Mata Pelajaran: PJOK
+Total Jam Mengajar: 20 jp (Jam Pelajaran)
+Jadwal:
+  - [Senin] Kelas: XII-F | Waktu: 09:45 - 10:30
+  - [Senin] Kelas: XII-F | Waktu: 10:30 - 11:15
+  - [Senin] Kelas: XI-C | Waktu: 11:15 - 12:00
+  - [Senin] Kelas: XI-C | Waktu: 12:30 - 13:10
+  - [Senin] Kelas: XI-D | Waktu: 13:10 - 13:50
+  - [Senin] Kelas: XI-D | Waktu: 13:50 - 14: 20
+  - [Selasa] Kelas: XII-G | Waktu: 08:15 - 09:00
+  - [Selasa] Kelas: XII-G | Waktu: 09:30 - 10:15
+  - [Selasa] Kelas: XI-A | Waktu: 10:15 - 11:00
+  - [Selasa] Kelas: XI-A | Waktu: 11:00 - 11:45
+  - [Selasa] Kelas: XII-I | Waktu: 13:35 - 14:15
+  - [Selasa] Kelas: XII-I | Waktu: 14:15 - 14:55
+  - [Rabu] Kelas: XI-B | Waktu: 06:45 - 07:30
+  - [Rabu] Kelas: XI-B | Waktu: 07:30 - 08:15
+  - [Rabu] Kelas: XI-E | Waktu: 12:15 - 12:55
+  - [Rabu] Kelas: XI-E | Waktu: 12:55 - 13:35
+  - [Rabu] Kelas: XII-H | Waktu: 13:35 - 14:15
+  - [Rabu] Kelas: XII-H | Waktu: 14:15 - 14:55
+  - [Kamis] Kelas: XII-E | Waktu: 07:00 - 07:45
+  - [Kamis] Kelas: XII-E | Waktu: 07:45 - 08:30
+
+Guru: Lifsa Fauziah,S.Pd,S.E (Kode: 39)
+Mata Pelajaran: EKONOMI
+Total Jam Mengajar: 24 jp (Jam Pelajaran)
+Jadwal:
+  - [Senin] Kelas: XII-D | Waktu: 07:45 - 08:30
+  - [Senin] Kelas: XII-D | Waktu: 08:30 - 09:15
+  - [Senin] Kelas: XI-G | Waktu: 10:30 - 11:15
+  - [Senin] Kelas: XI-G | Waktu: 11:15 - 12:00
+  - [Senin] Kelas: XI-I | Waktu: 13:10 - 13:50
+  - [Senin] Kelas: XI-I | Waktu: 13:50 - 14: 20
+  - [Selasa] Kelas: XI-H | Waktu: 06:45 - 07:30
+  - [Selasa] Kelas: XI-H | Waktu: 07:30 - 08:15
+  - [Selasa] Kelas: XI-F | Waktu: 08:15 - 09:00
+  - [Selasa] Kelas: XI-F | Waktu: 09:30 - 10:15
+  - [Selasa] Kelas: XI-J | Waktu: 10:15 - 11:00
+  - [Selasa] Kelas: XI-J | Waktu: 11:00 - 11:45
+  - [Rabu] Kelas: XI-J | Waktu: 06:45 - 07:30
+  - [Rabu] Kelas: XI-J | Waktu: 07:30 - 08:15
+  - [Rabu] Kelas: XI-H | Waktu: 10:15 - 11:00
+  - [Rabu] Kelas: XI-H | Waktu: 11:00 - 11:45
+  - [Rabu] Kelas: XII-D | Waktu: 12:15 - 12:55
+  - [Rabu] Kelas: XII-D | Waktu: 12:55 - 13:35
+  - [Kamis] Kelas: XI-G | Waktu: 07:00 - 07:45
+  - [Kamis] Kelas: XI-G | Waktu: 07:45 - 08:30
+  - [Kamis] Kelas: XI-I | Waktu: 08:30 - 09:15
+  - [Kamis] Kelas: XI-I | Waktu: 09:45 - 10:30
+  - [Kamis] Kelas: XI-F | Waktu: 10:30 - 11:15
+  - [Kamis] Kelas: XI-F | Waktu: 11:15 - 12:00
+
+Guru: Maya Meisya, S.Pd (Kode: 20)
+Mata Pelajaran: SEJARAH
+Total Jam Mengajar: 30 jp (Jam Pelajaran)
+Jadwal:
+  - [Senin] Kelas: XI-J | Waktu: 07:45 - 08:30
+  - [Senin] Kelas: XI-J | Waktu: 08:30 - 09:15
+  - [Senin] Kelas: XI-I | Waktu: 09:45 - 10:30
+  - [Senin] Kelas: XI-I | Waktu: 10:30 - 11:15
+  - [Senin] Kelas: XI-E | Waktu: 11:15 - 12:00
+  - [Senin] Kelas: XI-E | Waktu: 12:30 - 13:10
+  - [Senin] Kelas: XI-H | Waktu: 13:10 - 13:50
+  - [Senin] Kelas: XI-H | Waktu: 13:50 - 14: 20
+  - [Selasa] Kelas: XI-F | Waktu: 06:45 - 07:30
+  - [Selasa] Kelas: XI-F | Waktu: 07:30 - 08:15
+  - [Selasa] Kelas: X-E | Waktu: 08:15 - 09:00
+  - [Selasa] Kelas: X-E | Waktu: 09:30 - 10:15
+  - [Selasa] Kelas: XI-B | Waktu: 10:15 - 11:00
+  - [Selasa] Kelas: XI-B | Waktu: 11:00 - 11:45
+  - [Selasa] Kelas: XI-A | Waktu: 12:15 - 12:55
+  - [Selasa] Kelas: XI-A | Waktu: 12:55 - 13:35
+  - [Selasa] Kelas: XI-G | Waktu: 13:35 - 14:15
+  - [Selasa] Kelas: XI-G | Waktu: 14:15 - 14:55
+  - [Rabu] Kelas: XI-C | Waktu: 06:45 - 07:30
+  - [Rabu] Kelas: XI-C | Waktu: 07:30 - 08:15
+  - [Rabu] Kelas: X-A | Waktu: 08:15 - 09:00
+  - [Rabu] Kelas: X-A | Waktu: 09:30 - 10:15
+  - [Rabu] Kelas: X-C | Waktu: 10:15 - 11:00
+  - [Rabu] Kelas: X-C | Waktu: 11:00 - 11:45
+  - [Rabu] Kelas: X-B | Waktu: 12:15 - 12:55
+  - [Rabu] Kelas: X-B | Waktu: 12:55 - 13:35
+  - [Jum'at] Kelas: XI-D | Waktu: 07:45 - 08:30
+  - [Jum'at] Kelas: XI-D | Waktu: 08:30 - 09:15
+  - [Jum'at] Kelas: X-D | Waktu: 09:45 - 10:30
+  - [Jum'at] Kelas: X-D | Waktu: 10:30 - 11:15
+
+Guru: Meti Juliati, S.Pd (Kode: 15)
+Mata Pelajaran: EKONOMI  DAN PKWU
+Total Jam Mengajar: 22 jp (Jam Pelajaran)
+Jadwal:
+  - [Senin] Kelas: X-I | Waktu: 07:45 - 08:30
+  - [Senin] Kelas: X-I | Waktu: 08:30 - 09:15
+  - [Senin] Kelas: X-K | Waktu: 10:30 - 11:15
+  - [Senin] Kelas: X-K | Waktu: 11:15 - 12:00
+  - [Selasa] Kelas: XII-E | Waktu: 06:45 - 07:30
+  - [Selasa] Kelas: XII-E | Waktu: 07:30 - 08:15
+  - [Selasa] Kelas: XII-A | Waktu: 08:15 - 09:00
+  - [Selasa] Kelas: XII-A | Waktu: 09:30 - 10:15
+  - [Selasa] Kelas: XII-C | Waktu: 11:00 - 11:45
+  - [Selasa] Kelas: XII-C | Waktu: 12:15 - 12:55
+  - [Rabu] Kelas: XII-C | Waktu: 06:45 - 07:30
+  - [Rabu] Kelas: XII-C | Waktu: 07:30 - 08:15
+  - [Rabu] Kelas: XII-B | Waktu: 08:15 - 09:00
+  - [Rabu] Kelas: XII-B | Waktu: 09:30 - 10:15
+  - [Kamis] Kelas: XII-B | Waktu: 07:00 - 07:45
+  - [Kamis] Kelas: XII-B | Waktu: 07:45 - 08:30
+  - [Kamis] Kelas: X-J | Waktu: 08:30 - 09:15
+  - [Kamis] Kelas: X-J | Waktu: 09:45 - 10:30
+  - [Kamis] Kelas: XII-A | Waktu: 10:30 - 11:15
+  - [Kamis] Kelas: XII-A | Waktu: 11:15 - 12:00
+  - [Jum'at] Kelas: XII-E | Waktu: 07:45 - 08:30
+  - [Jum'at] Kelas: XII-E | Waktu: 08:30 - 09:15
+
+Guru: Moh. Adli abdurrahim, S.Pd (Kode: 24)
+Mata Pelajaran: SENI RUPA, Informatika dan PKWU
+Total Jam Mengajar: 36 jp (Jam Pelajaran)
+Jadwal:
+  - [Senin] Kelas: XI-D | Waktu: 07:45 - 08:30
+  - [Senin] Kelas: XI-D | Waktu: 08:30 - 09:15
+  - [Senin] Kelas: X-B | Waktu: 09:45 - 10:30
+  - [Senin] Kelas: X-B | Waktu: 10:30 - 11:15
+  - [Senin] Kelas: X-G | Waktu: 11:15 - 12:00
+  - [Senin] Kelas: X-G | Waktu: 12:30 - 13:10
+  - [Senin] Kelas: X-J | Waktu: 13:10 - 13:50
+  - [Senin] Kelas: X-J | Waktu: 13:50 - 14: 20
+  - [Selasa] Kelas: XI-C | Waktu: 07:30 - 08:15
+  - [Selasa] Kelas: XI-C | Waktu: 08:15 - 09:00
+  - [Selasa] Kelas: X-F | Waktu: 10:15 - 11:00
+  - [Selasa] Kelas: X-F | Waktu: 11:00 - 11:45
+  - [Selasa] Kelas: X-C | Waktu: 12:15 - 12:55
+  - [Selasa] Kelas: X-C | Waktu: 12:55 - 13:35
+  - [Selasa] Kelas: XI-E | Waktu: 13:35 - 14:15
+  - [Selasa] Kelas: XI-E | Waktu: 14:15 - 14:55
+  - [Rabu] Kelas: X-D | Waktu: 06:45 - 07:30
+  - [Rabu] Kelas: X-D | Waktu: 07:30 - 08:15
+  - [Rabu] Kelas: X-H | Waktu: 08:15 - 09:00
+  - [Rabu] Kelas: X-H | Waktu: 09:30 - 10:15
+  - [Rabu] Kelas: X-K | Waktu: 10:15 - 11:00
+  - [Rabu] Kelas: X-K | Waktu: 11:00 - 11:45
+  - [Rabu] Kelas: X-I | Waktu: 12:15 - 12:55
+  - [Rabu] Kelas: X-I | Waktu: 12:55 - 13:35
+  - [Rabu] Kelas: XI-H | Waktu: 13:35 - 14:15
+  - [Rabu] Kelas: XI-H | Waktu: 14:15 - 14:55
+  - [Kamis] Kelas: X-A | Waktu: 07:00 - 07:45
+  - [Kamis] Kelas: X-A | Waktu: 07:45 - 08:30
+  - [Kamis] Kelas: XI-B | Waktu: 09:45 - 10:30
+  - [Kamis] Kelas: XI-B | Waktu: 10:30 - 11:15
+  - [Kamis] Kelas: X-E | Waktu: 11:15 - 12:00
+  - [Jum'at] Kelas: XI-G | Waktu: 07:00 - 07:45
+  - [Jum'at] Kelas: XI-G | Waktu: 07:45 - 08:30
+  - [Jum'at] Kelas: X-E | Waktu: 08:30 - 09:15
+  - [Jum'at] Kelas: XI-F | Waktu: 09:45 - 10:30
+  - [Jum'at] Kelas: XI-F | Waktu: 10:30 - 11:15
+
+Guru: Mulyana Kurniawan, S.Th.I,M.Pd (Kode: 30)
+Mata Pelajaran: PAIBP
+Total Jam Mengajar: 20 jp (Jam Pelajaran)
+Jadwal:
+  - [Senin] Kelas: XII-C | Waktu: 09:45 - 10:30
+  - [Senin] Kelas: XII-C | Waktu: 10:30 - 11:15
+  - [Senin] Kelas: XII-A | Waktu: 11:15 - 12:00
+  - [Senin] Kelas: XII-A | Waktu: 12:30 - 13:10
+  - [Senin] Kelas: XII-B | Waktu: 13:10 - 13:50
+  - [Senin] Kelas: XII-B | Waktu: 13:50 - 14: 20
+  - [Selasa] Kelas: X-C | Waktu: 10:15 - 11:00
+  - [Selasa] Kelas: X-C | Waktu: 11:00 - 11:45
+  - [Selasa] Kelas: X-D | Waktu: 12:15 - 12:55
+  - [Selasa] Kelas: X-D | Waktu: 12:55 - 13:35
+  - [Rabu] Kelas: X-A | Waktu: 06:45 - 07:30
+  - [Rabu] Kelas: X-A | Waktu: 07:30 - 08:15
+  - [Rabu] Kelas: XI-B | Waktu: 08:15 - 09:00
+  - [Rabu] Kelas: XI-B | Waktu: 09:30 - 10:15
+  - [Rabu] Kelas: XI-A | Waktu: 11:00 - 11:45
+  - [Rabu] Kelas: XI-A | Waktu: 12:15 - 12:55
+  - [Rabu] Kelas: XI-C | Waktu: 13:35 - 14:15
+  - [Rabu] Kelas: XI-C | Waktu: 14:15 - 14:55
+  - [Jum'at] Kelas: X-B | Waktu: 07:00 - 07:45
+  - [Jum'at] Kelas: X-B | Waktu: 07:45 - 08:30
+
+Guru: Ninik Sarwiyani, S.Pd (Kode: 1)
+Mata Pelajaran: KIMIA
+Total Jam Mengajar: 20 jp (Jam Pelajaran)
+Jadwal:
+  - [Senin] Kelas: XI-E | Waktu: 07:45 - 08:30
+  - [Senin] Kelas: XI-E | Waktu: 08:30 - 09:15
+  - [Senin] Kelas: XI-A | Waktu: 11:15 - 12:00
+  - [Senin] Kelas: XI-A | Waktu: 12:30 - 13:10
+  - [Senin] Kelas: XI-B | Waktu: 13:10 - 13:50
+  - [Senin] Kelas: XI-B | Waktu: 13:50 - 14: 20
+  - [Selasa] Kelas: XI-B | Waktu: 06:45 - 07:30
+  - [Selasa] Kelas: XI-B | Waktu: 07:30 - 08:15
+  - [Selasa] Kelas: XI-A | Waktu: 08:15 - 09:00
+  - [Selasa] Kelas: XI-A | Waktu: 09:30 - 10:15
+  - [Rabu] Kelas: XI-E | Waktu: 10:15 - 11:00
+  - [Rabu] Kelas: XI-E | Waktu: 11:00 - 11:45
+  - [Rabu] Kelas: X-J | Waktu: 12:15 - 12:55
+  - [Rabu] Kelas: X-J | Waktu: 12:55 - 13:35
+  - [Kamis] Kelas: X-K | Waktu: 08:30 - 09:15
+  - [Kamis] Kelas: X-K | Waktu: 09:45 - 10:30
+  - [Kamis] Kelas: XI-C | Waktu: 11:15 - 12:00
+  - [Jum'at] Kelas: XI-C | Waktu: 07:00 - 07:45
+  - [Jum'at] Kelas: XI-C | Waktu: 07:45 - 08:30
+  - [Jum'at] Kelas: XI-C | Waktu: 08:30 - 09:15
+
+Guru: Rani Rahayuningsri, S.Pd (Kode: 38)
+Mata Pelajaran: BAHASA INGGRIS
+Total Jam Mengajar: 30 jp (Jam Pelajaran)
+Jadwal:
+  - [Senin] Kelas: XI-G | Waktu: 07:45 - 08:30
+  - [Senin] Kelas: XI-G | Waktu: 08:30 - 09:15
+  - [Senin] Kelas: XI-G | Waktu: 09:45 - 10:30
+  - [Senin] Kelas: X-I | Waktu: 10:30 - 11:15
+  - [Senin] Kelas: X-I | Waktu: 11:15 - 12:00
+  - [Senin] Kelas: X-K | Waktu: 12:30 - 13:10
+  - [Senin] Kelas: X-K | Waktu: 13:10 - 13:50
+  - [Senin] Kelas: X-K | Waktu: 13:50 - 14: 20
+  - [Selasa] Kelas: X-J | Waktu: 06:45 - 07:30
+  - [Selasa] Kelas: X-J | Waktu: 07:30 - 08:15
+  - [Selasa] Kelas: X-J | Waktu: 08:15 - 09:00
+  - [Rabu] Kelas: X-I | Waktu: 06:45 - 07:30
+  - [Rabu] Kelas: X-F | Waktu: 07:30 - 08:15
+  - [Rabu] Kelas: X-F | Waktu: 08:15 - 09:00
+  - [Rabu] Kelas: X-F | Waktu: 09:30 - 10:15
+  - [Rabu] Kelas: X-H | Waktu: 10:15 - 11:00
+  - [Rabu] Kelas: X-H | Waktu: 11:00 - 11:45
+  - [Rabu] Kelas: X-H | Waktu: 12:15 - 12:55
+  - [Rabu] Kelas: XI-I | Waktu: 12:55 - 13:35
+  - [Rabu] Kelas: XI-I | Waktu: 13:35 - 14:15
+  - [Rabu] Kelas: XI-I | Waktu: 14:15 - 14:55
+  - [Kamis] Kelas: X-G | Waktu: 07:00 - 07:45
+  - [Kamis] Kelas: X-G | Waktu: 07:45 - 08:30
+  - [Kamis] Kelas: X-G | Waktu: 08:30 - 09:15
+  - [Kamis] Kelas: XI-H | Waktu: 10:30 - 11:15
+  - [Kamis] Kelas: XI-H | Waktu: 11:15 - 12:00
+  - [Jum'at] Kelas: XI-H | Waktu: 07:00 - 07:45
+  - [Jum'at] Kelas: XI-J | Waktu: 08:30 - 09:15
+  - [Jum'at] Kelas: XI-J | Waktu: 09:45 - 10:30
+  - [Jum'at] Kelas: XI-J | Waktu: 10:30 - 11:15
+
+Guru: Rizal Ramdhani,M.Pd (Kode: 42)
+Mata Pelajaran: BAHASA SUNDA DAN INFORMATIKA
+Total Jam Mengajar: 28 jp (Jam Pelajaran)
+Jadwal:
+  - [Senin] Kelas: X-G | Waktu: 07:45 - 08:30
+  - [Senin] Kelas: X-G | Waktu: 08:30 - 09:15
+  - [Senin] Kelas: XI-C | Waktu: 09:45 - 10:30
+  - [Senin] Kelas: XI-C | Waktu: 10:30 - 11:15
+  - [Senin] Kelas: X-B | Waktu: 11:15 - 12:00
+  - [Senin] Kelas: X-B | Waktu: 12:30 - 13:10
+  - [Senin] Kelas: X-F | Waktu: 13:10 - 13:50
+  - [Senin] Kelas: X-F | Waktu: 13:50 - 14: 20
+  - [Selasa] Kelas: XI-B | Waktu: 08:15 - 09:00
+  - [Selasa] Kelas: XI-B | Waktu: 09:30 - 10:15
+  - [Selasa] Kelas: X-K | Waktu: 12:15 - 12:55
+  - [Selasa] Kelas: X-K | Waktu: 12:55 - 13:35
+  - [Selasa] Kelas: XI-A | Waktu: 13:35 - 14:15
+  - [Selasa] Kelas: XI-A | Waktu: 14:15 - 14:55
+  - [Rabu] Kelas: X-H | Waktu: 06:45 - 07:30
+  - [Rabu] Kelas: X-H | Waktu: 07:30 - 08:15
+  - [Rabu] Kelas: X-E | Waktu: 08:15 - 09:00
+  - [Rabu] Kelas: X-E | Waktu: 09:30 - 10:15
+  - [Rabu] Kelas: X-J | Waktu: 11:00 - 11:45
+  - [Rabu] Kelas: X-A | Waktu: 12:15 - 12:55
+  - [Rabu] Kelas: X-A | Waktu: 12:55 - 13:35
+  - [Kamis] Kelas: X-C | Waktu: 07:00 - 07:45
+  - [Kamis] Kelas: X-C | Waktu: 07:45 - 08:30
+  - [Kamis] Kelas: X-D | Waktu: 10:30 - 11:15
+  - [Kamis] Kelas: X-D | Waktu: 11:15 - 12:00
+  - [Jum'at] Kelas: X-I | Waktu: 07:00 - 07:45
+  - [Jum'at] Kelas: X-I | Waktu: 07:45 - 08:30
+  - [Jum'at] Kelas: X-J | Waktu: 08:30 - 09:15
+
+Guru: Romadoni Prihatiningsih,S.Pd (Kode: 12)
+Mata Pelajaran: PENDIDIKAN PANCASILA & SOSIOLOGI
+Total Jam Mengajar: 30 jp (Jam Pelajaran)
+Jadwal:
+  - [Senin] Kelas: XII-A | Waktu: 07:45 - 08:30
+  - [Senin] Kelas: XII-A | Waktu: 08:30 - 09:15
+  - [Senin] Kelas: XI-H | Waktu: 11:15 - 12:00
+  - [Senin] Kelas: XI-H | Waktu: 12:30 - 13:10
+  - [Senin] Kelas: XII-C | Waktu: 13:10 - 13:50
+  - [Senin] Kelas: XII-C | Waktu: 13:50 - 14: 20
+  - [Selasa] Kelas: XI-I | Waktu: 06:45 - 07:30
+  - [Selasa] Kelas: XI-I | Waktu: 07:30 - 08:15
+  - [Selasa] Kelas: XI-J | Waktu: 08:15 - 09:00
+  - [Selasa] Kelas: XI-J | Waktu: 09:30 - 10:15
+  - [Selasa] Kelas: XI-G | Waktu: 12:15 - 12:55
+  - [Selasa] Kelas: XI-G | Waktu: 12:55 - 13:35
+  - [Rabu] Kelas: XII-B | Waktu: 06:45 - 07:30
+  - [Rabu] Kelas: XII-B | Waktu: 07:30 - 08:15
+  - [Rabu] Kelas: X-B | Waktu: 08:15 - 09:00
+  - [Rabu] Kelas: X-B | Waktu: 09:30 - 10:15
+  - [Rabu] Kelas: X-A | Waktu: 10:15 - 11:00
+  - [Rabu] Kelas: X-A | Waktu: 11:00 - 11:45
+  - [Rabu] Kelas: X-C | Waktu: 12:15 - 12:55
+  - [Rabu] Kelas: X-C | Waktu: 12:55 - 13:35
+  - [Kamis] Kelas: X-D | Waktu: 07:00 - 07:45
+  - [Kamis] Kelas: X-D | Waktu: 07:45 - 08:30
+  - [Kamis] Kelas: X-E | Waktu: 09:45 - 10:30
+  - [Kamis] Kelas: X-E | Waktu: 10:30 - 11:15
+  - [Kamis] Kelas: X-G | Waktu: 11:15 - 12:00
+  - [Jum'at] Kelas: X-F | Waktu: 07:00 - 07:45
+  - [Jum'at] Kelas: X-F | Waktu: 07:45 - 08:30
+  - [Jum'at] Kelas: X-G | Waktu: 08:30 - 09:15
+  - [Jum'at] Kelas: X-H | Waktu: 09:45 - 10:30
+  - [Jum'at] Kelas: X-H | Waktu: 10:30 - 11:15
+
+Guru: Rosa Rosma Dewi, S.Pd (Kode: 9)
+Mata Pelajaran: SENI MUSIK
+Total Jam Mengajar: 24 jp (Jam Pelajaran)
+Jadwal:
+  - [Senin] Kelas: XII-D | Waktu: 09:45 - 10:30
+  - [Senin] Kelas: XII-D | Waktu: 10:30 - 11:15
+  - [Senin] Kelas: XII-B | Waktu: 11:15 - 12:00
+  - [Senin] Kelas: XII-B | Waktu: 12:30 - 13:10
+  - [Senin] Kelas: XI-F | Waktu: 13:10 - 13:50
+  - [Senin] Kelas: XI-F | Waktu: 13:50 - 14: 20
+  - [Selasa] Kelas: XII-A | Waktu: 06:45 - 07:30
+  - [Selasa] Kelas: XII-A | Waktu: 07:30 - 08:15
+  - [Selasa] Kelas: XII-E | Waktu: 10:15 - 11:00
+  - [Selasa] Kelas: XII-E | Waktu: 11:00 - 11:45
+  - [Selasa] Kelas: XI-I | Waktu: 13:35 - 14:15
+  - [Selasa] Kelas: XI-I | Waktu: 14:15 - 14:55
+  - [Rabu] Kelas: XI-G | Waktu: 06:45 - 07:30
+  - [Rabu] Kelas: XI-G | Waktu: 07:30 - 08:15
+  - [Rabu] Kelas: XII-F | Waktu: 12:15 - 12:55
+  - [Rabu] Kelas: XII-F | Waktu: 12:55 - 13:35
+  - [Rabu] Kelas: XII-C | Waktu: 13:35 - 14:15
+  - [Rabu] Kelas: XII-C | Waktu: 14:15 - 14:55
+  - [Kamis] Kelas: XI-J | Waktu: 10:30 - 11:15
+  - [Kamis] Kelas: XI-J | Waktu: 11:15 - 12:00
+  - [Jum'at] Kelas: XI-E | Waktu: 07:45 - 08:30
+  - [Jum'at] Kelas: XI-E | Waktu: 08:30 - 09:15
+  - [Jum'at] Kelas: XI-D | Waktu: 09:45 - 10:30
+  - [Jum'at] Kelas: XI-D | Waktu: 10:30 - 11:15
+
+Guru: Siti Azizah Nurul F,S.Pd (Kode: 40)
+Mata Pelajaran: MATEMATIKA
+Total Jam Mengajar: 30 jp (Jam Pelajaran)
+Jadwal:
+  - [Senin] Kelas: XI-B | Waktu: 07:45 - 08:30
+  - [Senin] Kelas: XI-B | Waktu: 08:30 - 09:15
+  - [Senin] Kelas: XI-B | Waktu: 09:45 - 10:30
+  - [Selasa] Kelas: XI-C | Waktu: 06:45 - 07:30
+  - [Selasa] Kelas: XI-D | Waktu: 08:15 - 09:00
+  - [Selasa] Kelas: XI-D | Waktu: 09:30 - 10:15
+  - [Selasa] Kelas: XI-D | Waktu: 10:15 - 11:00
+  - [Selasa] Kelas: XI-E | Waktu: 11:00 - 11:45
+  - [Selasa] Kelas: XI-E | Waktu: 12:15 - 12:55
+  - [Selasa] Kelas: XI-E | Waktu: 12:55 - 13:35
+  - [Selasa] Kelas: XI-C | Waktu: 13:35 - 14:15
+  - [Selasa] Kelas: XI-C | Waktu: 14:15 - 14:55
+  - [Rabu] Kelas: XI-A | Waktu: 06:45 - 07:30
+  - [Rabu] Kelas: XI-A | Waktu: 07:30 - 08:15
+  - [Rabu] Kelas: XI-A | Waktu: 08:15 - 09:00
+  - [Rabu] Kelas: XII-H | Waktu: 09:30 - 10:15
+  - [Rabu] Kelas: XII-H | Waktu: 10:15 - 11:00
+  - [Rabu] Kelas: XII-H | Waktu: 11:00 - 11:45
+  - [Rabu] Kelas: XI-F | Waktu: 12:55 - 13:35
+  - [Rabu] Kelas: XI-F | Waktu: 13:35 - 14:15
+  - [Rabu] Kelas: XI-F | Waktu: 14:15 - 14:55
+  - [Kamis] Kelas: XII-F | Waktu: 07:00 - 07:45
+  - [Kamis] Kelas: XII-F | Waktu: 07:45 - 08:30
+  - [Kamis] Kelas: XII-F | Waktu: 08:30 - 09:15
+  - [Kamis] Kelas: XII-I | Waktu: 10:30 - 11:15
+  - [Kamis] Kelas: XII-I | Waktu: 11:15 - 12:00
+  - [Jum'at] Kelas: XII-I | Waktu: 07:00 - 07:45
+  - [Jum'at] Kelas: XII-G | Waktu: 08:30 - 09:15
+  - [Jum'at] Kelas: XII-G | Waktu: 09:45 - 10:30
+  - [Jum'at] Kelas: XII-G | Waktu: 10:30 - 11:15
+
+Guru: Siti Wahyuni Rahayu, S.Pd (Kode: 31)
+Mata Pelajaran: SENI TARI DAN PKWU
+Total Jam Mengajar: 24 jp (Jam Pelajaran)
+Jadwal:
+  - [Senin] Kelas: XI-C | Waktu: 07:45 - 08:30
+  - [Senin] Kelas: XI-C | Waktu: 08:30 - 09:15
+  - [Senin] Kelas: XII-H | Waktu: 09:45 - 10:30
+  - [Senin] Kelas: XII-H | Waktu: 10:30 - 11:15
+  - [Senin] Kelas: XII-F | Waktu: 11:15 - 12:00
+  - [Senin] Kelas: XII-F | Waktu: 12:30 - 13:10
+  - [Selasa] Kelas: XII-I | Waktu: 06:45 - 07:30
+  - [Selasa] Kelas: XII-I | Waktu: 07:30 - 08:15
+  - [Selasa] Kelas: XII-E | Waktu: 08:15 - 09:00
+  - [Selasa] Kelas: XII-E | Waktu: 09:30 - 10:15
+  - [Selasa] Kelas: XII-G | Waktu: 10:15 - 11:00
+  - [Selasa] Kelas: XII-G | Waktu: 11:00 - 11:45
+  - [Rabu] Kelas: XI-H | Waktu: 08:15 - 09:00
+  - [Rabu] Kelas: XI-H | Waktu: 09:30 - 10:15
+  - [Rabu] Kelas: XI-B | Waktu: 10:15 - 11:00
+  - [Rabu] Kelas: XI-B | Waktu: 11:00 - 11:45
+  - [Rabu] Kelas: XI-J | Waktu: 12:15 - 12:55
+  - [Rabu] Kelas: XI-J | Waktu: 12:55 - 13:35
+  - [Kamis] Kelas: XI-I | Waktu: 07:00 - 07:45
+  - [Kamis] Kelas: XI-I | Waktu: 07:45 - 08:30
+  - [Kamis] Kelas: XI-A | Waktu: 08:30 - 09:15
+  - [Kamis] Kelas: XI-A | Waktu: 09:45 - 10:30
+  - [Jum'at] Kelas: XII-D | Waktu: 09:45 - 10:30
+  - [Jum'at] Kelas: XII-D | Waktu: 10:30 - 11:15
+
+Guru: Susi Handayani, S.Pd (Kode: 16)
+Mata Pelajaran: MATEMATIKA
+Total Jam Mengajar: 36 jp (Jam Pelajaran)
+Jadwal:
+  - [Senin] Kelas: XI-A | Waktu: 07:45 - 08:30
+  - [Senin] Kelas: XI-A | Waktu: 08:30 - 09:15
+  - [Senin] Kelas: XII-I | Waktu: 09:45 - 10:30
+  - [Senin] Kelas: XII-I | Waktu: 10:30 - 11:15
+  - [Senin] Kelas: XI-D | Waktu: 11:15 - 12:00
+  - [Senin] Kelas: XI-D | Waktu: 12:30 - 13:10
+  - [Senin] Kelas: XI-E | Waktu: 13:10 - 13:50
+  - [Senin] Kelas: XI-E | Waktu: 13:50 - 14: 20
+  - [Selasa] Kelas: XI-A | Waktu: 06:45 - 07:30
+  - [Selasa] Kelas: XI-A | Waktu: 07:30 - 08:15
+  - [Selasa] Kelas: XII-H | Waktu: 08:15 - 09:00
+  - [Selasa] Kelas: XII-H | Waktu: 09:30 - 10:15
+  - [Selasa] Kelas: XI-C | Waktu: 10:15 - 11:00
+  - [Selasa] Kelas: XI-C | Waktu: 11:00 - 11:45
+  - [Selasa] Kelas: XII-F | Waktu: 12:15 - 12:55
+  - [Selasa] Kelas: XII-F | Waktu: 12:55 - 13:35
+  - [Selasa] Kelas: XII-G | Waktu: 13:35 - 14:15
+  - [Selasa] Kelas: XII-G | Waktu: 14:15 - 14:55
+  - [Rabu] Kelas: XII-I | Waktu: 06:45 - 07:30
+  - [Rabu] Kelas: XII-I | Waktu: 07:30 - 08:15
+  - [Rabu] Kelas: XI-C | Waktu: 08:15 - 09:00
+  - [Rabu] Kelas: XI-C | Waktu: 09:30 - 10:15
+  - [Rabu] Kelas: XI-B | Waktu: 12:15 - 12:55
+  - [Rabu] Kelas: XI-B | Waktu: 12:55 - 13:35
+  - [Rabu] Kelas: XII-F | Waktu: 13:35 - 14:15
+  - [Rabu] Kelas: XII-F | Waktu: 14:15 - 14:55
+  - [Kamis] Kelas: XII-H | Waktu: 07:00 - 07:45
+  - [Kamis] Kelas: XII-H | Waktu: 07:45 - 08:30
+  - [Kamis] Kelas: XI-E | Waktu: 08:30 - 09:15
+  - [Kamis] Kelas: XI-E | Waktu: 09:45 - 10:30
+  - [Kamis] Kelas: XI-D | Waktu: 10:30 - 11:15
+  - [Kamis] Kelas: XI-D | Waktu: 11:15 - 12:00
+  - [Jum'at] Kelas: XII-G | Waktu: 07:00 - 07:45
+  - [Jum'at] Kelas: XII-G | Waktu: 07:45 - 08:30
+  - [Jum'at] Kelas: XI-B | Waktu: 09:45 - 10:30
+  - [Jum'at] Kelas: XI-B | Waktu: 10:30 - 11:15
+
+Guru: Trisno, SE (Kode: 32)
+Mata Pelajaran: PKWU
+Total Jam Mengajar: 18 jp (Jam Pelajaran)
+Jadwal:
+  - [Senin] Kelas: X-B | Waktu: 13:10 - 13:50
+  - [Senin] Kelas: X-B | Waktu: 13:50 - 14: 20
+  - [Selasa] Kelas: X-A | Waktu: 06:45 - 07:30
+  - [Selasa] Kelas: X-A | Waktu: 07:30 - 08:15
+  - [Selasa] Kelas: X-H | Waktu: 10:15 - 11:00
+  - [Selasa] Kelas: X-H | Waktu: 11:00 - 11:45
+  - [Selasa] Kelas: X-E | Waktu: 12:15 - 12:55
+  - [Selasa] Kelas: X-E | Waktu: 12:55 - 13:35
+  - [Rabu] Kelas: X-F | Waktu: 06:45 - 07:30
+  - [Rabu] Kelas: X-C | Waktu: 08:15 - 09:00
+  - [Rabu] Kelas: X-C | Waktu: 09:30 - 10:15
+  - [Rabu] Kelas: X-D | Waktu: 10:15 - 11:00
+  - [Rabu] Kelas: X-D | Waktu: 11:00 - 11:45
+  - [Jum'at] Kelas: XI-A | Waktu: 07:00 - 07:45
+  - [Jum'at] Kelas: XI-A | Waktu: 07:45 - 08:30
+  - [Jum'at] Kelas: X-F | Waktu: 08:30 - 09:15
+  - [Jum'at] Kelas: X-G | Waktu: 09:45 - 10:30
+  - [Jum'at] Kelas: X-G | Waktu: 10:30 - 11:15
+
+Guru: Ujang Kusnadi Adam, S.Pd. (Kode: 43)
+Mata Pelajaran: SOSIOLOGI
+Total Jam Mengajar: 36 jp (Jam Pelajaran)
+Jadwal:
+  - [Senin] Kelas: XI-H | Waktu: 07:45 - 08:30
+  - [Senin] Kelas: XI-H | Waktu: 08:30 - 09:15
+  - [Senin] Kelas: XII-E | Waktu: 09:45 - 10:30
+  - [Senin] Kelas: XII-E | Waktu: 10:30 - 11:15
+  - [Senin] Kelas: XII-C | Waktu: 11:15 - 12:00
+  - [Senin] Kelas: XII-C | Waktu: 12:30 - 13:10
+  - [Senin] Kelas: XII-A | Waktu: 13:10 - 13:50
+  - [Senin] Kelas: XII-A | Waktu: 13:50 - 14: 20
+  - [Selasa] Kelas: XII-D | Waktu: 06:45 - 07:30
+  - [Selasa] Kelas: XII-D | Waktu: 07:30 - 08:15
+  - [Selasa] Kelas: XI-I | Waktu: 08:15 - 09:00
+  - [Selasa] Kelas: XI-I | Waktu: 09:30 - 10:15
+  - [Selasa] Kelas: XI-G | Waktu: 10:15 - 11:00
+  - [Selasa] Kelas: XI-G | Waktu: 11:00 - 11:45
+  - [Selasa] Kelas: XII-A | Waktu: 12:15 - 12:55
+  - [Selasa] Kelas: XII-A | Waktu: 12:55 - 13:35
+  - [Selasa] Kelas: XII-E | Waktu: 13:35 - 14:15
+  - [Selasa] Kelas: XII-E | Waktu: 14:15 - 14:55
+  - [Rabu] Kelas: XI-I | Waktu: 06:45 - 07:30
+  - [Rabu] Kelas: XI-I | Waktu: 07:30 - 08:15
+  - [Rabu] Kelas: XII-C | Waktu: 08:15 - 09:00
+  - [Rabu] Kelas: XII-C | Waktu: 09:30 - 10:15
+  - [Rabu] Kelas: XI-J | Waktu: 10:15 - 11:00
+  - [Rabu] Kelas: XI-J | Waktu: 11:00 - 11:45
+  - [Rabu] Kelas: XII-B | Waktu: 12:15 - 12:55
+  - [Rabu] Kelas: XII-B | Waktu: 12:55 - 13:35
+  - [Rabu] Kelas: XII-D | Waktu: 13:35 - 14:15
+  - [Rabu] Kelas: XII-D | Waktu: 14:15 - 14:55
+  - [Kamis] Kelas: XI-J | Waktu: 07:00 - 07:45
+  - [Kamis] Kelas: XI-J | Waktu: 07:45 - 08:30
+  - [Kamis] Kelas: XI-G | Waktu: 08:30 - 09:15
+  - [Kamis] Kelas: XI-G | Waktu: 09:45 - 10:30
+  - [Kamis] Kelas: XII-B | Waktu: 10:30 - 11:15
+  - [Kamis] Kelas: XII-B | Waktu: 11:15 - 12:00
+  - [Jum'at] Kelas: XI-H | Waktu: 07:45 - 08:30
+  - [Jum'at] Kelas: XI-H | Waktu: 08:30 - 09:15
+
+Guru: Veliana Nursyamsiah,M.Pd (Kode: 17)
+Mata Pelajaran: BAHASA INDONESIA
+Total Jam Mengajar: 24 jp (Jam Pelajaran)
+Jadwal:
+  - [Senin] Kelas: X-K | Waktu: 07:45 - 08:30
+  - [Senin] Kelas: X-K | Waktu: 08:30 - 09:15
+  - [Senin] Kelas: X-K | Waktu: 09:45 - 10:30
+  - [Senin] Kelas: XI-B | Waktu: 10:30 - 11:15
+  - [Senin] Kelas: XI-B | Waktu: 11:15 - 12:00
+  - [Senin] Kelas: XI-B | Waktu: 12:30 - 13:10
+  - [Selasa] Kelas: XI-E | Waktu: 08:15 - 09:00
+  - [Selasa] Kelas: XI-E | Waktu: 09:30 - 10:15
+  - [Selasa] Kelas: XI-E | Waktu: 10:15 - 11:00
+  - [Selasa] Kelas: X-J | Waktu: 11:00 - 11:45
+  - [Selasa] Kelas: X-J | Waktu: 12:15 - 12:55
+  - [Selasa] Kelas: X-J | Waktu: 12:55 - 13:35
+  - [Rabu] Kelas: XI-D | Waktu: 12:55 - 13:35
+  - [Rabu] Kelas: XI-D | Waktu: 13:35 - 14:15
+  - [Rabu] Kelas: XI-D | Waktu: 14:15 - 14:55
+  - [Kamis] Kelas: XI-F | Waktu: 07:00 - 07:45
+  - [Kamis] Kelas: XI-F | Waktu: 07:45 - 08:30
+  - [Kamis] Kelas: XI-C | Waktu: 08:30 - 09:15
+  - [Kamis] Kelas: XI-C | Waktu: 09:45 - 10:30
+  - [Kamis] Kelas: XI-C | Waktu: 10:30 - 11:15
+  - [Jum'at] Kelas: XI-F | Waktu: 07:00 - 07:45
+  - [Jum'at] Kelas: XI-A | Waktu: 08:30 - 09:15
+  - [Jum'at] Kelas: XI-A | Waktu: 09:45 - 10:30
+  - [Jum'at] Kelas: XI-A | Waktu: 10:30 - 11:15
+
+Guru: Yadin Hardiana, S.Pd.I (Kode: 36)
+Mata Pelajaran: PAIBP
+Total Jam Mengajar: 20 jp (Jam Pelajaran)
+Jadwal:
+  - [Senin] Kelas: XII-I | Waktu: 07:45 - 08:30
+  - [Senin] Kelas: XII-I | Waktu: 08:30 - 09:15
+  - [Senin] Kelas: X-J | Waktu: 09:45 - 10:30
+  - [Senin] Kelas: X-J | Waktu: 10:30 - 11:15
+  - [Senin] Kelas: XII-G | Waktu: 11:15 - 12:00
+  - [Senin] Kelas: XII-G | Waktu: 12:30 - 13:10
+  - [Rabu] Kelas: X-K | Waktu: 06:45 - 07:30
+  - [Rabu] Kelas: X-K | Waktu: 07:30 - 08:15
+  - [Rabu] Kelas: XI-G | Waktu: 08:15 - 09:00
+  - [Rabu] Kelas: XI-G | Waktu: 09:30 - 10:15
+  - [Rabu] Kelas: XI-I | Waktu: 11:00 - 11:45
+  - [Rabu] Kelas: XI-I | Waktu: 12:15 - 12:55
+  - [Rabu] Kelas: XI-J | Waktu: 13:35 - 14:15
+  - [Rabu] Kelas: XI-J | Waktu: 14:15 - 14:55
+  - [Kamis] Kelas: XI-H | Waktu: 07:00 - 07:45
+  - [Kamis] Kelas: XI-H | Waktu: 07:45 - 08:30
+  - [Kamis] Kelas: XII-H | Waktu: 08:30 - 09:15
+  - [Kamis] Kelas: XII-H | Waktu: 09:45 - 10:30
+  - [Kamis] Kelas: X-I | Waktu: 10:30 - 11:15
+  - [Kamis] Kelas: X-I | Waktu: 11:15 - 12:00
+
+Guru: Yolanda Novitri S.,S.Pd (Kode: 33)
+Mata Pelajaran: KIMIA DAN PKWU
+Total Jam Mengajar: 20 jp (Jam Pelajaran)
+Jadwal:
+  - [Senin] Kelas: XII-G | Waktu: 09:45 - 10:30
+  - [Senin] Kelas: XII-G | Waktu: 10:30 - 11:15
+  - [Senin] Kelas: XII-H | Waktu: 11:15 - 12:00
+  - [Senin] Kelas: XII-H | Waktu: 12:30 - 13:10
+  - [Selasa] Kelas: XII-H | Waktu: 06:45 - 07:30
+  - [Selasa] Kelas: XII-H | Waktu: 07:30 - 08:15
+  - [Selasa] Kelas: XII-I | Waktu: 08:15 - 09:00
+  - [Selasa] Kelas: XII-I | Waktu: 09:30 - 10:15
+  - [Selasa] Kelas: XII-F | Waktu: 10:15 - 11:00
+  - [Selasa] Kelas: XII-F | Waktu: 11:00 - 11:45
+  - [Selasa] Kelas: XI-D | Waktu: 12:55 - 13:35
+  - [Selasa] Kelas: XI-D | Waktu: 13:35 - 14:15
+  - [Selasa] Kelas: XI-D | Waktu: 14:15 - 14:55
+  - [Rabu] Kelas: XII-F | Waktu: 06:45 - 07:30
+  - [Rabu] Kelas: XII-F | Waktu: 07:30 - 08:15
+  - [Rabu] Kelas: XII-G | Waktu: 10:15 - 11:00
+  - [Rabu] Kelas: XII-G | Waktu: 11:00 - 11:45
+  - [Jum'at] Kelas: XI-D | Waktu: 07:00 - 07:45
+  - [Jum'at] Kelas: XII-I | Waktu: 09:45 - 10:30
+  - [Jum'at] Kelas: XII-I | Waktu: 10:30 - 11:15
+
+Guru: Zen Fatwa, S.Pd (Kode: 34)
+Mata Pelajaran: FISIKA dan KKA
+Total Jam Mengajar: 28 jp (Jam Pelajaran)
+Jadwal:
+  - [Senin] Kelas: XII-H | Waktu: 07:45 - 08:30
+  - [Senin] Kelas: XII-H | Waktu: 08:30 - 09:15
+  - [Senin] Kelas: X-J | Waktu: 11:15 - 12:00
+  - [Senin] Kelas: X-J | Waktu: 12:30 - 13:10
+  - [Senin] Kelas: XI-A | Waktu: 13:10 - 13:50
+  - [Senin] Kelas: XI-A | Waktu: 13:50 - 14: 20
+  - [Selasa] Kelas: XII-G | Waktu: 06:45 - 07:30
+  - [Selasa] Kelas: XII-G | Waktu: 07:30 - 08:15
+  - [Selasa] Kelas: X-K | Waktu: 08:15 - 09:00
+  - [Selasa] Kelas: X-K | Waktu: 09:30 - 10:15
+  - [Selasa] Kelas: XII-I | Waktu: 10:15 - 11:00
+  - [Selasa] Kelas: XII-I | Waktu: 11:00 - 11:45
+  - [Selasa] Kelas: XI-C | Waktu: 12:15 - 12:55
+  - [Selasa] Kelas: XI-C | Waktu: 12:55 - 13:35
+  - [Selasa] Kelas: XII-H | Waktu: 13:35 - 14:15
+  - [Selasa] Kelas: XII-H | Waktu: 14:15 - 14:55
+  - [Rabu] Kelas: XI-A | Waktu: 09:30 - 10:15
+  - [Rabu] Kelas: XI-A | Waktu: 10:15 - 11:00
+  - [Rabu] Kelas: XII-G | Waktu: 13:35 - 14:15
+  - [Rabu] Kelas: XII-G | Waktu: 14:15 - 14:55
+  - [Kamis] Kelas: XII-I | Waktu: 08:30 - 09:15
+  - [Kamis] Kelas: XII-I | Waktu: 09:45 - 10:30
+  - [Kamis] Kelas: XI-B | Waktu: 11:15 - 12:00
+  - [Jum'at] Kelas: XI-B | Waktu: 07:00 - 07:45
+  - [Jum'at] Kelas: XI-B | Waktu: 07:45 - 08:30
+  - [Jum'at] Kelas: XI-B | Waktu: 08:30 - 09:15
+  - [Jum'at] Kelas: XI-C | Waktu: 09:45 - 10:30
+  - [Jum'at] Kelas: XI-C | Waktu: 10:30 - 11:15
+
+Guru: Adi Darma Indra,M.Pd (Kode: 13)
+Mata Pelajaran: PENDIDIKAN PANCASILA
+Total Jam Mengajar: 12 jp (Jam Pelajaran)
+Jadwal:
+  - [Selasa] Kelas: XI-D | Waktu: 06:45 - 07:30
+  - [Selasa] Kelas: XI-D | Waktu: 07:30 - 08:15
+  - [Selasa] Kelas: XI-B | Waktu: 12:15 - 12:55
+  - [Selasa] Kelas: XI-B | Waktu: 12:55 - 13:35
+  - [Rabu] Kelas: XI-C | Waktu: 12:15 - 12:55
+  - [Rabu] Kelas: XI-C | Waktu: 12:55 - 13:35
+  - [Rabu] Kelas: XI-E | Waktu: 13:35 - 14:15
+  - [Rabu] Kelas: XI-E | Waktu: 14:15 - 14:55
+  - [Kamis] Kelas: XI-F | Waktu: 08:30 - 09:15
+  - [Kamis] Kelas: XI-F | Waktu: 09:45 - 10:30
+  - [Kamis] Kelas: XI-A | Waktu: 10:30 - 11:15
+  - [Kamis] Kelas: XI-A | Waktu: 11:15 - 12:00
+

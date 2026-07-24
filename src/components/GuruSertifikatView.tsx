@@ -396,7 +396,7 @@ export function drawJpTablePageOnCanvas(
     ctx.drawImage(logoBackImg, imgX, imgY, imgW, imgH);
   }
 
-  const rows = kegiatan.materi_jp || [];
+  const rows = config.materiJpRows && config.materiJpRows.length > 0 ? config.materiJpRows : (kegiatan.materi_jp || []);
 
   // Smart Detection Layout Adjustments
   const baseTitleSize = pos.jpHeaderTitlePos?.fontSize || 38;
@@ -921,7 +921,7 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
         logoFrontImg
       );
 
-      const hasJp = kegiatan.materi_jp && kegiatan.materi_jp.length > 0;
+      const hasJp = config.hasJpPage && config.materiJpRows && config.materiJpRows.length > 0;
 
       if (hasJp) {
         // Halaman 2: Tabel Jam Pelajaran (JP)
@@ -1153,7 +1153,7 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
                   ) : (
                     <>
                       <Download className="w-4 h-4" />
-                      {kegiatan.materi_jp && kegiatan.materi_jp.length > 0 ? "Unduh PDF" : "Unduh PNG"}
+                      {currentConfig.hasJpPage && currentConfig.materiJpRows && currentConfig.materiJpRows.length > 0 ? "Unduh PDF" : "Unduh PNG"}
                     </>
                   )}
                 </button>

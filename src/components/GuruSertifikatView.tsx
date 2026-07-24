@@ -148,12 +148,12 @@ export function drawCertificateOnCanvas(
   }
 
   // 5. Deskripsi Kegiatan (Formatted Template & Bold Support)
-  let rawDesc = config.deskripsiTemplate || 'Atas partisipasi aktifnya sebagai **{peran}** dalam kegiatan **"{nama_kegiatan}"** yang diselenggarakan oleh **{penyelenggara}**.';
+  let rawDesc = config.deskripsiTemplate || 'Atas partisipasi aktifnya sebagai **{peran}** yang diselenggarakan.';
   rawDesc = rawDesc
     .replace(/\{peran\}/gi, kegiatan.peran)
-    .replace(/\{nama_kegiatan\}/gi, kegiatan.nama_kegiatan)
-    .replace(/\{kegiatan\}/gi, kegiatan.nama_kegiatan)
-    .replace(/\{penyelenggara\}/gi, kegiatan.penyelenggara || "SMAN 19 Bandung")
+    .replace(/\{nama_kegiatan\}/gi, "")
+    .replace(/\{kegiatan\}/gi, "")
+    .replace(/\{penyelenggara\}/gi, "")
     .replace(/\{nama\}/gi, formattedName)
     .replace(/\{no_sertifikat\}/gi, kegiatan.no_sertifikat || "");
 
@@ -364,8 +364,8 @@ export function drawJpTablePageOnCanvas(
   // Helper to replace variable placeholders
   const replaceVars = (text: string) => {
     return (text || "")
-      .replace(/{nama_kegiatan}/gi, kegiatan.nama_kegiatan)
-      .replace(/{penyelenggara}/gi, kegiatan.penyelenggara || "SMAN 19 Bandung")
+      .replace(/{nama_kegiatan}/gi, "")
+      .replace(/{penyelenggara}/gi, "")
       .replace(/{peran}/gi, kegiatan.peran);
   };
 

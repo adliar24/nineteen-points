@@ -5,7 +5,7 @@ import { Award, Plus, Trash2, Search, X, Check, RefreshCw, Layout, Upload, Save,
 import { getAllKegiatanGuru, getTeacherProfiles, addKegiatanGuruBulk, deleteKegiatanGuru, deleteKegiatanGuruBulk, deleteAllKegiatanGuru } from "../dbStore";
 import ModalPortal from "./ModalPortal";
 import { toSentenceCase } from "../formatName";
-import { getSertifikatConfigAsync, saveSertifikatConfigAsync, resetSertifikatConfigAsync, SertifikatLayoutConfig, DEFAULT_SERTIFIKAT_CONFIG } from "../sertifikatConfig";
+import { getSertifikatConfigAsync, saveSertifikatConfigAsync, resetSertifikatConfigAsync, SertifikatLayoutConfig, DEFAULT_SERTIFIKAT_CONFIG, getSertifikatPresetsAsync, saveSertifikatPresetAsync, deleteSertifikatPresetAsync } from "../sertifikatConfig";
 import { drawCertificateOnCanvas, drawJpTablePageOnCanvas } from "./GuruSertifikatView";
 import { KegiatanGuru } from "../types";
 import { jsPDF } from "jspdf";
@@ -72,12 +72,25 @@ export default function KelolaSertifikatGuruView() {
   const [config, setConfig] = useState<SertifikatLayoutConfig>(DEFAULT_SERTIFIKAT_CONFIG);
   const [selectedElement, setSelectedElement] = useState<string>("namaGuru");
   const [desainerPage, setDesainerPage] = useState<1 | 2>(1);
-  const [sidebarTab, setSidebarTab] = useState<"konten" | "posisi" | "jp">("konten");
+  const [sidebarTab, setSidebarTab] = useState<"konten" | "posisi" | "jp" | "presets">("konten");
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  // Load config from IndexedDB on mount
+  // Preset State
+  const [presets, setPresets] = useState<{ id: string; config: SertifikatLayoutConfig }[]>([]);
+  const [presetModalOpen, setPresetModalOpen] = useState(false);
+  const [presetSlotToSave, setPresetSlotToSave] = useState("");
+  const [presetNameInput, setPresetNameInput] = useState("");
+  const [successToast, setSuccessToast] = useState("");
+  const [selectedFolders, setSelectedFolders] = useState<string[]>([]);
+
+  const loadPresets = () => {
+    getSertifikatPresetsAsync().then(res => setPresets(res));
+  };
+
+  // Load config & presets on mount
   useEffect(() => {
     getSertifikatConfigAsync().then(cfg => setConfig(cfg));
+    loadPresets();
   }, []);
 
   const changeTtdCount = (count: 1 | 2 | 3) => {
@@ -1022,72 +1035,160 @@ export default function KelolaSertifikatGuruView() {
                   <p className="text-xs font-bold text-brand-400 mt-2">Memuat daftar kegiatan...</p>
                 </div>
               ) : filteredGroupedActivities.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredGroupedActivities.map((folder) => (
-                    <div
-                      key={folder.nama_kegiatan}
-                      className="bg-white rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 p-6 hover:scale-[1.01] hover:shadow-2xl transition-all relative overflow-hidden group flex flex-col justify-between"
-                    >
-                      {/* Folder Icon Decoration */}
-                      <div className="absolute top-0 right-0 w-24 h-24 bg-brand-600/5 rounded-full filter blur-xl translate-x-6 -translate-y-6 group-hover:scale-125 transition-transform" />
+                <div className="space-y-4">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-slate-50 p-4 rounded-3xl border border-slate-200/50 gap-3">
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (selectedFolders.length === filteredGroupedActivities.length) {
+                            setSelectedFolders([]);
+                          } else {
+                            setSelectedFolders(filteredGroupedActivities.map(f => f.nama_kegiatan));
+                          }
+                        }}
+                        className="px-3.5 py-2 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl text-slate-700 text-[10px] sm:text-xs font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5"
+                      >
+                        {selectedFolders.length === filteredGroupedActivities.length ? "Batal Pilih" : "Pilih Semua"}
+                      </button>
+                      <span className="text-[11px] font-bold text-slate-500">
+                        {selectedFolders.length} Folder Terpilih
+                      </span>
+                    </div>
 
-                      <div className="space-y-4 relative z-10">
-                        <div className="flex justify-between items-start">
-                          <div className="w-12 h-12 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center">
-                            <Folder className="w-7 h-7" />
+                    {selectedFolders.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          const foldersToDelete = filteredGroupedActivities.filter(f => selectedFolders.includes(f.nama_kegiatan));
+                          const totalCerts = foldersToDelete.reduce((acc, f) => acc + f.items.length, 0);
+                          if (confirm(`Apakah Anda yakin ingin menghapus ${selectedFolders.length} folder terpilih beserta seluruh ${totalCerts} sertifikat di dalamnya secara permanen?`)) {
+                            const idsToDelete = foldersToDelete.flatMap(f => f.items.map(item => item.id));
+                            try {
+                              await deleteKegiatanGuruBulk(idsToDelete);
+                              setSelectedFolders([]);
+                              refetchKegiatan();
+                              setSuccessToast("Berhasil menghapus folder terpilih!");
+                              setTimeout(() => setSuccessToast(""), 3000);
+                            } catch (err: any) {
+                              alert("Gagal menghapus: " + err.message);
+                            }
+                          }
+                        }}
+                        className="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-wider transition-all cursor-pointer border-0 flex items-center gap-1.5 shadow-sm"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        Hapus Folder Terpilih
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredGroupedActivities.map((folder) => (
+                      <div
+                        key={folder.nama_kegiatan}
+                        className="bg-white rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 p-6 hover:scale-[1.01] hover:shadow-2xl transition-all relative overflow-hidden group flex flex-col justify-between"
+                      >
+                        {/* Folder Icon Decoration */}
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-brand-600/5 rounded-full filter blur-xl translate-x-6 -translate-y-6 group-hover:scale-125 transition-transform" />
+
+                        <div className="space-y-4 relative z-10">
+                          <div className="flex justify-between items-start">
+                            <div className="flex items-center gap-3">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const isSelected = selectedFolders.includes(folder.nama_kegiatan);
+                                  if (isSelected) {
+                                    setSelectedFolders(prev => prev.filter(f => f !== folder.nama_kegiatan));
+                                  } else {
+                                    setSelectedFolders(prev => [...prev, folder.nama_kegiatan]);
+                                  }
+                                }}
+                                className="p-1 text-slate-400 hover:text-brand-600 transition-colors cursor-pointer bg-transparent border-0"
+                              >
+                                {selectedFolders.includes(folder.nama_kegiatan) ? (
+                                  <CheckSquare className="w-5 h-5 text-brand-600" />
+                                ) : (
+                                  <Square className="w-5 h-5" />
+                                )}
+                              </button>
+                              <div className="w-12 h-12 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center">
+                                <Folder className="w-7 h-7" />
+                              </div>
+                            </div>
+                            <span className="text-[10px] font-black uppercase bg-brand-50 text-brand-700 border border-brand-200 px-2.5 py-1 rounded-xl">
+                              {folder.items.length} Guru
+                            </span>
                           </div>
-                          <span className="text-[10px] font-black uppercase bg-brand-50 text-brand-700 border border-brand-200 px-2.5 py-1 rounded-xl">
-                            {folder.items.length} Guru
-                          </span>
+
+                          <div className="space-y-1">
+                            <h4 
+                              onClick={() => {
+                                setSelectedActivityFolder(folder.nama_kegiatan);
+                                setSearchQuery("");
+                              }}
+                              className="font-extrabold text-sm text-brand-950 group-hover:text-brand-600 transition-colors line-clamp-2 leading-snug cursor-pointer"
+                            >
+                              {folder.nama_kegiatan}
+                            </h4>
+                            <p className="text-[10px] text-slate-400 font-bold">{folder.penyelenggara}</p>
+                          </div>
+
+                          <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-50">
+                            <span className="text-[9px] font-bold text-slate-400">
+                              {new Date(folder.tanggal_kegiatan).toLocaleDateString("id-ID", { day: 'numeric', month: 'short', year: 'numeric' })}
+                            </span>
+                            {folder.isJp && (
+                              <span className="text-[9px] font-black uppercase bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-lg">
+                                JP ({folder.total_jp} JP)
+                              </span>
+                            )}
+                          </div>
                         </div>
 
-                        <div className="space-y-1">
-                          <h4 
+                        <div className="pt-5 mt-4 border-t border-slate-50 flex gap-2">
+                          <button
                             onClick={() => {
                               setSelectedActivityFolder(folder.nama_kegiatan);
                               setSearchQuery("");
                             }}
-                            className="font-extrabold text-sm text-brand-950 group-hover:text-brand-600 transition-colors line-clamp-2 leading-snug cursor-pointer"
+                            className="flex-1 py-3 bg-brand-50 hover:bg-brand-100 border border-brand-100 rounded-2xl text-brand-700 text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                           >
-                            {folder.nama_kegiatan}
-                          </h4>
-                          <p className="text-[10px] text-slate-400 font-bold">{folder.penyelenggara}</p>
-                        </div>
-
-                        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-50">
-                          <span className="text-[9px] font-bold text-slate-400">
-                            {new Date(folder.tanggal_kegiatan).toLocaleDateString("id-ID", { day: 'numeric', month: 'short', year: 'numeric' })}
-                          </span>
-                          {folder.isJp && (
-                            <span className="text-[9px] font-black uppercase bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-lg">
-                              JP ({folder.total_jp} JP)
-                            </span>
-                          )}
+                            <FolderOpen className="w-4 h-4" />
+                            Buka Folder
+                          </button>
+                          <button
+                            onClick={() => handleDownloadAllAsZip(folder.nama_kegiatan, folder.items)}
+                            disabled={zipDownloadingId !== null}
+                            className="flex-1 py-3 bg-brand-600 hover:bg-brand-750 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md disabled:opacity-50"
+                          >
+                            <Download className="w-4 h-4" />
+                            Unduh ZIP
+                          </button>
+                          <button
+                            onClick={async () => {
+                              if (confirm(`Apakah Anda yakin ingin menghapus folder "${folder.nama_kegiatan}" beserta seluruh ${folder.items.length} sertifikat di dalamnya secara permanen?`)) {
+                                const idsToDelete = folder.items.map(item => item.id);
+                                try {
+                                  await deleteKegiatanGuruBulk(idsToDelete);
+                                  refetchKegiatan();
+                                  setSuccessToast("Berhasil menghapus folder!");
+                                  setTimeout(() => setSuccessToast(""), 3000);
+                                } catch (err: any) {
+                                  alert("Gagal menghapus: " + err.message);
+                                }
+                              }
+                            }}
+                            className="p-3 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-100 rounded-2xl cursor-pointer transition-all flex items-center justify-center"
+                            title="Hapus Folder"
+                          >
+                            <Trash2 className="w-4.5 h-4.5" />
+                          </button>
                         </div>
                       </div>
-
-                      <div className="pt-5 mt-4 border-t border-slate-50 flex gap-2">
-                        <button
-                          onClick={() => {
-                            setSelectedActivityFolder(folder.nama_kegiatan);
-                            setSearchQuery("");
-                          }}
-                          className="flex-1 py-3 bg-brand-50 hover:bg-brand-100 border border-brand-100 rounded-2xl text-brand-700 text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-                        >
-                          <FolderOpen className="w-4 h-4" />
-                          Buka Folder
-                        </button>
-                        <button
-                          onClick={() => handleDownloadAllAsZip(folder.nama_kegiatan, folder.items)}
-                          disabled={zipDownloadingId !== null}
-                          className="flex-1 py-3 bg-brand-600 hover:bg-brand-750 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md disabled:opacity-50"
-                        >
-                          <Download className="w-4 h-4" />
-                          Unduh ZIP
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               ) : (
                 <div className="bg-white rounded-3xl p-16 text-center border border-brand-100 shadow-xl shadow-brand-900/5 max-w-md mx-auto space-y-3">
@@ -1191,36 +1292,46 @@ export default function KelolaSertifikatGuruView() {
           {/* LEFT PANEL: UPLOAD, DESKRIPSI & ELEMENT POSITIONS CONTROL (5 COLS) */}
           <div className="lg:col-span-5 space-y-6">
             {/* Tab Navigation for Sidebar */}
-            <div className="flex bg-slate-100 p-1 rounded-2xl border border-slate-200/60 gap-1 shadow-sm">
+            <div className="flex bg-slate-100 p-1 rounded-2xl border border-slate-200/60 gap-1 shadow-sm flex-wrap">
               <button
                 type="button"
                 onClick={() => setSidebarTab("konten")}
-                className={`flex-1 py-2 rounded-xl text-xs font-black transition-all cursor-pointer border-0 flex items-center justify-center gap-1.5 ${
+                className={`flex-1 min-w-[70px] py-2 rounded-xl text-[10px] sm:text-xs font-black transition-all cursor-pointer border-0 flex items-center justify-center gap-1 ${
                   sidebarTab === "konten" ? "bg-white text-brand-950 shadow-sm" : "bg-transparent text-slate-500 hover:text-slate-900"
                 }`}
               >
                 <FileText className="w-3.5 h-3.5" />
-                Konten Depan
+                Konten
               </button>
               <button
                 type="button"
                 onClick={() => setSidebarTab("posisi")}
-                className={`flex-1 py-2 rounded-xl text-xs font-black transition-all cursor-pointer border-0 flex items-center justify-center gap-1.5 ${
+                className={`flex-1 min-w-[70px] py-2 rounded-xl text-[10px] sm:text-xs font-black transition-all cursor-pointer border-0 flex items-center justify-center gap-1 ${
                   sidebarTab === "posisi" ? "bg-white text-brand-950 shadow-sm" : "bg-transparent text-slate-500 hover:text-slate-900"
                 }`}
               >
                 <Move className="w-3.5 h-3.5" />
-                Posisi Elemen
+                Posisi
               </button>
               <button
                 type="button"
                 onClick={() => setSidebarTab("jp")}
-                className={`flex-1 py-2 rounded-xl text-xs font-black transition-all cursor-pointer border-0 flex items-center justify-center gap-1.5 ${
+                className={`flex-1 min-w-[70px] py-2 rounded-xl text-[10px] sm:text-xs font-black transition-all cursor-pointer border-0 flex items-center justify-center gap-1 ${
                   sidebarTab === "jp" ? "bg-white text-brand-950 shadow-sm" : "bg-transparent text-slate-500 hover:text-slate-900"
                 }`}
               >
                 <Layout className="w-3.5 h-3.5" />
-                Halaman JP
+                Hal JP
+              </button>
+              <button
+                type="button"
+                onClick={() => setSidebarTab("presets")}
+                className={`flex-1 min-w-[70px] py-2 rounded-xl text-[10px] sm:text-xs font-black transition-all cursor-pointer border-0 flex items-center justify-center gap-1 ${
+                  sidebarTab === "presets" ? "bg-white text-brand-950 shadow-sm" : "bg-transparent text-slate-500 hover:text-slate-900"
+                }`}
+              >
+                <Award className="w-3.5 h-3.5" />
+                Template
               </button>
             </div>
 
@@ -2192,6 +2303,32 @@ export default function KelolaSertifikatGuruView() {
                         </div>
                       </div>
 
+                      {/* Warna Teks TTD */}
+                      <div className="pt-2 border-t border-slate-100">
+                        <label className="text-[10px] font-bold text-slate-500 block">Warna Teks TTD</label>
+                        <div className="flex items-center gap-2 mt-1">
+                          <input
+                            type="color"
+                            value={elemPos.color || "#1e1b4b"}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setConfig(prev => ({
+                                ...prev,
+                                positions: {
+                                  ...prev.positions,
+                                  [posKey]: { ...elemPos, color: val },
+                                  [jabKey]: { ...(prev.positions as any)[jabKey], color: val },
+                                  [s1Key]: { ...(prev.positions as any)[s1Key], color: val },
+                                  [s2Key]: { ...(prev.positions as any)[s2Key], color: val }
+                                }
+                              }));
+                            }}
+                            className="w-8 h-9 bg-transparent border-0 cursor-pointer rounded"
+                          />
+                          <span className="text-[11px] font-mono text-slate-600 uppercase font-bold">{elemPos.color || "#1e1b4b"}</span>
+                        </div>
+                      </div>
+
                       {/* Image Specific Sizers & Offset positions */}
                       <div className="pt-3 border-t border-slate-100 space-y-3">
                         <label className="text-[10px] font-black uppercase text-brand-600 tracking-wider block">
@@ -2548,6 +2685,88 @@ export default function KelolaSertifikatGuruView() {
             </div>
           )}
 
+          {sidebarTab === "presets" && (
+            <div className="space-y-6 animate-fade-in">
+              <div className="bg-white p-5 rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 space-y-4">
+                <div>
+                  <h3 className="text-xs font-black text-brand-950 uppercase tracking-wider">Template Presets (Maks 10)</h3>
+                  <p className="text-[10px] text-slate-400 font-semibold leading-relaxed mt-1">
+                    Simpan kreasi desain sertifikat Anda ke salah satu slot di bawah agar dapat digunakan kembali nanti tanpa perlu mengatur ulang posisi dari awal.
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  {Array.from({ length: 10 }).map((_, index) => {
+                    const presetId = `preset_${index + 1}`;
+                    const preset = presets.find(p => p.id === presetId);
+
+                    return (
+                      <div
+                        key={presetId}
+                        className={`p-3 rounded-2xl border flex items-center justify-between gap-3 transition-all ${
+                          preset
+                            ? "bg-brand-50/30 border-brand-100"
+                            : "bg-slate-50/50 border-slate-100 border-dashed"
+                        }`}
+                      >
+                        <div className="space-y-1 min-w-0">
+                          <span className="text-[9px] font-bold text-slate-400 block">Slot {index + 1}</span>
+                          <span className={`text-[11px] font-bold truncate block ${preset ? "text-brand-950" : "text-slate-400 italic"}`}>
+                            {preset ? preset.config.templateName : "Slot Kosong"}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          {preset ? (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setConfig(preset.config);
+                                  saveSertifikatConfigAsync(preset.config);
+                                  setSuccessToast("Berhasil menerapkan template!");
+                                  setTimeout(() => setSuccessToast(""), 3000);
+                                }}
+                                className="px-2.5 py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-[10px] font-black uppercase cursor-pointer transition-all flex items-center gap-1 shadow-sm border-0"
+                              >
+                                Gunakan
+                              </button>
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  if (confirm(`Apakah Anda yakin ingin menghapus template "${preset.config.templateName}" dari Slot ${index + 1}?`)) {
+                                    await deleteSertifikatPresetAsync(presetId);
+                                    loadPresets();
+                                  }
+                                }}
+                                className="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl cursor-pointer border-0 transition-all flex items-center justify-center"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setPresetSlotToSave(presetId);
+                                setPresetNameInput("");
+                                setPresetModalOpen(true);
+                              }}
+                              className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-[10px] font-black uppercase cursor-pointer transition-all border-0 flex items-center gap-1"
+                            >
+                              <Plus className="w-3 h-3" />
+                              Simpan Desain
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* SAVE / RESET BUTTONS */}
           <div className="bg-white p-5 rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 flex items-center justify-between gap-3">
                 <button
@@ -2833,6 +3052,76 @@ export default function KelolaSertifikatGuruView() {
           </div>
         </form>
       </ModalPortal>
+
+      {/* MODAL SIMPAN PRESET TEMPLATE */}
+      <ModalPortal
+        isOpen={presetModalOpen}
+        onClose={() => setPresetModalOpen(false)}
+        title="Simpan Template Desain"
+        icon={Award}
+        maxWidth="max-w-md"
+      >
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+            if (!presetNameInput.trim()) {
+              alert("Isi nama template terlebih dahulu!");
+              return;
+            }
+            await saveSertifikatPresetAsync(presetSlotToSave, config, presetNameInput);
+            setPresetModalOpen(false);
+            loadPresets();
+            setSuccessToast("Template berhasil disimpan!");
+            setTimeout(() => setSuccessToast(""), 3000);
+          }}
+          className="space-y-4"
+        >
+          <div className="space-y-1">
+            <label className="text-[10px] font-black text-brand-400 uppercase tracking-widest block">
+              Nama Template / Desain *
+            </label>
+            <input
+              type="text"
+              placeholder="Contoh: Template Kegiatan KBM / Bimtek Merdeka"
+              value={presetNameInput}
+              onChange={(e) => setPresetNameInput(e.target.value)}
+              required
+              className="w-full p-3 bg-brand-50/40 rounded-2xl border border-brand-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 text-brand-950"
+            />
+          </div>
+
+          <div className="pt-4 border-t border-brand-100 flex items-center justify-end gap-3">
+            <button
+              type="button"
+              onClick={() => setPresetModalOpen(false)}
+              className="px-4 py-2.5 rounded-2xl hover:bg-brand-200/40 text-brand-600 font-bold text-xs transition-all cursor-pointer bg-transparent border-0"
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              className="px-5 py-2.5 rounded-2xl brand-gradient text-white font-bold text-xs shadow-md transition-all cursor-pointer border-0"
+            >
+              Simpan Template
+            </button>
+          </div>
+        </form>
+      </ModalPortal>
+
+      {/* Toast Notification */}
+      <AnimatePresence>
+        {successToast && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.9 }}
+            className="fixed bottom-6 right-6 bg-emerald-600 text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-2 z-[9999] border border-emerald-500/20"
+          >
+            <Check className="w-4 h-4" />
+            <span className="text-xs font-black uppercase tracking-wider">{successToast}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

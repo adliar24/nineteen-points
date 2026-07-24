@@ -77,6 +77,7 @@ export interface SertifikatLayoutConfig {
   jpTableY?: number;
   jpTableFontSize?: number;
   jpTableRowPaddingY?: number;
+  templateName?: string;
 
   // Posisi & Styling Elemen
   positions: {
@@ -641,4 +642,101 @@ export async function resetSertifikatConfigAsync(): Promise<SertifikatLayoutConf
 export function resetSertifikatConfig(): SertifikatLayoutConfig {
   resetSertifikatConfigAsync();
   return DEFAULT_SERTIFIKAT_CONFIG;
+}
+
+export async function getSertifikatPresetsAsync(): Promise<{ id: string; config: SertifikatLayoutConfig }[]> {
+  try {
+    const { data, error } = await supabase
+      .from("sertifikat_config")
+      .select("id, config")
+      .like("id", "preset_%")
+      .order("id", { ascending: true });
+
+    if (error) throw error;
+    if (data) {
+      return data.map(item => ({
+        id: item.id,
+        config: item.config as SertifikatLayoutConfig
+      }));
+    }
+  } catch (e) {
+    console.error("Gagal mengambil preset dari Supabase, coba IndexedDB:", e);
+  }
+
+  // Fallback to IndexedDB
+  try {
+    const db = await openDB();
+    const tx = db.transaction(STORE_NAME, "readonly");
+    const store = tx.objectStore(STORE_NAME);
+    const presets: { id: string; config: SertifikatLayoutConfig }[] = [];
+    for (let i = 1; i <= 10; i++) {
+      const key = `preset_${i}`;
+      const req = store.get(key);
+      const val = await new Promise<SertifikatLayoutConfig | null>((resolve) => {
+        req.onsuccess = () => resolve(req.result || null);
+        req.onerror = () => resolve(null);
+      });
+      if (val) {
+        presets.push({ id: key, config: val });
+      }
+    }
+    return presets;
+  } catch (err) {
+    console.error("Gagal mengambil preset dari IndexedDB:", err);
+    return [];
+  }
+}
+
+export async function saveSertifikatPresetAsync(presetId: string, config: SertifikatLayoutConfig, name: string): Promise<void> {
+  const presetConfig = {
+    ...config,
+    templateName: name
+  };
+
+  // 1. Simpan ke Supabase
+  try {
+    const { error } = await supabase
+      .from("sertifikat_config")
+      .upsert({
+        id: presetId,
+        config: presetConfig,
+        updated_at: new Date().toISOString()
+      });
+    if (error) console.error("Gagal menyimpan preset ke Supabase:", error);
+  } catch (e) {
+    console.error("Gagal menyimpan preset ke Supabase:", e);
+  }
+
+  // 2. Simpan ke IndexedDB
+  try {
+    const db = await openDB();
+    const tx = db.transaction(STORE_NAME, "readwrite");
+    const store = tx.objectStore(STORE_NAME);
+    store.put(presetConfig, presetId);
+  } catch (e) {
+    console.error("Gagal menyimpan preset ke IndexedDB:", e);
+  }
+}
+
+export async function deleteSertifikatPresetAsync(presetId: string): Promise<void> {
+  // 1. Hapus di Supabase
+  try {
+    const { error } = await supabase
+      .from("sertifikat_config")
+      .delete()
+      .eq("id", presetId);
+    if (error) console.error("Gagal menghapus preset dari Supabase:", error);
+  } catch (e) {
+    console.error("Gagal menghapus preset dari Supabase:", e);
+  }
+
+  // 2. Hapus di IndexedDB
+  try {
+    const db = await openDB();
+    const tx = db.transaction(STORE_NAME, "readwrite");
+    const store = tx.objectStore(STORE_NAME);
+    store.delete(presetId);
+  } catch (e) {
+    console.error("Gagal menghapus preset dari IndexedDB:", e);
+  }
 }

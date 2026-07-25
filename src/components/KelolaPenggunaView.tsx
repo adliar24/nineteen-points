@@ -49,6 +49,7 @@ export default function KelolaPenggunaView({
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState("Semua");
+  const [photoFilter, setPhotoFilter] = useState("Semua");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 15;
 
@@ -275,9 +276,13 @@ export default function KelolaPenggunaView({
         p.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (p.nis && p.nis.includes(searchQuery));
       const matchesRole = roleFilter === "Semua" || p.role === roleFilter;
-      return matchesSearch && matchesRole;
+      const matchesPhoto =
+        photoFilter === "Semua" ||
+        (photoFilter === "Belum Ada" && !p.foto_url) ||
+        (photoFilter === "Sudah Ada" && p.foto_url);
+      return matchesSearch && matchesRole && matchesPhoto;
     });
-  }, [profiles, searchQuery, roleFilter]);
+  }, [profiles, searchQuery, roleFilter, photoFilter]);
 
   const totalPages = Math.ceil(filteredProfiles.length / itemsPerPage);
   const paginatedProfiles = filteredProfiles.slice(
@@ -371,6 +376,22 @@ export default function KelolaPenggunaView({
                     : r.charAt(0).toUpperCase() + r.slice(1)}
                 </option>
               ))}
+            </select>
+            <ChevronDown className="w-4 h-4 text-brand-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          </div>
+
+          <div className="relative w-full sm:w-auto">
+            <select
+              value={photoFilter}
+              onChange={(e) => {
+                setPhotoFilter(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full appearance-none pl-4 pr-10 py-3 bg-white border border-brand-100 rounded-2xl text-xs font-bold text-brand-800 focus:ring-2 focus:ring-brand-500 outline-none cursor-pointer transition-all"
+            >
+              <option value="Semua">Semua Foto</option>
+              <option value="Belum Ada">Belum Ada Foto</option>
+              <option value="Sudah Ada">Sudah Ada Foto</option>
             </select>
             <ChevronDown className="w-4 h-4 text-brand-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>

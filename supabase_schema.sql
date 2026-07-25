@@ -55,14 +55,23 @@ ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS foto_url TEXT;
 -- =========================================================================
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
+DECLARE
+  v_foto_url TEXT := NULL;
+  v_nis TEXT;
 BEGIN
-  INSERT INTO public.profiles (id, email, nama, role, nis)
+  v_nis := NEW.raw_user_meta_data->>'nis';
+  IF v_nis IS NOT NULL THEN
+    SELECT foto_url INTO v_foto_url FROM public.siswa WHERE nis = v_nis LIMIT 1;
+  END IF;
+
+  INSERT INTO public.profiles (id, email, nama, role, nis, foto_url)
   VALUES (
     NEW.id,
     NEW.email,
     COALESCE(NEW.raw_user_meta_data->>'fullName', 'Pengguna Baru'),
     COALESCE(NEW.raw_user_meta_data->>'role', 'siswa'),
-    NEW.raw_user_meta_data->>'nis'
+    v_nis,
+    v_foto_url
   );
   RETURN NEW;
 END;

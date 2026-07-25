@@ -234,6 +234,13 @@ export default function KelolaPenggunaView({
         throw new Error("Gagal update data profil: " + dbErr.message);
       }
 
+      if (profile.role === "siswa" && profile.nis) {
+        await supabase
+          .from("siswa")
+          .update({ foto_url: publicUrl })
+          .eq("nis", profile.nis);
+      }
+
       setUploadProgress(100);
       showToast("Foto profil berhasil diperbarui!", "success");
       loadUsersData();

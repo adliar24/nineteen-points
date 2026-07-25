@@ -1595,9 +1595,9 @@ durasi_jam: null,
       )}
       {/* TAB 2: DESAINER TEMPLATE & POSISI ELEMEN */}
       {activeTab === "desainer" && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* LEFT PANEL: UPLOAD, DESKRIPSI & ELEMENT POSITIONS CONTROL (5 COLS) */}
-          <div className="lg:col-span-5 space-y-6">
+          <div className="lg:col-span-5 space-y-6 order-last lg:order-first">
             {/* Tab Navigation for Sidebar */}
             <div className="flex bg-slate-100 p-1 rounded-2xl border border-slate-200/60 gap-1 shadow-sm flex-wrap">
               <button
@@ -3097,7 +3097,7 @@ durasi_jam: null,
             </div>
 
           {/* RIGHT PANEL: LIVE INTERACTIVE CANVAS PREVIEW (7 COLS) */}
-          <div className="lg:col-span-7 bg-slate-950 p-6 rounded-3xl border border-slate-800 shadow-2xl flex flex-col items-center justify-center relative min-h-[450px]">
+          <div className="lg:col-span-7 lg:sticky lg:top-6 lg:self-start bg-slate-950 p-6 rounded-3xl border border-slate-800 shadow-2xl flex flex-col items-center justify-center relative min-h-[450px] order-first lg:order-last">
             <div className="absolute top-4 left-5 right-5 flex justify-between items-center z-10">
               <span className="text-[11px] font-black uppercase text-brand-400 bg-slate-900/90 px-3 py-1.5 rounded-xl border border-slate-800 shadow-sm flex items-center gap-2">
                 <Edit3 className="w-3.5 h-3.5 text-brand-400" />

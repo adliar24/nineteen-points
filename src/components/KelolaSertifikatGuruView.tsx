@@ -338,9 +338,44 @@ export default function KelolaSertifikatGuruView() {
           peran: "PESERTA",
           no_sertifikat: "SR.098979898666968968",
           penyelenggara: "SMAN 19 Bandung",
-          durasi_jam: null,
+durasi_jam: null,
           materi_jp: config.materiJpRows || [],
           created_at: new Date().toISOString()
+        };
+
+        // Helper to draw highlight box around selected element
+        const drawHighlightBox = (x: number, y: number, label: string, width = 350, height = 70, align = "center") => {
+          ctx.strokeStyle = "#3b82f6";
+          ctx.lineWidth = 4;
+          ctx.setLineDash([10, 6]);
+          
+          let boxX = x - width / 2;
+          if (align === "left") boxX = x;
+          if (align === "right") boxX = x - width;
+          const boxY = y - height / 2;
+
+          ctx.beginPath();
+          // Draw rounded dashed rect
+          ctx.roundRect(boxX, boxY, width, height, 12);
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          // Draw label box above/below
+          ctx.fillStyle = "#3b82f6";
+          ctx.font = "bold 20px sans-serif";
+          const labelText = ` ${label} `;
+          const labelW = ctx.measureText(labelText).width + 16;
+          const labelH = 32;
+          const labelY = boxY - labelH - 8 > 10 ? boxY - labelH - 8 : boxY + height + 8;
+          
+          ctx.beginPath();
+          ctx.roundRect(boxX, labelY, labelW, labelH, 6);
+          ctx.fill();
+
+          ctx.fillStyle = "#ffffff";
+          ctx.textAlign = "left";
+          ctx.textBaseline = "middle";
+          ctx.fillText(labelText, boxX + 8, labelY + labelH / 2);
         };
 
         if (desainerPage === 2 && config.hasJpPage) {
@@ -361,42 +396,65 @@ export default function KelolaSertifikatGuruView() {
           const pos = config.positions;
           let targetX = canvas.width / 2;
           let targetY = canvas.height / 2;
+          let label = "";
+          let w = 400;
+          let h = 80;
+          let align = "center";
           let showTarget = false;
 
           if (selectedElement === "jpHeaderTitlePos" && pos.jpHeaderTitlePos) {
             targetX = (pos.jpHeaderTitlePos.xPercent / 100) * canvas.width;
             targetY = (pos.jpHeaderTitlePos.yPercent / 100) * canvas.height;
+            label = "Judul Halaman Belakang (JP)";
+            h = (pos.jpHeaderTitlePos.fontSize || 32) * 1.6;
+            w = 800;
             showTarget = true;
           } else if (selectedElement === "jpHeaderSubtitlePos" && pos.jpHeaderSubtitlePos) {
             targetX = (pos.jpHeaderSubtitlePos.xPercent / 100) * canvas.width;
             targetY = (pos.jpHeaderSubtitlePos.yPercent / 100) * canvas.height;
+            label = "Subjudul JP";
+            h = (pos.jpHeaderSubtitlePos.fontSize || 20) * 1.6;
+            w = 800;
             showTarget = true;
           } else if (selectedElement === "jpHeaderSub2Pos" && pos.jpHeaderSub2Pos) {
             targetX = (pos.jpHeaderSub2Pos.xPercent / 100) * canvas.width;
             targetY = (pos.jpHeaderSub2Pos.yPercent / 100) * canvas.height;
+            label = "Instansi JP";
+            h = (pos.jpHeaderSub2Pos.fontSize || 18) * 1.6;
+            w = 800;
             showTarget = true;
           } else if (selectedElement === "jpTanggalPos" && pos.jpTanggalPos) {
             targetX = (pos.jpTanggalPos.xPercent / 100) * canvas.width;
             targetY = (pos.jpTanggalPos.yPercent / 100) * canvas.height;
+            label = "Tempat & Tanggal JP";
+            h = (pos.jpTanggalPos.fontSize || 18) * 1.6;
+            w = 350;
             showTarget = true;
           } else if (selectedElement === "jpTtd" && pos.jpTtdNamaPos) {
             targetX = (pos.jpTtdNamaPos.xPercent / 100) * canvas.width;
             targetY = (pos.jpTtdNamaPos.yPercent / 100) * canvas.height;
+            label = "Grup Tanda Tangan JP";
+            h = 160;
+            w = 380;
+            showTarget = true;
+          } else if (selectedElement === "jpTtdJabatanPos" && pos.jpTtdJabatanPos) {
+            targetX = (pos.jpTtdJabatanPos.xPercent / 100) * canvas.width;
+            targetY = (pos.jpTtdJabatanPos.yPercent / 100) * canvas.height;
+            label = "Jabatan TTD JP";
+            h = (pos.jpTtdJabatanPos.fontSize || 18) * 1.6;
+            w = 350;
             showTarget = true;
           } else if (selectedElement === "logoBackPos" && pos.logoBackPos) {
             targetX = (pos.logoBackPos.xPercent / 100) * canvas.width;
             targetY = (pos.logoBackPos.yPercent / 100) * canvas.height;
+            label = "Logo Belakang (JP)";
+            w = (pos.logoBackPos.widthPercent / 100) * canvas.width;
+            h = w; // Assume square aspect ratio for box
             showTarget = true;
           }
 
           if (showTarget) {
-            ctx.strokeStyle = "#3b82f6";
-            ctx.lineWidth = 4;
-            ctx.setLineDash([8, 8]);
-            ctx.beginPath();
-            ctx.arc(targetX, targetY, 24, 0, Math.PI * 2);
-            ctx.stroke();
-            ctx.setLineDash([]);
+            drawHighlightBox(targetX, targetY, label, w, h, align);
           }
         } else {
           drawCertificateOnCanvas(
@@ -417,50 +475,366 @@ export default function KelolaSertifikatGuruView() {
           const pos = config.positions;
           let targetX = canvas.width / 2;
           let targetY = canvas.height / 2;
+          let label = "";
+          let w = 400;
+          let h = 80;
+          let align = "center";
+          let showTarget = true;
 
-          if (selectedElement === "noSertifikat") {
+          if (selectedElement === "noSertifikat" && pos.noSertifikat) {
             targetX = (pos.noSertifikat.xPercent / 100) * canvas.width;
             targetY = (pos.noSertifikat.yPercent / 100) * canvas.height;
-          } else if (selectedElement === "prefixNama") {
+            label = "Nomor Sertifikat";
+            h = (pos.noSertifikat.fontSize || 22) * 1.6;
+            w = 600;
+          } else if (selectedElement === "prefixNama" && pos.prefixNama) {
             targetX = (pos.prefixNama.xPercent / 100) * canvas.width;
             targetY = (pos.prefixNama.yPercent / 100) * canvas.height;
-          } else if (selectedElement === "namaGuru") {
+            label = "Prefix Nama";
+            h = (pos.prefixNama.fontSize || 20) * 1.6;
+            w = 400;
+          } else if (selectedElement === "namaGuru" && pos.namaGuru) {
             targetX = (pos.namaGuru.xPercent / 100) * canvas.width;
             targetY = (pos.namaGuru.yPercent / 100) * canvas.height;
-          } else if (selectedElement === "deskripsi") {
+            label = "Nama Guru / Penerima";
+            h = (pos.namaGuru.fontSize || 40) * 1.6;
+            w = 900;
+          } else if (selectedElement === "deskripsi" && pos.deskripsi) {
             targetX = (pos.deskripsi.xPercent / 100) * canvas.width;
             targetY = (pos.deskripsi.yPercent / 100) * canvas.height;
+            label = "Kalimat Deskripsi";
+            h = (pos.deskripsi.fontSize || 20) * 4.0; // Multi-line description
+            w = canvas.width * 0.78;
+            align = pos.deskripsi.align || "center";
           } else if (selectedElement === "tanggalKegiatan" && pos.tanggalKegiatan) {
             targetX = (pos.tanggalKegiatan.xPercent / 100) * canvas.width;
             targetY = (pos.tanggalKegiatan.yPercent / 100) * canvas.height;
+            label = "Tempat & Tanggal";
+            h = (pos.tanggalKegiatan.fontSize || 18) * 1.6;
+            w = 400;
           } else if (selectedElement === "sertifikatTitlePos" && pos.sertifikatTitlePos) {
             targetX = (pos.sertifikatTitlePos.xPercent / 100) * canvas.width;
             targetY = (pos.sertifikatTitlePos.yPercent / 100) * canvas.height;
+            label = "Judul Sertifikat";
+            h = (pos.sertifikatTitlePos.fontSize || 60) * 1.6;
+            w = 800;
           } else if (selectedElement === "logoFrontPos" && pos.logoFrontPos) {
             targetX = (pos.logoFrontPos.xPercent / 100) * canvas.width;
             targetY = (pos.logoFrontPos.yPercent / 100) * canvas.height;
-          } else if (selectedElement === "ttd1") {
+            label = "Logo Depan";
+            w = (pos.logoFrontPos.widthPercent / 100) * canvas.width;
+            h = w;
+          } else if (selectedElement === "ttd1" && pos.ttd1NamaPos) {
             targetX = (pos.ttd1NamaPos.xPercent / 100) * canvas.width;
             targetY = (pos.ttd1NamaPos.yPercent / 100) * canvas.height;
-          } else if (selectedElement === "ttd2") {
+            label = "Grup Tanda Tangan 1";
+            h = 180;
+            w = 380;
+          } else if (selectedElement === "ttd2" && pos.ttd2NamaPos) {
             targetX = (pos.ttd2NamaPos.xPercent / 100) * canvas.width;
             targetY = (pos.ttd2NamaPos.yPercent / 100) * canvas.height;
-          } else if (selectedElement === "ttd3") {
+            label = "Grup Tanda Tangan 2";
+            h = 180;
+            w = 380;
+          } else if (selectedElement === "ttd3" && pos.ttd3NamaPos) {
             targetX = (pos.ttd3NamaPos.xPercent / 100) * canvas.width;
             targetY = (pos.ttd3NamaPos.yPercent / 100) * canvas.height;
+            label = "Grup Tanda Tangan 3";
+            h = 180;
+            w = 380;
+          } else if (selectedElement === "ttd1JabatanPos" && pos.ttd1JabatanPos) {
+            targetX = (pos.ttd1JabatanPos.xPercent / 100) * canvas.width;
+            targetY = (pos.ttd1JabatanPos.yPercent / 100) * canvas.height;
+            label = "Jabatan TTD 1";
+            h = (pos.ttd1JabatanPos.fontSize || 18) * 1.6;
+            w = 350;
+          } else if (selectedElement === "ttd2JabatanPos" && pos.ttd2JabatanPos) {
+            targetX = (pos.ttd2JabatanPos.xPercent / 100) * canvas.width;
+            targetY = (pos.ttd2JabatanPos.yPercent / 100) * canvas.height;
+            label = "Jabatan TTD 2";
+            h = (pos.ttd2JabatanPos.fontSize || 18) * 1.6;
+            w = 350;
+          } else if (selectedElement === "ttd3JabatanPos" && pos.ttd3JabatanPos) {
+            targetX = (pos.ttd3JabatanPos.xPercent / 100) * canvas.width;
+            targetY = (pos.ttd3JabatanPos.yPercent / 100) * canvas.height;
+            label = "Jabatan TTD 3";
+            h = (pos.ttd3JabatanPos.fontSize || 18) * 1.6;
+            w = 350;
+          } else {
+            showTarget = false;
           }
 
-          ctx.strokeStyle = "#3b82f6";
-          ctx.lineWidth = 4;
-          ctx.setLineDash([8, 8]);
-          ctx.beginPath();
-          ctx.arc(targetX, targetY, 24, 0, Math.PI * 2);
-          ctx.stroke();
-          ctx.setLineDash([]);
+          if (showTarget) {
+            drawHighlightBox(targetX, targetY, label, w, h, align);
+          }
         }
       });
     }
   }, [activeTab, config, selectedElement, desainerPage]);
+
+  // Click on Canvas to reposition selected element
+  const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    // If it was a drag operation (dragged more than threshold), do not process as click
+    if (isDraggingRef.current) return;
+
+    if (!canvasRef.current) return;
+    const rect = canvasRef.current.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const clickY = e.clientY - rect.top;
+
+    const xPercent = Math.round((clickX / rect.width) * 1000) / 10;
+    const yPercent = Math.round((clickY / rect.height) * 1000) / 10;
+
+    // Check proximity to auto-select element
+    const closest = getClosestElement(xPercent, yPercent, desainerPage);
+    if (closest) {
+      setSelectedElement(closest);
+      return; // Select only on click, don't move it yet
+    }
+
+    // Otherwise, move currently selected element to clicked position
+    setConfig(prev => {
+      const updatedPos = { ...prev.positions };
+      if (selectedElement === "noSertifikat") {
+        updatedPos.noSertifikat = { ...updatedPos.noSertifikat, xPercent, yPercent };
+      } else if (selectedElement === "prefixNama") {
+        updatedPos.prefixNama = { ...updatedPos.prefixNama, xPercent, yPercent };
+      } else if (selectedElement === "namaGuru") {
+        updatedPos.namaGuru = { ...updatedPos.namaGuru, xPercent, yPercent };
+      } else if (selectedElement === "deskripsi") {
+        updatedPos.deskripsi = { ...updatedPos.deskripsi, xPercent, yPercent };
+      } else if (selectedElement === "tanggalKegiatan") {
+        updatedPos.tanggalKegiatan = { ...updatedPos.tanggalKegiatan, xPercent, yPercent };
+      } else if (selectedElement === "sertifikatTitlePos") {
+        updatedPos.sertifikatTitlePos = { ...updatedPos.sertifikatTitlePos, xPercent, yPercent };
+      } else if (selectedElement === "logoFrontPos") {
+        updatedPos.logoFrontPos = { ...updatedPos.logoFrontPos, xPercent, yPercent };
+      } else if (selectedElement === "logoBackPos") {
+        updatedPos.logoBackPos = { ...updatedPos.logoBackPos, xPercent, yPercent };
+      } else if (selectedElement === "jpHeaderTitlePos") {
+        updatedPos.jpHeaderTitlePos = { ...updatedPos.jpHeaderTitlePos, xPercent, yPercent };
+      } else if (selectedElement === "jpHeaderSubtitlePos") {
+        updatedPos.jpHeaderSubtitlePos = { ...updatedPos.jpHeaderSubtitlePos, xPercent, yPercent };
+      } else if (selectedElement === "jpHeaderSub2Pos") {
+        updatedPos.jpHeaderSub2Pos = { ...updatedPos.jpHeaderSub2Pos, xPercent, yPercent };
+      } else if (selectedElement === "jpTanggalPos") {
+        updatedPos.jpTanggalPos = { ...updatedPos.jpTanggalPos, xPercent, yPercent };
+      } else if (selectedElement === "jpTtd") {
+        updatedPos.jpTtdImagePos = { ...updatedPos.jpTtdImagePos, xPercent, yPercent: yPercent - 7 };
+        updatedPos.jpTtdNamaPos = { ...updatedPos.jpTtdNamaPos, xPercent, yPercent: yPercent + 7 };
+        updatedPos.jpTtdJabatanPos = { ...updatedPos.jpTtdJabatanPos, xPercent, yPercent: yPercent - 5 };
+        updatedPos.jpTtdSubText1Pos = { ...updatedPos.jpTtdSubText1Pos, xPercent, yPercent: yPercent + 9.5 };
+        updatedPos.jpTtdSubText2Pos = { ...updatedPos.jpTtdSubText2Pos, xPercent, yPercent: yPercent + 11.5 };
+      } else if (selectedElement === "ttd1") {
+        updatedPos.ttd1ImagePos = { ...updatedPos.ttd1ImagePos, xPercent, yPercent: yPercent - 10 };
+        updatedPos.ttd1NamaPos = { ...updatedPos.ttd1NamaPos, xPercent, yPercent };
+        updatedPos.ttd1JabatanPos = { ...updatedPos.ttd1JabatanPos, xPercent, yPercent: yPercent + 3 };
+      } else if (selectedElement === "ttd2") {
+        updatedPos.ttd2ImagePos = { ...updatedPos.ttd2ImagePos, xPercent, yPercent: yPercent - 10 };
+        updatedPos.ttd2NamaPos = { ...updatedPos.ttd2NamaPos, xPercent, yPercent };
+        updatedPos.ttd2JabatanPos = { ...updatedPos.ttd2JabatanPos, xPercent, yPercent: yPercent + 3 };
+      } else if (selectedElement === "ttd3") {
+        updatedPos.ttd3ImagePos = { ...updatedPos.ttd3ImagePos, xPercent, yPercent: yPercent - 10 };
+        updatedPos.ttd3NamaPos = { ...updatedPos.ttd3NamaPos, xPercent, yPercent };
+        updatedPos.ttd3JabatanPos = { ...updatedPos.ttd3JabatanPos, xPercent, yPercent: yPercent + 3 };
+      } else if (selectedElement === "ttd1JabatanPos") {
+        updatedPos.ttd1JabatanPos = { ...updatedPos.ttd1JabatanPos, xPercent, yPercent };
+      } else if (selectedElement === "ttd2JabatanPos") {
+        updatedPos.ttd2JabatanPos = { ...updatedPos.ttd2JabatanPos, xPercent, yPercent };
+      } else if (selectedElement === "ttd3JabatanPos") {
+        updatedPos.ttd3JabatanPos = { ...updatedPos.ttd3JabatanPos, xPercent, yPercent };
+      } else if (selectedElement === "jpTtdJabatanPos") {
+        updatedPos.jpTtdJabatanPos = { ...updatedPos.jpTtdJabatanPos, xPercent, yPercent };
+      }
+      return { ...prev, positions: updatedPos };
+    });
+  };
+
+  // Drag and Drop Event Handlers
+  const startDrag = (clientX: number, clientY: number) => {
+    if (!canvasRef.current) return;
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
+    const xPercent = (x / rect.width) * 100;
+    const yPercent = (y / rect.height) * 100;
+
+    // Detect if clicking near an element to auto-select it
+    const closest = getClosestElement(xPercent, yPercent, desainerPage);
+    let activeElem = selectedElement;
+    if (closest) {
+      setSelectedElement(closest);
+      activeElem = closest;
+    }
+
+    const pos = config.positions;
+    let elemX = 50;
+    let elemY = 50;
+
+    if (activeElem === "ttd1" && pos.ttd1NamaPos) {
+      elemX = pos.ttd1NamaPos.xPercent;
+      elemY = pos.ttd1NamaPos.yPercent;
+    } else if (activeElem === "ttd2" && pos.ttd2NamaPos) {
+      elemX = pos.ttd2NamaPos.xPercent;
+      elemY = pos.ttd2NamaPos.yPercent;
+    } else if (activeElem === "ttd3" && pos.ttd3NamaPos) {
+      elemX = pos.ttd3NamaPos.xPercent;
+      elemY = pos.ttd3NamaPos.yPercent;
+    } else if (activeElem === "jpTtd" && pos.jpTtdNamaPos) {
+      elemX = pos.jpTtdNamaPos.xPercent;
+      elemY = pos.jpTtdNamaPos.yPercent;
+    } else {
+      const ePos = (pos as any)[activeElem];
+      if (ePos) {
+        elemX = ePos.xPercent;
+        elemY = ePos.yPercent;
+      }
+    }
+
+    dragStartPos.current = { x: clientX, y: clientY };
+    dragStartPercent.current = { xPercent: elemX, yPercent: elemY };
+    isDraggingRef.current = false;
+  };
+
+  const handleCanvasMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (e.button !== 0) return; // Left click only
+    startDrag(e.clientX, e.clientY);
+  };
+
+  const handleCanvasTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (e.touches.length === 0) return;
+    // Prevent default scrolling behavior when trying to drag on touch devices
+    e.preventDefault();
+    startDrag(e.touches[0].clientX, e.touches[0].clientY);
+  };
+
+  const moveDrag = (clientX: number, clientY: number) => {
+    if (!dragStartPos.current || !dragStartPercent.current || !canvasRef.current) return;
+    const rect = canvasRef.current.getBoundingClientRect();
+    const dx = clientX - dragStartPos.current.x;
+    const dy = clientY - dragStartPos.current.y;
+
+    if (!isDraggingRef.current) {
+      if (Math.hypot(dx, dy) > 5) {
+        isDraggingRef.current = true;
+        setIsDragging(true);
+      } else {
+        return;
+      }
+    }
+
+    const dxPercent = (dx / rect.width) * 100;
+    const dyPercent = (dy / rect.height) * 100;
+
+    let targetX = Math.round((dragStartPercent.current.xPercent + dxPercent) * 10) / 10;
+    let targetY = Math.round((dragStartPercent.current.yPercent + dyPercent) * 10) / 10;
+
+    targetX = Math.max(0, Math.min(100, targetX));
+    targetY = Math.max(0, Math.min(100, targetY));
+
+    setConfig(prev => {
+      const updatedPos = { ...prev.positions };
+      const elemKey = selectedElement;
+
+      if (elemKey === "noSertifikat") {
+        updatedPos.noSertifikat = { ...updatedPos.noSertifikat, xPercent: targetX, yPercent: targetY };
+      } else if (elemKey === "prefixNama") {
+        updatedPos.prefixNama = { ...updatedPos.prefixNama, xPercent: targetX, yPercent: targetY };
+      } else if (elemKey === "namaGuru") {
+        updatedPos.namaGuru = { ...updatedPos.namaGuru, xPercent: targetX, yPercent: targetY };
+      } else if (elemKey === "deskripsi") {
+        updatedPos.deskripsi = { ...updatedPos.deskripsi, xPercent: targetX, yPercent: targetY };
+      } else if (elemKey === "tanggalKegiatan" && updatedPos.tanggalKegiatan) {
+        updatedPos.tanggalKegiatan = { ...updatedPos.tanggalKegiatan, xPercent: targetX, yPercent: targetY };
+      } else if (elemKey === "sertifikatTitlePos" && updatedPos.sertifikatTitlePos) {
+        updatedPos.sertifikatTitlePos = { ...updatedPos.sertifikatTitlePos, xPercent: targetX, yPercent: targetY };
+      } else if (elemKey === "logoFrontPos" && updatedPos.logoFrontPos) {
+        updatedPos.logoFrontPos = { ...updatedPos.logoFrontPos, xPercent: targetX, yPercent: targetY };
+      } else if (elemKey === "logoBackPos" && updatedPos.logoBackPos) {
+        updatedPos.logoBackPos = { ...updatedPos.logoBackPos, xPercent: targetX, yPercent: targetY };
+      } else if (elemKey === "jpHeaderTitlePos" && updatedPos.jpHeaderTitlePos) {
+        updatedPos.jpHeaderTitlePos = { ...updatedPos.jpHeaderTitlePos, xPercent: targetX, yPercent: targetY };
+      } else if (elemKey === "jpHeaderSubtitlePos" && updatedPos.jpHeaderSubtitlePos) {
+        updatedPos.jpHeaderSubtitlePos = { ...updatedPos.jpHeaderSubtitlePos, xPercent: targetX, yPercent: targetY };
+      } else if (elemKey === "jpHeaderSub2Pos" && updatedPos.jpHeaderSub2Pos) {
+        updatedPos.jpHeaderSub2Pos = { ...updatedPos.jpHeaderSub2Pos, xPercent: targetX, yPercent: targetY };
+      } else if (elemKey === "jpTanggalPos" && updatedPos.jpTanggalPos) {
+        updatedPos.jpTanggalPos = { ...updatedPos.jpTanggalPos, xPercent: targetX, yPercent: targetY };
+      } else if (elemKey === "jpTtd" && updatedPos.jpTtdNamaPos) {
+        const diffX = targetX - updatedPos.jpTtdNamaPos.xPercent;
+        const diffY = targetY - updatedPos.jpTtdNamaPos.yPercent;
+
+        updatedPos.jpTtdImagePos = { ...updatedPos.jpTtdImagePos, xPercent: updatedPos.jpTtdImagePos.xPercent + diffX, yPercent: updatedPos.jpTtdImagePos.yPercent + diffY };
+        updatedPos.jpTtdNamaPos = { ...updatedPos.jpTtdNamaPos, xPercent: targetX, yPercent: targetY };
+        updatedPos.jpTtdJabatanPos = { ...updatedPos.jpTtdJabatanPos, xPercent: updatedPos.jpTtdJabatanPos.xPercent + diffX, yPercent: updatedPos.jpTtdJabatanPos.yPercent + diffY };
+        updatedPos.jpTtdSubText1Pos = { ...updatedPos.jpTtdSubText1Pos, xPercent: updatedPos.jpTtdSubText1Pos.xPercent + diffX, yPercent: updatedPos.jpTtdSubText1Pos.yPercent + diffY };
+        updatedPos.jpTtdSubText2Pos = { ...updatedPos.jpTtdSubText2Pos, xPercent: updatedPos.jpTtdSubText2Pos.xPercent + diffX, yPercent: updatedPos.jpTtdSubText2Pos.yPercent + diffY };
+      } else if (elemKey === "ttd1" && updatedPos.ttd1NamaPos) {
+        const diffX = targetX - updatedPos.ttd1NamaPos.xPercent;
+        const diffY = targetY - updatedPos.ttd1NamaPos.yPercent;
+
+        updatedPos.ttd1ImagePos = { ...updatedPos.ttd1ImagePos, xPercent: updatedPos.ttd1ImagePos.xPercent + diffX, yPercent: updatedPos.ttd1ImagePos.yPercent + diffY };
+        updatedPos.ttd1NamaPos = { ...updatedPos.ttd1NamaPos, xPercent: targetX, yPercent: targetY };
+        updatedPos.ttd1JabatanPos = { ...updatedPos.ttd1JabatanPos, xPercent: updatedPos.ttd1JabatanPos.xPercent + diffX, yPercent: updatedPos.ttd1JabatanPos.yPercent + diffY };
+        updatedPos.ttd1SubText1Pos = { ...updatedPos.ttd1SubText1Pos, xPercent: updatedPos.ttd1SubText1Pos.xPercent + diffX, yPercent: updatedPos.ttd1SubText1Pos.yPercent + diffY };
+        updatedPos.ttd1SubText2Pos = { ...updatedPos.ttd1SubText2Pos, xPercent: updatedPos.ttd1SubText2Pos.xPercent + diffX, yPercent: updatedPos.ttd1SubText2Pos.yPercent + diffY };
+      } else if (elemKey === "ttd2" && updatedPos.ttd2NamaPos) {
+        const diffX = targetX - updatedPos.ttd2NamaPos.xPercent;
+        const diffY = targetY - updatedPos.ttd2NamaPos.yPercent;
+
+        updatedPos.ttd2ImagePos = { ...updatedPos.ttd2ImagePos, xPercent: updatedPos.ttd2ImagePos.xPercent + diffX, yPercent: updatedPos.ttd2ImagePos.yPercent + diffY };
+        updatedPos.ttd2NamaPos = { ...updatedPos.ttd2NamaPos, xPercent: targetX, yPercent: targetY };
+        updatedPos.ttd2JabatanPos = { ...updatedPos.ttd2JabatanPos, xPercent: updatedPos.ttd2JabatanPos.xPercent + diffX, yPercent: updatedPos.ttd2JabatanPos.yPercent + diffY };
+        updatedPos.ttd2SubText1Pos = { ...updatedPos.ttd2SubText1Pos, xPercent: updatedPos.ttd2SubText1Pos.xPercent + diffX, yPercent: updatedPos.ttd2SubText1Pos.yPercent + diffY };
+        updatedPos.ttd2SubText2Pos = { ...updatedPos.ttd2SubText2Pos, xPercent: updatedPos.ttd2SubText2Pos.xPercent + diffX, yPercent: updatedPos.ttd2SubText2Pos.yPercent + diffY };
+      } else if (elemKey === "ttd3" && updatedPos.ttd3NamaPos) {
+        const diffX = targetX - updatedPos.ttd3NamaPos.xPercent;
+        const diffY = targetY - updatedPos.ttd3NamaPos.yPercent;
+
+        updatedPos.ttd3ImagePos = { ...updatedPos.ttd3ImagePos, xPercent: updatedPos.ttd3ImagePos.xPercent + diffX, yPercent: updatedPos.ttd3ImagePos.yPercent + diffY };
+        updatedPos.ttd3NamaPos = { ...updatedPos.ttd3NamaPos, xPercent: targetX, yPercent: targetY };
+        updatedPos.ttd3JabatanPos = { ...updatedPos.ttd3JabatanPos, xPercent: updatedPos.ttd3JabatanPos.xPercent + diffX, yPercent: updatedPos.ttd3JabatanPos.yPercent + diffY };
+        updatedPos.ttd3SubText1Pos = { ...updatedPos.ttd3SubText1Pos, xPercent: updatedPos.ttd3SubText1Pos.xPercent + diffX, yPercent: updatedPos.ttd3SubText1Pos.yPercent + diffY };
+        updatedPos.ttd3SubText2Pos = { ...updatedPos.ttd3SubText2Pos, xPercent: updatedPos.ttd3SubText2Pos.xPercent + diffX, yPercent: updatedPos.ttd3SubText2Pos.yPercent + diffY };
+      } else if (elemKey === "ttd1JabatanPos" && updatedPos.ttd1JabatanPos) {
+        updatedPos.ttd1JabatanPos = { ...updatedPos.ttd1JabatanPos, xPercent: targetX, yPercent: targetY };
+      } else if (elemKey === "ttd2JabatanPos" && updatedPos.ttd2JabatanPos) {
+        updatedPos.ttd2JabatanPos = { ...updatedPos.ttd2JabatanPos, xPercent: targetX, yPercent: targetY };
+      } else if (elemKey === "ttd3JabatanPos" && updatedPos.ttd3JabatanPos) {
+        updatedPos.ttd3JabatanPos = { ...updatedPos.ttd3JabatanPos, xPercent: targetX, yPercent: targetY };
+      } else if (elemKey === "jpTtdJabatanPos" && updatedPos.jpTtdJabatanPos) {
+        updatedPos.jpTtdJabatanPos = { ...updatedPos.jpTtdJabatanPos, xPercent: targetX, yPercent: targetY };
+      } else {
+        const ePos = (updatedPos as any)[elemKey];
+        if (ePos) {
+          (updatedPos as any)[elemKey] = { ...ePos, xPercent: targetX, yPercent: targetY };
+        }
+      }
+
+      return { ...prev, positions: updatedPos };
+    });
+  };
+
+  const handleCanvasMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    moveDrag(e.clientX, e.clientY);
+  };
+
+  const handleCanvasTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (e.touches.length === 0) return;
+    // Prevent default scrolling behavior when trying to drag on touch devices
+    e.preventDefault();
+    moveDrag(e.touches[0].clientX, e.touches[0].clientY);
+  };
+
+  const endDrag = () => {
+    dragStartPos.current = null;
+    dragStartPercent.current = null;
+    isDraggingRef.current = false;
+    setIsDragging(false);
+  };
+
+  const handleCanvasMouseUp = () => endDrag();
+  const handleCanvasTouchEnd = () => endDrag();
 
   // Upload & Optimize Template Image
   const handleTemplateUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -573,73 +947,6 @@ export default function KelolaSertifikatGuruView() {
       setSuccessMsg("Konfigurasi berhasil direset ke default.");
       setTimeout(() => setSuccessMsg(null), 4000);
     }
-  };
-
-  // Click on Canvas to reposition selected element
-  const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!canvasRef.current) return;
-    const rect = canvasRef.current.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    const clickY = e.clientY - rect.top;
-
-    const xPercent = Math.round((clickX / rect.width) * 1000) / 10;
-    const yPercent = Math.round((clickY / rect.height) * 1000) / 10;
-
-    setConfig(prev => {
-      const updatedPos = { ...prev.positions };
-      if (selectedElement === "noSertifikat") {
-        updatedPos.noSertifikat = { ...updatedPos.noSertifikat, xPercent, yPercent };
-      } else if (selectedElement === "prefixNama") {
-        updatedPos.prefixNama = { ...updatedPos.prefixNama, xPercent, yPercent };
-      } else if (selectedElement === "namaGuru") {
-        updatedPos.namaGuru = { ...updatedPos.namaGuru, xPercent, yPercent };
-      } else if (selectedElement === "deskripsi") {
-        updatedPos.deskripsi = { ...updatedPos.deskripsi, xPercent, yPercent };
-      } else if (selectedElement === "tanggalKegiatan") {
-        updatedPos.tanggalKegiatan = { ...updatedPos.tanggalKegiatan, xPercent, yPercent };
-      } else if (selectedElement === "sertifikatTitlePos") {
-        updatedPos.sertifikatTitlePos = { ...updatedPos.sertifikatTitlePos, xPercent, yPercent };
-      } else if (selectedElement === "logoFrontPos") {
-        updatedPos.logoFrontPos = { ...updatedPos.logoFrontPos, xPercent, yPercent };
-      } else if (selectedElement === "logoBackPos") {
-        updatedPos.logoBackPos = { ...updatedPos.logoBackPos, xPercent, yPercent };
-      } else if (selectedElement === "jpHeaderTitlePos") {
-        updatedPos.jpHeaderTitlePos = { ...updatedPos.jpHeaderTitlePos, xPercent, yPercent };
-      } else if (selectedElement === "jpHeaderSubtitlePos") {
-        updatedPos.jpHeaderSubtitlePos = { ...updatedPos.jpHeaderSubtitlePos, xPercent, yPercent };
-      } else if (selectedElement === "jpHeaderSub2Pos") {
-        updatedPos.jpHeaderSub2Pos = { ...updatedPos.jpHeaderSub2Pos, xPercent, yPercent };
-      } else if (selectedElement === "jpTanggalPos") {
-        updatedPos.jpTanggalPos = { ...updatedPos.jpTanggalPos, xPercent, yPercent };
-      } else if (selectedElement === "jpTtd") {
-        updatedPos.jpTtdImagePos = { ...updatedPos.jpTtdImagePos, xPercent, yPercent: yPercent - 7 };
-        updatedPos.jpTtdNamaPos = { ...updatedPos.jpTtdNamaPos, xPercent, yPercent: yPercent + 7 };
-        updatedPos.jpTtdJabatanPos = { ...updatedPos.jpTtdJabatanPos, xPercent, yPercent: yPercent - 5 };
-        updatedPos.jpTtdSubText1Pos = { ...updatedPos.jpTtdSubText1Pos, xPercent, yPercent: yPercent + 9.5 };
-        updatedPos.jpTtdSubText2Pos = { ...updatedPos.jpTtdSubText2Pos, xPercent, yPercent: yPercent + 11.5 };
-      } else if (selectedElement === "ttd1") {
-        updatedPos.ttd1ImagePos = { ...updatedPos.ttd1ImagePos, xPercent, yPercent: yPercent - 10 };
-        updatedPos.ttd1NamaPos = { ...updatedPos.ttd1NamaPos, xPercent, yPercent };
-        updatedPos.ttd1JabatanPos = { ...updatedPos.ttd1JabatanPos, xPercent, yPercent: yPercent + 3 };
-      } else if (selectedElement === "ttd2") {
-        updatedPos.ttd2ImagePos = { ...updatedPos.ttd2ImagePos, xPercent, yPercent: yPercent - 10 };
-        updatedPos.ttd2NamaPos = { ...updatedPos.ttd2NamaPos, xPercent, yPercent };
-        updatedPos.ttd2JabatanPos = { ...updatedPos.ttd2JabatanPos, xPercent, yPercent: yPercent + 3 };
-      } else if (selectedElement === "ttd3") {
-        updatedPos.ttd3ImagePos = { ...updatedPos.ttd3ImagePos, xPercent, yPercent: yPercent - 10 };
-        updatedPos.ttd3NamaPos = { ...updatedPos.ttd3NamaPos, xPercent, yPercent };
-        updatedPos.ttd3JabatanPos = { ...updatedPos.ttd3JabatanPos, xPercent, yPercent: yPercent + 3 };
-      } else if (selectedElement === "ttd1JabatanPos") {
-        updatedPos.ttd1JabatanPos = { ...updatedPos.ttd1JabatanPos, xPercent, yPercent };
-      } else if (selectedElement === "ttd2JabatanPos") {
-        updatedPos.ttd2JabatanPos = { ...updatedPos.ttd2JabatanPos, xPercent, yPercent };
-      } else if (selectedElement === "ttd3JabatanPos") {
-        updatedPos.ttd3JabatanPos = { ...updatedPos.ttd3JabatanPos, xPercent, yPercent };
-      } else if (selectedElement === "jpTtdJabatanPos") {
-        updatedPos.jpTtdJabatanPos = { ...updatedPos.jpTtdJabatanPos, xPercent, yPercent };
-      }
-      return { ...prev, positions: updatedPos };
-    });
   };
 
   const filteredList = kegiatanList.filter(row => 
@@ -2829,8 +3136,14 @@ export default function KelolaSertifikatGuruView() {
               <canvas
                 ref={canvasRef}
                 onClick={handleCanvasClick}
-                className="w-full h-auto max-h-[65vh] object-contain rounded-2xl shadow-2xl border border-slate-800 cursor-crosshair hover:ring-2 hover:ring-brand-500 transition-all"
-                title="Klik untuk memindahkan elemen yang dipilih"
+                onMouseDown={handleCanvasMouseDown}
+                onMouseMove={handleCanvasMouseMove}
+                onMouseUp={handleCanvasMouseUp}
+                onTouchStart={handleCanvasTouchStart}
+                onTouchMove={handleCanvasTouchMove}
+                onTouchEnd={handleCanvasTouchEnd}
+                className="w-full h-auto max-h-[65vh] object-contain rounded-2xl shadow-2xl border border-slate-800 cursor-grab active:cursor-grabbing hover:ring-2 hover:ring-brand-500 transition-all select-none touch-none"
+                title="Seret/drag elemen langsung untuk mengubah posisinya"
               />
             </div>
           </div>

@@ -99,9 +99,19 @@ export default function BulkPhotoUploadModal({
 
     let bestId: string | null = null;
     let maxSim = 0;
-    const fuzzySource = nameOnly || cleanFilename;
+    const fuzzySource = (nameOnly || cleanFilename)
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+
     profiles.forEach((p) => {
-      const sim = calculateSimilarity(fuzzySource, p.nama);
+      const cleanProfileName = p.nama
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+      const sim = calculateSimilarity(fuzzySource, cleanProfileName);
       if (sim > maxSim) {
         maxSim = sim;
         bestId = p.id;

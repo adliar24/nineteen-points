@@ -275,12 +275,15 @@ export default function App() {
     // Run immediately
     updateIndicator();
     
-    // Run after a short delay to ensure font loading and flex layouts are computed
-    const timer = setTimeout(updateIndicator, 50);
+    // Run multiple times during the accordion transition (which takes ~280ms)
+    // to ensure the sliding indicator stays perfectly aligned as heights change.
+    const timers = [50, 100, 150, 200, 250, 300, 350, 400, 500].map(delay =>
+      setTimeout(updateIndicator, delay)
+    );
     
     window.addEventListener("resize", updateIndicator);
     return () => {
-      clearTimeout(timer);
+      timers.forEach(clearTimeout);
       window.removeEventListener("resize", updateIndicator);
     };
   }, [updateIndicator]);

@@ -649,7 +649,13 @@ export default function App() {
                 return (
                   <div key={element.id} className="space-y-1">
                     <button
-                      onClick={() => setOpenGroups(prev => ({ ...prev, [element.id]: !isOpen }))}
+                      onClick={() => setOpenGroups(prev => {
+                        const nextState: Record<string, boolean> = {};
+                        Object.keys(prev).forEach(k => {
+                          nextState[k] = k === element.id ? !isOpen : false;
+                        });
+                        return nextState;
+                      })}
                       className="w-full text-left px-4 py-3.5 rounded-2xl flex items-center justify-between text-brand-200/85 hover:text-white cursor-pointer transition-colors"
                     >
                       <div className="flex items-center gap-3">
@@ -786,7 +792,13 @@ export default function App() {
                       return (
                         <div key={element.id} className="space-y-1">
                           <button
-                            onClick={() => setOpenGroups(prev => ({ ...prev, [element.id]: !isOpen }))}
+                            onClick={() => setOpenGroups(prev => {
+                              const nextState: Record<string, boolean> = {};
+                              Object.keys(prev).forEach(k => {
+                                nextState[k] = k === element.id ? !isOpen : false;
+                              });
+                              return nextState;
+                            })}
                             className="w-full text-left px-4 py-3.5 rounded-2xl flex items-center justify-between text-brand-200 hover:text-white cursor-pointer"
                           >
                             <div className="flex items-center gap-3">

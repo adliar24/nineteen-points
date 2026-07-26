@@ -380,6 +380,8 @@ export default function KelolaPenggunaView({
                     ? "Super Admin"
                     : r === "kepala_sekolah"
                     ? "Kepala Sekolah"
+                    : r === "siswa"
+                    ? "Murid"
                     : r.charAt(0).toUpperCase() + r.slice(1)}
                 </option>
               ))}

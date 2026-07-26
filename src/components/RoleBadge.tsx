@@ -10,7 +10,7 @@ const ROLE_STYLES: Record<string, { bg: string; text: string; border: string; la
   kepala_sekolah:   { bg: "bg-slate-50",  text: "text-slate-700",  border: "border-slate-200",  label: "KEPALA SEKOLAH" },
   guru:             { bg: "bg-amber-50",  text: "text-amber-700",  border: "border-amber-200",  label: "GURU" },
   piket:            { bg: "bg-blue-50",   text: "text-blue-700",   border: "border-blue-200",   label: "PIKET" },
-  siswa:            { bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-200", label: "SISWA" },
+  siswa:            { bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-200", label: "MURID" },
 };
 
 export default React.memo(function RoleBadge({ role, className = "" }: RoleBadgeProps) {

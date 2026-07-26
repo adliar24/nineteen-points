@@ -24,7 +24,7 @@ export default function ExcelImportUserModal({
         [
           "Nama Lengkap",
           "Username (NIS/NIP)",
-          "Role (guru/kepala_sekolah/siswa/piket)",
+          "Role (guru/kepala_sekolah/murid/piket)",
           "Password (opsional)",
         ],
         ["Hendra Wijaya, M.Si.", "19761102", "guru", ""],
@@ -158,7 +158,7 @@ export default function ExcelImportUserModal({
     >
       <div className="space-y-4">
         <p className="text-xs text-brand-500 leading-relaxed font-medium">
-          Unggah file Excel berisi data akun. Kolom Username diisi NIS (untuk siswa) atau NIP (untuk
+          Unggah file Excel berisi data akun. Kolom Username diisi NIS (untuk murid) atau NIP (untuk
           guru/kepala sekolah). Sistem akan otomatis membuat email login{" "}
           <strong className="text-brand-700">@sman19.sch.id</strong>.
         </p>

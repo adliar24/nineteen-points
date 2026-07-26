@@ -360,7 +360,7 @@ export default function App() {
           setActiveTab("siswa_stats");
         }
       } else if (userSession.role === "piket") {
-        if (!["kehadiran", "input_kehadiran", "change_password"].includes(activeTab)) {
+        if (!["kehadiran", "input_kehadiran", "change_password", "scan_sholat", "rekap_sholat_kehadiran"].includes(activeTab)) {
           setActiveTab("input_kehadiran");
         }
       } else if (userSession.role === "guru") {
@@ -368,11 +368,11 @@ export default function App() {
           setActiveTab("input");
         }
       } else if (userSession.role === "kepala_sekolah") {
-        if (!["input_kehadiran", "input", "kehadiran", "students", "history", "change_password", "rekap_sholat_kehadiran"].includes(activeTab)) {
+        if (!["input_kehadiran", "input", "kehadiran", "students", "history", "change_password", "scan_sholat", "rekap_sholat_kehadiran"].includes(activeTab)) {
           setActiveTab("input_kehadiran");
         }
       } else {
-        if (!["stats", "input_kehadiran", "input", "kehadiran", "students", "history", "rules", "users", "change_password", "kelola_sertifikat_guru", "rekap_sholat_kehadiran"].includes(activeTab)) {
+        if (!["stats", "input_kehadiran", "input", "kehadiran", "students", "history", "rules", "users", "change_password", "kelola_sertifikat_guru", "scan_sholat", "rekap_sholat_kehadiran"].includes(activeTab)) {
           setActiveTab("stats");
         }
       }
@@ -402,8 +402,8 @@ export default function App() {
     sidebarElements = [
       { type: "item", id: "input_kehadiran", label: "Input Kehadiran", icon: ClipboardCheck, description: "Scan QR & input absen harian" },
       { type: "item", id: "kehadiran", label: "Kehadiran Murid", icon: Users, description: "Rekap absensi & poin murid" },
-      // Sembunyikan sementara: Kehadiran Guru
-      // { type: "item", id: "kelola_kehadiran_guru", label: "Kehadiran Guru", icon: Calendar, description: "Monitoring absensi guru" },
+      { type: "item", id: "scan_sholat", label: "Scan Sholat", icon: BookOpen, description: "Scan QR sholat murid" },
+      { type: "item", id: "rekap_sholat_kehadiran", label: "Rekap Sholat", icon: ClipboardList, description: "Rekap sholat berjamaah murid" },
       { type: "item", id: "change_password", label: "Tema & Keamanan", icon: Settings, description: "Ubah warna tema aplikasi" }
     ];
   } else if (userSession.role === "guru") {
@@ -434,6 +434,7 @@ export default function App() {
         ]
       },
       { type: "item", id: "kehadiran", label: "Kehadiran Murid", icon: Users, description: "Monitoring absensi murid" },
+      { type: "item", id: "scan_sholat", label: "Scan Sholat", icon: BookOpen, description: "Scan QR sholat murid" },
       { type: "item", id: "rekap_sholat_kehadiran", label: "Rekap Sholat", icon: ClipboardList, description: "Rekap sholat berjamaah murid" },
       // Sembunyikan sementara: Kehadiran Guru
       // { type: "item", id: "kelola_kehadiran_guru", label: "Kehadiran Guru", icon: Calendar, description: "Monitoring absensi guru" },

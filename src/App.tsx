@@ -973,7 +973,7 @@ export default function App() {
                 <GuruKartuView userSession={userSession} />
               )}
 
-              {activeTab === "scan_sholat" && userSession.role === "guru" && (
+              {activeTab === "scan_sholat" && ["guru", "super_admin", "kepala_sekolah", "piket"].includes(userSession.role) && (
                 <SholatScanView userSession={userSession} />
               )}
 

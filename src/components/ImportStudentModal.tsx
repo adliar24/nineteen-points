@@ -68,7 +68,7 @@ export default function ImportStudentModal({
         try {
           const { error: signUpError } = await supabaseAdminAuth.auth.admin.createUser({
             email: `${s.nis}@sman19.sch.id`,
-            password: `Siswa${s.nis}`,
+            password: "murid19*",
             email_confirm: true,
             user_metadata: {
               fullName: s.nama,

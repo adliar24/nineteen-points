@@ -136,7 +136,7 @@ export default function KelolaSiswaView({
           } else {
             const { error: createError } = await supabaseAdminAuth.auth.admin.createUser({
               email,
-              password: `Siswa${s.nis}`,
+              password: "murid19*",
               email_confirm: true,
               user_metadata: { fullName: s.nama, role: "siswa", nis: s.nis },
             });

@@ -94,15 +94,17 @@ export default function ExcelImportUserModal({
           if (roleVal === "siswa") {
             emailVal = `${username}@sman19.sch.id`;
             nisVal = username;
-            finalPassword = passwordVal || `Siswa${username}`;
-          } else if (roleVal === "guru" || roleVal === "kepala_sekolah") {
+            finalPassword = passwordVal || "murid19*";
+          } else if (roleVal === "kepala_sekolah") {
+            emailVal = `${username}@sman19.sch.id`;
+            finalPassword = passwordVal || "kepsek19*";
+          } else if (roleVal === "guru") {
             emailVal = `${username}@sman19.sch.id`;
             finalPassword = passwordVal || "guru19*";
           } else if (roleVal === "piket") {
             if (!username.includes("@")) continue;
             emailVal = username;
-            if (!passwordVal) continue;
-            finalPassword = passwordVal;
+            finalPassword = passwordVal || "piket19*";
           }
 
           try {

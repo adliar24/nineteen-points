@@ -54,7 +54,7 @@ export default function CreateUserModal({
         return;
       }
       finalEmail = `${selectedNis}@sman19.sch.id`;
-      finalPassword = `Siswa${selectedNis}`;
+      finalPassword = password.trim() || "murid19*";
     } else if (role === "guru" || role === "kepala_sekolah") {
       if (!nip) {
         setErrorMsg(
@@ -224,27 +224,48 @@ export default function CreateUserModal({
         )}
 
         {role === "siswa" && (
-          <div className="space-y-1 animate-slide-up">
-            <label className="text-xs font-black text-brand-900 uppercase block">
-              Hubungkan NIS Murid
-            </label>
-            <select
-              required
-              value={selectedNis}
-              onChange={(e) => {
-                setSelectedNis(e.target.value);
-                const std = studentsList.find((s) => s.nis === e.target.value);
-                if (std) setFullName(std.nama);
-              }}
-              className="w-full border border-brand-100 rounded-xl py-2.5 px-3 text-sm font-bold text-brand-800 outline-none focus:ring-1 focus:ring-brand-500 bg-white"
-            >
-              <option value="">-- Pilih NIS & Nama Murid --</option>
-              {studentsList.map((s) => (
-                <option key={s.id} value={s.nis}>
-                  [{s.nis}] {s.nama} ({s.kelas})
-                </option>
-              ))}
-            </select>
+          <div className="space-y-3 animate-slide-up">
+            <div className="space-y-1">
+              <label className="text-xs font-black text-brand-900 uppercase block">
+                Hubungkan NIS Murid
+              </label>
+              <select
+                required
+                value={selectedNis}
+                onChange={(e) => {
+                  setSelectedNis(e.target.value);
+                  const std = studentsList.find((s) => s.nis === e.target.value);
+                  if (std) setFullName(std.nama);
+                }}
+                className="w-full border border-brand-100 rounded-xl py-2.5 px-3 text-sm font-bold text-brand-800 outline-none focus:ring-1 focus:ring-brand-500 bg-white"
+              >
+                <option value="">-- Pilih NIS & Nama Murid --</option>
+                {studentsList.map((s) => (
+                  <option key={s.id} value={s.nis}>
+                    [{s.nis}] {s.nama} ({s.kelas})
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-black text-brand-900 uppercase block">
+                Password (opsional)
+              </label>
+              <div className="relative">
+                <Key className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-brand-400" />
+                <input
+                  type="text"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Kosongkan untuk default: murid19*"
+                  className="w-full border border-brand-100 rounded-xl py-2.5 pl-10 pr-4 text-sm font-semibold focus:ring-1 focus:ring-brand-500 outline-none text-brand-900 bg-brand-50/20"
+                />
+              </div>
+              <p className="text-[10px] text-brand-400 font-medium">
+                Kosongkan untuk menggunakan password default{" "}
+                <strong className="text-brand-600">murid19*</strong>
+              </p>
+            </div>
           </div>
         )}
 
@@ -306,7 +327,7 @@ export default function CreateUserModal({
               {(selectedNis || "[NIS Murid]") + "@sman19.sch.id"}
             </div>
             <div>
-              <strong className="text-brand-900 font-extrabold">Password:</strong> Siswa{`{NIS}`}
+              <strong className="text-brand-900 font-extrabold">Password:</strong> murid19*
             </div>
           </div>
         )}

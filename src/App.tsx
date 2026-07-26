@@ -236,7 +236,7 @@ export default function App() {
     let isParentGroupClosed = false;
     const role = userSession?.role || "";
 
-    if (["input_kehadiran", "input"].includes(activeTab) && ["super_admin", "kepala_sekolah"].includes(role)) {
+    if (["input_kehadiran", "input", "scan_sholat"].includes(activeTab) && ["super_admin", "kepala_sekolah"].includes(role)) {
       if (!openGroups.input_data) {
         isParentGroupClosed = true;
       }
@@ -430,11 +430,11 @@ export default function App() {
         icon: ClipboardCheck,
         items: [
           { id: "input_kehadiran", label: "Input Kehadiran", icon: LogIn, description: "Absensi guru & murid" },
-          { id: "input", label: "Input Poin", icon: Edit3, description: "Pencatatan sanksi & prestasi" }
+          { id: "input", label: "Input Poin", icon: Edit3, description: "Pencatatan sanksi & prestasi" },
+          { id: "scan_sholat", label: "Scan Sholat", icon: BookOpen, description: "Scan QR sholat murid" }
         ]
       },
       { type: "item", id: "kehadiran", label: "Kehadiran Murid", icon: Users, description: "Monitoring absensi murid" },
-      { type: "item", id: "scan_sholat", label: "Scan Sholat", icon: BookOpen, description: "Scan QR sholat murid" },
       { type: "item", id: "rekap_sholat_kehadiran", label: "Rekap Sholat", icon: ClipboardList, description: "Rekap sholat berjamaah murid" },
       // Sembunyikan sementara: Kehadiran Guru
       // { type: "item", id: "kelola_kehadiran_guru", label: "Kehadiran Guru", icon: Calendar, description: "Monitoring absensi guru" },
@@ -454,7 +454,8 @@ export default function App() {
         icon: ClipboardCheck,
         items: [
           { id: "input_kehadiran", label: "Input Kehadiran", icon: LogIn, description: "Absensi guru & murid" },
-          { id: "input", label: "Input Poin", icon: Edit3, description: "Pencatatan sanksi & prestasi" }
+          { id: "input", label: "Input Poin", icon: Edit3, description: "Pencatatan sanksi & prestasi" },
+          { id: "scan_sholat", label: "Scan Sholat", icon: BookOpen, description: "Scan QR sholat murid" }
         ]
       },
       { type: "item", id: "kehadiran", label: "Kehadiran Murid", icon: Users, description: "Rekap absensi murid" },

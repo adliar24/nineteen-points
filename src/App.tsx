@@ -416,7 +416,7 @@ export default function App() {
       { type: "item", id: "guru_kartu", label: "Kartu Guru", icon: CreditCard, description: "QR Kartu Guru Digital" },
       { type: "item", id: "input", label: "Input Poin", icon: ClipboardCheck, description: "Catat via QR atau pencarian" },
       { type: "item", id: "scan_sholat", label: "Scan Sholat", icon: BookOpen, description: "Scan QR sholat murid" },
-      { type: "item", id: "rekap_sholat_kehadiran", label: "Rekap Sholat & Kehadiran", icon: ClipboardList, description: "Rekap gabungan sholat & absen" },
+      { type: "item", id: "rekap_sholat_kehadiran", label: "Rekap Sholat", icon: ClipboardList, description: "Rekap sholat berjamaah murid" },
       { type: "item", id: "history", label: "Riwayat Poin", icon: Calendar, description: "Audit trail pencatatan" },
       { type: "item", id: "students", label: "Data Murid", icon: Users, description: "Lihat database & kartu pelajar" },
       { type: "item", id: "change_password", label: "Tema & Keamanan", icon: Settings, description: "Ubah sandi & tema warna" }
@@ -434,7 +434,7 @@ export default function App() {
         ]
       },
       { type: "item", id: "kehadiran", label: "Kehadiran Murid", icon: Users, description: "Monitoring absensi murid" },
-      { type: "item", id: "rekap_sholat_kehadiran", label: "Rekap Sholat & Kehadiran", icon: ClipboardList, description: "Rekap gabungan sholat & absen" },
+      { type: "item", id: "rekap_sholat_kehadiran", label: "Rekap Sholat", icon: ClipboardList, description: "Rekap sholat berjamaah murid" },
       // Sembunyikan sementara: Kehadiran Guru
       // { type: "item", id: "kelola_kehadiran_guru", label: "Kehadiran Guru", icon: Calendar, description: "Monitoring absensi guru" },
       { type: "item", id: "history", label: "Riwayat Poin", icon: Calendar, description: "Audit trail pencatatan" },
@@ -457,7 +457,7 @@ export default function App() {
         ]
       },
       { type: "item", id: "kehadiran", label: "Kehadiran Murid", icon: Users, description: "Rekap absensi murid" },
-      { type: "item", id: "rekap_sholat_kehadiran", label: "Rekap Sholat & Kehadiran", icon: ClipboardList, description: "Rekap gabungan sholat & absen" },
+      { type: "item", id: "rekap_sholat_kehadiran", label: "Rekap Sholat", icon: ClipboardList, description: "Rekap sholat berjamaah murid" },
       // Sembunyikan sementara: Kehadiran Guru
       // { type: "item", id: "kelola_kehadiran_guru", label: "Kehadiran Guru", icon: Calendar, description: "Monitoring absensi guru" },
       { type: "item", id: "history", label: "Riwayat Poin", icon: Calendar, description: "Audit trail pencatatan" },

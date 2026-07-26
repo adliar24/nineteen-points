@@ -918,6 +918,112 @@ export const deleteAllKegiatanGuru = async (): Promise<void> => {
 };
 
 // =========================================================================
+// SHOLAT SCAN SYSTEM
+// =========================================================================
+
+export const SHOLAT_POIN_NAMA = "Sholat Berjamaah";
+export const SHOLAT_POIN_VALUE = 2;
+
+export const checkSholatToday = async (siswaId: string): Promise<boolean> => {
+  const today = new Date().toISOString().slice(0, 10);
+  const { data } = await supabase
+    .from("riwayat_poin")
+    .select("id")
+    .eq("siswa_id", siswaId)
+    .eq("nama_poin", SHOLAT_POIN_NAMA)
+    .gte("created_at", `${today}T00:00:00`)
+    .lte("created_at", `${today}T23:59:59`)
+    .limit(1);
+  return (data && data.length > 0);
+};
+
+export const getSholatRecapToday = async (): Promise<any[]> => {
+  const today = new Date().toISOString().slice(0, 10);
+  const { data, error } = await supabase
+    .from("riwayat_poin")
+    .select(`
+      id,
+      siswa_id,
+      guru_email,
+      created_at,
+      siswa (
+        nis,
+        nama,
+        kelas
+      )
+    `)
+    .eq("nama_poin", SHOLAT_POIN_NAMA)
+    .gte("created_at", `${today}T00:00:00`)
+    .lte("created_at", `${today}T23:59:59`)
+    .order("created_at", { ascending: false });
+  if (error) {
+    console.error("Error fetching sholat recap today:", error);
+    return [];
+  }
+  return (data || []).map((row: any) => ({
+    id: row.id,
+    siswa_id: row.siswa_id,
+    siswa_nama: row.siswa?.nama || "Tidak Dikenal",
+    siswa_kelas: row.siswa?.kelas || "-",
+    siswa_nis: row.siswa?.nis || "-",
+    guru_email: row.guru_email,
+    created_at: row.created_at,
+  }));
+};
+
+export interface RekapGabunganRow {
+  siswa_id: string;
+  siswa_nis: string;
+  siswa_nama: string;
+  siswa_kelas: string;
+  kehadiran: Record<string, string>;
+  sholat: Record<string, string>;
+}
+
+export const getRekapGabungan = async (startDate: string, endDate: string): Promise<RekapGabunganRow[]> => {
+  const { data: siswaList, error: sErr } = await supabase
+    .from("siswa")
+    .select("id, nis, nama, kelas")
+    .order("nama", { ascending: true });
+  if (sErr || !siswaList) return [];
+
+  const { data: kehadiranData } = await supabase
+    .from("kehadiran")
+    .select("siswa_id, tanggal, status")
+    .gte("tanggal", startDate)
+    .lte("tanggal", endDate);
+
+  const { data: sholatData } = await supabase
+    .from("riwayat_poin")
+    .select("siswa_id, created_at")
+    .eq("nama_poin", SHOLAT_POIN_NAMA)
+    .gte("created_at", `${startDate}T00:00:00`)
+    .lte("created_at", `${endDate}T23:59:59`);
+
+  const kehadiranMap: Record<string, Record<string, string>> = {};
+  (kehadiranData || []).forEach((k: any) => {
+    if (!kehadiranMap[k.siswa_id]) kehadiranMap[k.siswa_id] = {};
+    kehadiranMap[k.siswa_id][k.tanggal] = k.status;
+  });
+
+  const sholatMap: Record<string, Record<string, string>> = {};
+  (sholatData || []).forEach((s: any) => {
+    const dateStr = s.created_at.slice(0, 10);
+    if (!sholatMap[s.siswa_id]) sholatMap[s.siswa_id] = {};
+    sholatMap[s.siswa_id][dateStr] = "sholat";
+  });
+
+  return siswaList.map(s => ({
+    siswa_id: s.id,
+    siswa_nis: s.nis,
+    siswa_nama: s.nama,
+    siswa_kelas: s.kelas,
+    kehadiran: kehadiranMap[s.id] || {},
+    sholat: sholatMap[s.id] || {},
+  }));
+};
+
+// =========================================================================
 // JADWAL GURU DATABASE SERVICES
 // =========================================================================
 

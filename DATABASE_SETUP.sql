@@ -267,6 +267,7 @@ INSERT INTO public.master_poin (nama_poin, nilai_poin) VALUES
 ('Sikap Terpuji & Membantu Guru (KBM)', 15),
 ('Merapikan & Menjaga Kebersihan Kelas', 10),
 ('Mengumpulkan Tugas Tepat Waktu', 5),
+('Sholat Berjamaah', 2),
 ('Terlambat Masuk Sekolah (>15 Menit)', -15),
 ('Membuang Sampah Sembarangan', -10),
 ('Atribut Seragam Tidak Lengkap', -10),

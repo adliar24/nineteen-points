@@ -1282,6 +1282,133 @@ durasi_jam: null,
     }
   };
 
+  const [pdfDownloadingId, setPdfDownloadingId] = useState<string | null>(null);
+  const [pdfProgress, setPdfProgress] = useState<{ current: number; total: number } | null>(null);
+
+  const handleDownloadAllAsSinglePdf = async (folderName: string, items: KegiatanGuru[]) => {
+    setPdfDownloadingId(folderName);
+    setPdfProgress({ current: 0, total: items.length });
+
+    const config = await getSertifikatConfigAsync();
+
+    const loadImg = (src: string | null): Promise<HTMLImageElement | null> => {
+      if (!src) return Promise.resolve(null);
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => resolve(img);
+        img.onerror = () => resolve(null);
+        img.src = src;
+      });
+    };
+
+    try {
+      await document.fonts.ready;
+      const templateImg = new Image();
+      templateImg.src = config.templateUrl || "/sertifikat_template.png";
+      await new Promise<void>((resolve, reject) => {
+        templateImg.onload = () => resolve();
+        templateImg.onerror = () => reject(new Error("Gagal memuat template"));
+      });
+
+      const ttd1Img = await loadImg(config.ttd1Image);
+      const ttd2Img = await loadImg(config.ttd2Image);
+      const ttd3Img = await loadImg(config.ttd3Image);
+      const templateJpImg = await loadImg(config.templateJpUrl);
+      const logoFrontImg = await loadImg(config.logoFrontImage);
+      const logoBackImg = await loadImg(config.logoBackImage);
+
+      const origW = templateImg.naturalWidth || 2000;
+      const origH = templateImg.naturalHeight || 1414;
+
+      const MAX_DIM = 1500;
+      const scale = Math.min(1, MAX_DIM / Math.max(origW, origH));
+      const canvasWidth = Math.round(origW * scale);
+      const canvasHeight = Math.round(origH * scale);
+
+      const hasJp = config.hasJpPage && config.materiJpRows && config.materiJpRows.length > 0;
+
+      let pdf: jsPDF | null = null;
+
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        setPdfProgress({ current: i + 1, total: items.length });
+
+        const canvas = document.createElement("canvas");
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) continue;
+
+        const nameText = item.user_nama || "Guru SMAN 19";
+
+        drawCertificateOnCanvas(
+          ctx,
+          canvasWidth,
+          canvasHeight,
+          templateImg,
+          item,
+          nameText,
+          config,
+          ttd1Img,
+          ttd2Img,
+          ttd3Img,
+          logoFrontImg
+        );
+
+        const imgData = canvas.toDataURL("image/jpeg", 0.82);
+
+        if (!pdf) {
+          pdf = new jsPDF({
+            orientation: "landscape",
+            unit: "px",
+            format: [canvasWidth, canvasHeight],
+            compress: true
+          });
+        } else {
+          pdf.addPage([canvasWidth, canvasHeight], "landscape");
+        }
+
+        pdf.addImage(imgData, "JPEG", 0, 0, canvasWidth, canvasHeight);
+
+        if (hasJp) {
+          const canvas2 = document.createElement("canvas");
+          canvas2.width = canvasWidth;
+          canvas2.height = canvasHeight;
+          const ctx2 = canvas2.getContext("2d");
+          if (!ctx2) continue;
+
+          drawJpTablePageOnCanvas(
+            ctx2,
+            canvasWidth,
+            canvasHeight,
+            item,
+            config,
+            ttd1Img,
+            ttd2Img,
+            ttd3Img,
+            templateJpImg,
+            logoBackImg
+          );
+
+          const imgData2 = canvas2.toDataURL("image/jpeg", 0.82);
+          pdf.addPage([canvasWidth, canvasHeight], "landscape");
+          pdf.addImage(imgData2, "JPEG", 0, 0, canvasWidth, canvasHeight);
+        }
+      }
+
+      if (pdf) {
+        const safeFolder = folderName.replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_");
+        pdf.save(`Sertifikat_${safeFolder}_Semua_Guru.pdf`);
+      }
+    } catch (err: any) {
+      alert("Gagal mengunduh PDF gabungan: " + err.message);
+    } finally {
+      setPdfDownloadingId(null);
+      setPdfProgress(null);
+    }
+  };
+
   return (
     <div className="space-y-6 pb-12 animate-fade-in font-sans">
       {/* Header & Mode Switcher */}
@@ -1319,9 +1446,9 @@ durasi_jam: null,
         </div>
       </div>
 
-      {/* Progress ZIP overlay */}
+      {/* Progress overlay (ZIP or PDF) */}
       <AnimatePresence>
-        {zipProgress && (
+        {(zipProgress || pdfProgress) && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-brand-950/70 backdrop-blur-xs">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
@@ -1330,18 +1457,29 @@ durasi_jam: null,
               className="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl space-y-4 border border-brand-100"
             >
               <RefreshCw className="w-10 h-10 animate-spin mx-auto text-brand-600" />
-              <h4 className="text-sm font-extrabold text-brand-950">Menyiapkan Berkas ZIP</h4>
-              <p className="text-xs text-slate-500 font-semibold leading-relaxed">
-                Sedang memproses dan merender sertifikat untuk seluruh guru penerima kegiatan ini...
-              </p>
+              {pdfProgress ? (
+                <>
+                  <h4 className="text-sm font-extrabold text-brand-950">Menyiapkan PDF Gabungan</h4>
+                  <p className="text-xs text-slate-500 font-semibold leading-relaxed">
+                    Merender dan mengompres seluruh sertifikat ke dalam satu file PDF...
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h4 className="text-sm font-extrabold text-brand-950">Menyiapkan Berkas ZIP</h4>
+                  <p className="text-xs text-slate-500 font-semibold leading-relaxed">
+                    Sedang memproses dan merender sertifikat untuk seluruh guru penerima kegiatan ini...
+                  </p>
+                </>
+              )}
               <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden relative">
                 <div 
                   className="bg-brand-600 h-full rounded-full transition-all duration-300"
-                  style={{ width: `${(zipProgress.current / zipProgress.total) * 100}%` }}
+                  style={{ width: `${((pdfProgress?.current || zipProgress?.current || 0) / (pdfProgress?.total || zipProgress?.total || 1)) * 100}%` }}
                 />
               </div>
               <span className="text-[10px] font-black text-brand-600 block bg-brand-50 py-1.5 px-3 rounded-xl w-fit mx-auto">
-                PROSES: {zipProgress.current} / {zipProgress.total} GURU
+                PROSES: {pdfProgress?.current || zipProgress?.current} / {pdfProgress?.total || zipProgress?.total} GURU
               </span>
             </motion.div>
           </div>
@@ -1533,11 +1671,27 @@ durasi_jam: null,
                             Buka Folder
                           </button>
                           <button
+                            onClick={() => handleDownloadAllAsSinglePdf(folder.nama_kegiatan, folder.items)}
+                            disabled={pdfDownloadingId !== null || zipDownloadingId !== null}
+                            className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md disabled:opacity-50"
+                          >
+                            {pdfDownloadingId === folder.nama_kegiatan ? (
+                              <RefreshCw className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Download className="w-4 h-4" />
+                            )}
+                            Unduh PDF
+                          </button>
+                          <button
                             onClick={() => handleDownloadAllAsZip(folder.nama_kegiatan, folder.items)}
-                            disabled={zipDownloadingId !== null}
+                            disabled={zipDownloadingId !== null || pdfDownloadingId !== null}
                             className="flex-1 py-3 bg-brand-600 hover:bg-brand-750 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md disabled:opacity-50"
                           >
-                            <Download className="w-4 h-4" />
+                            {zipDownloadingId === folder.nama_kegiatan ? (
+                              <RefreshCw className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Download className="w-4 h-4" />
+                            )}
                             Unduh ZIP
                           </button>
                           <button
@@ -1587,14 +1741,32 @@ durasi_jam: null,
                     Total: {folderItems.length} Guru penerima
                   </p>
                 </div>
-                <button
-                  onClick={() => handleDownloadAllAsZip(selectedActivityFolder, folderItems)}
-                  disabled={zipDownloadingId !== null}
-                  className="px-5 py-3.5 bg-brand-600 hover:bg-brand-750 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md"
-                >
-                  <Download className="w-4.5 h-4.5" />
-                  Unduh Semua ZIP
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleDownloadAllAsSinglePdf(selectedActivityFolder, folderItems)}
+                    disabled={pdfDownloadingId !== null || zipDownloadingId !== null}
+                    className="px-5 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md disabled:opacity-50"
+                  >
+                    {pdfDownloadingId === selectedActivityFolder ? (
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Download className="w-4.5 h-4.5" />
+                    )}
+                    Unduh PDF Gabungan
+                  </button>
+                  <button
+                    onClick={() => handleDownloadAllAsZip(selectedActivityFolder, folderItems)}
+                    disabled={zipDownloadingId !== null || pdfDownloadingId !== null}
+                    className="px-5 py-3.5 bg-brand-600 hover:bg-brand-750 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md disabled:opacity-50"
+                  >
+                    {zipDownloadingId === selectedActivityFolder ? (
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Download className="w-4.5 h-4.5" />
+                    )}
+                    Unduh ZIP
+                  </button>
+                </div>
               </div>
 
               {/* TABLE OF RECIPIENTS */}

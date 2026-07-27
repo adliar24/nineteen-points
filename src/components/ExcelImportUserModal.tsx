@@ -33,6 +33,7 @@ export default function ExcelImportUserModal({
         ["Ahmad Fauzi", "19001", "murid", "", "XII IPA 1"],
         ["Petugas Piket 1", "piket1@contoh.com", "piket", "password123", ""],
         ["Dra. Siti Nurhaliza, M.Pd.", "19780101", "kepala_sekolah", "", ""],
+        ["Staff TU 1", "tu1@contoh.com", "tata_usaha", "", ""],
       ];
 
       const worksheet = XLSX.utils.aoa_to_sheet(data);

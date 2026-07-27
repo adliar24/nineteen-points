@@ -51,6 +51,9 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
     status: "success" | "duplicate" | "not_found";
   } | null>(null);
 
+  const lastProcessedRef = useRef<string>("");
+  const processingRef = useRef(false);
+
   const scannedCount = useMemo(() => todayRecap.length, [todayRecap]);
 
   useEffect(() => {
@@ -100,24 +103,27 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
 
   const onScanSuccess = async (decodedText: string) => {
     const trimmed = decodedText.trim();
-    stopScanner();
-    setCameraActive(false);
 
-    const student = siswaList.find(s => s.nis === trimmed || s.id === trimmed);
-    if (!student) {
-      setLastScanned({ nama: `QR: ${trimmed}`, kelas: "-", status: "not_found" });
-      setTimeout(() => setLastScanned(null), 3000);
-      return;
-    }
-
-    const alreadyScanned = await checkSholatToday(student.id);
-    if (alreadyScanned) {
-      setLastScanned({ nama: student.nama, kelas: student.kelas, status: "duplicate" });
-      setTimeout(() => setLastScanned(null), 3000);
-      return;
-    }
+    if (processingRef.current || trimmed === lastProcessedRef.current) return;
+    processingRef.current = true;
+    lastProcessedRef.current = trimmed;
+    setTimeout(() => { lastProcessedRef.current = ""; }, 2000);
 
     try {
+      const student = siswaList.find(s => s.nis === trimmed || s.id === trimmed);
+      if (!student) {
+        setLastScanned({ nama: `QR: ${trimmed}`, kelas: "-", status: "not_found" });
+        setTimeout(() => setLastScanned(null), 3000);
+        return;
+      }
+
+      const alreadyScanned = await checkSholatToday(student.id);
+      if (alreadyScanned) {
+        setLastScanned({ nama: student.nama, kelas: student.kelas, status: "duplicate" });
+        setTimeout(() => setLastScanned(null), 3000);
+        return;
+      }
+
       await addRiwayat(student.id, SHOLAT_POIN_NAMA, SHOLAT_POIN_VALUE, userSession.fullName);
       setLastScanned({ nama: student.nama, kelas: student.kelas, status: "success" });
       await refetchRecap();
@@ -126,6 +132,8 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
     } catch (err: any) {
       setScannerError("Gagal mencatat: " + err.message);
       setTimeout(() => setScannerError(null), 4000);
+    } finally {
+      processingRef.current = false;
     }
   };
 

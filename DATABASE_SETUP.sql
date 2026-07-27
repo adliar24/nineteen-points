@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   id         UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   email      TEXT NOT NULL,
   nama       TEXT NOT NULL,
-  role       TEXT NOT NULL CHECK (role IN ('super_admin', 'kepala_sekolah', 'guru', 'siswa', 'piket')),
+  role       TEXT NOT NULL CHECK (role IN ('super_admin', 'kepala_sekolah', 'guru', 'siswa', 'piket', 'tata_usaha')),
   nis        TEXT REFERENCES public.siswa(nis) ON DELETE SET NULL,
   foto_url   TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
@@ -64,7 +64,7 @@ ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS foto_url TEXT;
 -- Constraint role — pastikan semua role terdaftar
 ALTER TABLE public.profiles DROP CONSTRAINT IF EXISTS profiles_role_check;
 ALTER TABLE public.profiles ADD CONSTRAINT profiles_role_check
-  CHECK (role IN ('super_admin', 'kepala_sekolah', 'guru', 'siswa', 'piket'));
+  CHECK (role IN ('super_admin', 'kepala_sekolah', 'guru', 'siswa', 'piket', 'tata_usaha'));
 
 -- 1e. TABEL ATURAN KEHADIRAN
 CREATE TABLE IF NOT EXISTS public.aturan_kehadiran (

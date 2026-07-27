@@ -21,7 +21,7 @@ export default function CreateUserModal({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
-  const [role, setRole] = useState<"guru" | "kepala_sekolah" | "siswa" | "piket">("guru");
+  const [role, setRole] = useState<"guru" | "kepala_sekolah" | "siswa" | "piket" | "tata_usaha">("guru");
   const [selectedNis, setSelectedNis] = useState("");
   const [nip, setNip] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -79,11 +79,11 @@ export default function CreateUserModal({
       finalPassword = password.trim() || "guru19*";
     } else {
       if (!email || !fullName) {
-        setErrorMsg("Mohon isi semua kolom wajib untuk Piket.");
+        setErrorMsg(`Mohon isi semua kolom wajib untuk ${role === "tata_usaha" ? "Tata Usaha" : "Piket"}.`);
         return;
       }
       finalEmail = email.trim();
-      finalPassword = password.trim() || "piket19*";
+      finalPassword = password.trim() || (role === "tata_usaha" ? "tatausaha19*" : "piket19*");
     }
 
     setIsSubmitting(true);
@@ -125,7 +125,7 @@ export default function CreateUserModal({
           <select
             value={role}
             onChange={(e) => {
-              setRole(e.target.value as "guru" | "kepala_sekolah" | "siswa" | "piket");
+              setRole(e.target.value as "guru" | "kepala_sekolah" | "siswa" | "piket" | "tata_usaha");
               setErrorMsg("");
               setFullName("");
               setEmail("");
@@ -139,6 +139,7 @@ export default function CreateUserModal({
             <option value="kepala_sekolah">Kepala Sekolah</option>
             <option value="siswa">Murid</option>
             <option value="piket">Piket</option>
+            <option value="tata_usaha">Tata Usaha</option>
           </select>
         </div>
 
@@ -319,6 +320,47 @@ export default function CreateUserModal({
           </>
         )}
 
+        {role === "tata_usaha" && (
+          <>
+            <div className="space-y-1 animate-slide-up">
+              <label className="text-xs font-black text-brand-900 uppercase block">
+                Email Login
+              </label>
+              <div className="relative">
+                <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-brand-400" />
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="nama@email.com"
+                  className="w-full border border-brand-100 rounded-xl py-2.5 pl-10 pr-4 text-sm font-semibold focus:ring-1 focus:ring-brand-500 outline-none text-brand-900 bg-brand-50/20"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1 animate-slide-up">
+              <label className="text-xs font-black text-brand-900 uppercase block">
+                Password (opsional)
+              </label>
+              <div className="relative">
+                <Key className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-brand-400" />
+                <input
+                  type="text"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Kosongkan untuk default: tatausaha19*"
+                  className="w-full border border-brand-100 rounded-xl py-2.5 pl-10 pr-4 text-sm font-semibold focus:ring-1 focus:ring-brand-500 outline-none text-brand-900 bg-brand-50/20"
+                />
+              </div>
+              <p className="text-[10px] text-brand-400 font-medium">
+                Kosongkan untuk menggunakan password default{" "}
+                <strong className="text-brand-600">tatausaha19*</strong>
+              </p>
+            </div>
+          </>
+        )}
+
         {(role === "guru" || role === "kepala_sekolah") && (
           <div className="text-[10px] font-bold text-brand-500 bg-brand-50/60 border border-brand-100/50 p-3 rounded-2xl space-y-1 animate-slide-up leading-relaxed">
             <div>
@@ -354,6 +396,19 @@ export default function CreateUserModal({
             <div>
               <strong className="text-brand-900 font-extrabold">Password:</strong>{" "}
               {password.trim() || "piket19*"}
+            </div>
+          </div>
+        )}
+
+        {role === "tata_usaha" && (
+          <div className="text-[10px] font-bold text-brand-500 bg-brand-50/60 border border-brand-100/50 p-3 rounded-2xl space-y-1 animate-slide-up leading-relaxed">
+            <div>
+              <strong className="text-brand-900 font-extrabold">Email:</strong>{" "}
+              {email.trim() || "[Email]"}
+            </div>
+            <div>
+              <strong className="text-brand-900 font-extrabold">Password:</strong>{" "}
+              {password.trim() || "tatausaha19*"}
             </div>
           </div>
         )}

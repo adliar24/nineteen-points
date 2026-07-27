@@ -371,6 +371,10 @@ export default function App() {
         if (!["input_kehadiran", "input", "kehadiran", "students", "history", "change_password", "scan_sholat", "rekap_sholat_kehadiran"].includes(activeTab)) {
           setActiveTab("input_kehadiran");
         }
+      } else if (userSession.role === "tata_usaha") {
+        if (!["input", "scan_sholat", "rekap_sholat_kehadiran", "guru_sertifikat", "change_password"].includes(activeTab)) {
+          setActiveTab("input");
+        }
       } else {
         if (!["stats", "input_kehadiran", "input", "kehadiran", "students", "history", "rules", "users", "change_password", "kelola_sertifikat_guru", "scan_sholat", "rekap_sholat_kehadiran"].includes(activeTab)) {
           setActiveTab("stats");
@@ -419,6 +423,14 @@ export default function App() {
       { type: "item", id: "rekap_sholat_kehadiran", label: "Rekap Sholat", icon: ClipboardList, description: "Rekap sholat berjamaah murid" },
       { type: "item", id: "history", label: "Riwayat Poin", icon: Calendar, description: "Audit trail pencatatan" },
       { type: "item", id: "students", label: "Data Murid", icon: Users, description: "Lihat database & kartu pelajar" },
+      { type: "item", id: "change_password", label: "Tema & Keamanan", icon: Settings, description: "Ubah sandi & tema warna" }
+    ];
+  } else if (userSession.role === "tata_usaha") {
+    sidebarElements = [
+      { type: "item", id: "input", label: "Input Poin", icon: ClipboardCheck, description: "Catat via QR atau pencarian" },
+      { type: "item", id: "scan_sholat", label: "Scan Sholat", icon: BookOpen, description: "Scan QR sholat murid" },
+      { type: "item", id: "rekap_sholat_kehadiran", label: "Rekap Sholat", icon: ClipboardList, description: "Rekap sholat berjamaah murid" },
+      { type: "item", id: "guru_sertifikat", label: "Sertifikat Kegiatan", icon: Award, description: "Unduh sertifikat pelatihan" },
       { type: "item", id: "change_password", label: "Tema & Keamanan", icon: Settings, description: "Ubah sandi & tema warna" }
     ];
   } else if (userSession.role === "kepala_sekolah") {
@@ -949,7 +961,7 @@ export default function App() {
                 <GuruKehadiranView userSession={userSession} />
               )}
 
-              {activeTab === "guru_sertifikat" && userSession.role === "guru" && (
+              {activeTab === "guru_sertifikat" && ["guru", "tata_usaha"].includes(userSession.role) && (
                 <GuruSertifikatView userSession={userSession} />
               )}
 
@@ -973,11 +985,11 @@ export default function App() {
                 <GuruKartuView userSession={userSession} />
               )}
 
-              {activeTab === "scan_sholat" && ["guru", "super_admin", "kepala_sekolah", "piket"].includes(userSession.role) && (
+              {activeTab === "scan_sholat" && ["guru", "super_admin", "kepala_sekolah", "piket", "tata_usaha"].includes(userSession.role) && (
                 <SholatScanView userSession={userSession} />
               )}
 
-              {activeTab === "rekap_sholat_kehadiran" && ["guru", "super_admin", "kepala_sekolah", "piket"].includes(userSession.role) && (
+              {activeTab === "rekap_sholat_kehadiran" && ["guru", "super_admin", "kepala_sekolah", "piket", "tata_usaha"].includes(userSession.role) && (
                 <RekapSholatKehadiranView userSession={userSession} />
               )}
 

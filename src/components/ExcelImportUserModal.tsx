@@ -25,7 +25,7 @@ export default function ExcelImportUserModal({
         [
           "Nama Lengkap",
           "Username (NIS/NIP)",
-          "Role (guru/kepala_sekolah/murid/piket)",
+          "Role (guru/kepala_sekolah/murid/piket/tata_usaha)",
           "Password (opsional)",
           "Kelas (opsional untuk murid)",
         ],
@@ -105,6 +105,8 @@ export default function ExcelImportUserModal({
             roleVal = "guru";
           } else if (roleVal === "piket") {
             roleVal = "piket";
+          } else if (roleVal === "tata usaha" || roleVal === "tata_usaha" || roleVal === "tu") {
+            roleVal = "tata_usaha";
           } else {
             invalidRoleCount++;
             continue;
@@ -131,6 +133,13 @@ export default function ExcelImportUserModal({
               emailVal = username;
             }
             finalPassword = passwordVal || "piket19*";
+          } else if (roleVal === "tata_usaha") {
+            if (!username.includes("@")) {
+              emailVal = `${username}@sman19.sch.id`;
+            } else {
+              emailVal = username;
+            }
+            finalPassword = passwordVal || "tatausaha19*";
           }
 
           try {
@@ -185,7 +194,7 @@ export default function ExcelImportUserModal({
           if (duplicateCount > 0) {
             msg = `Gagal mengimpor: ${duplicateCount} akun/NIS sudah terdaftar di sistem.`;
           } else if (invalidRoleCount > 0) {
-            msg = `Gagal mengimpor: Role di Excel tidak dikenali. Gunakan "guru", "kepala_sekolah", "murid", atau "piket".`;
+            msg = `Gagal mengimpor: Role di Excel tidak dikenali. Gunakan "guru", "kepala_sekolah", "murid", "piket", atau "tata_usaha".`;
           } else if (failCount > 0) {
             msg = `Gagal mengimpor ${failCount} akun. Kemungkinan NIS/NIP/Email sudah terdaftar.`;
           }

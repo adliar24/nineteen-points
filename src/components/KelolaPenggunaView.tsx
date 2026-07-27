@@ -294,7 +294,7 @@ export default function KelolaPenggunaView({
     currentPage * itemsPerPage
   );
 
-  const roleList = ["Semua", "super_admin", "kepala_sekolah", "guru", "siswa", "piket"];
+  const roleList = ["Semua", "super_admin", "kepala_sekolah", "guru", "siswa", "piket", "tata_usaha"];
 
   return (
     <div className="space-y-6 pb-8">
@@ -379,6 +379,8 @@ export default function KelolaPenggunaView({
                     ? "Kepala Sekolah"
                     : r === "siswa"
                     ? "Murid"
+                    : r === "tata_usaha"
+                    ? "Tata Usaha"
                     : r.charAt(0).toUpperCase() + r.slice(1)}
                 </option>
               ))}

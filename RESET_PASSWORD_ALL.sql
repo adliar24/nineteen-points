@@ -5,6 +5,7 @@
 --   Guru / Kepala Sekolah : guru19*
 --   Murid                 : murid19*
 --   Piket                 : piket19*
+--   Tata Usaha            : tatausaha19*
 --
 -- Jalankan di Supabase SQL Editor.
 -- AMAN DIJALANKAN BERULANG KALI.
@@ -36,6 +37,13 @@ UPDATE auth.users
 SET encrypted_password = crypt('piket19*', gen_salt('bf'))
 WHERE id IN (
   SELECT id FROM public.profiles WHERE role = 'piket'
+);
+
+-- 5. Reset password semua TATA USAHA
+UPDATE auth.users
+SET encrypted_password = crypt('tatausaha19*', gen_salt('bf'))
+WHERE id IN (
+  SELECT id FROM public.profiles WHERE role = 'tata_usaha'
 );
 
 -- =========================================================================

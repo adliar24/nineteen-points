@@ -25,7 +25,7 @@ export default function ExcelImportUserModal({
         [
           "Nama Lengkap",
           "Username (NIS/NIP)",
-          "Role (guru/murid/piket/tata_usaha/kepala_sekolah)",
+          "Role (guru / murid / piket / tata_usaha / kepala_sekolah)",
           "Password (opsional)",
           "Kelas (opsional untuk murid)",
         ],
@@ -87,32 +87,37 @@ export default function ExcelImportUserModal({
 
           const name = String(row[0] || "").trim();
           const username = String(row[1] || "").trim().replace(/\.0$/, "");
-          const rawRole = String(row[2] || "").trim().toLowerCase().replace(/[\u00A0\u200B\u200C\u200D\uFEFF]/g, "").replace(/\s+/g, " ");
+          const rawRole = String(row[2] || "").trim().toLowerCase().replace(/[\u00A0\u200B\u200C\u200D\uFEFF\u00AD]/g, "").replace(/\s+/g, " ").replace(/[^\w\s\/.@]/g, "");
           const passwordVal = String(row[3] || "").trim();
           const kelasVal = String(row[4] || "").trim();
 
           if (!name || !username || !rawRole) continue;
 
-          // Normalize role input (accept common variants)
+          // Normalize role input — exact match first
           let roleVal = rawRole;
-          if (roleVal === "murid" || roleVal === "siswa" || roleVal === "siswa/murid" || roleVal === "murid/siswa") {
-            roleVal = "siswa";
-          } else if (
-            roleVal === "kepala sekolah" ||
-            roleVal === "kepala_sekolah" ||
-            roleVal === "kepsek" ||
-            roleVal === "ka.sek" ||
-            roleVal === "kasek"
-          ) {
+          const exactRoleMap: Record<string, string> = {
+            "murid": "siswa", "siswa": "siswa", "siswa/murid": "siswa", "murid/siswa": "siswa",
+            "kepala_sekolah": "kepala_sekolah", "kepala sekolah": "kepala_sekolah", "kepsek": "kepala_sekolah", "ka.sek": "kepala_sekolah", "kasek": "kepala_sekolah",
+            "guru": "guru", "teacher": "guru", "pendidik": "guru",
+            "piket": "piket", "duty": "piket",
+            "tata_usaha": "tata_usaha", "tata usaha": "tata_usaha", "tu": "tata_usaha", "tata": "tata_usaha", "staff tu": "tata_usaha",
+          };
+
+          if (exactRoleMap[roleVal]) {
+            roleVal = exactRoleMap[roleVal];
+          } else if (roleVal.includes("kepsek") || roleVal.includes("kasek") || (roleVal.includes("kepala") && roleVal.includes("sekolah"))) {
             roleVal = "kepala_sekolah";
-          } else if (roleVal === "guru" || roleVal === "teacher" || roleVal === "pendidik") {
-            roleVal = "guru";
-          } else if (roleVal === "piket" || roleVal === "duty") {
-            roleVal = "piket";
-          } else if (roleVal === "tata usaha" || roleVal === "tata_usaha" || roleVal === "tu" || roleVal === "staff tu" || roleVal === "staff tu administrasi") {
+          } else if (roleVal.includes("tata") || roleVal.includes("staff tu") || roleVal.includes("tu administrasi")) {
             roleVal = "tata_usaha";
+          } else if (roleVal.includes("guru")) {
+            roleVal = "guru";
+          } else if (roleVal.includes("murid") || roleVal.includes("siswa")) {
+            roleVal = "siswa";
+          } else if (roleVal.includes("piket")) {
+            roleVal = "piket";
           } else {
             invalidRoleCount++;
+            console.log(`[Import] Row ${i + 1}: rawRole="${rawRole}" (original="${String(row[2] || "")}") → INVALID`);
             if (!invalidRoleNames.includes(rawRole)) invalidRoleNames.push(rawRole);
             continue;
           }
@@ -191,6 +196,8 @@ export default function ExcelImportUserModal({
           }
         }
 
+        console.log(`[Import] Selesai: ${addedCount} berhasil, ${duplicateCount} duplikat, ${invalidRoleCount} role invalid, ${failCount} gagal`);
+
         if (addedCount > 0) {
           onClose();
           onSuccess();
@@ -199,7 +206,7 @@ export default function ExcelImportUserModal({
           if (duplicateCount > 0) {
             msg = `Gagal mengimpor: ${duplicateCount} akun/NIS sudah terdaftar di sistem.`;
           } else if (invalidRoleCount > 0) {
-            msg = `Gagal mengimpor: Role di Excel tidak dikenali (ditemukan "${invalidRoleNames.join('", "') || "?"}"). Gunakan: guru, kepala_sekolah, murid, piket, atau tata_usaha.`;
+            msg = `Gagal mengimpor: Role tidak dikenali (ditemukan: ${invalidRoleNames.map(r => `"${r}"`).join(", ")}). Role yang diterima: guru, kepala_sekolah, murid, piket, tata_usaha. Buka Console (F12) untuk detail.`;
           } else if (failCount > 0) {
             msg = `Gagal mengimpor ${failCount} akun. Kemungkinan NIS/NIP/Email sudah terdaftar.`;
           }
@@ -233,6 +240,11 @@ export default function ExcelImportUserModal({
           guru/kepala sekolah). Sistem akan otomatis membuat email login{" "}
           <strong className="text-brand-700">@sman19.sch.id</strong>.
         </p>
+
+        <div className="text-[10px] text-brand-400 bg-brand-50/50 border border-brand-100/50 rounded-xl p-3 font-medium leading-relaxed">
+          <strong className="text-brand-600">Role yang diterima:</strong> guru, murid/siswa, piket, tata_usaha, kepala_sekolah.
+          Penulisan fleksibel (contoh: "Guru BK", "Kepala Sekolah", "Staff TU", "TU" otomatis dikenali).
+        </div>
 
         <div className="bg-brand-50/70 border border-brand-100 rounded-2xl p-4 flex items-center justify-between gap-3">
           <div>

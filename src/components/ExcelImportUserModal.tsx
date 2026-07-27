@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { FileSpreadsheet, Download, AlertCircle } from "lucide-react";
 import { supabase, supabaseAdminAuth } from "../supabaseClient";
+import { fetchAllPages } from "../dbStore";
 import * as XLSX from "xlsx";
 import ModalPortal from "./ModalPortal";
 
@@ -73,7 +74,9 @@ export default function ExcelImportUserModal({
         let invalidRoleCount = 0;
 
         // Fetch existing siswa list to check before auto-inserting to table `siswa`
-        const { data: existingSiswa } = await supabase.from("siswa").select("nis");
+        const existingSiswa = await fetchAllPages<any>((from, to) =>
+          supabase.from("siswa").select("nis").range(from, to)
+        );
         const existingNisSet = new Set((existingSiswa || []).map((s) => String(s.nis).trim()));
 
         for (let i = 1; i < rows.length; i++) {

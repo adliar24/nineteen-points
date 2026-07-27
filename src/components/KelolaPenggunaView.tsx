@@ -26,6 +26,7 @@ import CreateUserModal from "./CreateUserModal";
 import EditAccountModal from "./EditAccountModal";
 import ExcelImportUserModal from "./ExcelImportUserModal";
 import BulkPhotoUploadModal from "./BulkPhotoUploadModal";
+import { fetchAllPages, getSiswaList } from "../dbStore";
 
 interface KelolaPenggunaViewProps {
   userSession: UserSession;
@@ -85,20 +86,16 @@ export default function KelolaPenggunaView({
   async function loadUsersData() {
     setIsLoading(true);
     try {
-      const { data: profilesData, error: profilesError } = await supabaseAdminAuth
-        .from("profiles")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (profilesError) throw profilesError;
+      const profilesData = await fetchAllPages<Profile>((from, to) =>
+        supabaseAdminAuth
+          .from("profiles")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .range(from, to)
+      );
       setProfiles(profilesData || []);
 
-      const { data: siswaData, error: siswaError } = await supabaseAdminAuth
-        .from("siswa")
-        .select("*")
-        .order("nama", { ascending: true });
-
-      if (siswaError) throw siswaError;
+      const siswaData = await getSiswaList();
       setStudentsList(siswaData || []);
     } catch (err: any) {
       console.error("Gagal memuat pengguna:", err);

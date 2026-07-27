@@ -17,7 +17,7 @@ import {
   ShieldAlert,
 } from "lucide-react";
 import { Siswa, UserSession } from "../types";
-import { getSiswaList } from "../dbStore";
+import { getSiswaList, fetchAllPages } from "../dbStore";
 import ConfirmationModal from "./ConfirmationModal";
 import { toSentenceCase } from "../formatName";
 import { supabase, supabaseAdminAuth } from "../supabaseClient";
@@ -97,10 +97,9 @@ export default function KelolaSiswaView({
   const handleSyncMissingAccounts = async () => {
     setIsSyncingAccounts(true);
     try {
-      const { data: existingProfiles } = await supabase
-        .from("profiles")
-        .select("nis")
-        .eq("role", "siswa");
+      const existingProfiles = await fetchAllPages<any>((from, to) =>
+        supabase.from("profiles").select("nis").eq("role", "siswa").range(from, to)
+      );
       const existingNisSet = new Set(
         (existingProfiles || []).map((p: any) => p.nis).filter(Boolean)
       );

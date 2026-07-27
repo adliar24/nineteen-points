@@ -23,16 +23,35 @@ export const setLocalStorage = <T>(key: string, value: T): void => {
 
 // --- SUPABASE DIRECT INTEGRATIONS ---
 
-export const getSiswaList = async (): Promise<Siswa[]> => {
-  const { data, error } = await supabase
-    .from("siswa")
-    .select("*")
-    .order("nama", { ascending: true });
-  if (error) {
-    console.error("Error fetching students from Supabase:", error);
-    return [];
+export const fetchAllPages = async <T>(
+  queryFn: (from: number, to: number) => Promise<{ data: T[] | null; error: any }>
+): Promise<T[]> => {
+  let allRows: T[] = [];
+  let from = 0;
+  const step = 1000;
+
+  while (true) {
+    const { data, error } = await queryFn(from, from + step - 1);
+    if (error) {
+      console.error("Error in fetchAllPages:", error);
+      break;
+    }
+    if (data && data.length > 0) {
+      allRows = allRows.concat(data);
+      if (data.length < step) break;
+      from += step;
+    } else {
+      break;
+    }
   }
-  return data || [];
+
+  return allRows;
+};
+
+export const getSiswaList = async (): Promise<Siswa[]> => {
+  return fetchAllPages<Siswa>((from, to) =>
+    supabase.from("siswa").select("*").order("nama", { ascending: true }).range(from, to)
+  );
 };
 
 export const saveSiswaList = async (siswa: Siswa[]): Promise<void> => {
@@ -155,29 +174,27 @@ export const getRiwayatListPaginated = async (params: PaginatedRiwayatParams): P
 };
 
 export const getRiwayatList = async (): Promise<RiwayatPoin[]> => {
-  const { data, error } = await supabase
-    .from("riwayat_poin")
-    .select(`
-      id,
-      siswa_id,
-      nilai_diberikan,
-      nama_poin,
-      guru_email,
-      created_at,
-      semester,
-      siswa (
-        nis,
-        nama,
-        kelas,
-        foto_url
-      )
-    `)
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    console.error("Error fetching history from Supabase:", error);
-    return [];
-  }
+  const data = await fetchAllPages<any>((from, to) =>
+    supabase
+      .from("riwayat_poin")
+      .select(`
+        id,
+        siswa_id,
+        nilai_diberikan,
+        nama_poin,
+        guru_email,
+        created_at,
+        semester,
+        siswa (
+          nis,
+          nama,
+          kelas,
+          foto_url
+        )
+      `)
+      .order("created_at", { ascending: false })
+      .range(from, to)
+  );
 
   // Format relation to match RiwayatPoin structure
   return (data || []).map((row: any) => ({
@@ -350,12 +367,13 @@ export interface SummaryRow {
 }
 
 export const exportSummaryData = async (): Promise<SummaryRow[]> => {
-  const { data, error } = await supabaseAdminAuth
-    .from("siswa")
-    .select("nis, nama, kelas, total_poin")
-    .order("nama", { ascending: true });
-
-  if (error) throw new Error("Gagal mengambil data siswa: " + error.message);
+  const data = await fetchAllPages<any>((from, to) =>
+    supabaseAdminAuth
+      .from("siswa")
+      .select("nis, nama, kelas, total_poin")
+      .order("nama", { ascending: true })
+      .range(from, to)
+  );
 
   return (data || []).map((row: any) => ({
     nis: row.nis || "-",
@@ -367,11 +385,9 @@ export const exportSummaryData = async (): Promise<SummaryRow[]> => {
 
 export const importSummaryData = async (rows: SummaryRow[]): Promise<{ updated: number; skipped: number }> => {
   // Load all siswa to map by NIS
-  const { data: siswaList, error: fetchError } = await supabase
-    .from("siswa")
-    .select("id, nis");
-
-  if (fetchError) throw new Error("Gagal mengambil data siswa: " + fetchError.message);
+  const siswaList = await fetchAllPages<any>((from, to) =>
+    supabase.from("siswa").select("id, nis").range(from, to)
+  );
 
   const nisToId: Record<string, string> = {};
   (siswaList || []).forEach((s: any) => {

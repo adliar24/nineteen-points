@@ -102,9 +102,11 @@ export default function ImportStudentModal({
         );
       }
     } else {
-      setImportError(
-        "Tidak ada baris data baru yang valid untuk diimpor. Pastikan NIS unik."
-      );
+      let errText = "Tidak ada baris data baru yang valid untuk diimpor. Pastikan NIS unik.";
+      if (duplicateCount > 0) {
+        errText = `Tidak ada baris data baru yang diimpor (${duplicateCount} NIS sudah terdaftar di sistem).`;
+      }
+      setImportError(errText);
     }
   };
 
@@ -140,7 +142,7 @@ export default function ImportStudentModal({
           const row = rows[i];
           if (!row || row.length === 0) continue;
 
-          const nis = String(row[0] || "").trim();
+          const nis = String(row[0] || "").trim().replace(/\.0$/, "");
           const nama = String(row[1] || "").trim().toUpperCase();
           const kelas = String(row[2] || "").trim();
           const total_poin = 0;

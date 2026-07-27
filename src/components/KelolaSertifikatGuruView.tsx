@@ -74,6 +74,73 @@ export default function KelolaSertifikatGuruView() {
   const [desainerPage, setDesainerPage] = useState<1 | 2>(1);
   const [sidebarTab, setSidebarTab] = useState<"konten" | "posisi" | "jp" | "presets">("konten");
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const isDraggingRef = useRef(false);
+  const dragStartPos = useRef<{ x: number; y: number } | null>(null);
+  const dragStartPercent = useRef<{ xPercent: number; yPercent: number } | null>(null);
+
+  const getClosestElement = (xPercent: number, yPercent: number, page: 1 | 2): string | null => {
+    const pos = config.positions;
+    let minDistance = Infinity;
+    let closestKey: string | null = null;
+
+    const page1Keys = [
+      "noSertifikat", "prefixNama", "namaGuru", "deskripsi", "tanggalKegiatan",
+      "sertifikatTitlePos", "logoFrontPos", "logoBackPos"
+    ];
+    const page2Keys = [
+      "jpHeaderTitlePos", "jpHeaderSubtitlePos", "jpHeaderSub2Pos", "jpTanggalPos", "materiJpTablePos"
+    ];
+
+    const targetKeys = page === 1 ? page1Keys : page2Keys;
+
+    for (const key of targetKeys) {
+      const elemPos = (pos as any)[key];
+      if (elemPos && typeof elemPos.xPercent === "number" && typeof elemPos.yPercent === "number") {
+        const dx = elemPos.xPercent - xPercent;
+        const dy = elemPos.yPercent - yPercent;
+        const dist = Math.hypot(dx, dy);
+        if (dist < 12 && dist < minDistance) {
+          minDistance = dist;
+          closestKey = key;
+        }
+      }
+    }
+
+    if (page === 1) {
+      if (pos.ttd1NamaPos) {
+        const dist = Math.hypot(pos.ttd1NamaPos.xPercent - xPercent, pos.ttd1NamaPos.yPercent - yPercent);
+        if (dist < 12 && dist < minDistance) {
+          minDistance = dist;
+          closestKey = "ttd1";
+        }
+      }
+      if (pos.ttd2NamaPos) {
+        const dist = Math.hypot(pos.ttd2NamaPos.xPercent - xPercent, pos.ttd2NamaPos.yPercent - yPercent);
+        if (dist < 12 && dist < minDistance) {
+          minDistance = dist;
+          closestKey = "ttd2";
+        }
+      }
+      if (pos.ttd3NamaPos) {
+        const dist = Math.hypot(pos.ttd3NamaPos.xPercent - xPercent, pos.ttd3NamaPos.yPercent - yPercent);
+        if (dist < 12 && dist < minDistance) {
+          minDistance = dist;
+          closestKey = "ttd3";
+        }
+      }
+    } else {
+      if (pos.jpTtdNamaPos) {
+        const dist = Math.hypot(pos.jpTtdNamaPos.xPercent - xPercent, pos.jpTtdNamaPos.yPercent - yPercent);
+        if (dist < 12 && dist < minDistance) {
+          minDistance = dist;
+          closestKey = "jpTtd";
+        }
+      }
+    }
+
+    return closestKey;
+  };
 
   // Preset State
   const [presets, setPresets] = useState<{ id: string; config: SertifikatLayoutConfig }[]>([]);

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FileSpreadsheet, Download, AlertCircle } from "lucide-react";
-import { supabaseAdminAuth } from "../supabaseClient";
+import { supabase, supabaseAdminAuth } from "../supabaseClient";
 import * as XLSX from "xlsx";
 import ModalPortal from "./ModalPortal";
 
@@ -26,18 +26,19 @@ export default function ExcelImportUserModal({
           "Username (NIS/NIP)",
           "Role (guru/kepala_sekolah/murid/piket)",
           "Password (opsional)",
+          "Kelas (opsional untuk murid)",
         ],
-        ["Hendra Wijaya, M.Si.", "19761102", "guru", ""],
-        ["Ahmad Fauzi", "19001", "siswa", ""],
-        ["Petugas Piket 1", "piket1@contoh.com", "piket", "password123"],
-        ["Dra. Siti Nurhaliza, M.Pd.", "19780101", "kepala_sekolah", ""],
+        ["Hendra Wijaya, M.Si.", "19761102", "guru", "", ""],
+        ["Ahmad Fauzi", "19001", "murid", "", "XII IPA 1"],
+        ["Petugas Piket 1", "piket1@contoh.com", "piket", "password123", ""],
+        ["Dra. Siti Nurhaliza, M.Pd.", "19780101", "kepala_sekolah", "", ""],
       ];
 
       const worksheet = XLSX.utils.aoa_to_sheet(data);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Template Akun SMAN 19");
 
-      worksheet["!cols"] = [{ wch: 25 }, { wch: 22 }, { wch: 20 }, { wch: 18 }];
+      worksheet["!cols"] = [{ wch: 25 }, { wch: 22 }, { wch: 25 }, { wch: 18 }, { wch: 18 }];
 
       XLSX.writeFile(workbook, "TEMPLATE_IMPORT_AKUN_SMAN19.xlsx");
     } catch (err: any) {
@@ -68,28 +69,47 @@ export default function ExcelImportUserModal({
 
         let addedCount = 0;
         let failCount = 0;
+        let duplicateCount = 0;
+        let invalidRoleCount = 0;
+
+        // Fetch existing siswa list to check before auto-inserting to table `siswa`
+        const { data: existingSiswa } = await supabase.from("siswa").select("nis");
+        const existingNisSet = new Set((existingSiswa || []).map((s) => String(s.nis).trim()));
 
         for (let i = 1; i < rows.length; i++) {
           const row = rows[i];
           if (!row || row.length === 0) continue;
 
           const name = String(row[0] || "").trim();
-          const username = String(row[1] || "").trim();
-          const roleVal = String(row[2] || "").trim().toLowerCase();
+          const username = String(row[1] || "").trim().replace(/\.0$/, "");
+          const rawRole = String(row[2] || "").trim().toLowerCase();
           const passwordVal = String(row[3] || "").trim();
+          const kelasVal = String(row[4] || "").trim();
 
-          if (!name || !username || !roleVal) continue;
-          if (
-            roleVal !== "guru" &&
-            roleVal !== "siswa" &&
-            roleVal !== "piket" &&
-            roleVal !== "kepala_sekolah"
-          )
+          if (!name || !username || !rawRole) continue;
+
+          // Normalize role input (accept 'murid' as 'siswa')
+          let roleVal = rawRole;
+          if (roleVal === "murid" || roleVal === "siswa" || roleVal === "siswa/murid") {
+            roleVal = "siswa";
+          } else if (
+            roleVal === "kepala sekolah" ||
+            roleVal === "kepala_sekolah" ||
+            roleVal === "kepsek"
+          ) {
+            roleVal = "kepala_sekolah";
+          } else if (roleVal === "guru") {
+            roleVal = "guru";
+          } else if (roleVal === "piket") {
+            roleVal = "piket";
+          } else {
+            invalidRoleCount++;
             continue;
+          }
 
           let emailVal = "";
           let finalPassword = "";
-          let nisVal = null;
+          let nisVal: string | null = null;
 
           if (roleVal === "siswa") {
             emailVal = `${username}@sman19.sch.id`;
@@ -102,12 +122,16 @@ export default function ExcelImportUserModal({
             emailVal = `${username}@sman19.sch.id`;
             finalPassword = passwordVal || "guru19*";
           } else if (roleVal === "piket") {
-            if (!username.includes("@")) continue;
-            emailVal = username;
+            if (!username.includes("@")) {
+              emailVal = `${username}@sman19.sch.id`;
+            } else {
+              emailVal = username;
+            }
             finalPassword = passwordVal || "piket19*";
           }
 
           try {
+            // Register user in Supabase Auth
             const { error: signUpError } = await supabaseAdminAuth.auth.admin.createUser({
               email: emailVal,
               password: finalPassword,
@@ -119,10 +143,32 @@ export default function ExcelImportUserModal({
               },
             });
 
-            if (signUpError) throw signUpError;
+            if (signUpError) {
+              if (
+                signUpError.message.toLowerCase().includes("already registered") ||
+                signUpError.message.toLowerCase().includes("already exists")
+              ) {
+                duplicateCount++;
+              }
+              throw signUpError;
+            }
+
+            // Sync student data to `siswa` table if role is 'siswa' and NIS is not in `siswa` table yet
+            if (roleVal === "siswa" && nisVal) {
+              if (!existingNisSet.has(nisVal)) {
+                await supabase.from("siswa").insert({
+                  nis: nisVal,
+                  nama: name.toUpperCase(),
+                  kelas: kelasVal || "Umum",
+                  total_poin: 0,
+                });
+                existingNisSet.add(nisVal);
+              }
+            }
+
             addedCount++;
-            await new Promise((r) => setTimeout(r, 200));
-          } catch (err) {
+            await new Promise((r) => setTimeout(r, 150));
+          } catch (err: any) {
             console.error(`Gagal mendaftarkan akun ${emailVal}:`, err);
             failCount++;
           }
@@ -132,7 +178,15 @@ export default function ExcelImportUserModal({
           onClose();
           onSuccess();
         } else {
-          setImportUserError("Tidak ada baris data baru yang valid untuk diimpor.");
+          let msg = "Tidak ada baris data baru yang valid untuk diimpor.";
+          if (duplicateCount > 0) {
+            msg = `Gagal mengimpor: ${duplicateCount} akun/NIS sudah terdaftar di sistem.`;
+          } else if (invalidRoleCount > 0) {
+            msg = `Gagal mengimpor: Role di Excel tidak dikenali. Gunakan "guru", "kepala_sekolah", "murid", atau "piket".`;
+          } else if (failCount > 0) {
+            msg = `Gagal mengimpor ${failCount} akun. Kemungkinan NIS/NIP/Email sudah terdaftar.`;
+          }
+          setImportUserError(msg);
         }
       } catch (err: any) {
         setImportUserError("Gagal membaca Excel: " + err.message);

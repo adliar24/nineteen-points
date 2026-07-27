@@ -1,5 +1,6 @@
 import { Siswa, MasterPoin, RiwayatPoin } from "./types";
 import { supabase, supabaseAdminAuth } from "./supabaseClient";
+import { parseDateSafe } from "./parseDateSafe";
 import * as XLSX from "xlsx";
 
 // Helper functions for LocalStorage management (fallback/session tracking only)
@@ -727,7 +728,7 @@ export const getTeacherProfiles = async (): Promise<any[]> => {
 
 export const getKehadiranGuruAll = async (dateStr: string): Promise<any[]> => {
   const days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
-  const dayName = days[new Date(dateStr).getDay()];
+  const dayName = days[parseDateSafe(dateStr).getDay()];
 
   const { data: schedules, error: sErr } = await supabase
     .from("jadwal_guru")

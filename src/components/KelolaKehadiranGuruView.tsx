@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "motion/react";
+import { parseDateSafe } from "../parseDateSafe";
 import {
   Calendar,
   Search,
@@ -37,7 +38,7 @@ export default function KelolaKehadiranGuruView() {
 
   // Determine Day Name
   const days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
-  const selectedDayName = days[new Date(selectedDate).getDay()];
+  const selectedDayName = days[parseDateSafe(selectedDate).getDay()];
 
   // 1. Query schedules and matching attendance for selectedDate
   const { data: list = [], isLoading, refetch } = useQuery({

@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Award, Download, Calendar, RefreshCw, FileText, Search, Eye, X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { jsPDF } from "jspdf";
+import { parseDateSafe } from "../parseDateSafe";
 import { getKegiatanGuruList } from "../dbStore";
 import { UserSession, KegiatanGuru } from "../types";
 import { getSertifikatConfigAsync, getSertifikatConfig, SertifikatLayoutConfig, ElementPosition, TtdElementPosition } from "../sertifikatConfig";
@@ -338,7 +339,7 @@ export function drawCertificateOnCanvas(
   // 7. Tempat & Tanggal Halaman Depan
   if (pos.tanggalKegiatan) {
     const rawDate = kegiatan.tanggal_kegiatan;
-    const formattedDate = new Date(rawDate).toLocaleDateString("id-ID", {
+    const formattedDate = parseDateSafe(rawDate).toLocaleDateString("id-ID", {
       day: "numeric",
       month: "long",
       year: "numeric"
@@ -681,7 +682,7 @@ export function drawJpTablePageOnCanvas(
 
   // 3. Signature & Date Section (Bottom Right)
   // Format Date (Indonesian style)
-  const formattedDateStr = new Date(kegiatan.tanggal_kegiatan).toLocaleDateString("id-ID", {
+  const formattedDateStr = parseDateSafe(kegiatan.tanggal_kegiatan).toLocaleDateString("id-ID", {
     day: "numeric",
     month: "long",
     year: "numeric",
@@ -1127,7 +1128,7 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-slate-400 font-semibold pt-1 border-t border-slate-50">
                   <span className="flex items-center gap-1">
                     <Calendar className="w-3.5 h-3.5 text-brand-500" />
-                    {new Date(kegiatan.tanggal_kegiatan).toLocaleDateString("id-ID", { day: 'numeric', month: 'short', year: 'numeric' })}
+                    {parseDateSafe(kegiatan.tanggal_kegiatan).toLocaleDateString("id-ID", { day: 'numeric', month: 'short', year: 'numeric' })}
                   </span>
                 </div>
               </div>

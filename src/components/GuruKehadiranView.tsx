@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "motion/react";
 import { Clock, Check, Calendar, AlertCircle, RefreshCw, FileText, LogIn, X, Users, BookOpen, Lock, Percent } from "lucide-react";
+import { parseDateSafe } from "../parseDateSafe";
 import { UserSession } from "../types";
 import { getTodayKehadiranGuru, checkInGuru, getKehadiranGuruHistory, getJadwalGuruList } from "../dbStore";
 import { formatSubjectName } from "../formatName";
@@ -404,7 +405,7 @@ export default function GuruKehadiranView({ userSession }: GuruKehadiranViewProp
                         </div>
                         <div className="space-y-0.5">
                           <span className="font-extrabold text-xs text-brand-950 block">
-                            {new Date(record.tanggal).toLocaleDateString("id-ID", { day: 'numeric', month: 'short', year: 'numeric' })}
+                            {parseDateSafe(record.tanggal).toLocaleDateString("id-ID", { day: 'numeric', month: 'short', year: 'numeric' })}
                           </span>
                           <span className="text-xs font-bold text-brand-800 block">
                             {formatSubjectName(scheduleInfo.mata_pelajaran || "Jadwal Dihapus")} ({scheduleInfo.kelas || "-"})

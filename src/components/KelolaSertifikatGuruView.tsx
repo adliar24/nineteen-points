@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "motion/react";
+import { parseDateSafe } from "../parseDateSafe";
 import { Award, Plus, Trash2, Search, X, Check, RefreshCw, Layout, Upload, Save, RotateCcw, Move, Edit3, Image as ImageIcon, Users, CheckSquare, Square, FileText, AlignLeft, Folder, FolderOpen, ArrowLeft, Download } from "lucide-react";
 import { getAllKegiatanGuru, getTeacherProfiles, addKegiatanGuruBulk, deleteKegiatanGuru, deleteKegiatanGuruBulk, deleteAllKegiatanGuru } from "../dbStore";
 import ModalPortal from "./ModalPortal";
@@ -1649,7 +1650,7 @@ durasi_jam: null,
 
                           <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-50">
                             <span className="text-[9px] font-bold text-slate-400">
-                              {new Date(folder.tanggal_kegiatan).toLocaleDateString("id-ID", { day: 'numeric', month: 'short', year: 'numeric' })}
+                              {parseDateSafe(folder.tanggal_kegiatan).toLocaleDateString("id-ID", { day: 'numeric', month: 'short', year: 'numeric' })}
                             </span>
                             {folder.isJp && (
                               <span className="text-[9px] font-black uppercase bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-lg">

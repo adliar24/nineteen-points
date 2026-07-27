@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { parseDateSafe } from "../parseDateSafe";
 import {
   Calendar,
   Search,
@@ -35,8 +36,8 @@ export default function RekapSholatKehadiranView({ userSession }: RekapSholatKeh
   });
 
   const datesInRange = useMemo(() => {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
+    const start = parseDateSafe(startDate);
+    const end = parseDateSafe(endDate);
     const dates: string[] = [];
     const current = new Date(start);
     while (current <= end) {
@@ -81,7 +82,7 @@ export default function RekapSholatKehadiranView({ userSession }: RekapSholatKeh
   const handleExportCSV = () => {
     const headers = ["NIS", "Nama", "Kelas"];
     datesInRange.forEach((d) => {
-      const label = new Date(d).toLocaleDateString("id-ID", { day: "2-digit", month: "short" });
+      const label = parseDateSafe(d).toLocaleDateString("id-ID", { day: "2-digit", month: "short" });
       headers.push(`Sholat ${label}`);
     });
 
@@ -201,8 +202,8 @@ export default function RekapSholatKehadiranView({ userSession }: RekapSholatKeh
                   <th className="px-4 py-3 text-[10px] font-black text-brand-500 uppercase tracking-wider sticky left-0 bg-brand-50/50 z-10">Murid</th>
                   {datesInRange.map((d) => (
                     <th key={d} className="px-3 py-3 text-center text-[9px] font-black text-brand-500 uppercase tracking-wider min-w-[60px]">
-                      <div>{new Date(d).toLocaleDateString("id-ID", { weekday: "short" })}</div>
-                      <div>{new Date(d).toLocaleDateString("id-ID", { day: "2-digit", month: "short" })}</div>
+                      <div>{parseDateSafe(d).toLocaleDateString("id-ID", { weekday: "short" })}</div>
+                      <div>{parseDateSafe(d).toLocaleDateString("id-ID", { day: "2-digit", month: "short" })}</div>
                       <div className="text-[8px] text-emerald-600 font-bold">Sholat</div>
                     </th>
                   ))}

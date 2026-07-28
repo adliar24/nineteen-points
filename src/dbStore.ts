@@ -753,6 +753,23 @@ export const getTeacherProfiles = async (): Promise<any[]> => {
   return data || [];
 };
 
+/**
+ * Fetch all certifiable profiles: guru, tata_usaha, and murid (siswa role)
+ */
+export const getAllCertifiableProfiles = async (): Promise<any[]> => {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id, email, nama, role")
+    .in("role", ["guru", "tata_usaha", "murid", "siswa"])
+    .order("nama");
+
+  if (error) {
+    console.error("Error fetching certifiable profiles:", error);
+    return [];
+  }
+  return data || [];
+};
+
 export const getKehadiranGuruAll = async (dateStr: string): Promise<any[]> => {
   const days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
   const dayName = days[parseDateSafe(dateStr).getDay()];

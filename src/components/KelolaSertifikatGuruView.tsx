@@ -3,7 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "motion/react";
 import { parseDateSafe } from "../parseDateSafe";
 import { Award, Plus, Trash2, Search, X, Check, RefreshCw, Layout, Upload, Save, RotateCcw, Move, Edit3, Image as ImageIcon, Users, CheckSquare, Square, FileText, AlignLeft, Folder, FolderOpen, ArrowLeft, Download } from "lucide-react";
-import { getAllKegiatanGuru, getTeacherProfiles, addKegiatanGuruBulk, deleteKegiatanGuru, deleteKegiatanGuruBulk, deleteAllKegiatanGuru } from "../dbStore";
+import { getAllKegiatanGuru, getTeacherProfiles, getAllCertifiableProfiles, addKegiatanGuruBulk, deleteKegiatanGuru, deleteKegiatanGuruBulk, deleteAllKegiatanGuru } from "../dbStore";
 import ModalPortal from "./ModalPortal";
 import { toSentenceCase } from "../formatName";
 import { getSertifikatConfigAsync, saveSertifikatConfigAsync, resetSertifikatConfigAsync, SertifikatLayoutConfig, DEFAULT_SERTIFIKAT_CONFIG, getSertifikatPresetsAsync, saveSertifikatPresetAsync, deleteSertifikatPresetAsync } from "../sertifikatConfig";
@@ -62,6 +62,7 @@ export default function KelolaSertifikatGuruView() {
   // Form State for publishing certificate
   const [selectedTeacherIds, setSelectedTeacherIds] = useState<string[]>([]);
   const [teacherSearchQuery, setTeacherSearchQuery] = useState("");
+  const [roleFilter, setRoleFilter] = useState<"semua" | "guru" | "tata_usaha" | "murid" | "siswa">("semua");
   const [namaKegiatan, setNamaKegiatan] = useState("");
   const [tanggalKegiatan, setTanggalKegiatan] = useState(() => new Date().toISOString().slice(0, 10));
   const [peran, setPeran] = useState("Peserta");
@@ -231,8 +232,8 @@ export default function KelolaSertifikatGuruView() {
   });
 
   const { data: teachers = [], isLoading: loadingTeachers } = useQuery({
-    queryKey: ["teacherProfiles"],
-    queryFn: getTeacherProfiles,
+    queryKey: ["allCertifiableProfiles"],
+    queryFn: getAllCertifiableProfiles,
     enabled: isAddModalOpen,
   });
 
@@ -255,7 +256,7 @@ export default function KelolaSertifikatGuruView() {
       );
     },
     onSuccess: () => {
-      setSuccessMsg(`Sertifikat berhasil diterbitkan untuk ${selectedTeacherIds.length} guru!`);
+      setSuccessMsg(`Sertifikat berhasil diterbitkan untuk ${selectedTeacherIds.length} penerima!`);
       setIsAddModalOpen(false);
       refetchKegiatan();
       
@@ -339,19 +340,29 @@ export default function KelolaSertifikatGuruView() {
     }
   };
 
-  // Select all / Toggle teachers
-  const filteredTeachersInModal = teachers.filter(t => 
+  // Filter by role then by search
+  const filteredByRole = roleFilter === "semua"
+    ? teachers
+    : roleFilter === "murid"
+    ? teachers.filter((t) => t.role === "murid" || t.role === "siswa")
+    : teachers.filter((t) => t.role === roleFilter);
+
+  const filteredTeachersInModal = filteredByRole.filter(t =>
     t.nama.toLowerCase().includes(teacherSearchQuery.toLowerCase()) ||
     t.email.toLowerCase().includes(teacherSearchQuery.toLowerCase())
   );
 
-  const isAllSelected = teachers.length > 0 && selectedTeacherIds.length === teachers.length;
+  const isAllSelected = filteredTeachersInModal.length > 0 && filteredTeachersInModal.every(t => selectedTeacherIds.includes(t.id));
 
   const handleSelectAllTeachers = (checked: boolean) => {
     if (checked) {
-      setSelectedTeacherIds(teachers.map(t => t.id));
+      setSelectedTeacherIds(prev => {
+        const newIds = filteredTeachersInModal.map(t => t.id);
+        return Array.from(new Set([...prev, ...newIds]));
+      });
     } else {
-      setSelectedTeacherIds([]);
+      const removeIds = new Set(filteredTeachersInModal.map(t => t.id));
+      setSelectedTeacherIds(prev => prev.filter(id => !removeIds.has(id)));
     }
   };
 
@@ -3424,14 +3435,41 @@ durasi_jam: null,
             <div className="flex justify-between items-center">
               <label className="text-[11px] font-black text-brand-950 uppercase tracking-wider flex items-center gap-1.5">
                 <Users className="w-4 h-4 text-brand-600" />
-                Pilih Guru Penerima Sertifikat *
+                Pilih Penerima Sertifikat *
               </label>
               <span className="text-[10px] font-extrabold bg-brand-600 text-white px-2.5 py-0.5 rounded-xl">
-                {selectedTeacherIds.length} / {teachers.length} Guru Terpilih
+                {selectedTeacherIds.length} / {teachers.length} Terpilih
               </span>
             </div>
 
-            {/* Header Checkbox: Pilih Semua */}
+            {/* Filter Role Pills */}
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              {([
+                { key: "semua", label: "Semua", count: teachers.length },
+                { key: "guru", label: "Guru", count: teachers.filter(t => t.role === "guru").length },
+                { key: "tata_usaha", label: "Tata Usaha", count: teachers.filter(t => t.role === "tata_usaha").length },
+                { key: "murid", label: "Murid", count: teachers.filter(t => t.role === "murid" || t.role === "siswa").length },
+              ] as const).map(({ key, label, count }) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => {
+                    // For murid, we filter on both "murid" and "siswa" role values
+                    setRoleFilter(key === "murid" ? "murid" : key as any);
+                    setTeacherSearchQuery("");
+                  }}
+                  className={`px-2.5 py-1 rounded-xl text-[10px] font-black border transition-all cursor-pointer ${
+                    (key === "murid" ? (roleFilter === "murid" || roleFilter === "siswa") : roleFilter === key)
+                      ? "bg-brand-600 text-white border-brand-600"
+                      : "bg-white text-slate-600 border-slate-200 hover:border-brand-400"
+                  }`}
+                >
+                  {label} ({count})
+                </button>
+              ))}
+            </div>
+
+            {/* Header Checkbox: Pilih Semua (dari filter aktif) */}
             <div className="flex items-center justify-between pt-1 pb-2 border-b border-brand-200/60">
               <button
                 type="button"
@@ -3443,29 +3481,35 @@ durasi_jam: null,
                 ) : (
                   <Square className="w-4 h-4 text-slate-400" />
                 )}
-                <span>Pilih Semua Guru ({teachers.length})</span>
+                <span>Pilih Semua yang Tampil ({filteredTeachersInModal.length})</span>
               </button>
             </div>
 
-            {/* Filter Search Teacher */}
+            {/* Filter Search */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-3.5 h-3.5" />
               <input
                 type="text"
-                placeholder="Cari nama atau email guru..."
+                placeholder="Cari nama atau email..."
                 value={teacherSearchQuery}
                 onChange={(e) => setTeacherSearchQuery(e.target.value)}
                 className="w-full pl-8 pr-3 py-1.5 bg-white rounded-xl border border-brand-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-brand-500"
               />
             </div>
 
-            {/* Teacher List Checkboxes */}
+            {/* Recipient List Checkboxes */}
             <div className="max-h-44 overflow-y-auto space-y-1.5 pr-1 divide-y divide-slate-100">
               {loadingTeachers ? (
-                <p className="text-center py-4 text-xs text-slate-400">Memuat data guru...</p>
+                <p className="text-center py-4 text-xs text-slate-400">Memuat data penerima...</p>
               ) : filteredTeachersInModal.length > 0 ? (
                 filteredTeachersInModal.map((t) => {
                   const isChecked = selectedTeacherIds.includes(t.id);
+                  const roleLabel = t.role === "guru" ? "Guru"
+                    : t.role === "tata_usaha" ? "TU"
+                    : "Murid";
+                  const roleBg = t.role === "guru" ? "bg-blue-50 text-blue-700 border-blue-100"
+                    : t.role === "tata_usaha" ? "bg-amber-50 text-amber-700 border-amber-100"
+                    : "bg-emerald-50 text-emerald-700 border-emerald-100";
                   return (
                     <label
                       key={t.id}
@@ -3485,11 +3529,14 @@ durasi_jam: null,
                           <span className="text-[10px] text-slate-400 block truncate">{t.email}</span>
                         </div>
                       </div>
+                      <span className={`text-[9px] font-black px-2 py-0.5 rounded-lg border shrink-0 ml-2 ${roleBg}`}>
+                        {roleLabel}
+                      </span>
                     </label>
                   );
                 })
               ) : (
-                <p className="text-center py-4 text-xs text-slate-400">Tidak ada guru ditemukan.</p>
+                <p className="text-center py-4 text-xs text-slate-400">Tidak ada penerima ditemukan.</p>
               )}
             </div>
           </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Plus, Trash2, ListFilter, Sparkles, X, Search } from "lucide-react";
+import { Plus, Trash2, Sparkles, X, Search, Pencil, CheckSquare } from "lucide-react";
 import { MasterPoin } from "../types";
 import { getMasterPoinList } from "../dbStore";
 import ConfirmationModal from "./ConfirmationModal";
@@ -22,16 +22,26 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
     }
     load();
   }, []);
-  
+
   const [filterType, setFilterType] = useState<"Semua" | "Positif" | "Negatif">("Semua");
   const [searchQuery, setSearchQuery] = useState("");
-  
+
   // New rule form
   const [newName, setNewName] = useState("");
   const [newValue, setNewValue] = useState("");
   const [isAdding, setIsAdding] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
+
+  // Delete state
   const [ruleToDelete, setRuleToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isBulkDeleteConfirm, setIsBulkDeleteConfirm] = useState(false);
+
+  // Edit state
+  const [editingRule, setEditingRule] = useState<MasterPoin | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editValue, setEditValue] = useState("");
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
 
   const showToast = (msg: string) => {
     setToastMsg(msg);
@@ -54,20 +64,16 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
     try {
       const newRule = {
         nama_poin: newName.trim(),
-        nilai_poin: valueNum
+        nilai_poin: valueNum,
       };
 
-      const { error } = await supabase
-        .from("master_poin")
-        .insert(newRule);
-
+      const { error } = await supabase.from("master_poin").insert(newRule);
       if (error) throw error;
 
       const updated = await getMasterPoinList();
       setPoinList(updated);
       onRefreshTrigger();
 
-      // Reset Form
       setNewName("");
       setNewValue("");
       setIsAdding(false);
@@ -77,21 +83,19 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
     }
   };
 
+  // ─── Single Delete ─────────────────────────────────
   const handleDeleteRule = (id: string, name: string) => {
     setRuleToDelete({ id, name });
   };
 
   const executeDeleteRule = async (id: string, name: string) => {
     try {
-      const { error } = await supabase
-        .from("master_poin")
-        .delete()
-        .eq("id", id);
-
+      const { error } = await supabase.from("master_poin").delete().eq("id", id);
       if (error) throw error;
 
       const updated = await getMasterPoinList();
       setPoinList(updated);
+      setSelectedIds((prev) => prev.filter((sid) => sid !== id));
       onRefreshTrigger();
       showToast(`Aturan "${name}" dihapus.`);
     } catch (err: any) {
@@ -99,23 +103,94 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
     }
   };
 
+  // ─── Bulk Delete ────────────────────────────────────
+  const executeBulkDelete = async () => {
+    try {
+      const { error } = await supabase
+        .from("master_poin")
+        .delete()
+        .in("id", selectedIds);
+      if (error) throw error;
+
+      const updated = await getMasterPoinList();
+      setPoinList(updated);
+      const count = selectedIds.length;
+      setSelectedIds([]);
+      onRefreshTrigger();
+      showToast(`${count} aturan berhasil dihapus.`);
+    } catch (err: any) {
+      alert("Gagal menghapus aturan: " + err.message);
+    }
+  };
+
+  // ─── Checkbox helpers ───────────────────────────────
+  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSelectedIds(e.target.checked ? filteredRules.map((r) => r.id) : []);
+  };
+
+  const handleSelectOne = (id: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((sid) => sid !== id) : [...prev, id]
+    );
+  };
+
+  // ─── Edit ───────────────────────────────────────────
+  const openEdit = (rule: MasterPoin) => {
+    setEditingRule(rule);
+    setEditName(rule.nama_poin);
+    setEditValue(String(rule.nilai_poin));
+  };
+
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingRule) return;
+    if (!editName.trim() || !editValue.trim()) {
+      alert("Mohon lengkapi seluruh kolom.");
+      return;
+    }
+    const valueNum = parseInt(editValue, 10);
+    if (isNaN(valueNum)) {
+      alert("Nilai poin harus berupa angka.");
+      return;
+    }
+
+    setIsSavingEdit(true);
+    try {
+      const { error } = await supabase
+        .from("master_poin")
+        .update({ nama_poin: editName.trim(), nilai_poin: valueNum })
+        .eq("id", editingRule.id);
+      if (error) throw error;
+
+      const updated = await getMasterPoinList();
+      setPoinList(updated);
+      onRefreshTrigger();
+      setEditingRule(null);
+      showToast(`Aturan "${editName.trim()}" berhasil diperbarui!`);
+    } catch (err: any) {
+      alert("Gagal memperbarui aturan: " + err.message);
+    } finally {
+      setIsSavingEdit(false);
+    }
+  };
+
+  // ─── Filter ─────────────────────────────────────────
   const filteredRules = poinList.filter((r) => {
-    const matchesFilter = 
+    const matchesFilter =
       filterType === "Semua" ||
       (filterType === "Positif" && r.nilai_poin > 0) ||
       (filterType === "Negatif" && r.nilai_poin < 0);
-    
     const matchesSearch = r.nama_poin.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesFilter && matchesSearch;
   });
 
-  // Calculate statistics
-  const totalRules = poinList.length;
-  const rewardRules = poinList.filter(r => r.nilai_poin > 0).length;
-  const violationRules = poinList.filter(r => r.nilai_poin < 0).length;
+  const allFilteredSelected =
+    filteredRules.length > 0 && filteredRules.every((r) => selectedIds.includes(r.id));
+  const someSelected = selectedIds.length > 0;
 
   return (
     <div className="bg-white rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 p-5 sm:p-6 space-y-5">
+      {/* Toast */}
       <AnimatePresence>
         {toastMsg && (
           <motion.div
@@ -133,9 +208,9 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
 
       <h2 className="text-xl font-extrabold text-brand-950 tracking-tight">Aturan Baku Poin</h2>
 
-      {/* Search & Filter Controls Panel */}
+      {/* Search & Filter Controls */}
       <div className="flex flex-col md:flex-row gap-3 justify-between items-center mt-2">
-        {/* Modern Compact Search Bar */}
+        {/* Search Bar */}
         <div className="relative flex-1 max-w-md w-full">
           <Search className="w-4.5 h-4.5 text-brand-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
@@ -155,7 +230,7 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
           )}
         </div>
 
-        {/* Filter Pills */}
+        {/* Filter Pills & Action Buttons */}
         <div className="flex flex-wrap gap-1.5 items-center w-full md:w-auto">
           {(["Semua", "Positif", "Negatif"] as const).map((tab) => (
             <button
@@ -171,6 +246,24 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
             </button>
           ))}
 
+          {/* Bulk Delete Button */}
+          <AnimatePresence>
+            {someSelected && (
+              <motion.button
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setIsBulkDeleteConfirm(true)}
+                className="flex items-center gap-1.5 px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white text-xs font-black rounded-lg transition-all shadow-md cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                Hapus ({selectedIds.length})
+              </motion.button>
+            )}
+          </AnimatePresence>
+
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
@@ -183,74 +276,113 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
         </div>
       </div>
 
-      {/* Space-Saving Minimalist List Area Header */}
+      {/* Table Header */}
       <div className="border border-brand-100 rounded-t-2xl bg-brand-50/80 border-b-0 overflow-hidden">
-        {/* Header Row */}
         <div className="bg-brand-50/80 py-3.5 px-4 flex items-center justify-between gap-3 text-brand-500 text-xs font-black uppercase tracking-wider">
-          <div className="flex-1 pl-6">Deskripsi Aturan Poin</div>
+          {/* Checkbox Pilih Semua */}
+          <div className="flex items-center gap-3 flex-1">
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                checked={allFilteredSelected}
+                onChange={handleSelectAll}
+                disabled={filteredRules.length === 0}
+                className="w-4 h-4 rounded border-brand-300 text-brand-600 focus:ring-brand-500 cursor-pointer"
+              />
+            </div>
+            <span className="pl-1">Deskripsi Aturan Poin</span>
+          </div>
           <div className="flex items-center gap-4 flex-shrink-0">
             <div className="w-16 text-center">Nilai Poin</div>
-            <div className="w-10 text-right pr-1">Aksi</div>
+            <div className="w-16 text-right pr-1">Aksi</div>
           </div>
         </div>
       </div>
 
-      {/* Space-Saving Minimalist List Area Body */}
+      {/* Table Body */}
       <div className="border border-brand-100 border-t-0 rounded-b-2xl overflow-y-auto max-h-[420px] bg-brand-50/10">
         <div key={isLoading ? "loading" : filterType} className="divide-y divide-brand-100/50">
           {isLoading ? (
             [...Array(4)].map((_, i) => (
-              <div key={i} className="py-3 px-4 flex items-center justify-between gap-3 animate-pulse bg-white/40 animate-fade-in">
+              <div key={i} className="py-3 px-4 flex items-center justify-between gap-3 animate-pulse bg-white/40">
                 <div className="flex items-center gap-3.5 min-w-0 flex-1">
-                  <div className="w-2.5 h-2.5 rounded-full bg-brand-100/60 flex-shrink-0"></div>
+                  <div className="w-4 h-4 rounded bg-brand-100/60 flex-shrink-0" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-brand-100/60 flex-shrink-0" />
                   <div className="min-w-0 space-y-2">
-                    <div className="h-4 bg-brand-100/60 rounded-md w-48 sm:w-64"></div>
-                    <div className="h-3 bg-brand-50 rounded-md w-28"></div>
+                    <div className="h-4 bg-brand-100/60 rounded-md w-48 sm:w-64" />
+                    <div className="h-3 bg-brand-50 rounded-md w-28" />
                   </div>
                 </div>
                 <div className="flex items-center gap-3 flex-shrink-0">
-                  <div className="h-6 w-12 bg-brand-100/50 rounded-full"></div>
-                  <div className="h-8 w-8 bg-brand-50 rounded-lg"></div>
+                  <div className="h-6 w-12 bg-brand-100/50 rounded-full" />
+                  <div className="h-8 w-16 bg-brand-50 rounded-lg" />
                 </div>
               </div>
             ))
           ) : filteredRules.length > 0 ? (
             filteredRules.map((rule) => {
               const isPositive = rule.nilai_poin > 0;
+              const isSelected = selectedIds.includes(rule.id);
               return (
                 <div
                   key={rule.id}
-                  className="py-3 px-4 flex items-center justify-between gap-3 hover:bg-white transition-all animate-fade-in"
+                  className={`py-3 px-4 flex items-center justify-between gap-3 transition-all animate-fade-in ${
+                    isSelected ? "bg-brand-50/60" : "hover:bg-white"
+                  }`}
                 >
-                  {/* Left Side: Indicator + Text */}
+                  {/* Left: Checkbox + Indicator + Text */}
                   <div className="flex items-center gap-3.5 min-w-0 flex-1">
-                    {/* Micro Indicator Dot */}
-                    <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
-                      isPositive ? "bg-emerald-500 shadow-sm shadow-emerald-500/30" : "bg-rose-500 shadow-sm shadow-rose-500/30"
-                    }`} />
-                    
+                    {/* Checkbox */}
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => handleSelectOne(rule.id)}
+                      className="w-4 h-4 rounded border-brand-300 text-brand-600 focus:ring-brand-500 cursor-pointer flex-shrink-0"
+                    />
+                    {/* Color Dot */}
+                    <div
+                      className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
+                        isPositive
+                          ? "bg-emerald-500 shadow-sm shadow-emerald-500/30"
+                          : "bg-rose-500 shadow-sm shadow-rose-500/30"
+                      }`}
+                    />
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-brand-950 truncate leading-tight">
                         {rule.nama_poin}
                       </p>
-                      <span className={`inline-block text-xs font-bold uppercase tracking-wide mt-1 ${
-                        isPositive ? "text-emerald-600" : "text-rose-600"
-                      }`}>
+                      <span
+                        className={`inline-block text-xs font-bold uppercase tracking-wide mt-1 ${
+                          isPositive ? "text-emerald-600" : "text-rose-600"
+                        }`}
+                      >
                         {isPositive ? "Penghargaan Prestasi" : "Pelanggaran Disiplin"}
                       </span>
                     </div>
                   </div>
 
-                  {/* Right Side: Compact Badge + Action */}
-                  <div className="flex items-center gap-3 flex-shrink-0">
-                    <span className={`font-mono text-sm font-black px-3 py-1 rounded-full border ${
-                      isPositive 
-                        ? "bg-emerald-50 text-emerald-700 border-emerald-200" 
-                        : "bg-rose-50 text-rose-700 border-rose-200"
-                    }`}>
+                  {/* Right: Badge + Actions */}
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span
+                      className={`font-mono text-sm font-black px-3 py-1 rounded-full border ${
+                        isPositive
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                          : "bg-rose-50 text-rose-700 border-rose-200"
+                      }`}
+                    >
                       {isPositive ? `+${rule.nilai_poin}` : rule.nilai_poin}
                     </span>
 
+                    {/* Edit Button */}
+                    <button
+                      onClick={() => openEdit(rule)}
+                      className="text-brand-300 hover:text-brand-600 p-1.5 rounded-lg hover:bg-brand-50 transition-all cursor-pointer"
+                      title="Edit"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+
+                    {/* Delete Button */}
                     <button
                       onClick={() => handleDeleteRule(rule.id, rule.nama_poin)}
                       className="text-brand-300 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition-all cursor-pointer"
@@ -270,10 +402,31 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
         </div>
       </div>
 
-      {/* Modal to add new rules */}
+      {/* Bulk selection info bar */}
+      <AnimatePresence>
+        {someSelected && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            className="flex items-center gap-3 px-4 py-2.5 bg-brand-50 border border-brand-100 rounded-xl text-xs font-bold text-brand-700"
+          >
+            <CheckSquare className="w-4 h-4 text-brand-500" />
+            <span>{selectedIds.length} aturan dipilih</span>
+            <button
+              onClick={() => setSelectedIds([])}
+              className="ml-auto text-brand-400 hover:text-brand-700 cursor-pointer underline underline-offset-2"
+            >
+              Batalkan pilihan
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ─── Modal: Tambah Aturan ─── */}
       {isAdding && (
         <div className="fixed inset-0 bg-brand-950/65 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-          <motion.div 
+          <motion.div
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             className="bg-white rounded-3xl shadow-2xl border border-brand-100 w-full max-w-md p-6 flex flex-col"
@@ -345,18 +498,131 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
         </div>
       )}
 
-      {/* Confirmation Modal for Rule Deletion */}
+      {/* ─── Modal: Edit Aturan ─── */}
+      <AnimatePresence>
+        {editingRule && (
+          <div className="fixed inset-0 bg-brand-950/65 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-3xl shadow-2xl border border-brand-100 w-full max-w-md p-6 flex flex-col"
+            >
+              <div className="flex items-center justify-between border-b border-brand-100 pb-3 mb-4">
+                <h3 className="text-base font-extrabold text-brand-900 flex items-center gap-1.5">
+                  <Pencil className="w-5 h-5 text-brand-600" />
+                  Edit Aturan Poin
+                </h3>
+                <button
+                  onClick={() => setEditingRule(null)}
+                  className="text-brand-400 hover:text-brand-600 cursor-pointer p-1 hover:bg-brand-50 rounded-lg"
+                >
+                  <X className="w-4.5 h-4.5" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveEdit} className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-extrabold text-brand-500 uppercase tracking-wide block">
+                    Deskripsi Aturan *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Contoh: Terlambat masuk sekolah"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    className="w-full border border-brand-100 rounded-xl px-4 py-2.5 text-sm font-bold text-brand-900 focus:ring-2 focus:ring-brand-500/20 outline-none bg-brand-50/25"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-extrabold text-brand-500 uppercase tracking-wide block">
+                    Bobot Nilai Poin *
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    placeholder="Contoh: -15 atau +20"
+                    value={editValue}
+                    onChange={(e) => setEditValue(e.target.value)}
+                    className="w-full border border-brand-100 rounded-xl px-4 py-2.5 text-sm font-bold text-brand-900 focus:ring-2 focus:ring-brand-500/20 outline-none bg-brand-50/25"
+                  />
+                  <p className="text-xs text-brand-400/90 font-medium leading-relaxed">
+                    Angka positif untuk penghargaan (prestasi), negatif untuk sanksi pelanggaran disiplin.
+                  </p>
+                </div>
+
+                {/* Preview */}
+                {editValue && !isNaN(parseInt(editValue)) && (
+                  <div
+                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-bold ${
+                      parseInt(editValue) >= 0
+                        ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+                        : "bg-rose-50 border-rose-200 text-rose-700"
+                    }`}
+                  >
+                    <span className="font-mono font-black">
+                      {parseInt(editValue) > 0 ? `+${editValue}` : editValue}
+                    </span>
+                    <span className="text-xs opacity-70">
+                      {parseInt(editValue) >= 0 ? "— Penghargaan Prestasi" : "— Pelanggaran Disiplin"}
+                    </span>
+                  </div>
+                )}
+
+                <div className="flex gap-2 justify-end border-t border-brand-100 pt-4 mt-4">
+                  <button
+                    type="button"
+                    onClick={() => setEditingRule(null)}
+                    className="px-4.5 py-2.5 border border-brand-100 rounded-xl text-sm font-bold text-brand-700 hover:bg-brand-50 cursor-pointer"
+                  >
+                    Batal
+                  </button>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    type="submit"
+                    disabled={isSavingEdit}
+                    className="px-5 py-2.5 brand-gradient text-white rounded-xl text-sm font-black shadow-md shadow-brand-500/10 cursor-pointer disabled:opacity-60"
+                  >
+                    {isSavingEdit ? "Menyimpan..." : "Simpan Perubahan"}
+                  </motion.button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Confirmation: Single Delete */}
       <ConfirmationModal
         isOpen={ruleToDelete !== null}
         onClose={() => setRuleToDelete(null)}
         onConfirm={() => {
           if (ruleToDelete) {
             executeDeleteRule(ruleToDelete.id, ruleToDelete.name);
+            setRuleToDelete(null);
           }
         }}
         title="Hapus Aturan Bobot Poin?"
         message={`Apakah Anda yakin ingin menghapus aturan baku "${ruleToDelete?.name}"? Tindakan ini tidak mengubah poin yang sudah tercatat di database log siswa.`}
         confirmText="Ya, Hapus"
+        cancelText="Batal"
+        type="danger"
+      />
+
+      {/* Confirmation: Bulk Delete */}
+      <ConfirmationModal
+        isOpen={isBulkDeleteConfirm}
+        onClose={() => setIsBulkDeleteConfirm(false)}
+        onConfirm={() => {
+          executeBulkDelete();
+          setIsBulkDeleteConfirm(false);
+        }}
+        title={`Hapus ${selectedIds.length} Aturan Sekaligus?`}
+        message={`Apakah Anda yakin ingin menghapus ${selectedIds.length} aturan poin yang dipilih? Tindakan ini tidak dapat dibatalkan dan tidak mengubah riwayat poin siswa yang sudah tercatat.`}
+        confirmText="Ya, Hapus Semua"
         cancelText="Batal"
         type="danger"
       />

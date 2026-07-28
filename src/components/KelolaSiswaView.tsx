@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import html2canvas from "html2canvas-pro";
 import {
@@ -15,6 +15,7 @@ import {
   Users,
   Check,
   ShieldAlert,
+  PackageOpen,
 } from "lucide-react";
 import { Siswa, UserSession } from "../types";
 import { getSiswaList, fetchAllPages } from "../dbStore";
@@ -52,9 +53,25 @@ export default function KelolaSiswaView({
   const [isExporting, setIsExporting] = useState(false);
   const [isSyncingAccounts, setIsSyncingAccounts] = useState(false);
 
+  // Per-class export
+  const [exportingKelas, setExportingKelas] = useState<string | null>(null);
+  const [isClassDropdownOpen, setIsClassDropdownOpen] = useState(false);
+  const classDropdownRef = useRef<HTMLDivElement>(null);
+
   // Modals
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isAddSiswaModalOpen, setIsAddSiswaModalOpen] = useState(false);
+
+  // Close class dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (classDropdownRef.current && !classDropdownRef.current.contains(e.target as Node)) {
+        setIsClassDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -302,6 +319,60 @@ export default function KelolaSiswaView({
     }
   };
 
+  // ─── Export per kelas ───────────────────────────────────────────────
+  const exportClassToZIP = async (kelas: string) => {
+    setIsClassDropdownOpen(false);
+    const targets = siswaList.filter((s) => s.kelas === kelas);
+    if (targets.length === 0) {
+      alert(`Tidak ada murid di kelas ${kelas}.`);
+      return;
+    }
+
+    setExportingKelas(kelas);
+    showToast(`Menyiapkan ${targets.length} kartu untuk Kelas ${kelas}...`);
+
+    // Wait for the off-screen cards to render
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
+    try {
+      const JSZip = (await import("jszip")).default;
+      const zip = new JSZip();
+
+      for (const siswa of targets) {
+        const cardElement = document.getElementById(`card-render-class-${siswa.id}`);
+        if (!cardElement) continue;
+
+        const canvas = await html2canvas(cardElement, {
+          scale: 3,
+          useCORS: true,
+          backgroundColor: "#ffffff",
+        });
+
+        const imgDataUrl = canvas.toDataURL("image/jpeg", 0.92);
+        const base64Data = imgDataUrl.split(",")[1];
+        const filename = `KARTU_${siswa.nis}_${siswa.nama
+          .toUpperCase()
+          .replace(/\s+/g, "_")}.jpg`;
+
+        zip.file(filename, base64Data, { base64: true });
+      }
+
+      const zipContent = await zip.generateAsync({ type: "blob" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(zipContent);
+      link.download = `KARTU_KELAS_${kelas.replace(/\s+/g, "_")}_SMAN19.zip`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+
+      showToast(`ZIP Kelas ${kelas} (${targets.length} kartu) berhasil diunduh!`);
+    } catch (error) {
+      console.error("Export class ZIP failed", error);
+      alert("Gagal mengekspor kartu kelas ke ZIP. Silakan coba lagi.");
+    } finally {
+      setExportingKelas(null);
+    }
+  };
+
   const isAdmin = !["guru", "kepala_sekolah"].includes(userSession.role);
 
   return (
@@ -405,10 +476,11 @@ export default function KelolaSiswaView({
               </span>
             </motion.button>
 
+            {/* Kartu Murid (pilihan / semua) */}
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              disabled={isExporting}
+              disabled={isExporting || !!exportingKelas}
               onClick={exportToZIP}
               className="flex items-center justify-center gap-2 p-3 md:px-5 md:py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-sm font-black transition-all shadow-md cursor-pointer disabled:opacity-55"
             >
@@ -426,6 +498,59 @@ export default function KelolaSiswaView({
                   : "Kartu Murid"}
               </span>
             </motion.button>
+
+            {/* Kartu Per Kelas */}
+            <div className="relative" ref={classDropdownRef}>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                disabled={isExporting || !!exportingKelas}
+                onClick={() => setIsClassDropdownOpen((prev) => !prev)}
+                className="flex items-center justify-center gap-2 p-3 md:px-5 md:py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-2xl text-sm font-black transition-all shadow-md cursor-pointer disabled:opacity-55"
+              >
+                <PackageOpen className="w-4.5 h-4.5" />
+                <span className="hidden md:inline">
+                  {exportingKelas ? `Kelas ${exportingKelas}...` : "Per Kelas"}
+                </span>
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isClassDropdownOpen ? "rotate-180" : ""}`} />
+              </motion.button>
+
+              {/* Dropdown daftar kelas */}
+              <AnimatePresence>
+                {isClassDropdownOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -8, scale: 0.96 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute right-0 top-full mt-2 w-52 bg-white rounded-2xl border border-brand-100 shadow-2xl shadow-brand-900/10 z-50 overflow-hidden"
+                  >
+                    <div className="px-3 py-2 border-b border-brand-50">
+                      <p className="text-[10px] font-black text-brand-400 uppercase tracking-widest">Pilih Kelas</p>
+                    </div>
+                    <div className="max-h-64 overflow-y-auto py-1">
+                      {classes
+                        .filter((c) => c !== "Semua")
+                        .map((kelas) => {
+                          const count = siswaList.filter((s) => s.kelas === kelas).length;
+                          return (
+                            <button
+                              key={kelas}
+                              onClick={() => exportClassToZIP(kelas)}
+                              className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-violet-50 transition-colors cursor-pointer text-left"
+                            >
+                              <span className="text-sm font-bold text-brand-900">Kelas {kelas}</span>
+                              <span className="text-xs font-black text-violet-600 bg-violet-50 px-2 py-0.5 rounded-full border border-violet-100">
+                                {count} murid
+                              </span>
+                            </button>
+                          );
+                        })}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         )}
       </div>
@@ -694,6 +819,7 @@ export default function KelolaSiswaView({
 
       {/* OFF-SCREEN CARD RENDERERS */}
       <div className="absolute top-[-9999px] left-[-9999px] pointer-events-none overflow-hidden">
+        {/* Bulk export (selected / all filtered) */}
         {isExporting &&
           (selectedSiswaIds.length > 0 ? selectedSiswaIds : filteredSiswa.map((s) => s.id)).map(
             (studentId) => {
@@ -709,12 +835,25 @@ export default function KelolaSiswaView({
             }
           )}
 
+        {/* Single card (from popup) */}
         {printingSiswa && (
           <StudentQRCard
             siswa={printingSiswa}
             idPrefix="card-render-hidden"
           />
         )}
+
+        {/* Per-class export */}
+        {exportingKelas &&
+          siswaList
+            .filter((s) => s.kelas === exportingKelas)
+            .map((siswa) => (
+              <StudentQRCard
+                key={`class-render-${siswa.id}`}
+                siswa={siswa}
+                idPrefix="card-render-class"
+              />
+            ))}
       </div>
     </div>
   );

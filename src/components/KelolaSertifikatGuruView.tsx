@@ -1130,29 +1130,42 @@ durasi_jam: null,
     );
   }, [selectedActivityFolder, groupedActivities, searchQuery]);
 
+  const triggerPdfDownload = (pdf: jsPDF, fileName: string) => {
+    const blob = pdf.output("blob");
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  };
+
   const handleDownloadSingle = async (kegiatan: KegiatanGuru, pageOption: "front" | "back" | "both" = "both") => {
-    const config = await getSertifikatConfigAsync();
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const templateImg = new Image();
-    templateImg.src = config.templateUrl || "/sertifikat_template.png";
-
-    const loadImg = (src: string | null): Promise<HTMLImageElement | null> => {
-      if (!src) return Promise.resolve(null);
-      return new Promise((resolve) => {
-        const img = new Image();
-        img.crossOrigin = "anonymous";
-        img.onload = () => resolve(img);
-        img.onerror = () => resolve(null);
-        img.src = src;
-      });
-    };
-
-    const fileName = `SERTIFIKAT_${kegiatan.nama_kegiatan.toUpperCase().replace(/\s+/g, "_")}_${toSentenceCase(kegiatan.user_nama || "Guru SMAN 19").replace(/\s+/g, "_")}`;
-
+    setPdfDownloadingId(`single_${kegiatan.id}`);
     try {
+      const config = await getSertifikatConfigAsync();
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      if (!ctx) throw new Error("Gagal membuat canvas");
+
+      const templateImg = new Image();
+      templateImg.src = config.templateUrl || "/sertifikat_template.png";
+
+      const loadImg = (src: string | null): Promise<HTMLImageElement | null> => {
+        if (!src) return Promise.resolve(null);
+        return new Promise((resolve) => {
+          const img = new Image();
+          img.crossOrigin = "anonymous";
+          img.onload = () => resolve(img);
+          img.onerror = () => resolve(null);
+          img.src = src;
+        });
+      };
+
+      const fileName = `SERTIFIKAT_${kegiatan.nama_kegiatan.toUpperCase().replace(/\s+/g, "_")}_${toSentenceCase(kegiatan.user_nama || "Guru SMAN 19").replace(/\s+/g, "_")}`;
+
       await document.fonts.ready;
       await new Promise<void>((resolve, reject) => {
         templateImg.onload = () => resolve();
@@ -1181,7 +1194,7 @@ durasi_jam: null,
         drawJpTablePageOnCanvas(ctx2, canvas.width, canvas.height, kegiatan, config, ttd1Img, ttd2Img, ttd3Img, templateJpImg, logoBackImg, ttdBack1Img, ttdBack2Img, ttdBack3Img);
         const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvas.width, canvas.height] });
         pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, canvas.width, canvas.height);
-        pdf.save(`${fileName}_Belakang.pdf`);
+        triggerPdfDownload(pdf, `${fileName}_Belakang.pdf`);
       } else if (pageOption === "back" && !hasJp) {
         alert("Sertifikat ini tidak memiliki halaman belakang (Tabel JP).");
       } else {
@@ -1199,15 +1212,17 @@ durasi_jam: null,
           pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, canvas.width, canvas.height);
           pdf.addPage();
           pdf.addImage(canvas2.toDataURL("image/png"), "PNG", 0, 0, canvas.width, canvas.height);
-          pdf.save(`${fileName}.pdf`);
+          triggerPdfDownload(pdf, `${fileName}.pdf`);
         } else {
           const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvas.width, canvas.height] });
           pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, canvas.width, canvas.height);
-          pdf.save(`${fileName}_Depan.pdf`);
+          triggerPdfDownload(pdf, `${fileName}_Depan.pdf`);
         }
       }
     } catch (e: any) {
       alert("Gagal mengunduh: " + e.message);
+    } finally {
+      setPdfDownloadingId(null);
     }
   };
 
@@ -1416,7 +1431,7 @@ durasi_jam: null,
 
       if (pdf) {
         const safeFolder = folderName.replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_");
-        pdf.save(`Sertifikat_${safeFolder}_Semua_Guru.pdf`);
+        triggerPdfDownload(pdf, `Sertifikat_${safeFolder}_Semua_Guru.pdf`);
       }
     } catch (err: any) {
       alert("Gagal mengunduh PDF gabungan: " + err.message);

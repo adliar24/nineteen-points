@@ -852,6 +852,18 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
   });
 
   // 2. Generate and download certificate using PNG template & dynamic positions
+  const triggerPdfDownload = (pdf: jsPDF, fileName: string) => {
+    const blob = pdf.output("blob");
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  };
+
   const handleDownloadCertificate = async (kegiatan: KegiatanGuru, pageOption: "front" | "back" | "both" = "both") => {
     setDownloadingId(kegiatan.id);
     const config = await getSertifikatConfigAsync();
@@ -907,7 +919,7 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
         drawJpTablePageOnCanvas(ctx2, canvas.width, canvas.height, kegiatan, config, ttd1Img, ttd2Img, ttd3Img, templateJpImg, logoBackImg, ttdBack1Img, ttdBack2Img, ttdBack3Img);
         const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvas.width, canvas.height] });
         pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, canvas.width, canvas.height);
-        pdf.save(`${fileName}_Belakang.pdf`);
+        triggerPdfDownload(pdf, `${fileName}_Belakang.pdf`);
       } else if (pageOption === "back" && !hasJp) {
         alert("Sertifikat ini tidak memiliki halaman belakang (Tabel JP).");
       } else {
@@ -925,11 +937,11 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
           pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, canvas.width, canvas.height);
           pdf.addPage();
           pdf.addImage(canvas2.toDataURL("image/png"), "PNG", 0, 0, canvas.width, canvas.height);
-          pdf.save(`${fileName}.pdf`);
+          triggerPdfDownload(pdf, `${fileName}.pdf`);
         } else {
           const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvas.width, canvas.height] });
           pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, canvas.width, canvas.height);
-          pdf.save(`${fileName}_Depan.pdf`);
+          triggerPdfDownload(pdf, `${fileName}_Depan.pdf`);
         }
       }
     } catch (err: any) {

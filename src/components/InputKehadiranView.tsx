@@ -155,18 +155,24 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
     }
   }, [cameraActive, inputTab]);
 
+  useEffect(() => {
+    return () => {
+      if (scannerRef.current) {
+        const s = scannerRef.current;
+        scannerRef.current = null;
+        try { s.stop().then(() => { try { s.clear(); } catch {} }).catch(() => { try { s.clear(); } catch {} }); } catch { try { s.clear(); } catch {} }
+      }
+    };
+  }, []);
+
   const stopScanner = () => {
     if (scannerRef.current) {
+      const s = scannerRef.current;
+      scannerRef.current = null;
       try {
-        if (scannerRef.current.isScanning) {
-          scannerRef.current.stop()
-            .then(() => { scannerRef.current = null; })
-            .catch(() => { scannerRef.current = null; });
-        } else {
-          scannerRef.current = null;
-        }
+        s.stop().then(() => { try { s.clear(); } catch {} }).catch(() => { try { s.clear(); } catch {} });
       } catch (e) {
-        scannerRef.current = null;
+        try { s.clear(); } catch {}
       }
     }
   };

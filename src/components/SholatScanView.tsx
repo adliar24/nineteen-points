@@ -56,6 +56,28 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
 
   const scannedCount = useMemo(() => todayRecap.length, [todayRecap]);
 
+  const stopScanner = () => {
+    if (scannerRef.current) {
+      const s = scannerRef.current;
+      scannerRef.current = null;
+      try {
+        s.stop().then(() => { try { s.clear(); } catch {} }).catch(() => { try { s.clear(); } catch {} });
+      } catch {
+        try { s.clear(); } catch {}
+      }
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (scannerRef.current) {
+        const s = scannerRef.current;
+        scannerRef.current = null;
+        try { s.stop().then(() => { try { s.clear(); } catch {} }).catch(() => { try { s.clear(); } catch {} }); } catch { try { s.clear(); } catch {} }
+      }
+    };
+  }, []);
+
   useEffect(() => {
     if (cameraActive) {
       setScannerError(null);
@@ -84,22 +106,6 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
       };
     }
   }, [cameraActive]);
-
-  const stopScanner = () => {
-    if (scannerRef.current) {
-      try {
-        if (scannerRef.current.isScanning) {
-          scannerRef.current.stop()
-            .then(() => { scannerRef.current = null; })
-            .catch(() => { scannerRef.current = null; });
-        } else {
-          scannerRef.current = null;
-        }
-      } catch {
-        scannerRef.current = null;
-      }
-    }
-  };
 
   const onScanSuccess = async (decodedText: string) => {
     const trimmed = decodedText.trim();

@@ -159,6 +159,16 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
 
   // QR Scanner logic
   useEffect(() => {
+    return () => {
+      if (scannerRef.current) {
+        const s = scannerRef.current;
+        scannerRef.current = null;
+        try { s.stop().then(() => { try { s.clear(); } catch {} }).catch(() => { try { s.clear(); } catch {} }); } catch { try { s.clear(); } catch {} }
+      }
+    };
+  }, []);
+
+  useEffect(() => {
     if (cameraActive && activeTab === "scan") {
       setScannerError(null);
       const timer = setTimeout(() => {
@@ -224,24 +234,13 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
 
   const stopScanner = () => {
     if (scannerRef.current) {
+      const s = scannerRef.current;
+      scannerRef.current = null;
       try {
-        if (scannerRef.current.isScanning) {
-          scannerRef.current.stop()
-            .then(() => {
-              scannerRef.current = null;
-              setCameraActive(false);
-            })
-            .catch(() => {
-              scannerRef.current = null;
-              setCameraActive(false);
-            });
-        } else {
-          scannerRef.current = null;
-          setCameraActive(false);
-        }
+        s.stop().then(() => { setCameraActive(false); try { s.clear(); } catch {} }).catch(() => { setCameraActive(false); try { s.clear(); } catch {} });
       } catch (e) {
-        scannerRef.current = null;
         setCameraActive(false);
+        try { s.clear(); } catch {}
       }
     } else {
       setCameraActive(false);

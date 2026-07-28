@@ -58,16 +58,15 @@ export default function KelolaSertifikatGuruView() {
   const [selectedActivityFolder, setSelectedActivityFolder] = useState<string | null>(null);
   const [zipDownloadingId, setZipDownloadingId] = useState<string | null>(null);
   const [zipProgress, setZipProgress] = useState<{ current: number; total: number } | null>(null);
-  const [bulkDownloadMenu, setBulkDownloadMenu] = useState<string | null>(null);
   const [singleDownloadMenu, setSingleDownloadMenu] = useState<string | null>(null);
 
   useEffect(() => {
-    const handler = () => { setBulkDownloadMenu(null); setSingleDownloadMenu(null); };
-    if (bulkDownloadMenu || singleDownloadMenu) {
+    const handler = () => setSingleDownloadMenu(null);
+    if (singleDownloadMenu) {
       window.addEventListener("click", handler);
       return () => window.removeEventListener("click", handler);
     }
-  }, [bulkDownloadMenu, singleDownloadMenu]);
+  }, [singleDownloadMenu]);
 
   // Form State for publishing certificate
   const [selectedTeacherIds, setSelectedTeacherIds] = useState<string[]>([]);
@@ -1694,9 +1693,9 @@ durasi_jam: null,
                             <FolderOpen className="w-4 h-4" />
                             Buka Folder
                           </button>
-                          <div className="flex-1 relative">
+                          <div className="flex-1">
                             <button
-                              onClick={() => setBulkDownloadMenu(bulkDownloadMenu === `pdf_${folder.nama_kegiatan}` ? null : `pdf_${folder.nama_kegiatan}`)}
+                              onClick={() => handleDownloadAllAsSinglePdf(folder.nama_kegiatan, folder.items, "both")}
                               disabled={pdfDownloadingId !== null || zipDownloadingId !== null}
                               className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md disabled:opacity-50"
                             >
@@ -1707,17 +1706,10 @@ durasi_jam: null,
                               )}
                               PDF
                             </button>
-                            {bulkDownloadMenu === `pdf_${folder.nama_kegiatan}` && (
-                              <div className="absolute right-0 top-full mt-2 bg-white rounded-2xl border border-brand-100 shadow-2xl z-50 py-2 min-w-[160px]">
-                                <button onClick={() => { setBulkDownloadMenu(null); handleDownloadAllAsSinglePdf(folder.nama_kegiatan, folder.items, "front"); }} className="w-full px-4 py-2 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 cursor-pointer bg-transparent border-0">Depan Saja</button>
-                                <button onClick={() => { setBulkDownloadMenu(null); handleDownloadAllAsSinglePdf(folder.nama_kegiatan, folder.items, "back"); }} className="w-full px-4 py-2 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 cursor-pointer bg-transparent border-0">Belakang Saja</button>
-                                <button onClick={() => { setBulkDownloadMenu(null); handleDownloadAllAsSinglePdf(folder.nama_kegiatan, folder.items, "both"); }} className="w-full px-4 py-2 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 cursor-pointer bg-transparent border-0">Lengkap</button>
-                              </div>
-                            )}
                           </div>
-                          <div className="flex-1 relative">
+                          <div className="flex-1">
                             <button
-                              onClick={() => setBulkDownloadMenu(bulkDownloadMenu === `zip_${folder.nama_kegiatan}` ? null : `zip_${folder.nama_kegiatan}`)}
+                              onClick={() => handleDownloadAllAsZip(folder.nama_kegiatan, folder.items, "both")}
                               disabled={zipDownloadingId !== null || pdfDownloadingId !== null}
                               className="w-full py-3 bg-brand-600 hover:bg-brand-750 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md disabled:opacity-50"
                             >
@@ -1728,13 +1720,6 @@ durasi_jam: null,
                               )}
                               ZIP
                             </button>
-                            {bulkDownloadMenu === `zip_${folder.nama_kegiatan}` && (
-                              <div className="absolute right-0 top-full mt-2 bg-white rounded-2xl border border-brand-100 shadow-2xl z-50 py-2 min-w-[160px]">
-                                <button onClick={() => { setBulkDownloadMenu(null); handleDownloadAllAsZip(folder.nama_kegiatan, folder.items, "front"); }} className="w-full px-4 py-2 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 cursor-pointer bg-transparent border-0">Depan Saja</button>
-                                <button onClick={() => { setBulkDownloadMenu(null); handleDownloadAllAsZip(folder.nama_kegiatan, folder.items, "back"); }} className="w-full px-4 py-2 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 cursor-pointer bg-transparent border-0">Belakang Saja</button>
-                                <button onClick={() => { setBulkDownloadMenu(null); handleDownloadAllAsZip(folder.nama_kegiatan, folder.items, "both"); }} className="w-full px-4 py-2 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 cursor-pointer bg-transparent border-0">Lengkap</button>
-                              </div>
-                            )}
                           </div>
                           <button
                             onClick={async () => {
@@ -1784,48 +1769,30 @@ durasi_jam: null,
                   </p>
                 </div>
                 <div className="flex gap-2">
-                  <div className="relative">
-                    <button
-                      onClick={() => setBulkDownloadMenu(bulkDownloadMenu === `detail_pdf` ? null : "detail_pdf")}
-                      disabled={pdfDownloadingId !== null || zipDownloadingId !== null}
-                      className="px-5 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md disabled:opacity-50"
-                    >
-                      {pdfDownloadingId === selectedActivityFolder ? (
-                        <RefreshCw className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Download className="w-4.5 h-4.5" />
-                      )}
-                      PDF
-                    </button>
-                    {bulkDownloadMenu === "detail_pdf" && (
-                      <div className="absolute right-0 top-full mt-2 bg-white rounded-2xl border border-brand-100 shadow-2xl z-50 py-2 min-w-[160px]">
-                        <button onClick={() => { setBulkDownloadMenu(null); handleDownloadAllAsSinglePdf(selectedActivityFolder, folderItems, "front"); }} className="w-full px-4 py-2 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 cursor-pointer bg-transparent border-0">Depan Saja</button>
-                        <button onClick={() => { setBulkDownloadMenu(null); handleDownloadAllAsSinglePdf(selectedActivityFolder, folderItems, "back"); }} className="w-full px-4 py-2 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 cursor-pointer bg-transparent border-0">Belakang Saja</button>
-                        <button onClick={() => { setBulkDownloadMenu(null); handleDownloadAllAsSinglePdf(selectedActivityFolder, folderItems, "both"); }} className="w-full px-4 py-2 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 cursor-pointer bg-transparent border-0">Lengkap</button>
-                      </div>
+                  <button
+                    onClick={() => handleDownloadAllAsSinglePdf(selectedActivityFolder, folderItems, "both")}
+                    disabled={pdfDownloadingId !== null || zipDownloadingId !== null}
+                    className="px-5 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md disabled:opacity-50"
+                  >
+                    {pdfDownloadingId === selectedActivityFolder ? (
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Download className="w-4.5 h-4.5" />
                     )}
-                  </div>
-                  <div className="relative">
-                    <button
-                      onClick={() => setBulkDownloadMenu(bulkDownloadMenu === `detail_zip` ? null : "detail_zip")}
-                      disabled={zipDownloadingId !== null || pdfDownloadingId !== null}
-                      className="px-5 py-3.5 bg-brand-600 hover:bg-brand-750 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md disabled:opacity-50"
-                    >
-                      {zipDownloadingId === selectedActivityFolder ? (
-                        <RefreshCw className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Download className="w-4.5 h-4.5" />
-                      )}
-                      ZIP
-                    </button>
-                    {bulkDownloadMenu === "detail_zip" && (
-                      <div className="absolute right-0 top-full mt-2 bg-white rounded-2xl border border-brand-100 shadow-2xl z-50 py-2 min-w-[160px]">
-                        <button onClick={() => { setBulkDownloadMenu(null); handleDownloadAllAsZip(selectedActivityFolder, folderItems, "front"); }} className="w-full px-4 py-2 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 cursor-pointer bg-transparent border-0">Depan Saja</button>
-                        <button onClick={() => { setBulkDownloadMenu(null); handleDownloadAllAsZip(selectedActivityFolder, folderItems, "back"); }} className="w-full px-4 py-2 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 cursor-pointer bg-transparent border-0">Belakang Saja</button>
-                        <button onClick={() => { setBulkDownloadMenu(null); handleDownloadAllAsZip(selectedActivityFolder, folderItems, "both"); }} className="w-full px-4 py-2 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 cursor-pointer bg-transparent border-0">Lengkap</button>
-                      </div>
+                    PDF
+                  </button>
+                  <button
+                    onClick={() => handleDownloadAllAsZip(selectedActivityFolder, folderItems, "both")}
+                    disabled={zipDownloadingId !== null || pdfDownloadingId !== null}
+                    className="px-5 py-3.5 bg-brand-600 hover:bg-brand-750 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md disabled:opacity-50"
+                  >
+                    {zipDownloadingId === selectedActivityFolder ? (
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Download className="w-4.5 h-4.5" />
                     )}
-                  </div>
+                    ZIP
+                  </button>
                 </div>
               </div>
 

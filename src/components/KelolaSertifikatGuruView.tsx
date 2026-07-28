@@ -58,15 +58,7 @@ export default function KelolaSertifikatGuruView() {
   const [selectedActivityFolder, setSelectedActivityFolder] = useState<string | null>(null);
   const [zipDownloadingId, setZipDownloadingId] = useState<string | null>(null);
   const [zipProgress, setZipProgress] = useState<{ current: number; total: number } | null>(null);
-  const [singleDownloadMenu, setSingleDownloadMenu] = useState<string | null>(null);
 
-  useEffect(() => {
-    const handler = () => setSingleDownloadMenu(null);
-    if (singleDownloadMenu) {
-      window.addEventListener("click", handler);
-      return () => window.removeEventListener("click", handler);
-    }
-  }, [singleDownloadMenu]);
 
   // Form State for publishing certificate
   const [selectedTeacherIds, setSelectedTeacherIds] = useState<string[]>([]);
@@ -1693,7 +1685,7 @@ durasi_jam: null,
                             <FolderOpen className="w-4 h-4" />
                             Buka Folder
                           </button>
-                          <div className="flex-1">
+                          <div className="flex-1 flex flex-col gap-1">
                             <button
                               onClick={() => handleDownloadAllAsSinglePdf(folder.nama_kegiatan, folder.items, "both")}
                               disabled={pdfDownloadingId !== null || zipDownloadingId !== null}
@@ -1706,8 +1698,20 @@ durasi_jam: null,
                               )}
                               PDF
                             </button>
+                            <div className="flex gap-1">
+                              <button
+                                onClick={() => handleDownloadAllAsSinglePdf(folder.nama_kegiatan, folder.items, "front")}
+                                disabled={pdfDownloadingId !== null || zipDownloadingId !== null}
+                                className="flex-1 py-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 rounded-xl text-[10px] font-bold cursor-pointer border-0 transition-colors disabled:opacity-50"
+                              >Depan</button>
+                              <button
+                                onClick={() => handleDownloadAllAsSinglePdf(folder.nama_kegiatan, folder.items, "back")}
+                                disabled={pdfDownloadingId !== null || zipDownloadingId !== null}
+                                className="flex-1 py-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 rounded-xl text-[10px] font-bold cursor-pointer border-0 transition-colors disabled:opacity-50"
+                              >Belakang</button>
+                            </div>
                           </div>
-                          <div className="flex-1">
+                          <div className="flex-1 flex flex-col gap-1">
                             <button
                               onClick={() => handleDownloadAllAsZip(folder.nama_kegiatan, folder.items, "both")}
                               disabled={zipDownloadingId !== null || pdfDownloadingId !== null}
@@ -1720,6 +1724,18 @@ durasi_jam: null,
                               )}
                               ZIP
                             </button>
+                            <div className="flex gap-1">
+                              <button
+                                onClick={() => handleDownloadAllAsZip(folder.nama_kegiatan, folder.items, "front")}
+                                disabled={zipDownloadingId !== null || pdfDownloadingId !== null}
+                                className="flex-1 py-1.5 bg-indigo-100 hover:bg-indigo-200 text-indigo-800 rounded-xl text-[10px] font-bold cursor-pointer border-0 transition-colors disabled:opacity-50"
+                              >Depan</button>
+                              <button
+                                onClick={() => handleDownloadAllAsZip(folder.nama_kegiatan, folder.items, "back")}
+                                disabled={zipDownloadingId !== null || pdfDownloadingId !== null}
+                                className="flex-1 py-1.5 bg-indigo-100 hover:bg-indigo-200 text-indigo-800 rounded-xl text-[10px] font-bold cursor-pointer border-0 transition-colors disabled:opacity-50"
+                              >Belakang</button>
+                            </div>
                           </div>
                           <button
                             onClick={async () => {
@@ -1769,30 +1785,58 @@ durasi_jam: null,
                   </p>
                 </div>
                 <div className="flex gap-2">
-                  <button
-                    onClick={() => handleDownloadAllAsSinglePdf(selectedActivityFolder, folderItems, "both")}
-                    disabled={pdfDownloadingId !== null || zipDownloadingId !== null}
-                    className="px-5 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md disabled:opacity-50"
-                  >
-                    {pdfDownloadingId === selectedActivityFolder ? (
-                      <RefreshCw className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Download className="w-4.5 h-4.5" />
-                    )}
-                    PDF
-                  </button>
-                  <button
-                    onClick={() => handleDownloadAllAsZip(selectedActivityFolder, folderItems, "both")}
-                    disabled={zipDownloadingId !== null || pdfDownloadingId !== null}
-                    className="px-5 py-3.5 bg-brand-600 hover:bg-brand-750 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md disabled:opacity-50"
-                  >
-                    {zipDownloadingId === selectedActivityFolder ? (
-                      <RefreshCw className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Download className="w-4.5 h-4.5" />
-                    )}
-                    ZIP
-                  </button>
+                  <div className="flex flex-col gap-1 items-stretch">
+                    <button
+                      onClick={() => handleDownloadAllAsSinglePdf(selectedActivityFolder, folderItems, "both")}
+                      disabled={pdfDownloadingId !== null || zipDownloadingId !== null}
+                      className="px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md disabled:opacity-50"
+                    >
+                      {pdfDownloadingId === selectedActivityFolder ? (
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Download className="w-4.5 h-4.5" />
+                      )}
+                      PDF
+                    </button>
+                    <div className="flex gap-1">
+                      <button
+                        onClick={() => handleDownloadAllAsSinglePdf(selectedActivityFolder, folderItems, "front")}
+                        disabled={pdfDownloadingId !== null || zipDownloadingId !== null}
+                        className="flex-1 py-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 rounded-xl text-[10px] font-bold cursor-pointer border-0 transition-colors disabled:opacity-50"
+                      >Depan</button>
+                      <button
+                        onClick={() => handleDownloadAllAsSinglePdf(selectedActivityFolder, folderItems, "back")}
+                        disabled={pdfDownloadingId !== null || zipDownloadingId !== null}
+                        className="flex-1 py-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 rounded-xl text-[10px] font-bold cursor-pointer border-0 transition-colors disabled:opacity-50"
+                      >Belakang</button>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-1 items-stretch">
+                    <button
+                      onClick={() => handleDownloadAllAsZip(selectedActivityFolder, folderItems, "both")}
+                      disabled={zipDownloadingId !== null || pdfDownloadingId !== null}
+                      className="px-5 py-3 bg-brand-600 hover:bg-brand-750 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md disabled:opacity-50"
+                    >
+                      {zipDownloadingId === selectedActivityFolder ? (
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Download className="w-4.5 h-4.5" />
+                      )}
+                      ZIP
+                    </button>
+                    <div className="flex gap-1">
+                      <button
+                        onClick={() => handleDownloadAllAsZip(selectedActivityFolder, folderItems, "front")}
+                        disabled={zipDownloadingId !== null || pdfDownloadingId !== null}
+                        className="flex-1 py-1.5 bg-indigo-100 hover:bg-indigo-200 text-indigo-800 rounded-xl text-[10px] font-bold cursor-pointer border-0 transition-colors disabled:opacity-50"
+                      >Depan</button>
+                      <button
+                        onClick={() => handleDownloadAllAsZip(selectedActivityFolder, folderItems, "back")}
+                        disabled={zipDownloadingId !== null || pdfDownloadingId !== null}
+                        className="flex-1 py-1.5 bg-indigo-100 hover:bg-indigo-200 text-indigo-800 rounded-xl text-[10px] font-bold cursor-pointer border-0 transition-colors disabled:opacity-50"
+                      >Belakang</button>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -1827,21 +1871,24 @@ durasi_jam: null,
                               </span>
                             </td>
                             <td className="py-4 px-6 text-right">
-                              <div className="relative inline-block">
+                              <div className="inline-flex flex-col gap-1 items-end">
                                 <button
-                                  onClick={() => setSingleDownloadMenu(singleDownloadMenu === row.id ? null : row.id)}
+                                  onClick={() => handleDownloadSingle(row, "both")}
                                   className="p-2 text-brand-600 hover:bg-brand-50 rounded-xl transition-colors cursor-pointer border-0 bg-transparent"
-                                  title="Unduh Sertifikat"
+                                  title="Unduh Lengkap"
                                 >
                                   <Download className="w-4 h-4" />
                                 </button>
-                                {singleDownloadMenu === row.id && (
-                                  <div className="absolute right-0 top-full mt-2 bg-white rounded-2xl border border-brand-100 shadow-2xl z-50 py-2 min-w-[150px]">
-                                    <button onClick={() => { setSingleDownloadMenu(null); handleDownloadSingle(row, "front"); }} className="w-full px-4 py-2 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 cursor-pointer bg-transparent border-0">Depan Saja</button>
-                                    <button onClick={() => { setSingleDownloadMenu(null); handleDownloadSingle(row, "back"); }} className="w-full px-4 py-2 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 cursor-pointer bg-transparent border-0">Belakang Saja</button>
-                                    <button onClick={() => { setSingleDownloadMenu(null); handleDownloadSingle(row, "both"); }} className="w-full px-4 py-2 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 cursor-pointer bg-transparent border-0">Lengkap</button>
-                                  </div>
-                                )}
+                                <div className="flex gap-1">
+                                  <button
+                                    onClick={() => handleDownloadSingle(row, "front")}
+                                    className="px-2 py-0.5 bg-brand-50 hover:bg-brand-100 text-brand-700 rounded-lg text-[9px] font-bold cursor-pointer border-0 transition-colors"
+                                  >Depan</button>
+                                  <button
+                                    onClick={() => handleDownloadSingle(row, "back")}
+                                    className="px-2 py-0.5 bg-brand-50 hover:bg-brand-100 text-brand-700 rounded-lg text-[9px] font-bold cursor-pointer border-0 transition-colors"
+                                  >Belakang</button>
+                                </div>
                               </div>
                               <button
                                 onClick={() => handleDelete(row.id, row.user_nama)}

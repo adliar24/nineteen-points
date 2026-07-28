@@ -616,6 +616,9 @@ export async function saveSertifikatConfigAsync(config: SertifikatLayoutConfig):
         ttd1Image: config.ttd1Image && config.ttd1Image.length > 500000 ? null : config.ttd1Image,
         ttd2Image: config.ttd2Image && config.ttd2Image.length > 500000 ? null : config.ttd2Image,
         ttd3Image: config.ttd3Image && config.ttd3Image.length > 500000 ? null : config.ttd3Image,
+        ttdBack1Image: config.ttdBack1Image && config.ttdBack1Image.length > 500000 ? null : config.ttdBack1Image,
+        ttdBack2Image: config.ttdBack2Image && config.ttdBack2Image.length > 500000 ? null : config.ttdBack2Image,
+        ttdBack3Image: config.ttdBack3Image && config.ttdBack3Image.length > 500000 ? null : config.ttdBack3Image,
       };
       localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(lightConfig));
     } catch (err) {

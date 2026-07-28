@@ -981,6 +981,54 @@ durasi_jam: null,
     }
   };
 
+  // Upload TTD Back 1 Image
+  const handleTtdBack1Upload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const optimizedUrl = await optimizeImageDataUrl(file, 800);
+      const newConfig = { ...config, ttdBack1Image: optimizedUrl };
+      setConfig(newConfig);
+      await saveSertifikatConfigAsync(newConfig);
+      setSuccessMsg("TTD Belakang 1 berhasil diunggah & disimpan!");
+      setTimeout(() => setSuccessMsg(null), 3000);
+    } catch (err: any) {
+      alert("Gagal mengunggah TTD Belakang: " + err.message);
+    }
+  };
+
+  // Upload TTD Back 2 Image
+  const handleTtdBack2Upload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const optimizedUrl = await optimizeImageDataUrl(file, 800);
+      const newConfig = { ...config, ttdBack2Image: optimizedUrl };
+      setConfig(newConfig);
+      await saveSertifikatConfigAsync(newConfig);
+      setSuccessMsg("TTD Belakang 2 berhasil diunggah & disimpan!");
+      setTimeout(() => setSuccessMsg(null), 3000);
+    } catch (err: any) {
+      alert("Gagal mengunggah TTD Belakang: " + err.message);
+    }
+  };
+
+  // Upload TTD Back 3 Image
+  const handleTtdBack3Upload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const optimizedUrl = await optimizeImageDataUrl(file, 800);
+      const newConfig = { ...config, ttdBack3Image: optimizedUrl };
+      setConfig(newConfig);
+      await saveSertifikatConfigAsync(newConfig);
+      setSuccessMsg("TTD Belakang 3 berhasil diunggah & disimpan!");
+      setTimeout(() => setSuccessMsg(null), 3000);
+    } catch (err: any) {
+      alert("Gagal mengunggah TTD Belakang: " + err.message);
+    }
+  };
+
   // Upload Logo Front Image
   const handleLogoFrontUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -2410,6 +2458,241 @@ durasi_jam: null,
                   </div>
                 </div>
               )}
+
+              {/* === TTD HALAMAN BELAKANG (JP) === */}
+              <div className="space-y-2 pt-3 border-t border-slate-200">
+                <label className="text-[10.5px] font-bold text-slate-500 block uppercase tracking-wider">
+                  TTD Halaman Belakang (JP)
+                </label>
+                <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-200">
+                  <button
+                    type="button"
+                    onClick={() => setConfig(prev => ({ ...prev, ttdBackSameAsFront: !prev.ttdBackSameAsFront }))}
+                    className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors cursor-pointer ${
+                      config.ttdBackSameAsFront ? "bg-emerald-500" : "bg-slate-300"
+                    }`}
+                  >
+                    <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform shadow ${
+                      config.ttdBackSameAsFront ? "translate-x-[18px]" : "translate-x-[3px]"
+                    }`} />
+                  </button>
+                  <span className="text-xs font-semibold text-slate-700">
+                    {config.ttdBackSameAsFront ? "Sama dengan TTD depan" : "Atur TTD terpisah untuk belakang"}
+                  </span>
+                </div>
+
+                {!config.ttdBackSameAsFront && (
+                  <div className="space-y-3 animate-fade-in">
+                    {/* Back TTD 1 */}
+                    <div className="space-y-1.5 pt-2 border-t border-slate-100">
+                      <label className="text-[10.5px] font-bold text-slate-500 block">
+                        TTD Belakang 1 - Gambar PNG Transparan
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="file"
+                          accept="image/png"
+                          onChange={handleTtdBack1Upload}
+                          id="upload-ttd-back-1"
+                          className="hidden"
+                        />
+                        <label
+                          htmlFor="upload-ttd-back-1"
+                          className="px-4 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-2xl text-slate-700 text-xs font-bold flex items-center gap-2 cursor-pointer transition-all flex-1"
+                        >
+                          <Upload className="w-3.5 h-3.5" />
+                          Upload Gambar TTD Belakang 1
+                        </label>
+                        {config.ttdBack1Image && (
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2.5 py-1 rounded-xl">TTD Ready</span>
+                            <button
+                              type="button"
+                              onClick={() => setConfig(prev => ({ ...prev, ttdBack1Image: null }))}
+                              className="p-1 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg border border-rose-100 cursor-pointer"
+                              title="Hapus gambar TTD Belakang 1"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 mt-1">
+                        <input
+                          type="text"
+                          placeholder="Nama"
+                          value={config.ttdBack1Nama}
+                          onChange={(e) => setConfig(prev => ({ ...prev, ttdBack1Nama: e.target.value }))}
+                          className="px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-xs font-bold"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Jabatan"
+                          value={config.ttdBack1Jabatan}
+                          onChange={(e) => setConfig(prev => ({ ...prev, ttdBack1Jabatan: e.target.value }))}
+                          className="px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-xs font-bold"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 mt-1">
+                        <input
+                          type="text"
+                          placeholder="Kolom Tambahan 1 (opsional)"
+                          value={config.ttdBack1SubText1 || ""}
+                          onChange={(e) => setConfig(prev => ({ ...prev, ttdBack1SubText1: e.target.value }))}
+                          className="px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-xs font-semibold"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Kolom Tambahan 2 (opsional)"
+                          value={config.ttdBack1SubText2 || ""}
+                          onChange={(e) => setConfig(prev => ({ ...prev, ttdBack1SubText2: e.target.value }))}
+                          className="px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-xs font-semibold"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Back TTD 2 */}
+                    {config.jumlahTtd >= 2 && (
+                      <div className="space-y-1.5 pt-2 border-t border-slate-100">
+                        <label className="text-[10.5px] font-bold text-slate-500 block">
+                          TTD Belakang 2 - Gambar PNG Transparan
+                        </label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="file"
+                            accept="image/png"
+                            onChange={handleTtdBack2Upload}
+                            id="upload-ttd-back-2"
+                            className="hidden"
+                          />
+                          <label
+                            htmlFor="upload-ttd-back-2"
+                            className="px-4 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-2xl text-slate-700 text-xs font-bold flex items-center gap-2 cursor-pointer transition-all flex-1"
+                          >
+                            <Upload className="w-3.5 h-3.5" />
+                            Upload Gambar TTD Belakang 2
+                          </label>
+                          {config.ttdBack2Image && (
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2.5 py-1 rounded-xl">TTD Ready</span>
+                              <button
+                                type="button"
+                                onClick={() => setConfig(prev => ({ ...prev, ttdBack2Image: null }))}
+                                className="p-1 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg border border-rose-100 cursor-pointer"
+                                title="Hapus gambar TTD Belakang 2"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 mt-1">
+                          <input
+                            type="text"
+                            placeholder="Nama"
+                            value={config.ttdBack2Nama}
+                            onChange={(e) => setConfig(prev => ({ ...prev, ttdBack2Nama: e.target.value }))}
+                            className="px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-xs font-bold"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Jabatan"
+                            value={config.ttdBack2Jabatan}
+                            onChange={(e) => setConfig(prev => ({ ...prev, ttdBack2Jabatan: e.target.value }))}
+                            className="px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-xs font-bold"
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 mt-1">
+                          <input
+                            type="text"
+                            placeholder="Kolom Tambahan 1 (opsional)"
+                            value={config.ttdBack2SubText1 || ""}
+                            onChange={(e) => setConfig(prev => ({ ...prev, ttdBack2SubText1: e.target.value }))}
+                            className="px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-xs font-semibold"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Kolom Tambahan 2 (opsional)"
+                            value={config.ttdBack2SubText2 || ""}
+                            onChange={(e) => setConfig(prev => ({ ...prev, ttdBack2SubText2: e.target.value }))}
+                            className="px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-xs font-semibold"
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Back TTD 3 */}
+                    {config.jumlahTtd === 3 && (
+                      <div className="space-y-1.5 pt-2 border-t border-slate-100">
+                        <label className="text-[10.5px] font-bold text-slate-500 block">
+                          TTD Belakang 3 - Gambar PNG Transparan
+                        </label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="file"
+                            accept="image/png"
+                            onChange={handleTtdBack3Upload}
+                            id="upload-ttd-back-3"
+                            className="hidden"
+                          />
+                          <label
+                            htmlFor="upload-ttd-back-3"
+                            className="px-4 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-2xl text-slate-700 text-xs font-bold flex items-center gap-2 cursor-pointer transition-all flex-1"
+                          >
+                            <Upload className="w-3.5 h-3.5" />
+                            Upload Gambar TTD Belakang 3
+                          </label>
+                          {config.ttdBack3Image && (
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2.5 py-1 rounded-xl">TTD Ready</span>
+                              <button
+                                type="button"
+                                onClick={() => setConfig(prev => ({ ...prev, ttdBack3Image: null }))}
+                                className="p-1 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg border border-rose-100 cursor-pointer"
+                                title="Hapus gambar TTD Belakang 3"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 mt-1">
+                          <input
+                            type="text"
+                            placeholder="Nama"
+                            value={config.ttdBack3Nama}
+                            onChange={(e) => setConfig(prev => ({ ...prev, ttdBack3Nama: e.target.value }))}
+                            className="px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-xs font-bold"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Jabatan"
+                            value={config.ttdBack3Jabatan}
+                            onChange={(e) => setConfig(prev => ({ ...prev, ttdBack3Jabatan: e.target.value }))}
+                            className="px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-xs font-bold"
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 mt-1">
+                          <input
+                            type="text"
+                            placeholder="Kolom Tambahan 1 (opsional)"
+                            value={config.ttdBack3SubText1 || ""}
+                            onChange={(e) => setConfig(prev => ({ ...prev, ttdBack3SubText1: e.target.value }))}
+                            className="px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-xs font-semibold"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Kolom Tambahan 2 (opsional)"
+                            value={config.ttdBack3SubText2 || ""}
+                            onChange={(e) => setConfig(prev => ({ ...prev, ttdBack3SubText2: e.target.value }))}
+                            className="px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-xs font-semibold"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}

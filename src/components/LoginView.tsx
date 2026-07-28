@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { LogIn, Key, Mail, ShieldAlert, School, Eye, EyeOff } from "lucide-react";
 import { motion } from "motion/react";
 import { UserSession } from "../types";
@@ -14,6 +14,13 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    const html = document.documentElement;
+    html.setAttribute("lang", "id");
+    html.setAttribute("translate", "no");
+    html.classList.add("notranslate");
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,7 +104,7 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#faf9ff] px-4 py-12 sm:px-6 lg:px-8 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-[#faf9ff] px-4 py-12 sm:px-6 lg:px-8 relative overflow-hidden notranslate">
       {/* Dynamic wavy gradient background patterns */}
       <div className="absolute top-0 right-0 w-[45rem] h-[45rem] bg-gradient-to-br from-brand-500/20 to-accent-500/10 rounded-full filter blur-3xl translate-x-1/3 -translate-y-1/3 pointer-events-none"></div>
       <div className="absolute bottom-0 left-0 w-[45rem] h-[45rem] bg-gradient-to-tr from-accent-500/10 to-brand-600/15 rounded-full filter blur-3xl -translate-x-1/3 translate-y-1/3 pointer-events-none"></div>
@@ -133,7 +140,7 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
           transition={{ delay: 0.25, duration: 0.6 }}
           className="bg-white/95 backdrop-blur-md p-8 rounded-3xl shadow-2xl shadow-brand-900/5 border border-brand-100"
         >
-          <form className="space-y-5" onSubmit={handleLogin}>
+          <form className="space-y-5" onSubmit={handleLogin} autoComplete="off">
             {error && (
               <motion.div 
                 initial={{ opacity: 0, x: -10 }}
@@ -159,6 +166,8 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="NIS, NIP, atau Email"
+                  autoComplete="off"
+                  data-form-type="other"
                   className="block w-full pl-12 pr-4 py-3.5 border border-brand-100 rounded-2xl bg-brand-50/30 text-brand-900 placeholder-brand-500/30 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all text-sm font-medium"
                 />
               </div>
@@ -180,6 +189,8 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
+                  autoComplete="off"
+                  data-form-type="other"
                   className="block w-full pl-12 pr-12 py-3.5 border border-brand-100 rounded-2xl bg-brand-50/30 text-brand-900 placeholder-brand-500/30 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all text-sm font-medium"
                 />
                 <button

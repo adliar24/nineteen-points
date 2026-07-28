@@ -40,6 +40,21 @@ export default class ErrorBoundary extends React.Component<Props, State> {
         window.location.reload();
       }
     }
+
+    // Auto-reload on DOM mutation errors caused by browser extensions
+    // (e.g. Google Translate wrapping text in <font> tags)
+    if (
+      errorMessage.includes("removeChild") ||
+      errorMessage.includes("Failed to execute 'removeChild'")
+    ) {
+      const lastReload = sessionStorage.getItem("last-dom-error-reload");
+      const now = Date.now();
+      if (!lastReload || now - parseInt(lastReload, 10) > 30000) {
+        sessionStorage.setItem("last-dom-error-reload", String(now));
+        console.warn("DOM mutation oleh ekstensi browser terdeteksi. Memuat ulang halaman...");
+        window.location.reload();
+      }
+    }
   }
 
   handleReset = () => {

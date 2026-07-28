@@ -16,7 +16,7 @@ import {
   PackageOpen,
 } from "lucide-react";
 import { Siswa, UserSession } from "../types";
-import { getSiswaList, fetchAllPages } from "../dbStore";
+import { getSiswaList, getSiswaSeparatePoinMap, fetchAllPages } from "../dbStore";
 import ConfirmationModal from "./ConfirmationModal";
 import { toSentenceCase } from "../formatName";
 import { supabase, supabaseAdminAuth } from "../supabaseClient";
@@ -51,6 +51,9 @@ export default function KelolaSiswaView({
   const [isExporting, setIsExporting] = useState(false);
   const [isSyncingAccounts, setIsSyncingAccounts] = useState(false);
 
+  // Separate poin map: siswa_id → { positif, negatif }
+  const [poinMap, setPoinMap] = useState<Record<string, { positif: number; negatif: number }>>({}); 
+
   // Per-class export
   const [exportingKelas, setExportingKelas] = useState<string | null>(null);
   const [isClassDropdownOpen, setIsClassDropdownOpen] = useState(false);
@@ -79,7 +82,12 @@ export default function KelolaSiswaView({
     async function load() {
       setIsLoading(true);
       try {
-        setSiswaList(await getSiswaList());
+        const [siswa, pm] = await Promise.all([
+          getSiswaList(),
+          getSiswaSeparatePoinMap(),
+        ]);
+        setSiswaList(siswa);
+        setPoinMap(pm);
       } catch (err) {
         console.error("Gagal memuat siswa:", err);
       }
@@ -91,7 +99,12 @@ export default function KelolaSiswaView({
   const syncSiswa = async () => {
     setIsLoading(true);
     try {
-      setSiswaList(await getSiswaList());
+      const [siswa, pm] = await Promise.all([
+        getSiswaList(),
+        getSiswaSeparatePoinMap(),
+      ]);
+      setSiswaList(siswa);
+      setPoinMap(pm);
     } catch (err) {
       console.error("Gagal sinkronisasi siswa:", err);
     }
@@ -665,10 +678,7 @@ export default function KelolaSiswaView({
                 ) : (
                   paginatedSiswa.map((siswa) => {
                     const isSelected = selectedSiswaIds.includes(siswa.id);
-                    // Positive and negative points are stored as a net value;
-                    // we display them separately: positif = portion >0, negatif = portion <0
-                    const poinPositif = siswa.total_poin > 0 ? siswa.total_poin : 0;
-                    const poinNegatif = siswa.total_poin < 0 ? Math.abs(siswa.total_poin) : 0;
+                    const poin = poinMap[siswa.id] ?? { positif: 0, negatif: 0 };
 
                     return (
                       <tr
@@ -717,23 +727,15 @@ export default function KelolaSiswaView({
                         </td>
                         {/* Poin Positif */}
                         <td className="py-4 px-4 text-center">
-                          {poinPositif > 0 ? (
-                            <span className="font-mono font-black text-sm text-emerald-600">
-                              +{poinPositif}
-                            </span>
-                          ) : (
-                            <span className="text-slate-300 text-sm font-bold">—</span>
-                          )}
+                          <span className="font-mono font-black text-sm text-emerald-600">
+                            +{poin.positif}
+                          </span>
                         </td>
                         {/* Poin Negatif */}
                         <td className="py-4 px-4 text-center">
-                          {poinNegatif > 0 ? (
-                            <span className="font-mono font-black text-sm text-rose-500">
-                              -{poinNegatif}
-                            </span>
-                          ) : (
-                            <span className="text-slate-300 text-sm font-bold">—</span>
-                          )}
+                          <span className="font-mono font-black text-sm text-rose-500">
+                            -{poin.negatif}
+                          </span>
                         </td>
                         <td
                           className="py-4 px-6 text-right whitespace-nowrap"

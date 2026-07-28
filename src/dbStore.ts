@@ -55,6 +55,33 @@ export const getSiswaList = async (): Promise<Siswa[]> => {
   );
 };
 
+/**
+ * Fetches riwayat_poin and returns a map of siswa_id → { positif, negatif }
+ * where positif = total nilai_diberikan > 0, negatif = absolute total nilai_diberikan < 0
+ */
+export const getSiswaSeparatePoinMap = async (): Promise<
+  Record<string, { positif: number; negatif: number }>
+> => {
+  const allRiwayat = await fetchAllPages<{ siswa_id: string; nilai_diberikan: number }>(
+    (from, to) =>
+      supabase
+        .from("riwayat_poin")
+        .select("siswa_id, nilai_diberikan")
+        .range(from, to)
+  );
+
+  const map: Record<string, { positif: number; negatif: number }> = {};
+  for (const r of allRiwayat) {
+    if (!map[r.siswa_id]) map[r.siswa_id] = { positif: 0, negatif: 0 };
+    if (r.nilai_diberikan > 0) {
+      map[r.siswa_id].positif += r.nilai_diberikan;
+    } else if (r.nilai_diberikan < 0) {
+      map[r.siswa_id].negatif += Math.abs(r.nilai_diberikan);
+    }
+  }
+  return map;
+};
+
 export const saveSiswaList = async (siswa: Siswa[]): Promise<void> => {
   // Instead of rewriting the whole database, we upsert the rows.
   // This helps preserve the logic of existing Excel / bulk imports.

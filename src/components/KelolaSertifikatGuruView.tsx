@@ -1179,8 +1179,8 @@ durasi_jam: null,
         const ctx2 = canvas.getContext("2d");
         if (!ctx2) throw new Error("Gagal");
         drawJpTablePageOnCanvas(ctx2, canvas.width, canvas.height, kegiatan, config, ttd1Img, ttd2Img, ttd3Img, templateJpImg, logoBackImg, ttdBack1Img, ttdBack2Img, ttdBack3Img);
-        const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvas.width, canvas.height] });
-        pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, canvas.width, canvas.height);
+        const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvas.width, canvas.height], compress: true });
+        pdf.addImage(canvas.toDataURL("image/jpeg", 0.95), "JPEG", 0, 0, canvas.width, canvas.height);
         triggerPdfDownload(pdf, `${fileName}_Belakang.pdf`);
       } else if (pageOption === "back" && !hasJp) {
         alert("Sertifikat ini tidak memiliki halaman belakang (Tabel JP).");
@@ -1195,14 +1195,14 @@ durasi_jam: null,
           canvas2.height = canvas.height;
           drawJpTablePageOnCanvas(ctx2, canvas2.width, canvas2.height, kegiatan, config, ttd1Img, ttd2Img, ttd3Img, templateJpImg, logoBackImg, ttdBack1Img, ttdBack2Img, ttdBack3Img);
 
-          const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvas.width, canvas.height] });
-          pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, canvas.width, canvas.height);
+          const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvas.width, canvas.height], compress: true });
+          pdf.addImage(canvas.toDataURL("image/jpeg", 0.95), "JPEG", 0, 0, canvas.width, canvas.height);
           pdf.addPage();
-          pdf.addImage(canvas2.toDataURL("image/png"), "PNG", 0, 0, canvas.width, canvas.height);
+          pdf.addImage(canvas2.toDataURL("image/jpeg", 0.95), "JPEG", 0, 0, canvas.width, canvas.height);
           triggerPdfDownload(pdf, `${fileName}.pdf`);
         } else {
-          const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvas.width, canvas.height] });
-          pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, canvas.width, canvas.height);
+          const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvas.width, canvas.height], compress: true });
+          pdf.addImage(canvas.toDataURL("image/jpeg", 0.95), "JPEG", 0, 0, canvas.width, canvas.height);
           triggerPdfDownload(pdf, `${fileName}_Depan.pdf`);
         }
       }
@@ -1267,8 +1267,8 @@ durasi_jam: null,
 
         if (pageOption === "back" && hasJp) {
           drawJpTablePageOnCanvas(ctx, canvasWidth, canvasHeight, item, config, ttd1Img, ttd2Img, ttd3Img, templateJpImg, logoBackImg, ttdBack1Img, ttdBack2Img, ttdBack3Img);
-          const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvasWidth, canvasHeight] });
-          pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, canvasWidth, canvasHeight);
+          const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvasWidth, canvasHeight], compress: true });
+          pdf.addImage(canvas.toDataURL("image/jpeg", 0.95), "JPEG", 0, 0, canvasWidth, canvasHeight);
           const pdfOutput = pdf.output("arraybuffer");
           zip.file(`SERTIFIKAT_${safeName}_Belakang.pdf`, pdfOutput);
         } else if (pageOption === "back" && !hasJp) {
@@ -1284,15 +1284,15 @@ durasi_jam: null,
             if (!ctx2) continue;
             drawJpTablePageOnCanvas(ctx2, canvasWidth, canvasHeight, item, config, ttd1Img, ttd2Img, ttd3Img, templateJpImg, logoBackImg, ttdBack1Img, ttdBack2Img, ttdBack3Img);
 
-            const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvasWidth, canvasHeight] });
-            pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, canvasWidth, canvasHeight);
+            const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvasWidth, canvasHeight], compress: true });
+            pdf.addImage(canvas.toDataURL("image/jpeg", 0.95), "JPEG", 0, 0, canvasWidth, canvasHeight);
             pdf.addPage();
-            pdf.addImage(canvas2.toDataURL("image/png"), "PNG", 0, 0, canvasWidth, canvasHeight);
+            pdf.addImage(canvas2.toDataURL("image/jpeg", 0.95), "JPEG", 0, 0, canvasWidth, canvasHeight);
             const pdfOutput = pdf.output("arraybuffer");
             zip.file(`SERTIFIKAT_${safeName}.pdf`, pdfOutput);
           } else {
-            const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvasWidth, canvasHeight] });
-            pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, canvasWidth, canvasHeight);
+            const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvasWidth, canvasHeight], compress: true });
+            pdf.addImage(canvas.toDataURL("image/jpeg", 0.95), "JPEG", 0, 0, canvasWidth, canvasHeight);
             const pdfOutput = pdf.output("arraybuffer");
             zip.file(`SERTIFIKAT_${safeName}_Depan.pdf`, pdfOutput);
           }
@@ -1354,7 +1354,7 @@ durasi_jam: null,
       const origW = templateImg.naturalWidth || 2000;
       const origH = templateImg.naturalHeight || 1414;
 
-      const MAX_DIM = 1500;
+      const MAX_DIM = 2000;
       const scale = Math.min(1, MAX_DIM / Math.max(origW, origH));
       const canvasWidth = Math.round(origW * scale);
       const canvasHeight = Math.round(origH * scale);
@@ -1378,7 +1378,7 @@ durasi_jam: null,
 
         if (pageOption === "back" && hasJp) {
           drawJpTablePageOnCanvas(ctx, canvasWidth, canvasHeight, item, config, ttd1Img, ttd2Img, ttd3Img, templateJpImg, logoBackImg, ttdBack1Img, ttdBack2Img, ttdBack3Img);
-          const imgData = canvas.toDataURL("image/jpeg", 0.82);
+          const imgData = canvas.toDataURL("image/jpeg", 0.95);
           if (!pdf) {
             pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvasWidth, canvasHeight], compress: true });
           } else {
@@ -1389,7 +1389,7 @@ durasi_jam: null,
           continue;
         } else {
           drawCertificateOnCanvas(ctx, canvasWidth, canvasHeight, templateImg, item, nameText, config, ttd1Img, ttd2Img, ttd3Img, logoFrontImg);
-          const imgData = canvas.toDataURL("image/jpeg", 0.82);
+          const imgData = canvas.toDataURL("image/jpeg", 0.95);
 
           if (!pdf) {
             pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvasWidth, canvasHeight], compress: true });
@@ -1405,7 +1405,7 @@ durasi_jam: null,
             const ctx2 = canvas2.getContext("2d");
             if (!ctx2) continue;
             drawJpTablePageOnCanvas(ctx2, canvasWidth, canvasHeight, item, config, ttd1Img, ttd2Img, ttd3Img, templateJpImg, logoBackImg, ttdBack1Img, ttdBack2Img, ttdBack3Img);
-            const imgData2 = canvas2.toDataURL("image/jpeg", 0.82);
+            const imgData2 = canvas2.toDataURL("image/jpeg", 0.95);
             pdf.addPage([canvasWidth, canvasHeight], "landscape");
             pdf.addImage(imgData2, "JPEG", 0, 0, canvasWidth, canvasHeight);
           }

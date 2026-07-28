@@ -915,8 +915,8 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
         const ctx2 = canvas.getContext("2d");
         if (!ctx2) throw new Error("Gagal menginisialisasi canvas");
         drawJpTablePageOnCanvas(ctx2, canvas.width, canvas.height, kegiatan, config, ttd1Img, ttd2Img, ttd3Img, templateJpImg, logoBackImg, ttdBack1Img, ttdBack2Img, ttdBack3Img);
-        const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvas.width, canvas.height] });
-        pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, canvas.width, canvas.height);
+        const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvas.width, canvas.height], compress: true });
+        pdf.addImage(canvas.toDataURL("image/jpeg", 0.95), "JPEG", 0, 0, canvas.width, canvas.height);
         triggerPdfDownload(pdf, `${fileName}_Belakang.pdf`);
       } else if (pageOption === "back" && !hasJp) {
         alert("Sertifikat ini tidak memiliki halaman belakang (Tabel JP).");
@@ -931,14 +931,14 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
           canvas2.height = canvas.height;
           drawJpTablePageOnCanvas(ctx2, canvas2.width, canvas2.height, kegiatan, config, ttd1Img, ttd2Img, ttd3Img, templateJpImg, logoBackImg, ttdBack1Img, ttdBack2Img, ttdBack3Img);
 
-          const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvas.width, canvas.height] });
-          pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, canvas.width, canvas.height);
+          const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvas.width, canvas.height], compress: true });
+          pdf.addImage(canvas.toDataURL("image/jpeg", 0.95), "JPEG", 0, 0, canvas.width, canvas.height);
           pdf.addPage();
-          pdf.addImage(canvas2.toDataURL("image/png"), "PNG", 0, 0, canvas.width, canvas.height);
+          pdf.addImage(canvas2.toDataURL("image/jpeg", 0.95), "JPEG", 0, 0, canvas.width, canvas.height);
           triggerPdfDownload(pdf, `${fileName}.pdf`);
         } else {
-          const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvas.width, canvas.height] });
-          pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, canvas.width, canvas.height);
+          const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvas.width, canvas.height], compress: true });
+          pdf.addImage(canvas.toDataURL("image/jpeg", 0.95), "JPEG", 0, 0, canvas.width, canvas.height);
           triggerPdfDownload(pdf, `${fileName}_Depan.pdf`);
         }
       }

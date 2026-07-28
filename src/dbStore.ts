@@ -757,17 +757,33 @@ export const getTeacherProfiles = async (): Promise<any[]> => {
  * Fetch all certifiable profiles: guru, tata_usaha, and murid (siswa role)
  */
 export const getAllCertifiableProfiles = async (): Promise<any[]> => {
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("id, email, nama, role")
-    .in("role", ["guru", "tata_usaha", "murid", "siswa"])
-    .order("nama");
+  const PAGE_SIZE = 1000;
+  let from = 0;
+  let allData: any[] = [];
 
-  if (error) {
-    console.error("Error fetching certifiable profiles:", error);
-    return [];
+  while (true) {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("id, email, nama, role")
+      .in("role", ["guru", "tata_usaha", "murid", "siswa"])
+      .order("nama")
+      .range(from, from + PAGE_SIZE - 1);
+
+    if (error) {
+      console.error("Error fetching certifiable profiles:", error);
+      break;
+    }
+
+    if (data) {
+      allData = allData.concat(data);
+      if (data.length < PAGE_SIZE) break;
+      from += PAGE_SIZE;
+    } else {
+      break;
+    }
   }
-  return data || [];
+
+  return allData;
 };
 
 export const getKehadiranGuruAll = async (dateStr: string): Promise<any[]> => {

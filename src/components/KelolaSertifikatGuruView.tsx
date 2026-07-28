@@ -1674,69 +1674,65 @@ durasi_jam: null,
                           </div>
                         </div>
 
-                        <div className="pt-5 mt-4 border-t border-slate-50 flex gap-2">
+                        <div className="pt-5 mt-4 border-t border-slate-50 flex flex-wrap items-center gap-2">
                           <button
                             onClick={() => {
                               setSelectedActivityFolder(folder.nama_kegiatan);
                               setSearchQuery("");
                             }}
-                            className="flex-1 py-3 bg-white hover:bg-brand-50 border-2 border-brand-100 rounded-2xl text-brand-700 text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer"
+                            className="flex-1 min-w-[130px] py-3 bg-white hover:bg-brand-50 border-2 border-brand-100 rounded-2xl text-brand-700 text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer"
                           >
-                            <FolderOpen className="w-4.5 h-4.5 text-brand-500" />
+                            <FolderOpen className="w-4 h-4 text-brand-500" />
                             BUKA FOLDER
                           </button>
-                          <div className="flex-1 flex flex-col rounded-2xl overflow-hidden border border-emerald-300/40">
-                            <button
-                              onClick={() => handleDownloadAllAsSinglePdf(folder.nama_kegiatan, folder.items, "both")}
-                              disabled={pdfDownloadingId !== null || zipDownloadingId !== null}
-                              className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
-                            >
-                              {pdfDownloadingId === folder.nama_kegiatan ? (
-                                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                              ) : (
-                                <Download className="w-3.5 h-3.5" />
-                              )}
-                              PDF Lengkap
-                            </button>
-                            <div className="flex divide-x divide-emerald-200 bg-emerald-50">
-                              <button
-                                onClick={() => handleDownloadAllAsSinglePdf(folder.nama_kegiatan, folder.items, "front")}
-                                disabled={pdfDownloadingId !== null || zipDownloadingId !== null}
-                                className="flex-1 py-1.5 text-emerald-700 hover:bg-emerald-100 text-[10px] font-bold cursor-pointer border-0 transition-colors disabled:opacity-50"
-                              >Depan</button>
-                              <button
-                                onClick={() => handleDownloadAllAsSinglePdf(folder.nama_kegiatan, folder.items, "back")}
-                                disabled={pdfDownloadingId !== null || zipDownloadingId !== null}
-                                className="flex-1 py-1.5 text-emerald-700 hover:bg-emerald-100 text-[10px] font-bold cursor-pointer border-0 transition-colors disabled:opacity-50"
-                              >Belakang</button>
-                            </div>
-                          </div>
-                          <div className="flex-1 flex flex-col rounded-2xl overflow-hidden border border-indigo-300/40">
-                            <button
-                              onClick={() => handleDownloadAllAsZip(folder.nama_kegiatan, folder.items, "both")}
-                              disabled={zipDownloadingId !== null || pdfDownloadingId !== null}
-                              className="w-full py-2.5 bg-brand-600 hover:bg-brand-750 text-white text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
-                            >
-                              {zipDownloadingId === folder.nama_kegiatan ? (
-                                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                              ) : (
-                                <Download className="w-3.5 h-3.5" />
-                              )}
-                              ZIP Lengkap
-                            </button>
-                            <div className="flex divide-x divide-indigo-200 bg-indigo-50">
-                              <button
-                                onClick={() => handleDownloadAllAsZip(folder.nama_kegiatan, folder.items, "front")}
-                                disabled={zipDownloadingId !== null || pdfDownloadingId !== null}
-                                className="flex-1 py-1.5 text-indigo-700 hover:bg-indigo-100 text-[10px] font-bold cursor-pointer border-0 transition-colors disabled:opacity-50"
-                              >Depan</button>
-                              <button
-                                onClick={() => handleDownloadAllAsZip(folder.nama_kegiatan, folder.items, "back")}
-                                disabled={zipDownloadingId !== null || pdfDownloadingId !== null}
-                                className="flex-1 py-1.5 text-indigo-700 hover:bg-indigo-100 text-[10px] font-bold cursor-pointer border-0 transition-colors disabled:opacity-50"
-                              >Belakang</button>
-                            </div>
-                          </div>
+                          <button
+                            onClick={() => handleDownloadAllAsSinglePdf(folder.nama_kegiatan, folder.items, "both")}
+                            disabled={pdfDownloadingId !== null || zipDownloadingId !== null}
+                            className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 whitespace-nowrap"
+                          >
+                            {pdfDownloadingId === folder.nama_kegiatan ? (
+                              <RefreshCw className="w-3 h-3 animate-spin" />
+                            ) : (
+                              <Download className="w-3 h-3" />
+                            )}
+                            PDF
+                          </button>
+                          <button
+                            onClick={() => handleDownloadAllAsSinglePdf(folder.nama_kegiatan, folder.items, "front")}
+                            disabled={pdfDownloadingId !== null || zipDownloadingId !== null}
+                            className="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-2xl text-[9px] font-bold cursor-pointer transition-colors disabled:opacity-50 whitespace-nowrap"
+                          >Depan</button>
+                          <button
+                            onClick={() => handleDownloadAllAsSinglePdf(folder.nama_kegiatan, folder.items, "back")}
+                            disabled={pdfDownloadingId !== null || zipDownloadingId !== null}
+                            className="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-2xl text-[9px] font-bold cursor-pointer transition-colors disabled:opacity-50 whitespace-nowrap"
+                          >Belakang</button>
+
+                          <div className="w-px h-6 bg-slate-300" />
+
+                          <button
+                            onClick={() => handleDownloadAllAsZip(folder.nama_kegiatan, folder.items, "both")}
+                            disabled={zipDownloadingId !== null || pdfDownloadingId !== null}
+                            className="px-3 py-2 bg-brand-600 hover:bg-brand-750 text-white rounded-2xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 whitespace-nowrap"
+                          >
+                            {zipDownloadingId === folder.nama_kegiatan ? (
+                              <RefreshCw className="w-3 h-3 animate-spin" />
+                            ) : (
+                              <Download className="w-3 h-3" />
+                            )}
+                            ZIP
+                          </button>
+                          <button
+                            onClick={() => handleDownloadAllAsZip(folder.nama_kegiatan, folder.items, "front")}
+                            disabled={zipDownloadingId !== null || pdfDownloadingId !== null}
+                            className="px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-2xl text-[9px] font-bold cursor-pointer transition-colors disabled:opacity-50 whitespace-nowrap"
+                          >Depan</button>
+                          <button
+                            onClick={() => handleDownloadAllAsZip(folder.nama_kegiatan, folder.items, "back")}
+                            disabled={zipDownloadingId !== null || pdfDownloadingId !== null}
+                            className="px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-2xl text-[9px] font-bold cursor-pointer transition-colors disabled:opacity-50 whitespace-nowrap"
+                          >Belakang</button>
+
                           <button
                             onClick={async () => {
                               if (confirm(`Apakah Anda yakin ingin menghapus folder "${folder.nama_kegiatan}" beserta seluruh ${folder.items.length} sertifikat di dalamnya secara permanen?`)) {
@@ -1751,10 +1747,10 @@ durasi_jam: null,
                                 }
                               }
                             }}
-                            className="p-3 bg-white hover:bg-rose-50 text-rose-500 border-2 border-rose-100 hover:border-rose-200 rounded-2xl cursor-pointer transition-all flex items-center justify-center"
+                            className="p-2.5 bg-white hover:bg-rose-50 text-rose-500 border-2 border-rose-100 hover:border-rose-200 rounded-2xl cursor-pointer transition-all flex items-center justify-center"
                             title="Hapus Folder"
                           >
-                            <Trash2 className="w-4.5 h-4.5" />
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
                       </div>

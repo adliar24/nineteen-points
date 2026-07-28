@@ -13,8 +13,6 @@ import {
   ChevronDown,
   Printer,
   Users,
-  Check,
-  ShieldAlert,
   PackageOpen,
 } from "lucide-react";
 import { Siswa, UserSession } from "../types";
@@ -44,7 +42,7 @@ export default function KelolaSiswaView({
   const [selectedSiswaIds, setSelectedSiswaIds] = useState<string[]>([]);
   const [printingSiswa, setPrintingSiswa] = useState<Siswa | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const itemsPerPage = 50;
   const [isBulkDeleteConfirm, setIsBulkDeleteConfirm] = useState(false);
   const [detailStudent, setDetailStudent] = useState<Siswa | null>(null);
   const [siswaToDelete, setSiswaToDelete] = useState<{ id: string; nama: string } | null>(null);
@@ -265,6 +263,19 @@ export default function KelolaSiswaView({
     }, 150);
   };
 
+  // Helper: poll until DOM element appears (max 5s)
+  const waitForElement = (id: string, maxMs = 5000): Promise<HTMLElement | null> =>
+    new Promise((resolve) => {
+      const start = Date.now();
+      const check = () => {
+        const el = document.getElementById(id);
+        if (el) return resolve(el);
+        if (Date.now() - start > maxMs) return resolve(null);
+        requestAnimationFrame(check);
+      };
+      check();
+    });
+
   const exportToZIP = async () => {
     const targets =
       selectedSiswaIds.length > 0 ? selectedSiswaIds : filteredSiswa.map((s) => s.id);
@@ -274,7 +285,10 @@ export default function KelolaSiswaView({
     }
 
     setIsExporting(true);
-    showToast(`Mengekspor ${targets.length} Kartu Ujian ke ZIP...`);
+    showToast(`Mengekspor ${targets.length} Kartu Murid ke ZIP...`);
+
+    // Give React time to mount all off-screen cards
+    await new Promise((resolve) => setTimeout(resolve, 200));
 
     try {
       const JSZip = (await import("jszip")).default;
@@ -285,7 +299,7 @@ export default function KelolaSiswaView({
         const studentObj = siswaList.find((s) => s.id === studentId);
         if (!studentObj) continue;
 
-        const cardElement = document.getElementById(`card-render-bulk-${studentId}`);
+        const cardElement = await waitForElement(`card-render-bulk-${studentId}`);
         if (cardElement) {
           const canvas = await html2canvas(cardElement, {
             scale: 3,
@@ -295,7 +309,7 @@ export default function KelolaSiswaView({
 
           const imgDataUrl = canvas.toDataURL("image/jpeg", 0.92);
           const base64Data = imgDataUrl.split(",")[1];
-          const filename = `KARTU_UJIAN_SMAN19_${studentObj.nis}_${studentObj.nama
+          const filename = `KARTU_MURID_SMAN19_BANDUNG_${studentObj.nis}_${studentObj.nama
             .toUpperCase()
             .replace(/\s+/g, "_")}.jpg`;
 
@@ -306,11 +320,11 @@ export default function KelolaSiswaView({
       const zipContent = await zip.generateAsync({ type: "blob" });
       const link = document.createElement("a");
       link.href = URL.createObjectURL(zipContent);
-      link.download = `KARTU_UJIAN_SMAN19_${Date.now()}.zip`;
+      link.download = `KARTU_MURID_SMAN19_BANDUNG_${Date.now()}.zip`;
       link.click();
       URL.revokeObjectURL(link.href);
 
-      showToast("Unduh ZIP kartu ujian selesai!");
+      showToast("Unduh ZIP Kartu Murid selesai!");
     } catch (error) {
       console.error("Export to ZIP failed", error);
       alert("Gagal mengekspor kartu ke ZIP. Silakan coba lagi.");
@@ -331,16 +345,20 @@ export default function KelolaSiswaView({
     setExportingKelas(kelas);
     showToast(`Menyiapkan ${targets.length} kartu untuk Kelas ${kelas}...`);
 
-    // Wait for the off-screen cards to render
-    await new Promise((resolve) => setTimeout(resolve, 300));
+    // Wait for React to mount all off-screen cards, then poll DOM
+    await new Promise((resolve) => setTimeout(resolve, 200));
 
     try {
       const JSZip = (await import("jszip")).default;
       const zip = new JSZip();
 
       for (const siswa of targets) {
-        const cardElement = document.getElementById(`card-render-class-${siswa.id}`);
-        if (!cardElement) continue;
+        // Poll until card element is in DOM (up to 5s per card)
+        const cardElement = await waitForElement(`card-render-class-${siswa.id}`);
+        if (!cardElement) {
+          console.warn(`Card not found for siswa ${siswa.id} (${siswa.nama})`);
+          continue;
+        }
 
         const canvas = await html2canvas(cardElement, {
           scale: 3,
@@ -350,7 +368,7 @@ export default function KelolaSiswaView({
 
         const imgDataUrl = canvas.toDataURL("image/jpeg", 0.92);
         const base64Data = imgDataUrl.split(",")[1];
-        const filename = `KARTU_${siswa.nis}_${siswa.nama
+        const filename = `KARTU_MURID_SMAN19_BANDUNG_${siswa.nis}_${siswa.nama
           .toUpperCase()
           .replace(/\s+/g, "_")}.jpg`;
 
@@ -360,7 +378,7 @@ export default function KelolaSiswaView({
       const zipContent = await zip.generateAsync({ type: "blob" });
       const link = document.createElement("a");
       link.href = URL.createObjectURL(zipContent);
-      link.download = `KARTU_KELAS_${kelas.replace(/\s+/g, "_")}_SMAN19.zip`;
+      link.download = `KARTU_MURID_KELAS_${kelas.replace(/\s+/g, "_")}_SMAN19_BANDUNG.zip`;
       link.click();
       URL.revokeObjectURL(link.href);
 
@@ -593,11 +611,11 @@ export default function KelolaSiswaView({
                   )}
                   <th className="py-4 px-4 w-[64px]"></th>
                   <th className="py-4 px-4 w-[100px] font-mono">NIS</th>
-                  <th className="py-4 px-6 w-[280px]">Nama Lengkap</th>
-                  <th className="py-4 px-6 w-[120px]">Kelas</th>
-                  <th className="py-4 px-6 w-[100px] text-center">Skor Poin</th>
-                  <th className="py-4 px-6 w-[110px] text-center">Status</th>
-                  <th className="py-4 px-6 w-[120px] text-right">Aksi</th>
+                  <th className="py-4 px-6 w-[260px]">Nama Lengkap</th>
+                  <th className="py-4 px-6 w-[110px]">Kelas</th>
+                  <th className="py-4 px-4 w-[100px] text-center text-emerald-600">Poin (+)</th>
+                  <th className="py-4 px-4 w-[100px] text-center text-rose-500">Poin (−)</th>
+                  <th className="py-4 px-6 w-[100px] text-right">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-brand-100/40">
@@ -624,8 +642,11 @@ export default function KelolaSiswaView({
                       <td className="py-4 px-6 text-center">
                         <div className="h-4 w-12 bg-slate-200 rounded mx-auto" />
                       </td>
-                      <td className="py-4 px-6 text-center">
-                        <div className="h-4.5 w-18 bg-slate-200 rounded-full mx-auto" />
+                      <td className="py-4 px-4 text-center">
+                        <div className="h-4 w-10 bg-slate-200 rounded mx-auto" />
+                      </td>
+                      <td className="py-4 px-4 text-center">
+                        <div className="h-4 w-10 bg-slate-200 rounded mx-auto" />
                       </td>
                       <td className="py-4 px-6 text-right">
                         <div className="h-4.5 w-24 bg-slate-200 rounded-xl ml-auto" />
@@ -644,10 +665,10 @@ export default function KelolaSiswaView({
                 ) : (
                   paginatedSiswa.map((siswa) => {
                     const isSelected = selectedSiswaIds.includes(siswa.id);
-                    const isSafe = siswa.total_poin >= 100;
-                    const isWarning = siswa.total_poin > 0 && siswa.total_poin < 100;
-                    const isZero = siswa.total_poin === 0;
-                    const isSanksi = siswa.total_poin < 0;
+                    // Positive and negative points are stored as a net value;
+                    // we display them separately: positif = portion >0, negatif = portion <0
+                    const poinPositif = siswa.total_poin > 0 ? siswa.total_poin : 0;
+                    const poinNegatif = siswa.total_poin < 0 ? Math.abs(siswa.total_poin) : 0;
 
                     return (
                       <tr
@@ -694,39 +715,24 @@ export default function KelolaSiswaView({
                         <td className="py-4 px-6 text-sm font-semibold text-brand-800">
                           {siswa.kelas}
                         </td>
-                        <td className="py-4 px-6 text-center font-mono font-black text-sm">
-                          <span
-                            className={
-                              siswa.total_poin >= 100
-                                ? "text-emerald-600"
-                                : siswa.total_poin > 0
-                                ? "text-amber-500"
-                                : siswa.total_poin === 0
-                                ? "text-slate-400 font-bold"
-                                : "text-rose-500"
-                            }
-                          >
-                            {siswa.total_poin} pts
-                          </span>
+                        {/* Poin Positif */}
+                        <td className="py-4 px-4 text-center">
+                          {poinPositif > 0 ? (
+                            <span className="font-mono font-black text-sm text-emerald-600">
+                              +{poinPositif}
+                            </span>
+                          ) : (
+                            <span className="text-slate-300 text-sm font-bold">—</span>
+                          )}
                         </td>
-                        <td className="py-4 px-6 text-center">
-                          {isSafe && (
-                            <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider border border-emerald-200 shadow-xs">
-                              <Check className="w-3 h-3" /> AMAN
+                        {/* Poin Negatif */}
+                        <td className="py-4 px-4 text-center">
+                          {poinNegatif > 0 ? (
+                            <span className="font-mono font-black text-sm text-rose-500">
+                              -{poinNegatif}
                             </span>
-                          )}
-                          {isWarning && (
-                            <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider border border-amber-200 shadow-xs">
-                              <ShieldAlert className="w-3 h-3" /> WASPADA
-                            </span>
-                          )}
-                          {isZero && (
-                            <span className="text-slate-400 font-bold text-xs px-2.5">-</span>
-                          )}
-                          {isSanksi && (
-                            <span className="inline-flex items-center gap-1 bg-rose-50 text-rose-700 px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider border border-rose-200 shadow-xs">
-                              <ShieldAlert className="w-3 h-3" /> SANKSI
-                            </span>
+                          ) : (
+                            <span className="text-slate-300 text-sm font-bold">—</span>
                           )}
                         </td>
                         <td

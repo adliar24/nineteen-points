@@ -58,6 +58,16 @@ export default function KelolaSertifikatGuruView() {
   const [selectedActivityFolder, setSelectedActivityFolder] = useState<string | null>(null);
   const [zipDownloadingId, setZipDownloadingId] = useState<string | null>(null);
   const [zipProgress, setZipProgress] = useState<{ current: number; total: number } | null>(null);
+  const [bulkDownloadMenu, setBulkDownloadMenu] = useState<string | null>(null);
+  const [singleDownloadMenu, setSingleDownloadMenu] = useState<string | null>(null);
+
+  useEffect(() => {
+    const handler = () => { setBulkDownloadMenu(null); setSingleDownloadMenu(null); };
+    if (bulkDownloadMenu || singleDownloadMenu) {
+      window.addEventListener("click", handler);
+      return () => window.removeEventListener("click", handler);
+    }
+  }, [bulkDownloadMenu, singleDownloadMenu]);
 
   // Form State for publishing certificate
   const [selectedTeacherIds, setSelectedTeacherIds] = useState<string[]>([]);
@@ -1080,7 +1090,7 @@ durasi_jam: null,
     );
   }, [selectedActivityFolder, groupedActivities, searchQuery]);
 
-  const handleDownloadSingle = async (kegiatan: KegiatanGuru) => {
+  const handleDownloadSingle = async (kegiatan: KegiatanGuru, pageOption: "front" | "back" | "both" = "both") => {
     const config = await getSertifikatConfigAsync();
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
@@ -1100,6 +1110,8 @@ durasi_jam: null,
       });
     };
 
+    const fileName = `SERTIFIKAT_${kegiatan.nama_kegiatan.toUpperCase().replace(/\s+/g, "_")}_${toSentenceCase(kegiatan.user_nama || "Guru SMAN 19").replace(/\s+/g, "_")}`;
+
     try {
       await document.fonts.ready;
       await new Promise<void>((resolve, reject) => {
@@ -1117,67 +1129,46 @@ durasi_jam: null,
       canvas.width = templateImg.naturalWidth || 2000;
       canvas.height = templateImg.naturalHeight || 1414;
 
+      const hasJp = config.hasJpPage && config.materiJpRows && config.materiJpRows.length > 0;
       const nameText = kegiatan.user_nama || "Guru SMAN 19";
 
-      drawCertificateOnCanvas(
-        ctx,
-        canvas.width,
-        canvas.height,
-        templateImg,
-        kegiatan,
-        nameText,
-        config,
-        ttd1Img,
-        ttd2Img,
-        ttd3Img,
-        logoFrontImg
-      );
-
-      const hasJp = config.hasJpPage && config.materiJpRows && config.materiJpRows.length > 0;
-
-      if (hasJp) {
-        const canvas2 = document.createElement("canvas");
-        const ctx2 = canvas2.getContext("2d");
+      if (pageOption === "back" && hasJp) {
+        const ctx2 = canvas.getContext("2d");
         if (!ctx2) throw new Error("Gagal");
-        canvas2.width = canvas.width;
-        canvas2.height = canvas.height;
-
-        drawJpTablePageOnCanvas(
-          ctx2,
-          canvas2.width,
-          canvas2.height,
-          kegiatan,
-          config,
-          ttd1Img,
-          ttd2Img,
-          ttd3Img,
-          templateJpImg,
-          logoBackImg
-        );
-
-        const pdf = new jsPDF({
-          orientation: "landscape",
-          unit: "px",
-          format: [canvas.width, canvas.height]
-        });
-
+        drawJpTablePageOnCanvas(ctx2, canvas.width, canvas.height, kegiatan, config, ttd1Img, ttd2Img, ttd3Img, templateJpImg, logoBackImg);
+        const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvas.width, canvas.height] });
         pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, canvas.width, canvas.height);
-        pdf.addPage();
-        pdf.addImage(canvas2.toDataURL("image/png"), "PNG", 0, 0, canvas.width, canvas.height);
-
-        pdf.save(`SERTIFIKAT_${kegiatan.nama_kegiatan.toUpperCase().replace(/\s+/g, "_")}_${toSentenceCase(nameText).replace(/\s+/g, "_")}.pdf`);
+        pdf.save(`${fileName}_Belakang.pdf`);
+      } else if (pageOption === "back" && !hasJp) {
+        alert("Sertifikat ini tidak memiliki halaman belakang (Tabel JP).");
       } else {
-        const link = document.createElement("a");
-        link.href = canvas.toDataURL("image/png");
-        link.download = `SERTIFIKAT_${kegiatan.nama_kegiatan.toUpperCase().replace(/\s+/g, "_")}_${toSentenceCase(nameText).replace(/\s+/g, "_")}.png`;
-        link.click();
+        drawCertificateOnCanvas(ctx, canvas.width, canvas.height, templateImg, kegiatan, nameText, config, ttd1Img, ttd2Img, ttd3Img, logoFrontImg);
+
+        if (hasJp && pageOption === "both") {
+          const canvas2 = document.createElement("canvas");
+          const ctx2 = canvas2.getContext("2d");
+          if (!ctx2) throw new Error("Gagal");
+          canvas2.width = canvas.width;
+          canvas2.height = canvas.height;
+          drawJpTablePageOnCanvas(ctx2, canvas2.width, canvas2.height, kegiatan, config, ttd1Img, ttd2Img, ttd3Img, templateJpImg, logoBackImg);
+
+          const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvas.width, canvas.height] });
+          pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, canvas.width, canvas.height);
+          pdf.addPage();
+          pdf.addImage(canvas2.toDataURL("image/png"), "PNG", 0, 0, canvas.width, canvas.height);
+          pdf.save(`${fileName}.pdf`);
+        } else {
+          const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvas.width, canvas.height] });
+          pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, canvas.width, canvas.height);
+          pdf.save(`${fileName}_Depan.pdf`);
+        }
       }
     } catch (e: any) {
       alert("Gagal mengunduh: " + e.message);
     }
   };
 
-  const handleDownloadAllAsZip = async (folderName: string, items: KegiatanGuru[]) => {
+  const handleDownloadAllAsZip = async (folderName: string, items: KegiatanGuru[], pageOption: "front" | "back" | "both" = "both") => {
     setZipDownloadingId(folderName);
     setZipProgress({ current: 0, total: items.length });
 
@@ -1225,57 +1216,40 @@ durasi_jam: null,
         if (!ctx) continue;
 
         const nameText = item.user_nama || "Guru SMAN 19";
-        drawCertificateOnCanvas(
-          ctx,
-          canvasWidth,
-          canvasHeight,
-          templateImg,
-          item,
-          nameText,
-          config,
-          ttd1Img,
-          ttd2Img,
-          ttd3Img,
-          logoFrontImg
-        );
-
-        const hasJp = config.hasJpPage && config.materiJpRows && config.materiJpRows.length > 0;
         const safeName = toSentenceCase(nameText).replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_");
+        const hasJp = config.hasJpPage && config.materiJpRows && config.materiJpRows.length > 0;
 
-        if (hasJp) {
-          const canvas2 = document.createElement("canvas");
-          canvas2.width = canvasWidth;
-          canvas2.height = canvasHeight;
-          const ctx2 = canvas2.getContext("2d");
-          if (!ctx2) continue;
-
-          drawJpTablePageOnCanvas(
-            ctx2,
-            canvasWidth,
-            canvasHeight,
-            item,
-            config,
-            ttd1Img,
-            ttd2Img,
-            ttd3Img,
-            templateJpImg,
-            logoBackImg
-          );
-
-          const pdf = new jsPDF({
-            orientation: "landscape",
-            unit: "px",
-            format: [canvasWidth, canvasHeight]
-          });
+        if (pageOption === "back" && hasJp) {
+          drawJpTablePageOnCanvas(ctx, canvasWidth, canvasHeight, item, config, ttd1Img, ttd2Img, ttd3Img, templateJpImg, logoBackImg);
+          const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvasWidth, canvasHeight] });
           pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, canvasWidth, canvasHeight);
-          pdf.addPage();
-          pdf.addImage(canvas2.toDataURL("image/png"), "PNG", 0, 0, canvasWidth, canvasHeight);
-
           const pdfOutput = pdf.output("arraybuffer");
-          zip.file(`SERTIFIKAT_${safeName}.pdf`, pdfOutput);
+          zip.file(`SERTIFIKAT_${safeName}_Belakang.pdf`, pdfOutput);
+        } else if (pageOption === "back" && !hasJp) {
+          continue;
         } else {
-          const imgData = canvas.toDataURL("image/png").split(',')[1];
-          zip.file(`SERTIFIKAT_${safeName}.png`, imgData, { base64: true });
+          drawCertificateOnCanvas(ctx, canvasWidth, canvasHeight, templateImg, item, nameText, config, ttd1Img, ttd2Img, ttd3Img, logoFrontImg);
+
+          if (hasJp && pageOption === "both") {
+            const canvas2 = document.createElement("canvas");
+            canvas2.width = canvasWidth;
+            canvas2.height = canvasHeight;
+            const ctx2 = canvas2.getContext("2d");
+            if (!ctx2) continue;
+            drawJpTablePageOnCanvas(ctx2, canvasWidth, canvasHeight, item, config, ttd1Img, ttd2Img, ttd3Img, templateJpImg, logoBackImg);
+
+            const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvasWidth, canvasHeight] });
+            pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, canvasWidth, canvasHeight);
+            pdf.addPage();
+            pdf.addImage(canvas2.toDataURL("image/png"), "PNG", 0, 0, canvasWidth, canvasHeight);
+            const pdfOutput = pdf.output("arraybuffer");
+            zip.file(`SERTIFIKAT_${safeName}.pdf`, pdfOutput);
+          } else {
+            const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvasWidth, canvasHeight] });
+            pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, canvasWidth, canvasHeight);
+            const pdfOutput = pdf.output("arraybuffer");
+            zip.file(`SERTIFIKAT_${safeName}_Depan.pdf`, pdfOutput);
+          }
         }
       }
 
@@ -1297,7 +1271,7 @@ durasi_jam: null,
   const [pdfDownloadingId, setPdfDownloadingId] = useState<string | null>(null);
   const [pdfProgress, setPdfProgress] = useState<{ current: number; total: number } | null>(null);
 
-  const handleDownloadAllAsSinglePdf = async (folderName: string, items: KegiatanGuru[]) => {
+  const handleDownloadAllAsSinglePdf = async (folderName: string, items: KegiatanGuru[], pageOption: "front" | "back" | "both" = "both") => {
     setPdfDownloadingId(folderName);
     setPdfProgress({ current: 0, total: items.length });
 
@@ -1353,59 +1327,41 @@ durasi_jam: null,
         if (!ctx) continue;
 
         const nameText = item.user_nama || "Guru SMAN 19";
+        const hasJp = config.hasJpPage && config.materiJpRows && config.materiJpRows.length > 0;
 
-        drawCertificateOnCanvas(
-          ctx,
-          canvasWidth,
-          canvasHeight,
-          templateImg,
-          item,
-          nameText,
-          config,
-          ttd1Img,
-          ttd2Img,
-          ttd3Img,
-          logoFrontImg
-        );
-
-        const imgData = canvas.toDataURL("image/jpeg", 0.82);
-
-        if (!pdf) {
-          pdf = new jsPDF({
-            orientation: "landscape",
-            unit: "px",
-            format: [canvasWidth, canvasHeight],
-            compress: true
-          });
+        if (pageOption === "back" && hasJp) {
+          drawJpTablePageOnCanvas(ctx, canvasWidth, canvasHeight, item, config, ttd1Img, ttd2Img, ttd3Img, templateJpImg, logoBackImg);
+          const imgData = canvas.toDataURL("image/jpeg", 0.82);
+          if (!pdf) {
+            pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvasWidth, canvasHeight], compress: true });
+          } else {
+            pdf.addPage([canvasWidth, canvasHeight], "landscape");
+          }
+          pdf.addImage(imgData, "JPEG", 0, 0, canvasWidth, canvasHeight);
+        } else if (pageOption === "back" && !hasJp) {
+          continue;
         } else {
-          pdf.addPage([canvasWidth, canvasHeight], "landscape");
-        }
+          drawCertificateOnCanvas(ctx, canvasWidth, canvasHeight, templateImg, item, nameText, config, ttd1Img, ttd2Img, ttd3Img, logoFrontImg);
+          const imgData = canvas.toDataURL("image/jpeg", 0.82);
 
-        pdf.addImage(imgData, "JPEG", 0, 0, canvasWidth, canvasHeight);
+          if (!pdf) {
+            pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvasWidth, canvasHeight], compress: true });
+          } else {
+            pdf.addPage([canvasWidth, canvasHeight], "landscape");
+          }
+          pdf.addImage(imgData, "JPEG", 0, 0, canvasWidth, canvasHeight);
 
-        if (hasJp) {
-          const canvas2 = document.createElement("canvas");
-          canvas2.width = canvasWidth;
-          canvas2.height = canvasHeight;
-          const ctx2 = canvas2.getContext("2d");
-          if (!ctx2) continue;
-
-          drawJpTablePageOnCanvas(
-            ctx2,
-            canvasWidth,
-            canvasHeight,
-            item,
-            config,
-            ttd1Img,
-            ttd2Img,
-            ttd3Img,
-            templateJpImg,
-            logoBackImg
-          );
-
-          const imgData2 = canvas2.toDataURL("image/jpeg", 0.82);
-          pdf.addPage([canvasWidth, canvasHeight], "landscape");
-          pdf.addImage(imgData2, "JPEG", 0, 0, canvasWidth, canvasHeight);
+          if (hasJp && pageOption === "both") {
+            const canvas2 = document.createElement("canvas");
+            canvas2.width = canvasWidth;
+            canvas2.height = canvasHeight;
+            const ctx2 = canvas2.getContext("2d");
+            if (!ctx2) continue;
+            drawJpTablePageOnCanvas(ctx2, canvasWidth, canvasHeight, item, config, ttd1Img, ttd2Img, ttd3Img, templateJpImg, logoBackImg);
+            const imgData2 = canvas2.toDataURL("image/jpeg", 0.82);
+            pdf.addPage([canvasWidth, canvasHeight], "landscape");
+            pdf.addImage(imgData2, "JPEG", 0, 0, canvasWidth, canvasHeight);
+          }
         }
       }
 
@@ -1682,30 +1638,48 @@ durasi_jam: null,
                             <FolderOpen className="w-4 h-4" />
                             Buka Folder
                           </button>
-                          <button
-                            onClick={() => handleDownloadAllAsSinglePdf(folder.nama_kegiatan, folder.items)}
-                            disabled={pdfDownloadingId !== null || zipDownloadingId !== null}
-                            className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md disabled:opacity-50"
-                          >
-                            {pdfDownloadingId === folder.nama_kegiatan ? (
-                              <RefreshCw className="w-4 h-4 animate-spin" />
-                            ) : (
-                              <Download className="w-4 h-4" />
+                          <div className="flex-1 relative">
+                            <button
+                              onClick={() => setBulkDownloadMenu(bulkDownloadMenu === `pdf_${folder.nama_kegiatan}` ? null : `pdf_${folder.nama_kegiatan}`)}
+                              disabled={pdfDownloadingId !== null || zipDownloadingId !== null}
+                              className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md disabled:opacity-50"
+                            >
+                              {pdfDownloadingId === folder.nama_kegiatan ? (
+                                <RefreshCw className="w-4 h-4 animate-spin" />
+                              ) : (
+                                <Download className="w-4 h-4" />
+                              )}
+                              PDF
+                            </button>
+                            {bulkDownloadMenu === `pdf_${folder.nama_kegiatan}` && (
+                              <div className="absolute right-0 bottom-full mb-2 bg-white rounded-2xl border border-brand-100 shadow-2xl z-50 py-2 min-w-[160px]">
+                                <button onClick={() => { setBulkDownloadMenu(null); handleDownloadAllAsSinglePdf(folder.nama_kegiatan, folder.items, "front"); }} className="w-full px-4 py-2 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 cursor-pointer bg-transparent border-0">Depan Saja</button>
+                                <button onClick={() => { setBulkDownloadMenu(null); handleDownloadAllAsSinglePdf(folder.nama_kegiatan, folder.items, "back"); }} className="w-full px-4 py-2 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 cursor-pointer bg-transparent border-0">Belakang Saja</button>
+                                <button onClick={() => { setBulkDownloadMenu(null); handleDownloadAllAsSinglePdf(folder.nama_kegiatan, folder.items, "both"); }} className="w-full px-4 py-2 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 cursor-pointer bg-transparent border-0">Lengkap</button>
+                              </div>
                             )}
-                            Unduh PDF
-                          </button>
-                          <button
-                            onClick={() => handleDownloadAllAsZip(folder.nama_kegiatan, folder.items)}
-                            disabled={zipDownloadingId !== null || pdfDownloadingId !== null}
-                            className="flex-1 py-3 bg-brand-600 hover:bg-brand-750 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md disabled:opacity-50"
-                          >
-                            {zipDownloadingId === folder.nama_kegiatan ? (
-                              <RefreshCw className="w-4 h-4 animate-spin" />
-                            ) : (
-                              <Download className="w-4 h-4" />
+                          </div>
+                          <div className="flex-1 relative">
+                            <button
+                              onClick={() => setBulkDownloadMenu(bulkDownloadMenu === `zip_${folder.nama_kegiatan}` ? null : `zip_${folder.nama_kegiatan}`)}
+                              disabled={zipDownloadingId !== null || pdfDownloadingId !== null}
+                              className="w-full py-3 bg-brand-600 hover:bg-brand-750 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md disabled:opacity-50"
+                            >
+                              {zipDownloadingId === folder.nama_kegiatan ? (
+                                <RefreshCw className="w-4 h-4 animate-spin" />
+                              ) : (
+                                <Download className="w-4 h-4" />
+                              )}
+                              ZIP
+                            </button>
+                            {bulkDownloadMenu === `zip_${folder.nama_kegiatan}` && (
+                              <div className="absolute right-0 bottom-full mb-2 bg-white rounded-2xl border border-brand-100 shadow-2xl z-50 py-2 min-w-[160px]">
+                                <button onClick={() => { setBulkDownloadMenu(null); handleDownloadAllAsZip(folder.nama_kegiatan, folder.items, "front"); }} className="w-full px-4 py-2 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 cursor-pointer bg-transparent border-0">Depan Saja</button>
+                                <button onClick={() => { setBulkDownloadMenu(null); handleDownloadAllAsZip(folder.nama_kegiatan, folder.items, "back"); }} className="w-full px-4 py-2 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 cursor-pointer bg-transparent border-0">Belakang Saja</button>
+                                <button onClick={() => { setBulkDownloadMenu(null); handleDownloadAllAsZip(folder.nama_kegiatan, folder.items, "both"); }} className="w-full px-4 py-2 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 cursor-pointer bg-transparent border-0">Lengkap</button>
+                              </div>
                             )}
-                            Unduh ZIP
-                          </button>
+                          </div>
                           <button
                             onClick={async () => {
                               if (confirm(`Apakah Anda yakin ingin menghapus folder "${folder.nama_kegiatan}" beserta seluruh ${folder.items.length} sertifikat di dalamnya secara permanen?`)) {
@@ -1754,30 +1728,48 @@ durasi_jam: null,
                   </p>
                 </div>
                 <div className="flex gap-2">
-                  <button
-                    onClick={() => handleDownloadAllAsSinglePdf(selectedActivityFolder, folderItems)}
-                    disabled={pdfDownloadingId !== null || zipDownloadingId !== null}
-                    className="px-5 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md disabled:opacity-50"
-                  >
-                    {pdfDownloadingId === selectedActivityFolder ? (
-                      <RefreshCw className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Download className="w-4.5 h-4.5" />
+                  <div className="relative">
+                    <button
+                      onClick={() => setBulkDownloadMenu(bulkDownloadMenu === `detail_pdf` ? null : "detail_pdf")}
+                      disabled={pdfDownloadingId !== null || zipDownloadingId !== null}
+                      className="px-5 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md disabled:opacity-50"
+                    >
+                      {pdfDownloadingId === selectedActivityFolder ? (
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Download className="w-4.5 h-4.5" />
+                      )}
+                      PDF
+                    </button>
+                    {bulkDownloadMenu === "detail_pdf" && (
+                      <div className="absolute right-0 bottom-full mb-2 bg-white rounded-2xl border border-brand-100 shadow-2xl z-50 py-2 min-w-[160px]">
+                        <button onClick={() => { setBulkDownloadMenu(null); handleDownloadAllAsSinglePdf(selectedActivityFolder, folderItems, "front"); }} className="w-full px-4 py-2 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 cursor-pointer bg-transparent border-0">Depan Saja</button>
+                        <button onClick={() => { setBulkDownloadMenu(null); handleDownloadAllAsSinglePdf(selectedActivityFolder, folderItems, "back"); }} className="w-full px-4 py-2 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 cursor-pointer bg-transparent border-0">Belakang Saja</button>
+                        <button onClick={() => { setBulkDownloadMenu(null); handleDownloadAllAsSinglePdf(selectedActivityFolder, folderItems, "both"); }} className="w-full px-4 py-2 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 cursor-pointer bg-transparent border-0">Lengkap</button>
+                      </div>
                     )}
-                    Unduh PDF Gabungan
-                  </button>
-                  <button
-                    onClick={() => handleDownloadAllAsZip(selectedActivityFolder, folderItems)}
-                    disabled={zipDownloadingId !== null || pdfDownloadingId !== null}
-                    className="px-5 py-3.5 bg-brand-600 hover:bg-brand-750 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md disabled:opacity-50"
-                  >
-                    {zipDownloadingId === selectedActivityFolder ? (
-                      <RefreshCw className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Download className="w-4.5 h-4.5" />
+                  </div>
+                  <div className="relative">
+                    <button
+                      onClick={() => setBulkDownloadMenu(bulkDownloadMenu === `detail_zip` ? null : "detail_zip")}
+                      disabled={zipDownloadingId !== null || pdfDownloadingId !== null}
+                      className="px-5 py-3.5 bg-brand-600 hover:bg-brand-750 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md disabled:opacity-50"
+                    >
+                      {zipDownloadingId === selectedActivityFolder ? (
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Download className="w-4.5 h-4.5" />
+                      )}
+                      ZIP
+                    </button>
+                    {bulkDownloadMenu === "detail_zip" && (
+                      <div className="absolute right-0 bottom-full mb-2 bg-white rounded-2xl border border-brand-100 shadow-2xl z-50 py-2 min-w-[160px]">
+                        <button onClick={() => { setBulkDownloadMenu(null); handleDownloadAllAsZip(selectedActivityFolder, folderItems, "front"); }} className="w-full px-4 py-2 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 cursor-pointer bg-transparent border-0">Depan Saja</button>
+                        <button onClick={() => { setBulkDownloadMenu(null); handleDownloadAllAsZip(selectedActivityFolder, folderItems, "back"); }} className="w-full px-4 py-2 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 cursor-pointer bg-transparent border-0">Belakang Saja</button>
+                        <button onClick={() => { setBulkDownloadMenu(null); handleDownloadAllAsZip(selectedActivityFolder, folderItems, "both"); }} className="w-full px-4 py-2 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 cursor-pointer bg-transparent border-0">Lengkap</button>
+                      </div>
                     )}
-                    Unduh ZIP
-                  </button>
+                  </div>
                 </div>
               </div>
 
@@ -1811,14 +1803,23 @@ durasi_jam: null,
                                 {row.peran}
                               </span>
                             </td>
-                            <td className="py-4 px-6 text-right space-x-2">
-                              <button
-                                onClick={() => handleDownloadSingle(row)}
-                                className="p-2 text-brand-600 hover:bg-brand-50 rounded-xl transition-colors cursor-pointer border-0 bg-transparent"
-                                title="Unduh Sertifikat"
-                              >
-                                <Download className="w-4 h-4" />
-                              </button>
+                            <td className="py-4 px-6 text-right">
+                              <div className="relative inline-block">
+                                <button
+                                  onClick={() => setSingleDownloadMenu(singleDownloadMenu === row.id ? null : row.id)}
+                                  className="p-2 text-brand-600 hover:bg-brand-50 rounded-xl transition-colors cursor-pointer border-0 bg-transparent"
+                                  title="Unduh Sertifikat"
+                                >
+                                  <Download className="w-4 h-4" />
+                                </button>
+                                {singleDownloadMenu === row.id && (
+                                  <div className="absolute right-0 bottom-full mb-2 bg-white rounded-2xl border border-brand-100 shadow-2xl z-50 py-2 min-w-[150px]">
+                                    <button onClick={() => { setSingleDownloadMenu(null); handleDownloadSingle(row, "front"); }} className="w-full px-4 py-2 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 cursor-pointer bg-transparent border-0">Depan Saja</button>
+                                    <button onClick={() => { setSingleDownloadMenu(null); handleDownloadSingle(row, "back"); }} className="w-full px-4 py-2 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 cursor-pointer bg-transparent border-0">Belakang Saja</button>
+                                    <button onClick={() => { setSingleDownloadMenu(null); handleDownloadSingle(row, "both"); }} className="w-full px-4 py-2 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 cursor-pointer bg-transparent border-0">Lengkap</button>
+                                  </div>
+                                )}
+                              </div>
                               <button
                                 onClick={() => handleDelete(row.id, row.user_nama)}
                                 className="p-2 text-rose-500 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer border-0 bg-transparent"

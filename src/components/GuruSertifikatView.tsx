@@ -841,6 +841,15 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
   const [previewKegiatan, setPreviewKegiatan] = useState<KegiatanGuru | null>(null);
   const [currentConfig, setCurrentConfig] = useState<SertifikatLayoutConfig>(() => getSertifikatConfig());
   const previewCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [openDownloadMenu, setOpenDownloadMenu] = useState<string | null>(null);
+
+  useEffect(() => {
+    const handler = () => setOpenDownloadMenu(null);
+    if (openDownloadMenu) {
+      window.addEventListener("click", handler);
+      return () => window.removeEventListener("click", handler);
+    }
+  }, [openDownloadMenu]);
 
   // Load config asynchronously & listen for updates
   useEffect(() => {
@@ -865,7 +874,7 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
   });
 
   // 2. Generate and download certificate using PNG template & dynamic positions
-  const handleDownloadCertificate = async (kegiatan: KegiatanGuru) => {
+  const handleDownloadCertificate = async (kegiatan: KegiatanGuru, pageOption: "front" | "back" | "both" = "both") => {
     setDownloadingId(kegiatan.id);
     const config = await getSertifikatConfigAsync();
     const canvas = document.createElement("canvas");
@@ -889,6 +898,8 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
       });
     };
 
+    const fileName = `SERTIFIKAT_${kegiatan.nama_kegiatan.toUpperCase().replace(/\s+/g, "_")}_${toSentenceCase(userSession.fullName || userSession.email).replace(/\s+/g, "_")}`;
+
     try {
       await document.fonts.ready;
       await new Promise<void>((resolve, reject) => {
@@ -906,67 +917,39 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
       canvas.width = templateImg.naturalWidth || 2000;
       canvas.height = templateImg.naturalHeight || 1414;
 
+      const hasJp = config.hasJpPage && config.materiJpRows && config.materiJpRows.length > 0;
       const nameText = userSession.fullName || userSession.email;
 
-      drawCertificateOnCanvas(
-        ctx,
-        canvas.width,
-        canvas.height,
-        templateImg,
-        kegiatan,
-        nameText,
-        config,
-        ttd1Img,
-        ttd2Img,
-        ttd3Img,
-        logoFrontImg
-      );
-
-      const hasJp = config.hasJpPage && config.materiJpRows && config.materiJpRows.length > 0;
-
-      if (hasJp) {
-        // Halaman 2: Tabel Jam Pelajaran (JP)
-        const canvas2 = document.createElement("canvas");
-        const ctx2 = canvas2.getContext("2d");
-        if (!ctx2) throw new Error("Gagal menginisialisasi canvas untuk halaman belakang");
-        canvas2.width = canvas.width;
-        canvas2.height = canvas.height;
-
-        drawJpTablePageOnCanvas(
-          ctx2,
-          canvas2.width,
-          canvas2.height,
-          kegiatan,
-          config,
-          ttd1Img,
-          ttd2Img,
-          ttd3Img,
-          templateJpImg,
-          logoBackImg
-        );
-
-        // Gabungkan ke file PDF 2 halaman
-        const pdf = new jsPDF({
-          orientation: "landscape",
-          unit: "px",
-          format: [canvas.width, canvas.height]
-        });
-
-        const imgData1 = canvas.toDataURL("image/png");
-        pdf.addImage(imgData1, "PNG", 0, 0, canvas.width, canvas.height);
-
-        pdf.addPage();
-        const imgData2 = canvas2.toDataURL("image/png");
-        pdf.addImage(imgData2, "PNG", 0, 0, canvas.width, canvas.height);
-
-        pdf.save(`SERTIFIKAT_${kegiatan.nama_kegiatan.toUpperCase().replace(/\s+/g, "_")}_${toSentenceCase(nameText).replace(/\s+/g, "_")}.pdf`);
+      if (pageOption === "back" && hasJp) {
+        const ctx2 = canvas.getContext("2d");
+        if (!ctx2) throw new Error("Gagal menginisialisasi canvas");
+        drawJpTablePageOnCanvas(ctx2, canvas.width, canvas.height, kegiatan, config, ttd1Img, ttd2Img, ttd3Img, templateJpImg, logoBackImg);
+        const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvas.width, canvas.height] });
+        pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, canvas.width, canvas.height);
+        pdf.save(`${fileName}_Belakang.pdf`);
+      } else if (pageOption === "back" && !hasJp) {
+        alert("Sertifikat ini tidak memiliki halaman belakang (Tabel JP).");
       } else {
-        // Hanya 1 halaman: Simpan sebagai gambar PNG
-        const dataUrl = canvas.toDataURL("image/png");
-        const link = document.createElement("a");
-        link.href = dataUrl;
-        link.download = `SERTIFIKAT_${kegiatan.nama_kegiatan.toUpperCase().replace(/\s+/g, "_")}_${toSentenceCase(nameText).replace(/\s+/g, "_")}.png`;
-        link.click();
+        drawCertificateOnCanvas(ctx, canvas.width, canvas.height, templateImg, kegiatan, nameText, config, ttd1Img, ttd2Img, ttd3Img, logoFrontImg);
+
+        if (hasJp && pageOption === "both") {
+          const canvas2 = document.createElement("canvas");
+          const ctx2 = canvas2.getContext("2d");
+          if (!ctx2) throw new Error("Gagal menginisialisasi canvas untuk halaman belakang");
+          canvas2.width = canvas.width;
+          canvas2.height = canvas.height;
+          drawJpTablePageOnCanvas(ctx2, canvas2.width, canvas2.height, kegiatan, config, ttd1Img, ttd2Img, ttd3Img, templateJpImg, logoBackImg);
+
+          const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvas.width, canvas.height] });
+          pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, canvas.width, canvas.height);
+          pdf.addPage();
+          pdf.addImage(canvas2.toDataURL("image/png"), "PNG", 0, 0, canvas.width, canvas.height);
+          pdf.save(`${fileName}.pdf`);
+        } else {
+          const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvas.width, canvas.height] });
+          pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, canvas.width, canvas.height);
+          pdf.save(`${fileName}_Depan.pdf`);
+        }
       }
     } catch (err: any) {
       alert("Gagal mengunduh sertifikat: " + err.message);
@@ -1144,20 +1127,49 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
                   <Eye className="w-4 h-4" />
                   Pratinjau
                 </button>
-                <button
-                  onClick={() => handleDownloadCertificate(kegiatan)}
-                  disabled={downloadingId !== null}
-                  className="py-3 bg-brand-600 hover:bg-brand-750 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-md"
-                >
-                  {downloadingId === kegiatan.id ? (
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <>
-                      <Download className="w-4 h-4" />
-                      {currentConfig.hasJpPage && currentConfig.materiJpRows && currentConfig.materiJpRows.length > 0 ? "Unduh PDF" : "Unduh PNG"}
-                    </>
+                <div className="relative">
+                  <button
+                    onClick={() => setOpenDownloadMenu(openDownloadMenu === kegiatan.id ? null : kegiatan.id)}
+                    disabled={downloadingId !== null}
+                    className="w-full py-3 bg-brand-600 hover:bg-brand-750 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-md"
+                  >
+                    {downloadingId === kegiatan.id ? (
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <>
+                        <Download className="w-4 h-4" />
+                        Unduh
+                      </>
+                    )}
+                  </button>
+                  {openDownloadMenu === kegiatan.id && (
+                    <div className="absolute right-0 bottom-full mb-2 bg-white rounded-2xl border border-brand-100 shadow-2xl z-50 py-2 min-w-[180px]">
+                      <button
+                        onClick={() => { setOpenDownloadMenu(null); handleDownloadCertificate(kegiatan, "front"); }}
+                        className="w-full px-4 py-2.5 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 flex items-center gap-2 cursor-pointer bg-transparent border-0"
+                      >
+                        <FileText className="w-3.5 h-3.5 text-brand-500" />
+                        Depan Saja (PDF)
+                      </button>
+                      {currentConfig.hasJpPage && currentConfig.materiJpRows && currentConfig.materiJpRows.length > 0 && (
+                        <button
+                          onClick={() => { setOpenDownloadMenu(null); handleDownloadCertificate(kegiatan, "back"); }}
+                          className="w-full px-4 py-2.5 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 flex items-center gap-2 cursor-pointer bg-transparent border-0"
+                        >
+                          <FileText className="w-3.5 h-3.5 text-brand-500" />
+                          Belakang Saja (PDF)
+                        </button>
+                      )}
+                      <button
+                        onClick={() => { setOpenDownloadMenu(null); handleDownloadCertificate(kegiatan, "both"); }}
+                        className="w-full px-4 py-2.5 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 flex items-center gap-2 cursor-pointer bg-transparent border-0"
+                      >
+                        <Download className="w-3.5 h-3.5 text-brand-500" />
+                        {currentConfig.hasJpPage && currentConfig.materiJpRows && currentConfig.materiJpRows.length > 0 ? "Lengkap (PDF)" : "Unduh (PDF)"}
+                      </button>
+                    </div>
                   )}
-                </button>
+                </div>
               </div>
             </div>
           ))}
@@ -1232,14 +1244,34 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
                 >
                   Tutup
                 </button>
-                <button
-                  onClick={() => handleDownloadCertificate(previewKegiatan)}
-                  disabled={downloadingId !== null}
-                  className="px-5 py-2.5 rounded-2xl bg-brand-600 hover:bg-brand-750 text-white font-bold text-sm shadow-md transition-all cursor-pointer border-0 flex items-center gap-2"
-                >
-                  <Download className="w-4 h-4" />
-                  {previewKegiatan.materi_jp && previewKegiatan.materi_jp.length > 0 ? "Unduh Sertifikat PDF" : "Unduh Sertifikat PNG"}
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleDownloadCertificate(previewKegiatan, "front")}
+                    disabled={downloadingId !== null}
+                    className="px-4 py-2.5 rounded-2xl bg-brand-100 hover:bg-brand-200 text-brand-700 font-bold text-xs shadow-sm transition-all cursor-pointer border-0 flex items-center gap-1.5"
+                  >
+                    <FileText className="w-3.5 h-3.5" />
+                    Depan
+                  </button>
+                  {previewKegiatan.materi_jp && previewKegiatan.materi_jp.length > 0 && (
+                    <button
+                      onClick={() => handleDownloadCertificate(previewKegiatan, "back")}
+                      disabled={downloadingId !== null}
+                      className="px-4 py-2.5 rounded-2xl bg-brand-100 hover:bg-brand-200 text-brand-700 font-bold text-xs shadow-sm transition-all cursor-pointer border-0 flex items-center gap-1.5"
+                    >
+                      <FileText className="w-3.5 h-3.5" />
+                      Belakang
+                    </button>
+                  )}
+                  <button
+                    onClick={() => handleDownloadCertificate(previewKegiatan, "both")}
+                    disabled={downloadingId !== null}
+                    className="px-5 py-2.5 rounded-2xl bg-brand-600 hover:bg-brand-750 text-white font-bold text-sm shadow-md transition-all cursor-pointer border-0 flex items-center gap-2"
+                  >
+                    <Download className="w-4 h-4" />
+                    {previewKegiatan.materi_jp && previewKegiatan.materi_jp.length > 0 ? "Lengkap" : "Unduh"}
+                  </button>
+                </div>
               </div>
             </motion.div>
           </div>

@@ -210,7 +210,28 @@ export default function App() {
     applyTheme(activeTheme);
   }, []);
   
-  const [activeTab, setActiveTab] = useState<string>("stats");
+  const getDefaultTab = (role: string) => {
+    if (role === "siswa") return "siswa_stats";
+    if (role === "piket") return "input_kehadiran";
+    if (role === "guru") return "input";
+    if (role === "kepala_sekolah") return "input_kehadiran";
+    if (role === "tata_usaha") return "input";
+    return "stats";
+  };
+
+  const isValidTab = (role: string, tab: string) => {
+    if (role === "siswa") return ["siswa_stats", "siswa_barcode", "siswa_history", "change_password"].includes(tab);
+    if (role === "piket") return ["kehadiran", "input_kehadiran", "change_password", "scan_sholat", "rekap_sholat_kehadiran"].includes(tab);
+    if (role === "guru") return ["input", "students", "history", "change_password", "guru_sertifikat", "guru_kartu", "scan_sholat", "rekap_sholat_kehadiran"].includes(tab);
+    if (role === "kepala_sekolah") return ["input_kehadiran", "input", "kehadiran", "students", "history", "change_password", "scan_sholat", "rekap_sholat_kehadiran"].includes(tab);
+    if (role === "tata_usaha") return ["input", "scan_sholat", "rekap_sholat_kehadiran", "guru_sertifikat", "change_password"].includes(tab);
+    return ["stats", "input_kehadiran", "input", "kehadiran", "students", "history", "rules", "users", "change_password", "kelola_sertifikat_guru", "scan_sholat", "rekap_sholat_kehadiran"].includes(tab);
+  };
+
+  const [activeTab, setActiveTab] = useState<string>(() => {
+    const saved = getLocalStorage<UserSession | null>("19points_session", null);
+    return saved ? getDefaultTab(saved.role) : "stats";
+  });
 
   const [historyRefreshCount, setHistoryRefreshCount] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -353,35 +374,16 @@ export default function App() {
 
 
 
+  const prevSessionRef = useRef<UserSession | null>(userSession);
+
   useEffect(() => {
-    if (userSession) {
-      if (userSession.role === "siswa") {
-        if (!["siswa_stats", "siswa_barcode", "siswa_history", "change_password"].includes(activeTab)) {
-          setActiveTab("siswa_stats");
-        }
-      } else if (userSession.role === "piket") {
-        if (!["kehadiran", "input_kehadiran", "change_password", "scan_sholat", "rekap_sholat_kehadiran"].includes(activeTab)) {
-          setActiveTab("input_kehadiran");
-        }
-      } else if (userSession.role === "guru") {
-        if (!["input", "students", "history", "change_password", "guru_sertifikat", "guru_kartu", "scan_sholat", "rekap_sholat_kehadiran"].includes(activeTab)) {
-          setActiveTab("input");
-        }
-      } else if (userSession.role === "kepala_sekolah") {
-        if (!["input_kehadiran", "input", "kehadiran", "students", "history", "change_password", "scan_sholat", "rekap_sholat_kehadiran"].includes(activeTab)) {
-          setActiveTab("input_kehadiran");
-        }
-      } else if (userSession.role === "tata_usaha") {
-        if (!["input", "scan_sholat", "rekap_sholat_kehadiran", "guru_sertifikat", "change_password"].includes(activeTab)) {
-          setActiveTab("input");
-        }
-      } else {
-        if (!["stats", "input_kehadiran", "input", "kehadiran", "students", "history", "rules", "users", "change_password", "kelola_sertifikat_guru", "scan_sholat", "rekap_sholat_kehadiran"].includes(activeTab)) {
-          setActiveTab("stats");
-        }
+    if (userSession && userSession !== prevSessionRef.current) {
+      if (!isValidTab(userSession.role, activeTab)) {
+        setActiveTab(getDefaultTab(userSession.role));
       }
     }
-  }, [userSession, activeTab]);
+    prevSessionRef.current = userSession;
+  }, [userSession]);
 
   const handleLogout = () => {
     setIsLogoutConfirmOpen(true);

@@ -1623,7 +1623,7 @@ durasi_jam: null,
                     {filteredGroupedActivities.map((folder) => (
                       <div
                         key={folder.nama_kegiatan}
-                        className="bg-white rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 p-6 hover:scale-[1.01] hover:shadow-2xl transition-all relative overflow-hidden group flex flex-col justify-between"
+                        className="bg-white rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 p-6 hover:scale-[1.01] hover:shadow-2xl transition-all relative group flex flex-col justify-between"
                       >
                         {/* Folder Icon Decoration */}
                         <div className="absolute top-0 right-0 w-24 h-24 bg-brand-600/5 rounded-full filter blur-xl translate-x-6 -translate-y-6 group-hover:scale-125 transition-transform" />
@@ -1708,7 +1708,7 @@ durasi_jam: null,
                               PDF
                             </button>
                             {bulkDownloadMenu === `pdf_${folder.nama_kegiatan}` && (
-                              <div className="absolute right-0 bottom-full mb-2 bg-white rounded-2xl border border-brand-100 shadow-2xl z-50 py-2 min-w-[160px]">
+                              <div className="absolute right-0 top-full mt-2 bg-white rounded-2xl border border-brand-100 shadow-2xl z-50 py-2 min-w-[160px]">
                                 <button onClick={() => { setBulkDownloadMenu(null); handleDownloadAllAsSinglePdf(folder.nama_kegiatan, folder.items, "front"); }} className="w-full px-4 py-2 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 cursor-pointer bg-transparent border-0">Depan Saja</button>
                                 <button onClick={() => { setBulkDownloadMenu(null); handleDownloadAllAsSinglePdf(folder.nama_kegiatan, folder.items, "back"); }} className="w-full px-4 py-2 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 cursor-pointer bg-transparent border-0">Belakang Saja</button>
                                 <button onClick={() => { setBulkDownloadMenu(null); handleDownloadAllAsSinglePdf(folder.nama_kegiatan, folder.items, "both"); }} className="w-full px-4 py-2 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 cursor-pointer bg-transparent border-0">Lengkap</button>
@@ -1729,7 +1729,7 @@ durasi_jam: null,
                               ZIP
                             </button>
                             {bulkDownloadMenu === `zip_${folder.nama_kegiatan}` && (
-                              <div className="absolute right-0 bottom-full mb-2 bg-white rounded-2xl border border-brand-100 shadow-2xl z-50 py-2 min-w-[160px]">
+                              <div className="absolute right-0 top-full mt-2 bg-white rounded-2xl border border-brand-100 shadow-2xl z-50 py-2 min-w-[160px]">
                                 <button onClick={() => { setBulkDownloadMenu(null); handleDownloadAllAsZip(folder.nama_kegiatan, folder.items, "front"); }} className="w-full px-4 py-2 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 cursor-pointer bg-transparent border-0">Depan Saja</button>
                                 <button onClick={() => { setBulkDownloadMenu(null); handleDownloadAllAsZip(folder.nama_kegiatan, folder.items, "back"); }} className="w-full px-4 py-2 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 cursor-pointer bg-transparent border-0">Belakang Saja</button>
                                 <button onClick={() => { setBulkDownloadMenu(null); handleDownloadAllAsZip(folder.nama_kegiatan, folder.items, "both"); }} className="w-full px-4 py-2 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 cursor-pointer bg-transparent border-0">Lengkap</button>
@@ -1798,7 +1798,7 @@ durasi_jam: null,
                       PDF
                     </button>
                     {bulkDownloadMenu === "detail_pdf" && (
-                      <div className="absolute right-0 bottom-full mb-2 bg-white rounded-2xl border border-brand-100 shadow-2xl z-50 py-2 min-w-[160px]">
+                      <div className="absolute right-0 top-full mt-2 bg-white rounded-2xl border border-brand-100 shadow-2xl z-50 py-2 min-w-[160px]">
                         <button onClick={() => { setBulkDownloadMenu(null); handleDownloadAllAsSinglePdf(selectedActivityFolder, folderItems, "front"); }} className="w-full px-4 py-2 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 cursor-pointer bg-transparent border-0">Depan Saja</button>
                         <button onClick={() => { setBulkDownloadMenu(null); handleDownloadAllAsSinglePdf(selectedActivityFolder, folderItems, "back"); }} className="w-full px-4 py-2 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 cursor-pointer bg-transparent border-0">Belakang Saja</button>
                         <button onClick={() => { setBulkDownloadMenu(null); handleDownloadAllAsSinglePdf(selectedActivityFolder, folderItems, "both"); }} className="w-full px-4 py-2 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 cursor-pointer bg-transparent border-0">Lengkap</button>
@@ -1819,7 +1819,7 @@ durasi_jam: null,
                       ZIP
                     </button>
                     {bulkDownloadMenu === "detail_zip" && (
-                      <div className="absolute right-0 bottom-full mb-2 bg-white rounded-2xl border border-brand-100 shadow-2xl z-50 py-2 min-w-[160px]">
+                      <div className="absolute right-0 top-full mt-2 bg-white rounded-2xl border border-brand-100 shadow-2xl z-50 py-2 min-w-[160px]">
                         <button onClick={() => { setBulkDownloadMenu(null); handleDownloadAllAsZip(selectedActivityFolder, folderItems, "front"); }} className="w-full px-4 py-2 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 cursor-pointer bg-transparent border-0">Depan Saja</button>
                         <button onClick={() => { setBulkDownloadMenu(null); handleDownloadAllAsZip(selectedActivityFolder, folderItems, "back"); }} className="w-full px-4 py-2 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 cursor-pointer bg-transparent border-0">Belakang Saja</button>
                         <button onClick={() => { setBulkDownloadMenu(null); handleDownloadAllAsZip(selectedActivityFolder, folderItems, "both"); }} className="w-full px-4 py-2 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 cursor-pointer bg-transparent border-0">Lengkap</button>
@@ -1869,7 +1869,7 @@ durasi_jam: null,
                                   <Download className="w-4 h-4" />
                                 </button>
                                 {singleDownloadMenu === row.id && (
-                                  <div className="absolute right-0 bottom-full mb-2 bg-white rounded-2xl border border-brand-100 shadow-2xl z-50 py-2 min-w-[150px]">
+                                  <div className="absolute right-0 top-full mt-2 bg-white rounded-2xl border border-brand-100 shadow-2xl z-50 py-2 min-w-[150px]">
                                     <button onClick={() => { setSingleDownloadMenu(null); handleDownloadSingle(row, "front"); }} className="w-full px-4 py-2 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 cursor-pointer bg-transparent border-0">Depan Saja</button>
                                     <button onClick={() => { setSingleDownloadMenu(null); handleDownloadSingle(row, "back"); }} className="w-full px-4 py-2 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 cursor-pointer bg-transparent border-0">Belakang Saja</button>
                                     <button onClick={() => { setSingleDownloadMenu(null); handleDownloadSingle(row, "both"); }} className="w-full px-4 py-2 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 cursor-pointer bg-transparent border-0">Lengkap</button>

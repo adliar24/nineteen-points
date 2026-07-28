@@ -1063,10 +1063,10 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
       ) : filteredList.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {filteredList.map((kegiatan) => (
-            <div
-              key={kegiatan.id}
-              className="bg-white rounded-3xl p-6 border border-brand-100 shadow-xl shadow-brand-900/5 flex flex-col justify-between hover:scale-[1.01] transition-all relative overflow-hidden group"
-            >
+              <div
+                key={kegiatan.id}
+                className="bg-white rounded-3xl p-6 border border-brand-100 shadow-xl shadow-brand-900/5 flex flex-col justify-between hover:scale-[1.01] transition-all relative group"
+              >
               {/* Corner decorative wave */}
               <div className="absolute top-0 right-0 w-24 h-24 bg-brand-600/5 rounded-full filter blur-xl translate-x-6 -translate-y-6 group-hover:scale-125 transition-transform" />
 
@@ -1124,7 +1124,7 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
                     )}
                   </button>
                   {openDownloadMenu === kegiatan.id && (
-                    <div className="absolute right-0 bottom-full mb-2 bg-white rounded-2xl border border-brand-100 shadow-2xl z-50 py-2 min-w-[180px]">
+                    <div className="absolute right-0 top-full mt-2 bg-white rounded-2xl border border-brand-100 shadow-2xl z-50 py-2 min-w-[180px]">
                       <button
                         onClick={() => { setOpenDownloadMenu(null); handleDownloadCertificate(kegiatan, "front"); }}
                         className="w-full px-4 py-2.5 text-left text-xs font-bold text-brand-800 hover:bg-brand-50 flex items-center gap-2 cursor-pointer bg-transparent border-0"

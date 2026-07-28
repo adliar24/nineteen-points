@@ -251,8 +251,8 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
                 </div>
                 <div className="flex gap-3">
                   <div className="bg-purple-50/70 border border-purple-100 rounded-2xl px-4 py-2.5 text-center flex-1">
-                    <span className="text-[9px] font-black text-purple-500 block uppercase tracking-wider">Poin</span>
-                    <span className="text-lg font-black text-purple-900">{siswaDetail.total_poin}</span>
+                    <span className="text-[9px] font-black text-purple-500 block uppercase tracking-wider">Poin Prestasi</span>
+                    <span className="text-lg font-black text-purple-900">+{totalPrestasi}</span>
                   </div>
                   <div className="bg-emerald-50/70 border border-emerald-100 rounded-2xl px-4 py-2.5 text-center flex-1">
                     <span className="text-[9px] font-black text-emerald-600 block uppercase tracking-wider">Kelas</span>
@@ -283,8 +283,8 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
               </div>
               <div className="flex gap-4">
                 <div className="bg-purple-50/70 border border-purple-100 rounded-2xl px-5 py-3 text-center min-w-[100px]">
-                  <span className="text-[10px] font-black text-purple-500 block uppercase tracking-wider">Poin</span>
-                  <span className="text-xl font-black text-purple-900">{siswaDetail.total_poin} pts</span>
+                  <span className="text-[10px] font-black text-purple-500 block uppercase tracking-wider">Poin Prestasi</span>
+                  <span className="text-xl font-black text-purple-900">+{totalPrestasi} pts</span>
                 </div>
                 <div className="bg-emerald-50/70 border border-emerald-100 rounded-2xl px-5 py-3 text-center min-w-[100px]">
                   <span className="text-[10px] font-black text-emerald-600 block uppercase tracking-wider">Kelas</span>

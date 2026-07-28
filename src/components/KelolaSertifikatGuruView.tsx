@@ -415,7 +415,10 @@ export default function KelolaSertifikatGuruView() {
         loadImg(config.templateJpUrl),
         loadImg(config.logoFrontImage),
         loadImg(config.logoBackImage),
-      ]).then(([___, _, ttd1Img, ttd2Img, ttd3Img, templateJpImg, logoFrontImg, logoBackImg]) => {
+        loadImg(config.ttdBack1Image),
+        loadImg(config.ttdBack2Image),
+        loadImg(config.ttdBack3Image),
+      ]).then(([___, _, ttd1Img, ttd2Img, ttd3Img, templateJpImg, logoFrontImg, logoBackImg, ttdBack1Img, ttdBack2Img, ttdBack3Img]) => {
         canvas.width = templateImg.naturalWidth || 2000;
         canvas.height = templateImg.naturalHeight || 1414;
 
@@ -468,18 +471,7 @@ durasi_jam: null,
         };
 
         if (desainerPage === 2 && config.hasJpPage) {
-          drawJpTablePageOnCanvas(
-            ctx,
-            canvas.width,
-            canvas.height,
-            dummyKegiatan,
-            config,
-            ttd1Img,
-            ttd2Img,
-            ttd3Img,
-            templateJpImg,
-            logoBackImg
-          );
+          drawJpTablePageOnCanvas(ctx, canvas.width, canvas.height, dummyKegiatan, config, ttd1Img, ttd2Img, ttd3Img, templateJpImg, logoBackImg, ttdBack1Img, ttdBack2Img, ttdBack3Img);
 
           // Highlight selected element position with a target indicator on page 2
           const pos = config.positions;
@@ -1122,6 +1114,9 @@ durasi_jam: null,
       const ttd1Img = await loadImg(config.ttd1Image);
       const ttd2Img = await loadImg(config.ttd2Image);
       const ttd3Img = await loadImg(config.ttd3Image);
+      const ttdBack1Img = await loadImg(config.ttdBack1Image);
+      const ttdBack2Img = await loadImg(config.ttdBack2Image);
+      const ttdBack3Img = await loadImg(config.ttdBack3Image);
       const templateJpImg = await loadImg(config.templateJpUrl);
       const logoFrontImg = await loadImg(config.logoFrontImage);
       const logoBackImg = await loadImg(config.logoBackImage);
@@ -1135,7 +1130,7 @@ durasi_jam: null,
       if (pageOption === "back" && hasJp) {
         const ctx2 = canvas.getContext("2d");
         if (!ctx2) throw new Error("Gagal");
-        drawJpTablePageOnCanvas(ctx2, canvas.width, canvas.height, kegiatan, config, ttd1Img, ttd2Img, ttd3Img, templateJpImg, logoBackImg);
+        drawJpTablePageOnCanvas(ctx2, canvas.width, canvas.height, kegiatan, config, ttd1Img, ttd2Img, ttd3Img, templateJpImg, logoBackImg, ttdBack1Img, ttdBack2Img, ttdBack3Img);
         const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvas.width, canvas.height] });
         pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, canvas.width, canvas.height);
         pdf.save(`${fileName}_Belakang.pdf`);
@@ -1150,7 +1145,7 @@ durasi_jam: null,
           if (!ctx2) throw new Error("Gagal");
           canvas2.width = canvas.width;
           canvas2.height = canvas.height;
-          drawJpTablePageOnCanvas(ctx2, canvas2.width, canvas2.height, kegiatan, config, ttd1Img, ttd2Img, ttd3Img, templateJpImg, logoBackImg);
+          drawJpTablePageOnCanvas(ctx2, canvas2.width, canvas2.height, kegiatan, config, ttd1Img, ttd2Img, ttd3Img, templateJpImg, logoBackImg, ttdBack1Img, ttdBack2Img, ttdBack3Img);
 
           const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvas.width, canvas.height] });
           pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, canvas.width, canvas.height);
@@ -1198,6 +1193,9 @@ durasi_jam: null,
       const ttd1Img = await loadImg(config.ttd1Image);
       const ttd2Img = await loadImg(config.ttd2Image);
       const ttd3Img = await loadImg(config.ttd3Image);
+      const ttdBack1Img = await loadImg(config.ttdBack1Image);
+      const ttdBack2Img = await loadImg(config.ttdBack2Image);
+      const ttdBack3Img = await loadImg(config.ttdBack3Image);
       const templateJpImg = await loadImg(config.templateJpUrl);
       const logoFrontImg = await loadImg(config.logoFrontImage);
       const logoBackImg = await loadImg(config.logoBackImage);
@@ -1220,7 +1218,7 @@ durasi_jam: null,
         const hasJp = config.hasJpPage && config.materiJpRows && config.materiJpRows.length > 0;
 
         if (pageOption === "back" && hasJp) {
-          drawJpTablePageOnCanvas(ctx, canvasWidth, canvasHeight, item, config, ttd1Img, ttd2Img, ttd3Img, templateJpImg, logoBackImg);
+          drawJpTablePageOnCanvas(ctx, canvasWidth, canvasHeight, item, config, ttd1Img, ttd2Img, ttd3Img, templateJpImg, logoBackImg, ttdBack1Img, ttdBack2Img, ttdBack3Img);
           const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvasWidth, canvasHeight] });
           pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, canvasWidth, canvasHeight);
           const pdfOutput = pdf.output("arraybuffer");
@@ -1236,7 +1234,7 @@ durasi_jam: null,
             canvas2.height = canvasHeight;
             const ctx2 = canvas2.getContext("2d");
             if (!ctx2) continue;
-            drawJpTablePageOnCanvas(ctx2, canvasWidth, canvasHeight, item, config, ttd1Img, ttd2Img, ttd3Img, templateJpImg, logoBackImg);
+            drawJpTablePageOnCanvas(ctx2, canvasWidth, canvasHeight, item, config, ttd1Img, ttd2Img, ttd3Img, templateJpImg, logoBackImg, ttdBack1Img, ttdBack2Img, ttdBack3Img);
 
             const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvasWidth, canvasHeight] });
             pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, canvasWidth, canvasHeight);
@@ -1300,6 +1298,9 @@ durasi_jam: null,
       const ttd1Img = await loadImg(config.ttd1Image);
       const ttd2Img = await loadImg(config.ttd2Image);
       const ttd3Img = await loadImg(config.ttd3Image);
+      const ttdBack1Img = await loadImg(config.ttdBack1Image);
+      const ttdBack2Img = await loadImg(config.ttdBack2Image);
+      const ttdBack3Img = await loadImg(config.ttdBack3Image);
       const templateJpImg = await loadImg(config.templateJpUrl);
       const logoFrontImg = await loadImg(config.logoFrontImage);
       const logoBackImg = await loadImg(config.logoBackImage);
@@ -1330,7 +1331,7 @@ durasi_jam: null,
         const hasJp = config.hasJpPage && config.materiJpRows && config.materiJpRows.length > 0;
 
         if (pageOption === "back" && hasJp) {
-          drawJpTablePageOnCanvas(ctx, canvasWidth, canvasHeight, item, config, ttd1Img, ttd2Img, ttd3Img, templateJpImg, logoBackImg);
+          drawJpTablePageOnCanvas(ctx, canvasWidth, canvasHeight, item, config, ttd1Img, ttd2Img, ttd3Img, templateJpImg, logoBackImg, ttdBack1Img, ttdBack2Img, ttdBack3Img);
           const imgData = canvas.toDataURL("image/jpeg", 0.82);
           if (!pdf) {
             pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvasWidth, canvasHeight], compress: true });
@@ -1357,7 +1358,7 @@ durasi_jam: null,
             canvas2.height = canvasHeight;
             const ctx2 = canvas2.getContext("2d");
             if (!ctx2) continue;
-            drawJpTablePageOnCanvas(ctx2, canvasWidth, canvasHeight, item, config, ttd1Img, ttd2Img, ttd3Img, templateJpImg, logoBackImg);
+            drawJpTablePageOnCanvas(ctx2, canvasWidth, canvasHeight, item, config, ttd1Img, ttd2Img, ttd3Img, templateJpImg, logoBackImg, ttdBack1Img, ttdBack2Img, ttdBack3Img);
             const imgData2 = canvas2.toDataURL("image/jpeg", 0.82);
             pdf.addPage([canvasWidth, canvasHeight], "landscape");
             pdf.addImage(imgData2, "JPEG", 0, 0, canvasWidth, canvasHeight);

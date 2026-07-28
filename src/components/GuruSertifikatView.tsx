@@ -360,7 +360,10 @@ export function drawJpTablePageOnCanvas(
   ttd2Img?: HTMLImageElement | null,
   ttd3Img?: HTMLImageElement | null,
   templateJpImg?: HTMLImageElement | null,
-  logoBackImg?: HTMLImageElement | null
+  logoBackImg?: HTMLImageElement | null,
+  ttdBack1Img?: HTMLImageElement | null,
+  ttdBack2Img?: HTMLImageElement | null,
+  ttdBack3Img?: HTMLImageElement | null
 ) {
   // Helper to replace variable placeholders
   const replaceVars = (text: string) => {
@@ -781,57 +784,32 @@ export function drawJpTablePageOnCanvas(
   ctx.fillText(dateText, sigX, sigY);
 
   // Render signatures based on jumlahTtd
+  const useBack = !config.ttdBackSameAsFront;
+  const backN1 = useBack ? config.ttdBack1Nama : config.ttd1Nama;
+  const backJ1 = useBack ? config.ttdBack1Jabatan : config.ttd1Jabatan;
+  const backS11 = useBack ? config.ttdBack1SubText1 : config.ttd1SubText1;
+  const backS21 = useBack ? config.ttdBack1SubText2 : config.ttd1SubText2;
+  const backI1 = useBack ? (ttdBack1Img ?? ttd1Img) : ttd1Img;
+  const backN2 = useBack ? config.ttdBack2Nama : config.ttd2Nama;
+  const backJ2 = useBack ? config.ttdBack2Jabatan : config.ttd2Jabatan;
+  const backS12 = useBack ? config.ttdBack2SubText1 : config.ttd2SubText1;
+  const backS22 = useBack ? config.ttdBack2SubText2 : config.ttd2SubText2;
+  const backI2 = useBack ? (ttdBack2Img ?? ttd2Img) : ttd2Img;
+  const backN3 = useBack ? config.ttdBack3Nama : config.ttd3Nama;
+  const backJ3 = useBack ? config.ttdBack3Jabatan : config.ttd3Jabatan;
+  const backS13 = useBack ? config.ttdBack3SubText1 : config.ttd3SubText1;
+  const backS23 = useBack ? config.ttdBack3SubText2 : config.ttd3SubText2;
+  const backI3 = useBack ? (ttdBack3Img ?? ttd3Img) : ttd3Img;
+
   if (config.jumlahTtd === 1) {
-    drawBackSignature(
-      ttd1Img,
-      config.ttd1Nama,
-      config.ttd1Jabatan,
-      config.ttd1SubText1,
-      config.ttd1SubText2,
-      sigPos.xPercent
-    );
+    drawBackSignature(backI1, backN1, backJ1, backS11, backS21, sigPos.xPercent);
   } else if (config.jumlahTtd === 2) {
-    drawBackSignature(
-      ttd1Img,
-      config.ttd1Nama,
-      config.ttd1Jabatan,
-      config.ttd1SubText1,
-      config.ttd1SubText2,
-      pos.ttd1NamaPos?.xPercent ?? 27
-    );
-    drawBackSignature(
-      ttd2Img,
-      config.ttd2Nama,
-      config.ttd2Jabatan,
-      config.ttd2SubText1,
-      config.ttd2SubText2,
-      pos.ttd2NamaPos?.xPercent ?? 73
-    );
+    drawBackSignature(backI1, backN1, backJ1, backS11, backS21, pos.ttd1NamaPos?.xPercent ?? 27);
+    drawBackSignature(backI2, backN2, backJ2, backS12, backS22, pos.ttd2NamaPos?.xPercent ?? 73);
   } else if (config.jumlahTtd === 3) {
-    drawBackSignature(
-      ttd1Img,
-      config.ttd1Nama,
-      config.ttd1Jabatan,
-      config.ttd1SubText1,
-      config.ttd1SubText2,
-      pos.ttd1NamaPos?.xPercent ?? 20
-    );
-    drawBackSignature(
-      ttd3Img,
-      config.ttd3Nama,
-      config.ttd3Jabatan,
-      config.ttd3SubText1,
-      config.ttd3SubText2,
-      pos.ttd3NamaPos?.xPercent ?? 50
-    );
-    drawBackSignature(
-      ttd2Img,
-      config.ttd2Nama,
-      config.ttd2Jabatan,
-      config.ttd2SubText1,
-      config.ttd2SubText2,
-      pos.ttd2NamaPos?.xPercent ?? 80
-    );
+    drawBackSignature(backI1, backN1, backJ1, backS11, backS21, pos.ttd1NamaPos?.xPercent ?? 20);
+    drawBackSignature(backI3, backN3, backJ3, backS13, backS23, pos.ttd3NamaPos?.xPercent ?? 50);
+    drawBackSignature(backI2, backN2, backJ2, backS12, backS22, pos.ttd2NamaPos?.xPercent ?? 80);
   }
 }
 
@@ -910,6 +888,9 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
       const ttd1Img = await loadImg(config.ttd1Image);
       const ttd2Img = await loadImg(config.ttd2Image);
       const ttd3Img = await loadImg(config.ttd3Image);
+      const ttdBack1Img = await loadImg(config.ttdBack1Image);
+      const ttdBack2Img = await loadImg(config.ttdBack2Image);
+      const ttdBack3Img = await loadImg(config.ttdBack3Image);
       const templateJpImg = await loadImg(config.templateJpUrl);
       const logoFrontImg = await loadImg(config.logoFrontImage);
       const logoBackImg = await loadImg(config.logoBackImage);
@@ -923,7 +904,7 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
       if (pageOption === "back" && hasJp) {
         const ctx2 = canvas.getContext("2d");
         if (!ctx2) throw new Error("Gagal menginisialisasi canvas");
-        drawJpTablePageOnCanvas(ctx2, canvas.width, canvas.height, kegiatan, config, ttd1Img, ttd2Img, ttd3Img, templateJpImg, logoBackImg);
+        drawJpTablePageOnCanvas(ctx2, canvas.width, canvas.height, kegiatan, config, ttd1Img, ttd2Img, ttd3Img, templateJpImg, logoBackImg, ttdBack1Img, ttdBack2Img, ttdBack3Img);
         const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvas.width, canvas.height] });
         pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, canvas.width, canvas.height);
         pdf.save(`${fileName}_Belakang.pdf`);
@@ -938,7 +919,7 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
           if (!ctx2) throw new Error("Gagal menginisialisasi canvas untuk halaman belakang");
           canvas2.width = canvas.width;
           canvas2.height = canvas.height;
-          drawJpTablePageOnCanvas(ctx2, canvas2.width, canvas2.height, kegiatan, config, ttd1Img, ttd2Img, ttd3Img, templateJpImg, logoBackImg);
+          drawJpTablePageOnCanvas(ctx2, canvas2.width, canvas2.height, kegiatan, config, ttd1Img, ttd2Img, ttd3Img, templateJpImg, logoBackImg, ttdBack1Img, ttdBack2Img, ttdBack3Img);
 
           const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvas.width, canvas.height] });
           pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, canvas.width, canvas.height);
@@ -994,7 +975,10 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
         loadImg(currentConfig.templateJpUrl),
         loadImg(currentConfig.logoFrontImage),
         loadImg(currentConfig.logoBackImage),
-      ]).then(([___, _, ttd1Img, ttd2Img, ttd3Img, templateJpImg, logoFrontImg, logoBackImg]) => {
+        loadImg(currentConfig.ttdBack1Image),
+        loadImg(currentConfig.ttdBack2Image),
+        loadImg(currentConfig.ttdBack3Image),
+      ]).then(([___, _, ttd1Img, ttd2Img, ttd3Img, templateJpImg, logoFrontImg, logoBackImg, ttdBack1Img, ttdBack2Img, ttdBack3Img]) => {
         canvas.width = templateImg.naturalWidth || 2000;
         canvas.height = templateImg.naturalHeight || 1414;
 
@@ -1003,18 +987,7 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
         const hasJp = previewKegiatan.materi_jp && previewKegiatan.materi_jp.length > 0;
 
         if (previewPage === 2 && hasJp) {
-          drawJpTablePageOnCanvas(
-            ctx,
-            canvas.width,
-            canvas.height,
-            previewKegiatan,
-            currentConfig,
-            ttd1Img,
-            ttd2Img,
-            ttd3Img,
-            templateJpImg,
-            logoBackImg
-          );
+          drawJpTablePageOnCanvas(ctx, canvas.width, canvas.height, previewKegiatan, currentConfig, ttd1Img, ttd2Img, ttd3Img, templateJpImg, logoBackImg, ttdBack1Img, ttdBack2Img, ttdBack3Img);
         } else {
           drawCertificateOnCanvas(
             ctx,

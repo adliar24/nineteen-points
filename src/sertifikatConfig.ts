@@ -59,6 +59,30 @@ export interface SertifikatLayoutConfig {
   ttd3SubText1: string;
   ttd3SubText2: string;
 
+  // TTD Belakang (JP) - apakah sama dengan depan atau beda
+  ttdBackSameAsFront: boolean;
+
+  // TTD Back 1
+  ttdBack1Image: string | null;
+  ttdBack1Nama: string;
+  ttdBack1Jabatan: string;
+  ttdBack1SubText1: string;
+  ttdBack1SubText2: string;
+
+  // TTD Back 2
+  ttdBack2Image: string | null;
+  ttdBack2Nama: string;
+  ttdBack2Jabatan: string;
+  ttdBack2SubText1: string;
+  ttdBack2SubText2: string;
+
+  // TTD Back 3
+  ttdBack3Image: string | null;
+  ttdBack3Nama: string;
+  ttdBack3Jabatan: string;
+  ttdBack3SubText1: string;
+  ttdBack3SubText2: string;
+
   // Template Deskripsi Kustom (Mendukung Markdown **bold**)
   deskripsiTemplate: string;
 
@@ -158,6 +182,11 @@ export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
   ttd3Jabatan: "Kepala SMAN 19 Bandung",
   ttd3SubText1: "",
   ttd3SubText2: "",
+
+  ttdBackSameAsFront: true,
+  ttdBack1Image: null, ttdBack1Nama: "", ttdBack1Jabatan: "", ttdBack1SubText1: "", ttdBack1SubText2: "",
+  ttdBack2Image: null, ttdBack2Nama: "", ttdBack2Jabatan: "", ttdBack2SubText1: "", ttdBack2SubText2: "",
+  ttdBack3Image: null, ttdBack3Nama: "", ttdBack3Jabatan: "", ttdBack3SubText1: "", ttdBack3SubText2: "",
 
   deskripsiTemplate: 'Atas partisipasi aktifnya sebagai **{peran}** dalam kegiatan **"{nama_kegiatan}"** yang diselenggarakan oleh **{penyelenggara}**.',
   tempatTanggalTemplate: 'Bandung, {tanggal}',

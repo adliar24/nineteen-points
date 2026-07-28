@@ -238,6 +238,7 @@ export default function App() {
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
   const [headerImgFailed, setHeaderImgFailed] = useState(false);
   const [showProfilePopup, setShowProfilePopup] = useState(false);
+  const [isAnyModalOpen, setIsAnyModalOpen] = useState(false);
   const [isAkhiriAktivitasOpen, setIsAkhiriAktivitasOpen] = useState(false);
   const [isExportSummaryOpen, setIsExportSummaryOpen] = useState(false);
   const [isImportSummaryOpen, setIsImportSummaryOpen] = useState(false);
@@ -334,6 +335,17 @@ export default function App() {
   useEffect(() => {
     setHeaderImgFailed(false);
   }, [userSession?.foto_url]);
+
+  // Track any modal open state (body.modal-open class set by ModalPortal/ConfirmationModal)
+  useEffect(() => {
+    const check = () => setIsAnyModalOpen(
+      document.body.classList.contains("modal-open") || showProfilePopup
+    );
+    check();
+    const observer = new MutationObserver(check);
+    observer.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, [showProfilePopup]);
 
   // Fetch latest photo URL from database to ensure header shows the correct photo
   useEffect(() => {
@@ -517,7 +529,7 @@ export default function App() {
     >
       
       {/* Header — fixed layer, always pinned at top */}
-      <header className={`fixed top-0 left-0 md:left-68 right-0 h-20 z-[60] bg-gradient-to-r from-brand-800 via-brand-700 to-brand-800 md:!bg-none md:bg-[#faf9ff] text-white md:text-[#1e1b4b] shadow-xl shadow-brand-900/15 md:shadow-none md:border-b md:border-brand-100/50 transition-all duration-300 ${mobileMenuOpen ? "backdrop-blur-xl bg-brand-800/80 md:bg-[#faf9ff]/80" : ""}`}>
+      <header className={`fixed top-0 left-0 md:left-68 right-0 h-20 z-[60] bg-gradient-to-r from-brand-800 via-brand-700 to-brand-800 md:!bg-none md:bg-[#faf9ff] text-white md:text-[#1e1b4b] shadow-xl shadow-brand-900/15 md:shadow-none md:border-b md:border-brand-100/50 transition-all duration-300 ${(mobileMenuOpen || isAnyModalOpen) ? "backdrop-blur-xl bg-brand-800/80 md:bg-[#faf9ff]/80" : ""}`}>
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent pointer-events-none md:hidden" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-3 relative z-10">
           

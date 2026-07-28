@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { X, AlertTriangle, LogOut, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { createPortal } from "react-dom";
@@ -63,6 +63,15 @@ export default React.memo(function ConfirmationModal({
   };
 
   const theme = getThemeClasses();
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.classList.add("modal-open");
+    } else {
+      document.body.classList.remove("modal-open");
+    }
+    return () => { document.body.classList.remove("modal-open"); };
+  }, [isOpen]);
 
   return createPortal(
     <AnimatePresence>

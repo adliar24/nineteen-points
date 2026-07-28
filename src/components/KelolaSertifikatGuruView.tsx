@@ -390,6 +390,7 @@ export default function KelolaSertifikatGuruView() {
       if (!ctx) return;
 
       const templateImg = new Image();
+      templateImg.crossOrigin = "anonymous";
       templateImg.src = config.templateUrl || "/sertifikat_template.png";
 
       const loadImg = (src: string | null): Promise<HTMLImageElement | null> => {
@@ -405,10 +406,7 @@ export default function KelolaSertifikatGuruView() {
 
       Promise.all([
         document.fonts.ready,
-        new Promise<void>((resolve) => {
-          templateImg.onload = () => resolve();
-          templateImg.onerror = () => resolve();
-        }),
+        templateImg.decode().catch(() => {}),
         loadImg(config.ttd1Image),
         loadImg(config.ttd2Image),
         loadImg(config.ttd3Image),
@@ -1150,9 +1148,6 @@ durasi_jam: null,
       const ctx = canvas.getContext("2d");
       if (!ctx) throw new Error("Gagal membuat canvas");
 
-      const templateImg = new Image();
-      templateImg.src = config.templateUrl || "/sertifikat_template.png";
-
       const loadImg = (src: string | null): Promise<HTMLImageElement | null> => {
         if (!src) return Promise.resolve(null);
         return new Promise((resolve) => {
@@ -1164,13 +1159,14 @@ durasi_jam: null,
         });
       };
 
+      const templateImg = new Image();
+      templateImg.crossOrigin = "anonymous";
+      templateImg.src = config.templateUrl || "/sertifikat_template.png";
+
       const fileName = `SERTIFIKAT_${kegiatan.nama_kegiatan.toUpperCase().replace(/\s+/g, "_")}_${toSentenceCase(kegiatan.user_nama || "Guru SMAN 19").replace(/\s+/g, "_")}`;
 
       await document.fonts.ready;
-      await new Promise<void>((resolve, reject) => {
-        templateImg.onload = () => resolve();
-        templateImg.onerror = () => reject(new Error("Gagal memuat template sertifikat"));
-      });
+      await templateImg.decode();
 
       const ttd1Img = await loadImg(config.ttd1Image);
       const ttd2Img = await loadImg(config.ttd2Image);
@@ -1185,7 +1181,7 @@ durasi_jam: null,
       canvas.width = templateImg.naturalWidth || 2000;
       canvas.height = templateImg.naturalHeight || 1414;
 
-      const hasJp = config.hasJpPage && config.materiJpRows && config.materiJpRows.length > 0;
+      const hasJp = config.hasJpPage && (config.materiJpRows?.length > 0 || (kegiatan.materi_jp && kegiatan.materi_jp.length > 0));
       const nameText = kegiatan.user_nama || "Guru SMAN 19";
 
       if (pageOption === "back" && hasJp) {
@@ -1247,11 +1243,9 @@ durasi_jam: null,
     try {
       await document.fonts.ready;
       const templateImg = new Image();
+      templateImg.crossOrigin = "anonymous";
       templateImg.src = config.templateUrl || "/sertifikat_template.png";
-      await new Promise<void>((resolve, reject) => {
-        templateImg.onload = () => resolve();
-        templateImg.onerror = () => reject(new Error("Gagal memuat template"));
-      });
+      await templateImg.decode();
 
       const ttd1Img = await loadImg(config.ttd1Image);
       const ttd2Img = await loadImg(config.ttd2Image);
@@ -1278,7 +1272,7 @@ durasi_jam: null,
 
         const nameText = item.user_nama || "Guru SMAN 19";
         const safeName = toSentenceCase(nameText).replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_");
-        const hasJp = config.hasJpPage && config.materiJpRows && config.materiJpRows.length > 0;
+        const hasJp = config.hasJpPage && (config.materiJpRows?.length > 0 || (item.materi_jp && item.materi_jp.length > 0));
 
         if (pageOption === "back" && hasJp) {
           drawJpTablePageOnCanvas(ctx, canvasWidth, canvasHeight, item, config, ttd1Img, ttd2Img, ttd3Img, templateJpImg, logoBackImg, ttdBack1Img, ttdBack2Img, ttdBack3Img);
@@ -1352,11 +1346,9 @@ durasi_jam: null,
     try {
       await document.fonts.ready;
       const templateImg = new Image();
+      templateImg.crossOrigin = "anonymous";
       templateImg.src = config.templateUrl || "/sertifikat_template.png";
-      await new Promise<void>((resolve, reject) => {
-        templateImg.onload = () => resolve();
-        templateImg.onerror = () => reject(new Error("Gagal memuat template"));
-      });
+      await templateImg.decode();
 
       const ttd1Img = await loadImg(config.ttd1Image);
       const ttd2Img = await loadImg(config.ttd2Image);
@@ -1376,7 +1368,7 @@ durasi_jam: null,
       const canvasWidth = Math.round(origW * scale);
       const canvasHeight = Math.round(origH * scale);
 
-      const hasJp = config.hasJpPage && config.materiJpRows && config.materiJpRows.length > 0;
+      const hasJp = config.hasJpPage && (config.materiJpRows?.length > 0 || items.some(i => i.materi_jp?.length > 0));
 
       let pdf: jsPDF | null = null;
 
@@ -1391,7 +1383,7 @@ durasi_jam: null,
         if (!ctx) continue;
 
         const nameText = item.user_nama || "Guru SMAN 19";
-        const hasJp = config.hasJpPage && config.materiJpRows && config.materiJpRows.length > 0;
+        const hasJp = config.hasJpPage && (config.materiJpRows?.length > 0 || (item.materi_jp && item.materi_jp.length > 0));
 
         if (pageOption === "back" && hasJp) {
           drawJpTablePageOnCanvas(ctx, canvasWidth, canvasHeight, item, config, ttd1Img, ttd2Img, ttd3Img, templateJpImg, logoBackImg, ttdBack1Img, ttdBack2Img, ttdBack3Img);

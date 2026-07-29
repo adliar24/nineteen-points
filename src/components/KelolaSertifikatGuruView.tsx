@@ -693,20 +693,26 @@ durasi_jam: null,
         updatedPos.jpTtdImagePos = { ...updatedPos.jpTtdImagePos, xPercent, yPercent: yPercent - 7 };
         updatedPos.jpTtdNamaPos = { ...updatedPos.jpTtdNamaPos, xPercent, yPercent: yPercent + 7 };
         updatedPos.jpTtdJabatanPos = { ...updatedPos.jpTtdJabatanPos, xPercent, yPercent: yPercent - 5 };
-        updatedPos.jpTtdSubText1Pos = { ...updatedPos.jpTtdSubText1Pos, xPercent, yPercent: yPercent + 9.5 };
-        updatedPos.jpTtdSubText2Pos = { ...updatedPos.jpTtdSubText2Pos, xPercent, yPercent: yPercent + 11.5 };
+        updatedPos.jpTtdSubText1Pos = { ...updatedPos.jpTtdSubText1Pos, xPercent, yPercent: yPercent + 9.0 };
+        updatedPos.jpTtdSubText2Pos = { ...updatedPos.jpTtdSubText2Pos, xPercent, yPercent: yPercent + 10.7 };
       } else if (selectedElement === "ttd1") {
-        updatedPos.ttd1ImagePos = { ...updatedPos.ttd1ImagePos, xPercent, yPercent: yPercent - 10 };
+        updatedPos.ttd1ImagePos = { ...updatedPos.ttd1ImagePos, xPercent, yPercent: yPercent - 7.5 };
         updatedPos.ttd1NamaPos = { ...updatedPos.ttd1NamaPos, xPercent, yPercent };
-        updatedPos.ttd1JabatanPos = { ...updatedPos.ttd1JabatanPos, xPercent, yPercent: yPercent + 3 };
+        updatedPos.ttd1JabatanPos = { ...updatedPos.ttd1JabatanPos, xPercent, yPercent: yPercent - 14.5 };
+        updatedPos.ttd1SubText1Pos = { ...updatedPos.ttd1SubText1Pos, xPercent, yPercent: yPercent + 2.3 };
+        updatedPos.ttd1SubText2Pos = { ...updatedPos.ttd1SubText2Pos, xPercent, yPercent: yPercent + 4.5 };
       } else if (selectedElement === "ttd2") {
-        updatedPos.ttd2ImagePos = { ...updatedPos.ttd2ImagePos, xPercent, yPercent: yPercent - 10 };
+        updatedPos.ttd2ImagePos = { ...updatedPos.ttd2ImagePos, xPercent, yPercent: yPercent - 7.5 };
         updatedPos.ttd2NamaPos = { ...updatedPos.ttd2NamaPos, xPercent, yPercent };
-        updatedPos.ttd2JabatanPos = { ...updatedPos.ttd2JabatanPos, xPercent, yPercent: yPercent + 3 };
+        updatedPos.ttd2JabatanPos = { ...updatedPos.ttd2JabatanPos, xPercent, yPercent: yPercent - 14.5 };
+        updatedPos.ttd2SubText1Pos = { ...updatedPos.ttd2SubText1Pos, xPercent, yPercent: yPercent + 2.3 };
+        updatedPos.ttd2SubText2Pos = { ...updatedPos.ttd2SubText2Pos, xPercent, yPercent: yPercent + 4.5 };
       } else if (selectedElement === "ttd3") {
-        updatedPos.ttd3ImagePos = { ...updatedPos.ttd3ImagePos, xPercent, yPercent: yPercent - 10 };
+        updatedPos.ttd3ImagePos = { ...updatedPos.ttd3ImagePos, xPercent, yPercent: yPercent - 7.5 };
         updatedPos.ttd3NamaPos = { ...updatedPos.ttd3NamaPos, xPercent, yPercent };
-        updatedPos.ttd3JabatanPos = { ...updatedPos.ttd3JabatanPos, xPercent, yPercent: yPercent + 3 };
+        updatedPos.ttd3JabatanPos = { ...updatedPos.ttd3JabatanPos, xPercent, yPercent: yPercent - 14.5 };
+        updatedPos.ttd3SubText1Pos = { ...updatedPos.ttd3SubText1Pos, xPercent, yPercent: yPercent + 2.3 };
+        updatedPos.ttd3SubText2Pos = { ...updatedPos.ttd3SubText2Pos, xPercent, yPercent: yPercent + 4.5 };
       } else if (selectedElement === "ttd1JabatanPos") {
         updatedPos.ttd1JabatanPos = { ...updatedPos.ttd1JabatanPos, xPercent, yPercent };
       } else if (selectedElement === "ttd2JabatanPos") {

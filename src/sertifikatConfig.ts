@@ -303,7 +303,7 @@ export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
     },
     ttd1SubText1Pos: {
       xPercent: 27,
-      yPercent: 91.5,
+      yPercent: 90.8,
       fontSize: 18,
       color: "#64748b",
       align: "center",
@@ -311,7 +311,7 @@ export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
     },
     ttd1SubText2Pos: {
       xPercent: 27,
-      yPercent: 94.5,
+      yPercent: 93.0,
       fontSize: 18,
       color: "#64748b",
       align: "center",
@@ -342,7 +342,7 @@ export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
     },
     ttd2SubText1Pos: {
       xPercent: 73,
-      yPercent: 91.5,
+      yPercent: 90.8,
       fontSize: 18,
       color: "#64748b",
       align: "center",
@@ -350,7 +350,7 @@ export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
     },
     ttd2SubText2Pos: {
       xPercent: 73,
-      yPercent: 94.5,
+      yPercent: 93.0,
       fontSize: 18,
       color: "#64748b",
       align: "center",
@@ -381,7 +381,7 @@ export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
     },
     ttd3SubText1Pos: {
       xPercent: 50,
-      yPercent: 91.5,
+      yPercent: 90.8,
       fontSize: 18,
       color: "#64748b",
       align: "center",
@@ -389,7 +389,7 @@ export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
     },
     ttd3SubText2Pos: {
       xPercent: 50,
-      yPercent: 94.5,
+      yPercent: 93.0,
       fontSize: 18,
       color: "#64748b",
       align: "center",
@@ -450,7 +450,7 @@ export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
     },
     jpTtdSubText1Pos: {
       xPercent: 72.5,
-      yPercent: 96.0,
+      yPercent: 95.5,
       fontSize: 16,
       color: "#1e1b4b",
       align: "center",
@@ -458,7 +458,7 @@ export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
     },
     jpTtdSubText2Pos: {
       xPercent: 72.5,
-      yPercent: 98.0,
+      yPercent: 97.2,
       fontSize: 16,
       color: "#1e1b4b",
       align: "center",

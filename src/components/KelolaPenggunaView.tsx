@@ -625,15 +625,15 @@ export default function KelolaPenggunaView({
                           <RoleBadge role={p.role} />
                         </td>
                         <td className="py-4 px-6 text-right whitespace-nowrap">
-                          {!isSuper && (
-                            <div className="flex items-center justify-end gap-1.5">
-                              <button
-                                onClick={() => setEditingProfile(p)}
-                                className="p-2 hover:bg-brand-50 text-brand-600 hover:text-brand-800 rounded-xl transition-all cursor-pointer border border-transparent hover:border-brand-100"
-                                title="Edit Akun"
-                              >
-                                <Pencil className="w-4 h-4" />
-                              </button>
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              onClick={() => setEditingProfile(p)}
+                              className="p-2 hover:bg-brand-50 text-brand-600 hover:text-brand-800 rounded-xl transition-all cursor-pointer border border-transparent hover:border-brand-100"
+                              title="Edit Akun"
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </button>
+                            {!isSuper && (
                               <button
                                 onClick={() => handleForceDeleteUser(p.id, p.email)}
                                 className="p-2 hover:bg-rose-50 text-rose-500 hover:text-rose-700 rounded-xl transition-all cursor-pointer border border-transparent hover:border-rose-100"
@@ -641,8 +641,8 @@ export default function KelolaPenggunaView({
                               >
                                 <Trash2 className="w-4 h-4" />
                               </button>
-                            </div>
-                          )}
+                            )}
+                          </div>
                         </td>
                       </tr>
                     );

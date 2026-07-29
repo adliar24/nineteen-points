@@ -238,7 +238,7 @@ export function drawCertificateOnCanvas(
     }
   };
 
-  const drawTtdTextAndSubtext = (
+  const drawTtdGroup = (
     nameText: string,
     jabatanText: string,
     subText1: string,
@@ -246,14 +246,26 @@ export function drawCertificateOnCanvas(
     namePos: any,
     jabatanPos: any,
     subText1Pos: any,
-    subText2Pos: any
+    subText2Pos: any,
+    imgPos?: any,
+    imgObj?: HTMLImageElement | null
   ) => {
+    // 1. Draw Jabatan (atas)
+    if (jabatanText) {
+      drawStyledText(jabatanText, jabatanPos);
+    }
+    // 2. Draw TTD Image (tengah)
+    if (imgObj && imgPos) {
+      drawTtdImg(imgObj, imgPos);
+    }
+    // 3. Draw Nama & Underline (bawah gambar)
     drawTtdUnderline(namePos);
     drawStyledText(toSentenceCase(nameText), namePos);
-    drawStyledText(jabatanText, jabatanPos);
+    // 4. Draw SubText 1 (Pangkat)
     if (subText1) {
       drawStyledText(subText1, subText1Pos);
     }
+    // 5. Draw SubText 2 (NIP)
     if (subText2) {
       drawStyledText(subText2, subText2Pos);
     }
@@ -261,8 +273,7 @@ export function drawCertificateOnCanvas(
 
   if (jumlahTtd === 1) {
     // Single TTD (Center / Configured)
-    if (ttd1Img) drawTtdImg(ttd1Img, pos.ttd1ImagePos);
-    drawTtdTextAndSubtext(
+    drawTtdGroup(
       config.ttd1Nama,
       config.ttd1Jabatan,
       config.ttd1SubText1,
@@ -270,12 +281,13 @@ export function drawCertificateOnCanvas(
       pos.ttd1NamaPos,
       pos.ttd1JabatanPos,
       pos.ttd1SubText1Pos,
-      pos.ttd1SubText2Pos
+      pos.ttd1SubText2Pos,
+      pos.ttd1ImagePos,
+      ttd1Img
     );
   } else if (jumlahTtd === 2) {
     // 2 TTD (Kiri & Kanan)
-    if (ttd1Img) drawTtdImg(ttd1Img, pos.ttd1ImagePos);
-    drawTtdTextAndSubtext(
+    drawTtdGroup(
       config.ttd1Nama,
       config.ttd1Jabatan,
       config.ttd1SubText1,
@@ -283,11 +295,12 @@ export function drawCertificateOnCanvas(
       pos.ttd1NamaPos,
       pos.ttd1JabatanPos,
       pos.ttd1SubText1Pos,
-      pos.ttd1SubText2Pos
+      pos.ttd1SubText2Pos,
+      pos.ttd1ImagePos,
+      ttd1Img
     );
 
-    if (ttd2Img) drawTtdImg(ttd2Img, pos.ttd2ImagePos);
-    drawTtdTextAndSubtext(
+    drawTtdGroup(
       config.ttd2Nama,
       config.ttd2Jabatan,
       config.ttd2SubText1,
@@ -295,12 +308,13 @@ export function drawCertificateOnCanvas(
       pos.ttd2NamaPos,
       pos.ttd2JabatanPos,
       pos.ttd2SubText1Pos,
-      pos.ttd2SubText2Pos
+      pos.ttd2SubText2Pos,
+      pos.ttd2ImagePos,
+      ttd2Img
     );
   } else if (jumlahTtd === 3) {
     // 3 TTD (Kiri, Tengah, Kanan)
-    if (ttd1Img) drawTtdImg(ttd1Img, pos.ttd1ImagePos);
-    drawTtdTextAndSubtext(
+    drawTtdGroup(
       config.ttd1Nama,
       config.ttd1Jabatan,
       config.ttd1SubText1,
@@ -308,11 +322,12 @@ export function drawCertificateOnCanvas(
       pos.ttd1NamaPos,
       pos.ttd1JabatanPos,
       pos.ttd1SubText1Pos,
-      pos.ttd1SubText2Pos
+      pos.ttd1SubText2Pos,
+      pos.ttd1ImagePos,
+      ttd1Img
     );
 
-    if (ttd3Img) drawTtdImg(ttd3Img, pos.ttd3ImagePos);
-    drawTtdTextAndSubtext(
+    drawTtdGroup(
       config.ttd3Nama,
       config.ttd3Jabatan,
       config.ttd3SubText1,
@@ -320,11 +335,12 @@ export function drawCertificateOnCanvas(
       pos.ttd3NamaPos,
       pos.ttd3JabatanPos,
       pos.ttd3SubText1Pos,
-      pos.ttd3SubText2Pos
+      pos.ttd3SubText2Pos,
+      pos.ttd3ImagePos,
+      ttd3Img
     );
 
-    if (ttd2Img) drawTtdImg(ttd2Img, pos.ttd2ImagePos);
-    drawTtdTextAndSubtext(
+    drawTtdGroup(
       config.ttd2Nama,
       config.ttd2Jabatan,
       config.ttd2SubText1,
@@ -332,7 +348,9 @@ export function drawCertificateOnCanvas(
       pos.ttd2NamaPos,
       pos.ttd2JabatanPos,
       pos.ttd2SubText1Pos,
-      pos.ttd2SubText2Pos
+      pos.ttd2SubText2Pos,
+      pos.ttd2ImagePos,
+      ttd2Img
     );
   }
 

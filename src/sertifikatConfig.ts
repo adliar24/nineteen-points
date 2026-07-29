@@ -27,8 +27,10 @@ export interface SertifikatLayoutConfig {
   sertifikatText: string;        // Text "SERTIFIKAT"
   showSertifikatText: boolean;   // Draw the text or not
   
-  // Jumlah TTD (1, 2, atau 3)
+  // Jumlah TTD Depan (1, 2, atau 3)
   jumlahTtd: 1 | 2 | 3;
+  // Jumlah TTD Belakang (1, 2, atau 3)
+  jumlahTtdBelakang?: 1 | 2 | 3;
   
   // Garis otomatis
   showJudulLine: boolean;
@@ -42,8 +44,8 @@ export interface SertifikatLayoutConfig {
   ttd1Image: string | null;
   ttd1Nama: string;
   ttd1Jabatan: string;
-  ttd1SubText1: string; // Opsional Kolom Tambahan 1 (misal NIP)
-  ttd1SubText2: string; // Opsional Kolom Tambahan 2 (misal Instansi)
+  ttd1SubText1: string; // Opsional Kolom Tambahan 1 (misal Pangkat/Golongan)
+  ttd1SubText2: string; // Opsional Kolom Tambahan 2 (misal NIP)
 
   // TTD 2
   ttd2Image: string | null;
@@ -157,6 +159,7 @@ export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
   showSertifikatText: true,
   
   jumlahTtd: 2,
+  jumlahTtdBelakang: 1,
 
   showJudulLine: true,
   judulLineWidth: 980,
@@ -277,26 +280,26 @@ export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
     },
     
     // TTD 1
-    ttd1ImagePos: {
-      xPercent: 27,
-      yPercent: 74,
-      widthPercent: 12
-    },
-    ttd1NamaPos: {
-      xPercent: 27,
-      yPercent: 85.5,
-      fontSize: 24,
-      color: "#1e293b",
-      align: "center",
-      fontWeight: "bold"
-    },
     ttd1JabatanPos: {
       xPercent: 27,
-      yPercent: 88.5,
+      yPercent: 74.0,
       fontSize: 18,
       color: "#64748b",
       align: "center",
       fontWeight: "normal"
+    },
+    ttd1ImagePos: {
+      xPercent: 27,
+      yPercent: 81.0,
+      widthPercent: 12
+    },
+    ttd1NamaPos: {
+      xPercent: 27,
+      yPercent: 88.5,
+      fontSize: 24,
+      color: "#1e293b",
+      align: "center",
+      fontWeight: "bold"
     },
     ttd1SubText1Pos: {
       xPercent: 27,
@@ -316,26 +319,26 @@ export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
     },
 
     // TTD 2
-    ttd2ImagePos: {
-      xPercent: 73,
-      yPercent: 74,
-      widthPercent: 12
-    },
-    ttd2NamaPos: {
-      xPercent: 73,
-      yPercent: 85.5,
-      fontSize: 24,
-      color: "#1e293b",
-      align: "center",
-      fontWeight: "bold"
-    },
     ttd2JabatanPos: {
       xPercent: 73,
-      yPercent: 88.5,
+      yPercent: 74.0,
       fontSize: 18,
       color: "#64748b",
       align: "center",
       fontWeight: "normal"
+    },
+    ttd2ImagePos: {
+      xPercent: 73,
+      yPercent: 81.0,
+      widthPercent: 12
+    },
+    ttd2NamaPos: {
+      xPercent: 73,
+      yPercent: 88.5,
+      fontSize: 24,
+      color: "#1e293b",
+      align: "center",
+      fontWeight: "bold"
     },
     ttd2SubText1Pos: {
       xPercent: 73,
@@ -355,26 +358,26 @@ export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
     },
 
     // TTD 3
-    ttd3ImagePos: {
-      xPercent: 50,
-      yPercent: 74,
-      widthPercent: 12
-    },
-    ttd3NamaPos: {
-      xPercent: 50,
-      yPercent: 85.5,
-      fontSize: 24,
-      color: "#1e293b",
-      align: "center",
-      fontWeight: "bold"
-    },
     ttd3JabatanPos: {
       xPercent: 50,
-      yPercent: 88.5,
+      yPercent: 74.0,
       fontSize: 18,
       color: "#64748b",
       align: "center",
       fontWeight: "normal"
+    },
+    ttd3ImagePos: {
+      xPercent: 50,
+      yPercent: 81.0,
+      widthPercent: 12
+    },
+    ttd3NamaPos: {
+      xPercent: 50,
+      yPercent: 88.5,
+      fontSize: 24,
+      color: "#1e293b",
+      align: "center",
+      fontWeight: "bold"
     },
     ttd3SubText1Pos: {
       xPercent: 50,
@@ -418,7 +421,15 @@ export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
     },
     jpTanggalPos: {
       xPercent: 72.5,
-      yPercent: 80.0,
+      yPercent: 76.0,
+      fontSize: 18,
+      color: "#1e1b4b",
+      align: "center",
+      fontWeight: "normal"
+    },
+    jpTtdJabatanPos: {
+      xPercent: 72.5,
+      yPercent: 79.5,
       fontSize: 18,
       color: "#1e1b4b",
       align: "center",
@@ -426,28 +437,20 @@ export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
     },
     jpTtdImagePos: {
       xPercent: 72.5,
-      yPercent: 87.5,
+      yPercent: 86.5,
       widthPercent: 12
     },
     jpTtdNamaPos: {
       xPercent: 72.5,
-      yPercent: 94.5,
+      yPercent: 93.5,
       fontSize: 20,
       color: "#1e1b4b",
       align: "center",
       fontWeight: "bold"
     },
-    jpTtdJabatanPos: {
-      xPercent: 72.5,
-      yPercent: 82.5,
-      fontSize: 18,
-      color: "#1e1b4b",
-      align: "center",
-      fontWeight: "normal"
-    },
     jpTtdSubText1Pos: {
       xPercent: 72.5,
-      yPercent: 97.0,
+      yPercent: 96.0,
       fontSize: 16,
       color: "#1e1b4b",
       align: "center",
@@ -455,7 +458,7 @@ export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
     },
     jpTtdSubText2Pos: {
       xPercent: 72.5,
-      yPercent: 99.0,
+      yPercent: 98.0,
       fontSize: 16,
       color: "#1e1b4b",
       align: "center",

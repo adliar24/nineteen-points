@@ -2121,10 +2121,10 @@ durasi_jam: null,
                 </div>
               </div>
 
-              {/* Pilihan Jumlah TTD (1, 2, atau 3 TTD) */}
+              {/* Pilihan Jumlah TTD Depan (1, 2, atau 3 TTD) */}
               <div className="space-y-2 pt-2 border-t border-slate-100">
                 <label className="text-[10.5px] font-bold text-slate-700 block">
-                  Pilih Jumlah Tanda Tangan (TTD):
+                  Jumlah Tanda Tangan Halaman Depan:
                 </label>
                 <div className="grid grid-cols-3 gap-2 bg-slate-50 p-1.5 rounded-2xl border border-slate-200">
                   <button
@@ -2156,6 +2156,44 @@ durasi_jam: null,
                   </button>
                 </div>
               </div>
+
+              {/* Pilihan Jumlah TTD Belakang (1, 2, atau 3 TTD) jika ada Halaman Belakang */}
+              {config.hasJpPage && (
+                <div className="space-y-2 pt-2 border-t border-slate-100">
+                  <label className="text-[10.5px] font-bold text-slate-700 block">
+                    Jumlah Tanda Tangan Halaman Belakang (JP):
+                  </label>
+                  <div className="grid grid-cols-3 gap-2 bg-slate-50 p-1.5 rounded-2xl border border-slate-200">
+                    <button
+                      type="button"
+                      onClick={() => setConfig(prev => ({ ...prev, jumlahTtdBelakang: 1 }))}
+                      className={`py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer border-0 ${
+                        (config.jumlahTtdBelakang || 1) === 1 ? "bg-brand-600 text-white shadow-sm" : "bg-transparent text-slate-600 hover:text-slate-900"
+                      }`}
+                    >
+                      1 TTD
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setConfig(prev => ({ ...prev, jumlahTtdBelakang: 2 }))}
+                      className={`py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer border-0 ${
+                        (config.jumlahTtdBelakang || 1) === 2 ? "bg-brand-600 text-white shadow-sm" : "bg-transparent text-slate-600 hover:text-slate-900"
+                      }`}
+                    >
+                      2 TTD
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setConfig(prev => ({ ...prev, jumlahTtdBelakang: 3 }))}
+                      className={`py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer border-0 ${
+                        (config.jumlahTtdBelakang || 1) === 3 ? "bg-brand-600 text-white shadow-sm" : "bg-transparent text-slate-600 hover:text-slate-900"
+                      }`}
+                    >
+                      3 TTD
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Toggle Garis Otomatis */}
               <div className="space-y-2 pt-3 border-t border-slate-100">

@@ -1,4 +1,4 @@
-const CACHE_NAME = "nineteen-points-cache-v1";
+const CACHE_NAME = "nineteen-points-cache-v2";
 const ASSETS = [
   "/",
   "/index.html",
@@ -8,11 +8,6 @@ const ASSETS = [
 ];
 
 self.addEventListener("install", (e) => {
-  e.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS);
-    })
-  );
   self.skipWaiting();
 });
 
@@ -32,19 +27,14 @@ self.addEventListener("activate", (e) => {
 });
 
 self.addEventListener("fetch", (e) => {
-  // Only handle http and https requests, ignore chrome-extension:// etc.
-  if (!e.request.url.startsWith("http")) {
+  if (!e.request.url.startsWith("http")) return;
+
+  // Skip API requests to Supabase and non-GET requests
+  if (e.request.url.includes("supabase.co") || e.request.method !== "GET") {
     return;
   }
 
-  // Skip supabase and non-GET requests
-  if (
-    e.request.url.includes("supabase.co") ||
-    e.request.method !== "GET"
-  ) {
-    return;
-  }
-
+  // Network-first strategy for app updates
   e.respondWith(
     fetch(e.request)
       .then((res) => {

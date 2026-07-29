@@ -32,7 +32,8 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
     setIsLoading(true);
     setError("");
 
-    let loginEmail = email.trim();
+    let rawInput = email.trim();
+    let loginEmail = rawInput.toLowerCase();
     if (!loginEmail.includes("@")) {
       loginEmail = `${loginEmail}@sman19.sch.id`;
     }
@@ -56,30 +57,18 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
           .from("profiles")
           .select("*")
           .eq("id", data.user.id)
-          .single();
+          .maybeSingle();
 
-        if (profileError) {
-          console.error("Profile fetch error:", profileError);
-          // Fallback if profile row is not yet created but Auth is successful
-          const session: UserSession = {
-            id: data.user.id,
-            email: data.user.email || loginEmail,
-            fullName: data.user.user_metadata?.fullName || loginEmail.split("@")[0].toUpperCase(),
-            role: data.user.user_metadata?.role || "guru",
-            nis: data.user.user_metadata?.nis,
-            foto_url: data.user.user_metadata?.foto_url || undefined,
-          };
-          onLoginSuccess(session);
-        } else {
+        if (profile) {
           let fotoUrl = profile.foto_url || undefined;
 
-          // For students, also try fetching foto_url from the siswa table (more reliable)
+          // For students, also try fetching foto_url from the siswa table
           if (profile.role === "siswa" && profile.nis) {
             const { data: siswaData } = await supabase
               .from("siswa")
               .select("foto_url")
               .eq("nis", profile.nis)
-              .single();
+              .maybeSingle();
             if (siswaData?.foto_url) {
               fotoUrl = siswaData.foto_url;
             }
@@ -94,6 +83,36 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
             foto_url: fotoUrl,
           };
           onLoginSuccess(session);
+        } else {
+          // Fallback lookup by email in profiles if user ID didn't match directly
+          const { data: profileByEmail } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("email", loginEmail)
+            .maybeSingle();
+
+          if (profileByEmail) {
+            const session: UserSession = {
+              id: profileByEmail.id,
+              email: profileByEmail.email,
+              fullName: profileByEmail.nama,
+              role: profileByEmail.role,
+              nis: profileByEmail.nis || undefined,
+              foto_url: profileByEmail.foto_url || undefined,
+            };
+            onLoginSuccess(session);
+          } else {
+            // Default fallback if profile row doesn't exist yet
+            const session: UserSession = {
+              id: data.user.id,
+              email: data.user.email || loginEmail,
+              fullName: data.user.user_metadata?.fullName || rawInput.toUpperCase(),
+              role: data.user.user_metadata?.role || "siswa",
+              nis: data.user.user_metadata?.nis || rawInput,
+              foto_url: data.user.user_metadata?.foto_url || undefined,
+            };
+            onLoginSuccess(session);
+          }
         }
       }
     } catch (err: any) {

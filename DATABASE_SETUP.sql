@@ -770,3 +770,56 @@ CREATE POLICY "kegiatan_guru_delete" ON public.kegiatan_guru
   USING (
     EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
   );
+
+
+-- =========================================================================
+-- 8. TABEL KONFIGURASI DESAIN SERTIFIKAT & MATERI JP
+-- =========================================================================
+
+-- 8a. Kolom Materi JP (Jam Pelajaran Detail)
+ALTER TABLE public.kegiatan_guru ADD COLUMN IF NOT EXISTS materi_jp JSONB DEFAULT NULL;
+
+-- 8b. Tabel Konfigurasi Desain Sertifikat
+CREATE TABLE IF NOT EXISTS public.sertifikat_config (
+  id          TEXT PRIMARY KEY,
+  config      JSONB NOT NULL,
+  updated_at  TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.sertifikat_config ENABLE ROW LEVEL SECURITY;
+
+DO $$
+BEGIN
+  DROP POLICY IF EXISTS "sertifikat_config_select" ON public.sertifikat_config;
+  DROP POLICY IF EXISTS "sertifikat_config_all" ON public.sertifikat_config;
+EXCEPTION
+  WHEN others THEN NULL;
+END $$;
+
+CREATE POLICY "sertifikat_config_select" ON public.sertifikat_config
+  FOR SELECT TO authenticated
+  USING (true);
+
+CREATE POLICY "sertifikat_config_all" ON public.sertifikat_config
+  FOR ALL TO authenticated
+  USING (
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
+  )
+  WITH CHECK (
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
+  );
+
+
+-- =========================================================================
+-- 9. PERFORMA & INDEX OPTIMIZATION (TAMBAHAN PERFORMA HIGH-LOAD)
+-- =========================================================================
+
+CREATE INDEX IF NOT EXISTS idx_riwayat_poin_siswa_id ON public.riwayat_poin(siswa_id);
+CREATE INDEX IF NOT EXISTS idx_riwayat_poin_created_at ON public.riwayat_poin(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_kehadiran_siswa_id ON public.kehadiran(siswa_id);
+CREATE INDEX IF NOT EXISTS idx_kehadiran_tanggal ON public.kehadiran(tanggal);
+CREATE INDEX IF NOT EXISTS idx_jadwal_guru_teacher_id ON public.jadwal_guru(teacher_id);
+CREATE INDEX IF NOT EXISTS idx_jadwal_guru_hari ON public.jadwal_guru(hari);
+CREATE INDEX IF NOT EXISTS idx_siswa_nis ON public.siswa(nis);
+CREATE INDEX IF NOT EXISTS idx_profiles_nis ON public.profiles(nis);
+

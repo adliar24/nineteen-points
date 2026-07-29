@@ -10,7 +10,7 @@
 export function toSentenceCase(name: string): string {
   if (!name) return name;
 
-  return name
+  const formatted = name
     .split(/\s+/)
     .map((word) => {
       let result = "";
@@ -29,6 +29,12 @@ export function toSentenceCase(name: string): string {
       return result;
     })
     .join(" ");
+
+  // Pengecualian khusus untuk gelar S.A.B. / A.B. (Sarjana Administrasi Bisnis)
+  return formatted
+    .replace(/\bS\.A\.Ab\b/g, "S.A.B")
+    .replace(/\bA\.Ab\b/g, "A.B")
+    .replace(/\bAb\./g, "AB.");
 }
 
 export function formatSubjectName(subject: string): string {

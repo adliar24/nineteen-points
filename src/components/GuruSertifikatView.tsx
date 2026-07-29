@@ -234,7 +234,7 @@ export function drawCertificateOnCanvas(
   const drawTtdUnderline = (namePos: any) => {
     if (config.showTtdLines) {
       const lineW = config.ttdLineWidth !== undefined ? config.ttdLineWidth : 390;
-      drawAutoLine(namePos.xPercent, namePos.yPercent - 2.5, lineW, 3, namePos.color || "#284478");
+      drawAutoLine(namePos.xPercent, namePos.yPercent + 1.2, lineW, 3, namePos.color || "#284478");
     }
   };
 

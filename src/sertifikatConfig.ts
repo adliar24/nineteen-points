@@ -467,8 +467,8 @@ export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
   }
 };
 
-const CONFIG_STORAGE_KEY = "nineteen_points_sertifikat_config_v7";
-const DB_NAME = "NineteenPointsSertifikatDB_v7";
+const CONFIG_STORAGE_KEY = "nineteen_points_sertifikat_config_v8";
+const DB_NAME = "NineteenPointsSertifikatDB_v8";
 const STORE_NAME = "config_store";
 
 // Memory cache for synchronous instant access

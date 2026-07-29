@@ -618,17 +618,71 @@ durasi_jam: null,
             label = "Jabatan TTD 1";
             h = (pos.ttd1JabatanPos.fontSize || 18) * 1.6;
             w = 350;
+          } else if (selectedElement === "ttd1NamaPos" && pos.ttd1NamaPos) {
+            targetX = (pos.ttd1NamaPos.xPercent / 100) * canvas.width;
+            targetY = (pos.ttd1NamaPos.yPercent / 100) * canvas.height;
+            label = "Nama TTD 1";
+            h = (pos.ttd1NamaPos.fontSize || 24) * 1.6;
+            w = 380;
+          } else if (selectedElement === "ttd1SubText1Pos" && pos.ttd1SubText1Pos) {
+            targetX = (pos.ttd1SubText1Pos.xPercent / 100) * canvas.width;
+            targetY = (pos.ttd1SubText1Pos.yPercent / 100) * canvas.height;
+            label = "Kolom 1 (Pangkat) TTD 1";
+            h = (pos.ttd1SubText1Pos.fontSize || 18) * 1.6;
+            w = 350;
+          } else if (selectedElement === "ttd1SubText2Pos" && pos.ttd1SubText2Pos) {
+            targetX = (pos.ttd1SubText2Pos.xPercent / 100) * canvas.width;
+            targetY = (pos.ttd1SubText2Pos.yPercent / 100) * canvas.height;
+            label = "Kolom 2 (NIP) TTD 1";
+            h = (pos.ttd1SubText2Pos.fontSize || 18) * 1.6;
+            w = 350;
           } else if (selectedElement === "ttd2JabatanPos" && pos.ttd2JabatanPos) {
             targetX = (pos.ttd2JabatanPos.xPercent / 100) * canvas.width;
             targetY = (pos.ttd2JabatanPos.yPercent / 100) * canvas.height;
             label = "Jabatan TTD 2";
             h = (pos.ttd2JabatanPos.fontSize || 18) * 1.6;
             w = 350;
+          } else if (selectedElement === "ttd2NamaPos" && pos.ttd2NamaPos) {
+            targetX = (pos.ttd2NamaPos.xPercent / 100) * canvas.width;
+            targetY = (pos.ttd2NamaPos.yPercent / 100) * canvas.height;
+            label = "Nama TTD 2";
+            h = (pos.ttd2NamaPos.fontSize || 24) * 1.6;
+            w = 380;
+          } else if (selectedElement === "ttd2SubText1Pos" && pos.ttd2SubText1Pos) {
+            targetX = (pos.ttd2SubText1Pos.xPercent / 100) * canvas.width;
+            targetY = (pos.ttd2SubText1Pos.yPercent / 100) * canvas.height;
+            label = "Kolom 1 (Pangkat) TTD 2";
+            h = (pos.ttd2SubText1Pos.fontSize || 18) * 1.6;
+            w = 350;
+          } else if (selectedElement === "ttd2SubText2Pos" && pos.ttd2SubText2Pos) {
+            targetX = (pos.ttd2SubText2Pos.xPercent / 100) * canvas.width;
+            targetY = (pos.ttd2SubText2Pos.yPercent / 100) * canvas.height;
+            label = "Kolom 2 (NIP) TTD 2";
+            h = (pos.ttd2SubText2Pos.fontSize || 18) * 1.6;
+            w = 350;
           } else if (selectedElement === "ttd3JabatanPos" && pos.ttd3JabatanPos) {
             targetX = (pos.ttd3JabatanPos.xPercent / 100) * canvas.width;
             targetY = (pos.ttd3JabatanPos.yPercent / 100) * canvas.height;
             label = "Jabatan TTD 3";
             h = (pos.ttd3JabatanPos.fontSize || 18) * 1.6;
+            w = 350;
+          } else if (selectedElement === "ttd3NamaPos" && pos.ttd3NamaPos) {
+            targetX = (pos.ttd3NamaPos.xPercent / 100) * canvas.width;
+            targetY = (pos.ttd3NamaPos.yPercent / 100) * canvas.height;
+            label = "Nama TTD 3";
+            h = (pos.ttd3NamaPos.fontSize || 24) * 1.6;
+            w = 380;
+          } else if (selectedElement === "ttd3SubText1Pos" && pos.ttd3SubText1Pos) {
+            targetX = (pos.ttd3SubText1Pos.xPercent / 100) * canvas.width;
+            targetY = (pos.ttd3SubText1Pos.yPercent / 100) * canvas.height;
+            label = "Kolom 1 (Pangkat) TTD 3";
+            h = (pos.ttd3SubText1Pos.fontSize || 18) * 1.6;
+            w = 350;
+          } else if (selectedElement === "ttd3SubText2Pos" && pos.ttd3SubText2Pos) {
+            targetX = (pos.ttd3SubText2Pos.xPercent / 100) * canvas.width;
+            targetY = (pos.ttd3SubText2Pos.yPercent / 100) * canvas.height;
+            label = "Kolom 2 (NIP) TTD 3";
+            h = (pos.ttd3SubText2Pos.fontSize || 18) * 1.6;
             w = 350;
           } else {
             showTarget = false;
@@ -721,6 +775,11 @@ durasi_jam: null,
         updatedPos.ttd3JabatanPos = { ...updatedPos.ttd3JabatanPos, xPercent, yPercent };
       } else if (selectedElement === "jpTtdJabatanPos") {
         updatedPos.jpTtdJabatanPos = { ...updatedPos.jpTtdJabatanPos, xPercent, yPercent };
+      } else {
+        const ePos = (updatedPos as any)[selectedElement];
+        if (ePos) {
+          (updatedPos as any)[selectedElement] = { ...ePos, xPercent, yPercent };
+        }
       }
       return { ...prev, positions: updatedPos };
     });
@@ -2787,18 +2846,27 @@ durasi_jam: null,
                   <option value="noSertifikat">Nomor Surat Sertifikat</option>
                   <option value="deskripsi">Deskripsi & Peran Kegiatan</option>
                   <option value="tanggalKegiatan">Halaman Depan: Tempat & Tanggal</option>
-                  <option value="ttd1">TTD 1 - Posisi Grup (Gambar & Nama)</option>
+                  <option value="ttd1">TTD 1 - Atur Posisi Semua (Grup Seluruh TTD 1)</option>
                   <option value="ttd1JabatanPos">TTD 1 - Posisi Jabatan</option>
+                  <option value="ttd1NamaPos">TTD 1 - Posisi Nama TTD</option>
+                  <option value="ttd1SubText1Pos">TTD 1 - Posisi Kolom 1 (Pangkat/Golongan)</option>
+                  <option value="ttd1SubText2Pos">TTD 1 - Posisi Kolom 2 (NIP)</option>
                   {config.jumlahTtd >= 2 && (
                     <>
-                      <option value="ttd2">TTD 2 - Posisi Grup (Gambar & Nama)</option>
+                      <option value="ttd2">TTD 2 - Atur Posisi Semua (Grup Seluruh TTD 2)</option>
                       <option value="ttd2JabatanPos">TTD 2 - Posisi Jabatan</option>
+                      <option value="ttd2NamaPos">TTD 2 - Posisi Nama TTD</option>
+                      <option value="ttd2SubText1Pos">TTD 2 - Posisi Kolom 1 (Pangkat/Golongan)</option>
+                      <option value="ttd2SubText2Pos">TTD 2 - Posisi Kolom 2 (NIP)</option>
                     </>
                   )}
                   {config.jumlahTtd === 3 && (
                     <>
-                      <option value="ttd3">TTD 3 - Posisi Grup (Gambar & Nama)</option>
+                      <option value="ttd3">TTD 3 - Atur Posisi Semua (Grup Seluruh TTD 3)</option>
                       <option value="ttd3JabatanPos">TTD 3 - Posisi Jabatan</option>
+                      <option value="ttd3NamaPos">TTD 3 - Posisi Nama TTD</option>
+                      <option value="ttd3SubText1Pos">TTD 3 - Posisi Kolom 1 (Pangkat/Golongan)</option>
+                      <option value="ttd3SubText2Pos">TTD 3 - Posisi Kolom 2 (NIP)</option>
                     </>
                   )}
                   {config.hasJpPage && (
@@ -2807,8 +2875,11 @@ durasi_jam: null,
                       <option value="jpHeaderSubtitlePos">Halaman Belakang: Subjudul JP</option>
                       <option value="jpHeaderSub2Pos">Halaman Belakang: Instansi JP</option>
                       <option value="jpTanggalPos">Halaman Belakang: Tempat & Tanggal</option>
-                      <option value="jpTtd">Halaman Belakang: TTD Grup (Gambar & Nama)</option>
+                      <option value="jpTtd">Halaman Belakang: Atur Posisi Semua (Grup TTD JP)</option>
                       <option value="jpTtdJabatanPos">Halaman Belakang: TTD Posisi Jabatan</option>
+                      <option value="jpTtdNamaPos">Halaman Belakang: TTD Posisi Nama</option>
+                      <option value="jpTtdSubText1Pos">Halaman Belakang: TTD Posisi Kolom 1</option>
+                      <option value="jpTtdSubText2Pos">Halaman Belakang: TTD Posisi Kolom 2</option>
                     </>
                   )}
                 </select>

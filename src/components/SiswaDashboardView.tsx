@@ -54,14 +54,23 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
 
       setIsLoading(true);
       try {
-        // 1. Fetch Student points detail from 'siswa' table using NIS
-        const { data: siswaData, error: siswaError } = await supabase
+        // 1. Fetch Student points detail from 'siswa' table using NIS or fallback by email username
+        let { data: siswaData } = await supabase
           .from("siswa")
           .select("*")
           .eq("nis", userSession.nis)
-          .single();
+          .maybeSingle();
 
-        if (siswaError) throw siswaError;
+        if (!siswaData && userSession.email) {
+          const username = userSession.email.split("@")[0];
+          const { data: fallbackData } = await supabase
+            .from("siswa")
+            .select("*")
+            .eq("nis", username)
+            .maybeSingle();
+          if (fallbackData) siswaData = fallbackData;
+        }
+
         setSiswaDetail(siswaData);
 
         if (siswaData) {

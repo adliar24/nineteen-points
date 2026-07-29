@@ -107,6 +107,24 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
     }
   }, [cameraActive]);
 
+  const playBeep = () => {
+    try {
+      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(880, audioCtx.currentTime); // 880Hz A5 pitch
+      gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.15);
+    } catch {
+      // Audio context might be restricted before user interaction, fail silently
+    }
+  };
+
   const onScanSuccess = async (decodedText: string) => {
     const trimmed = decodedText.trim();
 
@@ -131,6 +149,7 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
       }
 
       await addRiwayat(student.id, SHOLAT_POIN_NAMA, SHOLAT_POIN_VALUE, userSession.fullName);
+      playBeep();
       setLastScanned({ nama: student.nama, kelas: student.kelas, status: "success" });
       await refetchRecap();
       await queryClient.invalidateQueries({ queryKey: ["siswa"] });

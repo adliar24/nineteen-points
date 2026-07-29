@@ -36,10 +36,8 @@ export default function EditAccountModal({
     setIsEditing(true);
 
     try {
-      const fullEmail =
-        profile.role === "siswa" || profile.role === "guru" || profile.role === "kepala_sekolah"
-          ? `${editEmail.trim()}@sman19.sch.id`
-          : editEmail.trim();
+      const trimmedInput = editEmail.trim();
+      const fullEmail = trimmedInput.includes("@") ? trimmedInput : `${trimmedInput}@sman19.sch.id`;
 
       const updates: any = {};
       if (fullEmail !== profile.email) updates.email = fullEmail;

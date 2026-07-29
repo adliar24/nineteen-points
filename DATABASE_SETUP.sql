@@ -818,7 +818,7 @@ CREATE INDEX IF NOT EXISTS idx_riwayat_poin_siswa_id ON public.riwayat_poin(sisw
 CREATE INDEX IF NOT EXISTS idx_riwayat_poin_created_at ON public.riwayat_poin(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_kehadiran_siswa_id ON public.kehadiran(siswa_id);
 CREATE INDEX IF NOT EXISTS idx_kehadiran_tanggal ON public.kehadiran(tanggal);
-CREATE INDEX IF NOT EXISTS idx_jadwal_guru_teacher_id ON public.jadwal_guru(teacher_id);
+CREATE INDEX IF NOT EXISTS idx_jadwal_guru_user_id ON public.jadwal_guru(user_id);
 CREATE INDEX IF NOT EXISTS idx_jadwal_guru_hari ON public.jadwal_guru(hari);
 CREATE INDEX IF NOT EXISTS idx_siswa_nis ON public.siswa(nis);
 CREATE INDEX IF NOT EXISTS idx_profiles_nis ON public.profiles(nis);

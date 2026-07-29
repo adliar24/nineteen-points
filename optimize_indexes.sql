@@ -10,7 +10,7 @@ CREATE INDEX IF NOT EXISTS idx_kehadiran_siswa_id ON public.kehadiran(siswa_id);
 CREATE INDEX IF NOT EXISTS idx_kehadiran_tanggal ON public.kehadiran(tanggal);
 
 -- Index for teacher teaching schedule queries
-CREATE INDEX IF NOT EXISTS idx_jadwal_guru_teacher_id ON public.jadwal_guru(teacher_id);
+CREATE INDEX IF NOT EXISTS idx_jadwal_guru_user_id ON public.jadwal_guru(user_id);
 CREATE INDEX IF NOT EXISTS idx_jadwal_guru_hari ON public.jadwal_guru(hari);
 
 -- Index for student NIS lookup

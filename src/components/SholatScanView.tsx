@@ -22,7 +22,9 @@ import {
   checkSholatToday,
   getSholatRecapToday,
   SHOLAT_POIN_NAMA,
-  SHOLAT_POIN_VALUE
+  SHOLAT_POIN_VALUE,
+  SHOLAT_DHUHA_POIN_NAMA,
+  SHOLAT_DHUHA_POIN_VALUE
 } from "../dbStore";
 import { toSentenceCase } from "../formatName";
 
@@ -31,14 +33,19 @@ interface SholatScanViewProps {
 }
 
 export default function SholatScanView({ userSession }: SholatScanViewProps) {
+  const [sholatType, setSholatType] = useState<"berjamaah" | "dhuha">("berjamaah");
+
+  const currentPoinNama = sholatType === "dhuha" ? SHOLAT_DHUHA_POIN_NAMA : SHOLAT_POIN_NAMA;
+  const currentPoinValue = sholatType === "dhuha" ? SHOLAT_DHUHA_POIN_VALUE : SHOLAT_POIN_VALUE;
+
   const { data: siswaList = [] } = useQuery({
     queryKey: ["siswa"],
     queryFn: getSiswaList,
   });
 
   const { data: todayRecap = [], refetch: refetchRecap } = useQuery({
-    queryKey: ["sholatRecapToday"],
-    queryFn: getSholatRecapToday,
+    queryKey: ["sholatRecapToday", sholatType],
+    queryFn: () => getSholatRecapToday(currentPoinNama),
   });
 
   const [cameraActive, setCameraActive] = useState(false);
@@ -105,7 +112,7 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
         stopScanner();
       };
     }
-  }, [cameraActive]);
+  }, [cameraActive, sholatType]);
 
   const playBeep = () => {
     try {
@@ -113,7 +120,7 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
       osc.type = "sine";
-      osc.frequency.setValueAtTime(880, audioCtx.currentTime); // 880Hz A5 pitch
+      osc.frequency.setValueAtTime(880, audioCtx.currentTime);
       gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
       osc.connect(gain);
@@ -121,7 +128,7 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
       osc.start();
       osc.stop(audioCtx.currentTime + 0.15);
     } catch {
-      // Audio context might be restricted before user interaction, fail silently
+      // Audio context might be restricted, fail silently
     }
   };
 
@@ -141,14 +148,14 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
         return;
       }
 
-      const alreadyScanned = await checkSholatToday(student.id);
+      const alreadyScanned = await checkSholatToday(student.id, currentPoinNama);
       if (alreadyScanned) {
         setLastScanned({ nama: student.nama, kelas: student.kelas, status: "duplicate" });
         setTimeout(() => setLastScanned(null), 3000);
         return;
       }
 
-      await addRiwayat(student.id, SHOLAT_POIN_NAMA, SHOLAT_POIN_VALUE, userSession.fullName);
+      await addRiwayat(student.id, currentPoinNama, currentPoinValue, userSession.fullName);
       playBeep();
       setLastScanned({ nama: student.nama, kelas: student.kelas, status: "success" });
       await refetchRecap();
@@ -174,14 +181,48 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
 
   return (
     <div className="space-y-6 pb-12 animate-fade-in font-sans">
-      <div>
-        <h2 className="text-xl font-extrabold text-brand-950 tracking-tight flex items-center gap-2">
-          <BookOpen className="w-6 h-6 text-emerald-600" />
-          Scan Sholat Berjamaah
-        </h2>
-        <p className="text-xs text-brand-500 font-semibold mt-1">
-          Pindai QR kartu pelajar — otomatis +2 poin sholat tercatat.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-xl font-extrabold text-brand-950 tracking-tight flex items-center gap-2">
+            <BookOpen className="w-6 h-6 text-emerald-600" />
+            Scan {sholatType === "dhuha" ? "Sholat Dhuha" : "Sholat Berjamaah"}
+          </h2>
+          <p className="text-xs text-brand-500 font-semibold mt-1">
+            Pindai QR kartu pelajar — otomatis +{currentPoinValue} poin {sholatType === "dhuha" ? "sholat dhuha" : "sholat berjamaah"} tercatat.
+          </p>
+        </div>
+
+        {/* Tab Selector for Sholat Type */}
+        <div className="flex bg-slate-100 p-1 rounded-2xl border border-slate-200 w-fit shrink-0">
+          <button
+            onClick={() => {
+              if (cameraActive) stopScanner();
+              setCameraActive(false);
+              setSholatType("berjamaah");
+            }}
+            className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+              sholatType === "berjamaah"
+                ? "bg-white text-emerald-700 shadow-md"
+                : "text-slate-500 hover:text-slate-800"
+            }`}
+          >
+            Sholat Berjamaah
+          </button>
+          <button
+            onClick={() => {
+              if (cameraActive) stopScanner();
+              setCameraActive(false);
+              setSholatType("dhuha");
+            }}
+            className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+              sholatType === "dhuha"
+                ? "bg-white text-amber-700 shadow-md"
+                : "text-slate-500 hover:text-slate-800"
+            }`}
+          >
+            Sholat Dhuha
+          </button>
+        </div>
       </div>
 
       <AnimatePresence>
@@ -203,7 +244,7 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
       <div className="max-w-xl mx-auto bg-white p-6 rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 space-y-6 text-center">
         <div className="flex items-center justify-between">
           <div className="text-left space-y-1">
-            <h4 className="font-extrabold text-sm text-brand-950">Scanner Sholat</h4>
+            <h4 className="font-extrabold text-sm text-brand-950">Scanner {sholatType === "dhuha" ? "Sholat Dhuha" : "Sholat Berjamaah"}</h4>
             <p className="text-xs text-brand-500 font-semibold">Aktifkan kamera lalu arahkan ke QR murid.</p>
           </div>
           <div className="text-right">
@@ -262,10 +303,10 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
               </div>
               <div>
                 {lastScanned.status === "success" && (
-                  <span>{toSentenceCase(lastScanned.nama)} ({lastScanned.kelas}) — <span className="text-emerald-600">+{SHOLAT_POIN_VALUE} Poin</span></span>
+                  <span>{toSentenceCase(lastScanned.nama)} ({lastScanned.kelas}) — <span className="text-emerald-600">+{currentPoinValue} Poin ({currentPoinNama})</span></span>
                 )}
                 {lastScanned.status === "duplicate" && (
-                  <span>{toSentenceCase(lastScanned.nama)} ({lastScanned.kelas}) — Sudah tercatat hari ini</span>
+                  <span>{toSentenceCase(lastScanned.nama)} ({lastScanned.kelas}) — Sudah tercatat {currentPoinNama} hari ini</span>
                 )}
                 {lastScanned.status === "not_found" && (
                   <span>{lastScanned.nama} — Tidak dikenali</span>
@@ -280,7 +321,7 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
         <div className="flex items-center justify-between">
           <h4 className="font-extrabold text-sm text-brand-950 flex items-center gap-2">
             <Users className="w-4 h-4 text-brand-600" />
-            Rekap Sholat Hari Ini
+            Rekap {sholatType === "dhuha" ? "Sholat Dhuha" : "Sholat Berjamaah"} Hari Ini
           </h4>
           <button
             onClick={() => refetchRecap()}

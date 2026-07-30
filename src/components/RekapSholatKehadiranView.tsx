@@ -74,6 +74,7 @@ export default function RekapSholatKehadiranView({ userSession }: RekapSholatKeh
     rekapData.forEach((row) => {
       datesInRange.forEach((d) => {
         if (row.sholat[d]) count++;
+        if (row.sholatDhuha && row.sholatDhuha[d]) count++;
       });
     });
     return count;
@@ -83,13 +84,15 @@ export default function RekapSholatKehadiranView({ userSession }: RekapSholatKeh
     const headers = ["NIS", "Nama", "Kelas"];
     datesInRange.forEach((d) => {
       const label = parseDateSafe(d).toLocaleDateString("id-ID", { day: "2-digit", month: "short" });
-      headers.push(`Sholat ${label}`);
+      headers.push(`Sholat Berjamaah (${label})`);
+      headers.push(`Sholat Dhuha (${label})`);
     });
 
     const rows = filteredData.map((row) => {
       const cells = [row.siswa_nis, row.siswa_nama, row.siswa_kelas];
       datesInRange.forEach((d) => {
         cells.push(row.sholat[d] ? "Ya" : "Tidak");
+        cells.push(row.sholatDhuha && row.sholatDhuha[d] ? "Ya" : "Tidak");
       });
       return cells.join(",");
     });
@@ -109,10 +112,10 @@ export default function RekapSholatKehadiranView({ userSession }: RekapSholatKeh
       <div>
         <h2 className="text-xl font-extrabold text-brand-950 tracking-tight flex items-center gap-2">
           <ClipboardList className="w-6 h-6 text-brand-600" />
-          Rekap Sholat
+          Rekap Sholat (Berjamaah & Dhuha)
         </h2>
         <p className="text-xs text-brand-500 font-semibold mt-1">
-          Lihat rekap sholat berjamaah murid per tanggal.
+          Lihat rekap sholat berjamaah dan sholat dhuha murid per tanggal.
         </p>
       </div>
 
@@ -140,32 +143,44 @@ export default function RekapSholatKehadiranView({ userSession }: RekapSholatKeh
             <input
               type="date"
               value={startDate}
-              onChange={(e) => { setStartDate(e.target.value); setCurrentPage(1); }}
-              className="border border-brand-100 rounded-xl py-2 px-3 text-xs font-bold text-brand-700 outline-none focus:ring-2 focus:ring-brand-500 bg-white"
+              onChange={(e) => {
+                setStartDate(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="px-3 py-2 bg-brand-50/50 rounded-xl border border-brand-100 text-xs font-bold text-brand-900 outline-none"
             />
             <span className="text-xs text-brand-400 font-bold">s/d</span>
             <input
               type="date"
               value={endDate}
-              onChange={(e) => { setEndDate(e.target.value); setCurrentPage(1); }}
-              className="border border-brand-100 rounded-xl py-2 px-3 text-xs font-bold text-brand-700 outline-none focus:ring-2 focus:ring-brand-500 bg-white"
+              onChange={(e) => {
+                setEndDate(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="px-3 py-2 bg-brand-50/50 rounded-xl border border-brand-100 text-xs font-bold text-brand-900 outline-none"
             />
           </div>
-          <div className="flex-1 flex gap-2">
-            <div className="relative flex-1">
-              <Search className="w-4 h-4 text-brand-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                placeholder="Cari nama atau NIS..."
-                value={searchQuery}
-                onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-                className="w-full pl-9 pr-4 py-2 border border-brand-100 rounded-xl text-xs font-semibold text-brand-900 outline-none focus:ring-2 focus:ring-brand-500 bg-brand-50/20"
-              />
-            </div>
+          <div className="flex-1 relative">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-brand-400" />
+            <input
+              type="text"
+              placeholder="Cari nama / NIS murid..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full pl-9 pr-4 py-2 bg-brand-50/50 rounded-xl border border-brand-100 text-xs font-bold text-brand-900 outline-none"
+            />
+          </div>
+          <div className="w-full sm:w-44">
             <select
               value={classFilter}
-              onChange={(e) => { setClassFilter(e.target.value); setCurrentPage(1); }}
-              className="border border-brand-100 rounded-xl py-2 px-3 text-xs font-bold text-brand-700 outline-none focus:ring-2 focus:ring-brand-500 bg-white"
+              onChange={(e) => {
+                setClassFilter(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full px-3 py-2 bg-brand-50/50 rounded-xl border border-brand-100 text-xs font-bold text-brand-900 outline-none"
             >
               {classes.map((c) => (
                 <option key={c} value={c}>{c === "Semua" ? "Semua Kelas" : `Kelas ${c}`}</option>
@@ -201,10 +216,9 @@ export default function RekapSholatKehadiranView({ userSession }: RekapSholatKeh
                 <tr className="border-b border-brand-100 bg-brand-50/50">
                   <th className="px-4 py-3 text-[10px] font-black text-brand-500 uppercase tracking-wider sticky left-0 bg-brand-50/50 z-10">Murid</th>
                   {datesInRange.map((d) => (
-                    <th key={d} className="px-3 py-3 text-center text-[9px] font-black text-brand-500 uppercase tracking-wider min-w-[60px]">
+                    <th key={d} className="px-3 py-3 text-center text-[9px] font-black text-brand-500 uppercase tracking-wider min-w-[120px]">
                       <div>{parseDateSafe(d).toLocaleDateString("id-ID", { weekday: "short" })}</div>
                       <div>{parseDateSafe(d).toLocaleDateString("id-ID", { day: "2-digit", month: "short" })}</div>
-                      <div className="text-[8px] text-emerald-600 font-bold">Sholat</div>
                     </th>
                   ))}
                 </tr>
@@ -218,14 +232,28 @@ export default function RekapSholatKehadiranView({ userSession }: RekapSholatKeh
                     </td>
                     {datesInRange.map((d) => (
                       <td key={`${row.siswa_id}-${d}`} className="px-3 py-3 text-center">
-                        {row.sholat[d] ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black bg-emerald-50 text-emerald-700 border border-emerald-100">
-                            <Check className="w-2.5 h-2.5" />
-                            Ya
-                          </span>
-                        ) : (
-                          <span className="text-[9px] text-brand-300 font-bold">Tidak</span>
-                        )}
+                        <div className="flex flex-col gap-1 items-center">
+                          <div className="flex items-center gap-1">
+                            <span className="text-[8px] font-black text-emerald-800 bg-emerald-100/70 px-1.5 py-0.5 rounded">Jm:</span>
+                            {row.sholat[d] ? (
+                              <span className="inline-flex items-center gap-0.5 text-[9px] font-black text-emerald-700">
+                                <Check className="w-2.5 h-2.5" /> Ya
+                              </span>
+                            ) : (
+                              <span className="text-[9px] text-brand-300 font-bold">-</span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <span className="text-[8px] font-black text-amber-800 bg-amber-100/70 px-1.5 py-0.5 rounded">Dh:</span>
+                            {row.sholatDhuha && row.sholatDhuha[d] ? (
+                              <span className="inline-flex items-center gap-0.5 text-[9px] font-black text-amber-700">
+                                <Check className="w-2.5 h-2.5" /> Ya
+                              </span>
+                            ) : (
+                              <span className="text-[9px] text-brand-300 font-bold">-</span>
+                            )}
+                          </div>
+                        </div>
                       </td>
                     ))}
                   </tr>

@@ -384,6 +384,20 @@ export default function App() {
     loadLatestPhoto();
   }, [userSession?.nis, userSession?.email]);
 
+  // Sync session validity with Supabase Auth state
+  useEffect(() => {
+    const { data: authListener } = supabase.auth.onAuthStateChange((event: string, session: any) => {
+      if (event === "SIGNED_OUT" || (event === "TOKEN_REFRESHED" && !session)) {
+        setUserSession(null);
+        setLocalStorage("19points_session", null);
+      }
+    });
+
+    return () => {
+      authListener?.subscription?.unsubscribe();
+    };
+  }, []);
+
 
 
   const prevSessionRef = useRef<UserSession | null>(userSession);

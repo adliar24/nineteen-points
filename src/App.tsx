@@ -347,42 +347,62 @@ export default function App() {
     return () => observer.disconnect();
   }, [showProfilePopup]);
 
-  // Fetch latest photo URL from database to ensure header shows the correct photo
+  // Fetch latest profile & photo from database to ensure session is 100% accurate
   useEffect(() => {
-    async function loadLatestPhoto() {
+    async function syncUserProfile() {
       if (!userSession) return;
       try {
-        let latestFotoUrl: string | null = null;
-        if (userSession.role === "siswa" && userSession.nis) {
-          const { data, error } = await supabase
+        if (userSession.role === "siswa") {
+          const username = userSession.email.split("@")[0];
+          const { data: siswaData } = await supabase
             .from("siswa")
-            .select("foto_url")
-            .eq("nis", userSession.nis)
-            .single();
-          if (!error && data) {
-            latestFotoUrl = data.foto_url;
+            .select("*")
+            .eq("nis", username)
+            .maybeSingle();
+
+          if (siswaData) {
+            setUserSession((prev) => {
+              if (!prev) return null;
+              if (
+                prev.fullName !== siswaData.nama ||
+                prev.nis !== siswaData.nis ||
+                prev.foto_url !== (siswaData.foto_url || undefined)
+              ) {
+                return {
+                  ...prev,
+                  fullName: siswaData.nama,
+                  nis: siswaData.nis,
+                  foto_url: siswaData.foto_url || undefined,
+                };
+              }
+              return prev;
+            });
           }
         } else {
           const { data, error } = await supabase
             .from("profiles")
-            .select("foto_url")
+            .select("foto_url, nama")
             .eq("email", userSession.email)
-            .single();
+            .maybeSingle();
           if (!error && data) {
-            latestFotoUrl = data.foto_url;
+            const latestFotoUrl = data.foto_url || undefined;
+            const latestNama = data.nama;
+            setUserSession((prev) => {
+              if (!prev) return null;
+              if (prev.foto_url !== latestFotoUrl || prev.fullName !== latestNama) {
+                return { ...prev, foto_url: latestFotoUrl, fullName: latestNama };
+              }
+              return prev;
+            });
           }
         }
-
-        if (latestFotoUrl !== undefined && latestFotoUrl !== userSession.foto_url) {
-          setUserSession((prev) => (prev ? { ...prev, foto_url: latestFotoUrl } : null));
-        }
       } catch (err) {
-        console.error("Gagal memperbarui foto profil di header:", err);
+        console.error("Gagal memperbarui profil di header:", err);
       }
     }
 
-    loadLatestPhoto();
-  }, [userSession?.nis, userSession?.email]);
+    syncUserProfile();
+  }, [userSession?.email]);
 
   // Sync session validity with Supabase Auth state
   useEffect(() => {

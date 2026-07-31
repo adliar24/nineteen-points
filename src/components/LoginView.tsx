@@ -61,25 +61,41 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
 
         if (profile) {
           let fotoUrl = profile.foto_url || undefined;
+          let fullName = profile.nama;
+          let nis = profile.nis || undefined;
 
-          // For students, also try fetching foto_url from the siswa table
-          if (profile.role === "siswa" && profile.nis) {
+          // For students, ensure fullName, NIS, and foto_url match the student's row in 'siswa' table
+          if (profile.role === "siswa") {
+            const username = profile.email.split("@")[0];
             const { data: siswaData } = await supabase
               .from("siswa")
-              .select("foto_url")
-              .eq("nis", profile.nis)
+              .select("*")
+              .eq("nis", username)
               .maybeSingle();
-            if (siswaData?.foto_url) {
-              fotoUrl = siswaData.foto_url;
+
+            if (siswaData) {
+              fullName = siswaData.nama;
+              nis = siswaData.nis;
+              if (siswaData.foto_url) {
+                fotoUrl = siswaData.foto_url;
+              }
+              // Auto-heal profiles table if profiles.nama or profiles.nis was outdated
+              if (profile.nama !== siswaData.nama || profile.nis !== siswaData.nis) {
+                supabase
+                  .from("profiles")
+                  .update({ nama: siswaData.nama, nis: siswaData.nis })
+                  .eq("id", profile.id)
+                  .then(() => {});
+              }
             }
           }
 
           const session: UserSession = {
             id: profile.id,
             email: profile.email,
-            fullName: profile.nama,
+            fullName: fullName,
             role: profile.role,
-            nis: profile.nis || undefined,
+            nis: nis,
             foto_url: fotoUrl,
           };
           onLoginSuccess(session);
@@ -92,24 +108,64 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
             .maybeSingle();
 
           if (profileByEmail) {
+            let fotoUrl = profileByEmail.foto_url || undefined;
+            let fullName = profileByEmail.nama;
+            let nis = profileByEmail.nis || undefined;
+
+            if (profileByEmail.role === "siswa") {
+              const username = profileByEmail.email.split("@")[0];
+              const { data: siswaData } = await supabase
+                .from("siswa")
+                .select("*")
+                .eq("nis", username)
+                .maybeSingle();
+
+              if (siswaData) {
+                fullName = siswaData.nama;
+                nis = siswaData.nis;
+                if (siswaData.foto_url) {
+                  fotoUrl = siswaData.foto_url;
+                }
+              }
+            }
+
             const session: UserSession = {
               id: profileByEmail.id,
               email: profileByEmail.email,
-              fullName: profileByEmail.nama,
+              fullName: fullName,
               role: profileByEmail.role,
-              nis: profileByEmail.nis || undefined,
-              foto_url: profileByEmail.foto_url || undefined,
+              nis: nis,
+              foto_url: fotoUrl,
             };
             onLoginSuccess(session);
           } else {
             // Default fallback if profile row doesn't exist yet
+            const username = loginEmail.split("@")[0];
+            let fullName = data.user.user_metadata?.fullName || rawInput.toUpperCase();
+            let nis = data.user.user_metadata?.nis || username;
+            let fotoUrl = data.user.user_metadata?.foto_url || undefined;
+
+            const { data: siswaData } = await supabase
+              .from("siswa")
+              .select("*")
+              .eq("nis", username)
+              .maybeSingle();
+
+            if (siswaData) {
+              fullName = siswaData.nama;
+              nis = siswaData.nis;
+              if (siswaData.foto_url) {
+                fotoUrl = siswaData.foto_url;
+              }
+            }
+
             const session: UserSession = {
               id: data.user.id,
               email: data.user.email || loginEmail,
-              fullName: data.user.user_metadata?.fullName || rawInput.toUpperCase(),
+              fullName: fullName,
               role: data.user.user_metadata?.role || "siswa",
-              nis: data.user.user_metadata?.nis || rawInput,
-              foto_url: data.user.user_metadata?.foto_url || undefined,
+              nis: nis,
+              foto_url: fotoUrl,
             };
             onLoginSuccess(session);
           }

@@ -47,28 +47,39 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
 
   useEffect(() => {
     async function loadStudentData() {
-      if (!userSession.nis) {
-        setIsLoading(false);
-        return;
-      }
-
       setIsLoading(true);
       try {
-        // 1. Fetch Student points detail from 'siswa' table using NIS or fallback by email username
-        let { data: siswaData } = await supabase
-          .from("siswa")
-          .select("*")
-          .eq("nis", userSession.nis)
-          .maybeSingle();
+        const username = userSession.email ? userSession.email.split("@")[0] : "";
+        let siswaData: Siswa | null = null;
 
-        if (!siswaData && userSession.email) {
-          const username = userSession.email.split("@")[0];
-          const { data: fallbackData } = await supabase
+        // 1. Priority 1: Match by username (NIS) since student login email is username@sman19.sch.id
+        if (username) {
+          const { data: dataByUsername } = await supabase
             .from("siswa")
             .select("*")
             .eq("nis", username)
             .maybeSingle();
-          if (fallbackData) siswaData = fallbackData;
+          if (dataByUsername) siswaData = dataByUsername;
+        }
+
+        // 2. Priority 2: Match by userSession.nis if different from username
+        if (!siswaData && userSession.nis) {
+          const { data: dataByNis } = await supabase
+            .from("siswa")
+            .select("*")
+            .eq("nis", userSession.nis)
+            .maybeSingle();
+          if (dataByNis) siswaData = dataByNis;
+        }
+
+        // 3. Priority 3: Fallback match by exact fullName
+        if (!siswaData && userSession.fullName) {
+          const { data: dataByName } = await supabase
+            .from("siswa")
+            .select("*")
+            .ilike("nama", userSession.fullName.trim())
+            .maybeSingle();
+          if (dataByName) siswaData = dataByName;
         }
 
         setSiswaDetail(siswaData);
@@ -116,7 +127,7 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
     }
 
     loadStudentData();
-  }, [userSession.nis]);
+  }, [userSession.nis, userSession.email, userSession.fullName]);
 
   const historyTotalPages = Math.ceil((historyTab === "poin" ? riwayat.length : absensi.length) / historyPerPage);
   const paginatedData = historyTab === "poin"

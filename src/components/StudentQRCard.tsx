@@ -44,7 +44,7 @@ export default React.memo(function StudentQRCard({
 
       {/* Top Left School Branding */}
       <div className="absolute top-4.5 left-5 flex items-center gap-2 z-10 text-white pointer-events-none">
-        <img src="/logo.png" className="w-6.5 h-6.5 object-contain" alt="Logo" />
+        <img src="/logo.png" crossOrigin="anonymous" className="w-6.5 h-6.5 object-contain" alt="Logo" />
         <div>
           <h4 className="text-[8px] font-black tracking-widest text-white uppercase leading-tight">
             SMAN 19 BANDUNG
@@ -62,6 +62,7 @@ export default React.memo(function StudentQRCard({
           {siswa.foto_url ? (
             <img
               src={siswa.foto_url}
+              crossOrigin="anonymous"
               className="w-full h-full rounded-xl object-cover"
               alt={siswa.nama}
             />

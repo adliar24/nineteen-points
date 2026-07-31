@@ -1,11 +1,4 @@
-const CACHE_NAME = "nineteen-points-cache-v2";
-const ASSETS = [
-  "/",
-  "/index.html",
-  "/logo.png",
-  "/logo-original-512.png",
-  "/manifest.json"
-];
+const CACHE_NAME = "nineteen-points-v3";
 
 self.addEventListener("install", (e) => {
   self.skipWaiting();
@@ -34,25 +27,39 @@ self.addEventListener("fetch", (e) => {
     return;
   }
 
-  // Network-first strategy for app updates
+  const isHtmlRequest =
+    e.request.mode === "navigate" ||
+    e.request.headers.get("accept")?.includes("text/html") ||
+    e.request.url.endsWith(".html");
+
+  if (isHtmlRequest) {
+    // Network-only for HTML to ensure latest app bundle index is always loaded
+    e.respondWith(
+      fetch(e.request, { cache: "no-store" })
+        .then((res) => {
+          if (res.status === 200) {
+            const clone = res.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(e.request, clone));
+          }
+          return res;
+        })
+        .catch(() => {
+          return caches.match(e.request).then((cached) => cached || caches.match("/"));
+        })
+    );
+    return;
+  }
+
+  // Network-first for other assets, fallback to cache if offline
   e.respondWith(
     fetch(e.request)
       .then((res) => {
         if (res.status === 200) {
           const clone = res.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(e.request, clone);
-          });
+          caches.open(CACHE_NAME).then((cache) => cache.put(e.request, clone));
         }
         return res;
       })
-      .catch(() => {
-        return caches.match(e.request).then((cachedResponse) => {
-          if (cachedResponse) return cachedResponse;
-          if (e.request.headers.get("accept")?.includes("text/html")) {
-            return caches.match("/");
-          }
-        });
-      })
+      .catch(() => caches.match(e.request))
   );
 });

@@ -27,9 +27,16 @@ export default function GuruKartuView({ userSession }: GuruKartuViewProps) {
     if (cardElement) {
       try {
         const canvas = await html2canvas(cardElement, {
-          scale: 3, // High-quality rendering
+          scale: 3,
           useCORS: true,
-          backgroundColor: "#ffffff"
+          allowTaint: true,
+          backgroundColor: "#ffffff",
+          width: 290,
+          height: 458,
+          x: 0,
+          y: 0,
+          scrollX: 0,
+          scrollY: 0,
         });
         const imgData = canvas.toDataURL("image/png");
         const link = document.createElement("a");
@@ -73,15 +80,15 @@ export default function GuruKartuView({ userSession }: GuruKartuViewProps) {
         {/* TOP WAVE DECORATION (SVG) */}
         <svg className="absolute top-0 inset-x-0 w-full h-32 pointer-events-none" viewBox="0 0 290 128" fill="none" preserveAspectRatio="none">
           {/* Back Translucent Wave */}
-          <path d="M0 0H290V92C210 128 160 85 110 112C60 138 30 115 0 120Z" fill="var(--color-brand-600)" opacity="0.2" />
+          <path d="M0 0H290V92C210 128 160 85 110 112C60 138 30 115 0 120Z" fill="#4f46e5" opacity="0.2" />
           {/* Front Main Wave */}
-          <path d="M0 0H290V80C210 112 165 72 115 100C65 128 35 102 0 108Z" fill="var(--color-brand-700)" />
+          <path d="M0 0H290V80C210 112 165 72 115 100C65 128 35 102 0 108Z" fill="#4338ca" />
         </svg>
 
         {/* Top Left School Branding */}
         <div className="absolute top-4.5 left-5 flex items-center gap-2.5 z-10 text-white pointer-events-none">
           <div className="w-7 h-7 rounded-lg bg-white p-1 flex items-center justify-center shadow-sm">
-            <img src="/logo.png" className="w-full h-full object-contain" alt="Logo" />
+            <img src="/logo.png" crossOrigin="anonymous" className="w-full h-full object-contain" alt="Logo" />
           </div>
           <div>
             <h4 className="text-[8px] font-black tracking-widest text-white uppercase leading-tight">SMAN 19 BANDUNG</h4>
@@ -95,7 +102,7 @@ export default function GuruKartuView({ userSession }: GuruKartuViewProps) {
           {/* 1. 3x4 Portrait Avatar (Pas Foto Style) */}
           <div className="w-21 h-28 rounded-2xl border-[3px] border-brand-500 bg-white flex items-center justify-center p-[2.5px] shadow-md shadow-brand-500/10 flex-shrink-0">
             {userSession.foto_url ? (
-              <img src={userSession.foto_url} className="w-full h-full rounded-xl object-cover" alt={userSession.fullName} />
+              <img src={userSession.foto_url} crossOrigin="anonymous" className="w-full h-full rounded-xl object-cover" alt={userSession.fullName} />
             ) : (
               <div className="w-full h-full rounded-xl border border-brand-100 bg-brand-50/50 flex items-center justify-center text-brand-650 font-black text-3xl uppercase tracking-wider">
                 {userSession.fullName.slice(0, 2)}
@@ -121,7 +128,7 @@ export default function GuruKartuView({ userSession }: GuruKartuViewProps) {
                 size={95}
                 level="M"
                 includeMargin={false}
-                fgColor="var(--color-brand-700)"
+                fgColor="#4338ca"
               />
             </div>
           </div>

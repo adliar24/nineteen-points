@@ -130,9 +130,16 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
     if (cardElement) {
       try {
         const canvas = await html2canvas(cardElement, {
-          scale: 3, // High-quality rendering
+          scale: 3,
           useCORS: true,
-          backgroundColor: "#ffffff"
+          allowTaint: true,
+          backgroundColor: "#ffffff",
+          width: 290,
+          height: 458,
+          x: 0,
+          y: 0,
+          scrollX: 0,
+          scrollY: 0,
         });
         const imgData = canvas.toDataURL("image/png");
         const link = document.createElement("a");

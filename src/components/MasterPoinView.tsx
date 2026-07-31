@@ -108,7 +108,7 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
       setIsAdding(false);
       showToast(`Aturan "${newRule.nama_poin}" disimpan!`);
     } catch (err: any) {
-      alert("Gagal menambahkan aturan: " + err.message);
+      handleColumnError(err, "menambahkan aturan");
     }
   };
 
@@ -152,6 +152,19 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
     }
   };
 
+  const handleColumnError = (err: any, actionName: string) => {
+    const msg = err?.message || String(err);
+    if (msg.includes("allowed_guru_emails")) {
+      alert(
+        `Gagal ${actionName}: Kolom 'allowed_guru_emails' belum ditambahkan di database Supabase.\n\n` +
+        `Silakan buka Supabase Dashboard -> SQL Editor dan jalankan 1 baris SQL berikut:\n\n` +
+        `ALTER TABLE public.master_poin ADD COLUMN IF NOT EXISTS allowed_guru_emails TEXT[];`
+      );
+    } else {
+      alert(`Gagal ${actionName}: ` + msg);
+    }
+  };
+
   // ─── Bulk Access ─────────────────────────────────────
   const handleExecuteBulkAccess = async () => {
     if (selectedIds.length === 0) return;
@@ -174,7 +187,7 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
       setIsBulkAccessModalOpen(false);
       showToast(`Hak akses ${count} poin berhasil diperbarui!`);
     } catch (err: any) {
-      alert("Gagal mengupdate hak akses: " + err.message);
+      handleColumnError(err, "mengupdate hak akses");
     } finally {
       setIsSavingBulkAccess(false);
     }
@@ -234,7 +247,7 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
       setEditingRule(null);
       showToast(`Aturan "${editName.trim()}" berhasil diperbarui!`);
     } catch (err: any) {
-      alert("Gagal memperbarui aturan: " + err.message);
+      handleColumnError(err, "memperbarui aturan");
     } finally {
       setIsSavingEdit(false);
     }

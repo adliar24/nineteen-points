@@ -45,10 +45,16 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
   const [isAdding, setIsAdding] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
 
-  // Delete state
+  // Delete & Bulk selection state
   const [ruleToDelete, setRuleToDelete] = useState<{ id: string; name: string } | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isBulkDeleteConfirm, setIsBulkDeleteConfirm] = useState(false);
+
+  // Bulk access state
+  const [isBulkAccessModalOpen, setIsBulkAccessModalOpen] = useState(false);
+  const [bulkAccessType, setBulkAccessType] = useState<"semua" | "khusus">("semua");
+  const [bulkAllowedEmails, setBulkAllowedEmails] = useState<string[]>([]);
+  const [isSavingBulkAccess, setIsSavingBulkAccess] = useState(false);
 
   // Edit state
   const [editingRule, setEditingRule] = useState<MasterPoin | null>(null);
@@ -143,6 +149,34 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
       showToast(`${count} aturan berhasil dihapus.`);
     } catch (err: any) {
       alert("Gagal menghapus aturan: " + err.message);
+    }
+  };
+
+  // ─── Bulk Access ─────────────────────────────────────
+  const handleExecuteBulkAccess = async () => {
+    if (selectedIds.length === 0) return;
+    setIsSavingBulkAccess(true);
+    try {
+      const finalAllowed = bulkAccessType === "khusus" ? bulkAllowedEmails : null;
+
+      const { error } = await supabase
+        .from("master_poin")
+        .update({ allowed_guru_emails: finalAllowed })
+        .in("id", selectedIds);
+
+      if (error) throw error;
+
+      const updated = await getMasterPoinList();
+      setPoinList(updated);
+      onRefreshTrigger();
+      const count = selectedIds.length;
+      setSelectedIds([]);
+      setIsBulkAccessModalOpen(false);
+      showToast(`Hak akses ${count} poin berhasil diperbarui!`);
+    } catch (err: any) {
+      alert("Gagal mengupdate hak akses: " + err.message);
+    } finally {
+      setIsSavingBulkAccess(false);
     }
   };
 
@@ -249,7 +283,7 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
             type="text"
             placeholder="Cari deskripsi aturan..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.error ? searchQuery : e.target.value)}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-9.5 pr-3 py-2 text-sm font-bold text-brand-900 placeholder-brand-400 border border-brand-100 rounded-xl outline-none bg-brand-50/30 focus:bg-white focus:ring-2 focus:ring-brand-500/20 transition-all"
           />
           {searchQuery && (
@@ -278,21 +312,39 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
             </button>
           ))}
 
-          {/* Bulk Delete Button */}
+          {/* Bulk Action Buttons */}
           <AnimatePresence>
             {someSelected && (
-              <motion.button
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setIsBulkDeleteConfirm(true)}
-                className="flex items-center gap-1.5 px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white text-xs font-black rounded-lg transition-all shadow-md cursor-pointer"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                Hapus ({selectedIds.length})
-              </motion.button>
+              <div className="flex items-center gap-1.5 animate-slide-up">
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => {
+                    setBulkAccessType("semua");
+                    setBulkAllowedEmails([]);
+                    setIsBulkAccessModalOpen(true);
+                  }}
+                  className="flex items-center gap-1.5 px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-black rounded-lg transition-all shadow-md cursor-pointer"
+                >
+                  <Users className="w-3.5 h-3.5" />
+                  Atur Hak Guru ({selectedIds.length})
+                </motion.button>
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setIsBulkDeleteConfirm(true)}
+                  className="flex items-center gap-1.5 px-3.5 py-2 bg-rose-500 hover:bg-rose-600 text-white text-xs font-black rounded-lg transition-all shadow-md cursor-pointer"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  Hapus ({selectedIds.length})
+                </motion.button>
+              </div>
             )}
           </AnimatePresence>
 
@@ -557,6 +609,111 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
           </motion.div>
         </div>
       )}
+
+      {/* ─── Modal: Bulk Edit Hak Akses Guru ─── */}
+      <AnimatePresence>
+        {isBulkAccessModalOpen && (
+          <div className="fixed inset-0 bg-brand-950/65 backdrop-blur-xs flex items-center justify-center z-50 p-4 overflow-y-auto">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-3xl shadow-2xl border border-brand-100 w-full max-w-md p-6 flex flex-col my-auto space-y-4"
+            >
+              <div className="flex items-center justify-between border-b border-brand-100 pb-3">
+                <h3 className="text-base font-extrabold text-brand-900 flex items-center gap-2">
+                  <Users className="w-5 h-5 text-amber-600" />
+                  Atur Hak Akses Guru ({selectedIds.length} Poin)
+                </h3>
+                <button
+                  onClick={() => setIsBulkAccessModalOpen(false)}
+                  className="text-brand-400 hover:text-brand-600 p-1 hover:bg-brand-50 rounded-lg cursor-pointer"
+                >
+                  <X className="w-4.5 h-4.5" />
+                </button>
+              </div>
+
+              <p className="text-xs text-brand-500 font-semibold leading-relaxed">
+                Tentukan guru mana saja yang berhak menginput <strong className="text-brand-950">{selectedIds.length} poin</strong> yang Anda pilih sekaligus.
+              </p>
+
+              <div className="space-y-3">
+                <div className="flex items-center gap-4 text-xs font-bold text-brand-800">
+                  <label className="flex items-center gap-1.5 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="bulkAccessType"
+                      checked={bulkAccessType === "semua"}
+                      onChange={() => {
+                        setBulkAccessType("semua");
+                        setBulkAllowedEmails([]);
+                      }}
+                      className="text-brand-600 focus:ring-brand-500"
+                    />
+                    Semua Guru
+                  </label>
+                  <label className="flex items-center gap-1.5 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="bulkAccessType"
+                      checked={bulkAccessType === "khusus"}
+                      onChange={() => setBulkAccessType("khusus")}
+                      className="text-brand-600 focus:ring-brand-500"
+                    />
+                    Guru Tertentu (Akses Khusus)
+                  </label>
+                </div>
+
+                {bulkAccessType === "khusus" && (
+                  <div className="max-h-48 overflow-y-auto bg-brand-50/50 p-3 rounded-xl border border-brand-100 space-y-2">
+                    <p className="text-[10px] text-brand-400 font-extrabold uppercase">Pilih Guru yang Diizinkan:</p>
+                    {teachersList.length > 0 ? (
+                      teachersList.map((t) => {
+                        const isChecked = bulkAllowedEmails.includes(t.email);
+                        return (
+                          <label key={t.id} className="flex items-center gap-2 text-xs font-semibold text-brand-900 cursor-pointer hover:bg-white p-1.5 rounded-lg transition-colors">
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={() => {
+                                setBulkAllowedEmails((prev) =>
+                                  isChecked ? prev.filter((e) => e !== t.email) : [...prev, t.email]
+                                );
+                              }}
+                              className="w-3.5 h-3.5 rounded border-brand-300 text-brand-600 focus:ring-brand-500"
+                            />
+                            <span>{t.nama} <span className="text-[10px] text-brand-400">({t.email})</span></span>
+                          </label>
+                        );
+                      })
+                    ) : (
+                      <p className="text-xs text-brand-400 font-semibold">Tidak ada akun guru terdaftar.</p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-2 justify-end border-t border-brand-100 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setIsBulkAccessModalOpen(false)}
+                  className="px-4 py-2.5 border border-brand-100 rounded-xl text-xs font-bold text-brand-700 hover:bg-brand-50 cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  disabled={isSavingBulkAccess}
+                  onClick={handleExecuteBulkAccess}
+                  className="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-black shadow-md cursor-pointer disabled:opacity-50"
+                >
+                  {isSavingBulkAccess ? "Menyimpan..." : "Simpan Hak Akses"}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* ─── Modal: Edit Aturan ─── */}
       <AnimatePresence>

@@ -315,20 +315,18 @@ export default function KelolaPenggunaView({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ type: "spring", stiffness: 400, damping: 25 }}
-            className={`fixed bottom-6 right-6 z-50 px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-2 border ${
+            className={`fixed bottom-6 right-6 z-50 px-5 py-3.5 rounded-2xl shadow-2xl flex items-center font-extrabold text-sm text-white opacity-100 border ${
               toastType === "success"
-                ? "bg-emerald-600 text-white border-emerald-500"
+                ? "bg-emerald-600 border-emerald-700 shadow-emerald-900/30"
                 : toastType === "error"
-                ? "bg-rose-600 text-white border-rose-500"
-                : "bg-slate-800 text-white border-slate-700"
+                ? "bg-rose-600 border-rose-700 shadow-rose-900/30"
+                : "bg-slate-900 border-slate-800 shadow-slate-950/40"
             }`}
           >
-            {toastType === "success" && <Check className="w-4 h-4 text-emerald-200" />}
-            {toastType === "error" && <AlertCircle className="w-4 h-4 text-rose-200" />}
             {toastType === "loading" && (
-              <div className="w-4 h-4 border-2 border-slate-400 border-t-white rounded-full animate-spin" />
+              <div className="w-4 h-4 border-2 border-slate-400 border-t-white rounded-full animate-spin mr-2" />
             )}
-            <span className="text-xs font-bold tracking-wide">{toastMsg}</span>
+            <span className="tracking-wide">{toastMsg}</span>
             {toastType === "loading" && uploadProgress > 0 && (
               <div className="w-20 h-1.5 bg-slate-600 rounded-full overflow-hidden ml-1">
                 <motion.div

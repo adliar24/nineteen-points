@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Plus, Trash2, Sparkles, X, Search, Pencil, CheckSquare, ShieldCheck, Users } from "lucide-react";
+import { Plus, Trash2, X, Search, Pencil, CheckSquare, ShieldCheck, Users } from "lucide-react";
 import { MasterPoin } from "../types";
 import { getMasterPoinList } from "../dbStore";
 import ConfirmationModal from "./ConfirmationModal";
@@ -44,7 +44,9 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
   const [addAccessType, setAddAccessType] = useState<"semua" | "khusus">("semua");
   const [addTeacherQuery, setAddTeacherQuery] = useState("");
   const [isAdding, setIsAdding] = useState(false);
-  const [toastMsg, setToastMsg] = useState("");
+
+  // Toast state
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   // Delete & Bulk selection state
   const [ruleToDelete, setRuleToDelete] = useState<{ id: string; name: string } | null>(null);
@@ -67,21 +69,33 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
   const [editTeacherQuery, setEditTeacherQuery] = useState("");
   const [isSavingEdit, setIsSavingEdit] = useState(false);
 
-  const showToast = (msg: string) => {
-    setToastMsg(msg);
-    setTimeout(() => setToastMsg(""), 3500);
+  const showToast = (message: string, type: "success" | "error" = "success") => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3500);
+  };
+
+  const handleColumnError = (err: any, actionName: string) => {
+    const msg = err?.message || String(err);
+    if (msg.includes("allowed_guru_emails")) {
+      showToast(
+        `Gagal ${actionName}: Kolom 'allowed_guru_emails' belum ditambahkan di Supabase. Jalankan: ALTER TABLE public.master_poin ADD COLUMN IF NOT EXISTS allowed_guru_emails TEXT[];`,
+        "error"
+      );
+    } else {
+      showToast(`Gagal ${actionName}: ` + msg, "error");
+    }
   };
 
   const handleAddRule = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newName.trim() || !newValue.trim()) {
-      alert("Mohon lengkapi seluruh kolom input.");
+      showToast("Mohon lengkapi seluruh kolom input.", "error");
       return;
     }
 
     const valueNum = parseInt(newValue, 10);
     if (isNaN(valueNum)) {
-      alert("Nilai poin harus berupa angka.");
+      showToast("Nilai poin harus berupa angka.", "error");
       return;
     }
 
@@ -110,7 +124,7 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
       setAddAccessType("semua");
       setAddTeacherQuery("");
       setIsAdding(false);
-      showToast(`Aturan "${newRule.nama_poin}" disimpan!`);
+      showToast(`Aturan "${newRule.nama_poin}" berhasil disimpan!`, "success");
     } catch (err: any) {
       handleColumnError(err, "menambahkan aturan");
     }
@@ -130,9 +144,9 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
       setPoinList(updated);
       setSelectedIds((prev) => prev.filter((sid) => sid !== id));
       onRefreshTrigger();
-      showToast(`Aturan "${name}" dihapus.`);
+      showToast(`Aturan "${name}" berhasil dihapus.`, "success");
     } catch (err: any) {
-      alert("Gagal menghapus aturan: " + err.message);
+      showToast("Gagal menghapus aturan: " + err.message, "error");
     }
   };
 
@@ -150,22 +164,9 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
       const count = selectedIds.length;
       setSelectedIds([]);
       onRefreshTrigger();
-      showToast(`${count} aturan berhasil dihapus.`);
+      showToast(`${count} aturan berhasil dihapus.`, "success");
     } catch (err: any) {
-      alert("Gagal menghapus aturan: " + err.message);
-    }
-  };
-
-  const handleColumnError = (err: any, actionName: string) => {
-    const msg = err?.message || String(err);
-    if (msg.includes("allowed_guru_emails")) {
-      alert(
-        `Gagal ${actionName}: Kolom 'allowed_guru_emails' belum ditambahkan di database Supabase.\n\n` +
-        `Silakan buka Supabase Dashboard -> SQL Editor dan jalankan 1 baris SQL berikut:\n\n` +
-        `ALTER TABLE public.master_poin ADD COLUMN IF NOT EXISTS allowed_guru_emails TEXT[];`
-      );
-    } else {
-      alert(`Gagal ${actionName}: ` + msg);
+      showToast("Gagal menghapus aturan: " + err.message, "error");
     }
   };
 
@@ -189,7 +190,7 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
       const count = selectedIds.length;
       setSelectedIds([]);
       setIsBulkAccessModalOpen(false);
-      showToast(`Hak akses ${count} poin berhasil diperbarui!`);
+      showToast(`Hak akses ${count} poin berhasil diperbarui!`, "success");
     } catch (err: any) {
       handleColumnError(err, "mengupdate hak akses");
     } finally {
@@ -223,12 +224,12 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
     e.preventDefault();
     if (!editingRule) return;
     if (!editName.trim() || !editValue.trim()) {
-      alert("Mohon lengkapi seluruh kolom.");
+      showToast("Mohon lengkapi seluruh kolom.", "error");
       return;
     }
     const valueNum = parseInt(editValue, 10);
     if (isNaN(valueNum)) {
-      alert("Nilai poin harus berupa angka.");
+      showToast("Nilai poin harus berupa angka.", "error");
       return;
     }
 
@@ -250,7 +251,7 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
       setPoinList(updated);
       onRefreshTrigger();
       setEditingRule(null);
-      showToast(`Aturan "${editName.trim()}" berhasil diperbarui!`);
+      showToast(`Aturan "${editName.trim()}" berhasil diperbarui!`, "success");
     } catch (err: any) {
       handleColumnError(err, "memperbarui aturan");
     } finally {
@@ -274,18 +275,21 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
 
   return (
     <div className="bg-white rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 p-5 sm:p-6 space-y-5">
-      {/* Toast */}
+      {/* Toast Notification (Solid Background, No Icons) */}
       <AnimatePresence>
-        {toastMsg && (
+        {toast && (
           <motion.div
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ type: "spring", stiffness: 400, damping: 25 }}
-            className="fixed bottom-6 right-6 z-50 bg-brand-950 text-white px-5 py-3.5 rounded-2xl shadow-2xl flex items-center gap-2.5 border border-brand-800"
+            className={`fixed bottom-6 right-6 z-50 px-5 py-3.5 rounded-2xl shadow-2xl flex items-center font-extrabold text-sm text-white opacity-100 border ${
+              toast.type === "error"
+                ? "bg-rose-600 border-rose-700 shadow-rose-900/30"
+                : "bg-emerald-600 border-emerald-700 shadow-emerald-900/30"
+            }`}
           >
-            <Sparkles className="w-5 h-5 text-accent-500" />
-            <span className="text-sm font-bold tracking-wide">{toastMsg}</span>
+            <span>{toast.message}</span>
           </motion.div>
         )}
       </AnimatePresence>

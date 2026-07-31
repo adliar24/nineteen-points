@@ -70,34 +70,32 @@ export default function EditAccountModal({
         if (authErr) throw new Error("Gagal update Auth: " + authErr.message);
       }
 
-      // 2. Jika role siswa & NIS berubah, update juga tabel siswa lebih dulu
-      if (profile.role === "siswa" && profile.nis && trimmedInput !== profile.nis) {
-        const { error: siswaErr } = await supabaseAdminAuth
-          .from("siswa")
-          .update({ nis: trimmedInput })
-          .eq("nis", profile.nis);
-        if (siswaErr) console.warn("Peringatan update NIS di tabel siswa:", siswaErr.message);
+      // 2. Jika role siswa, update atau buat data di tabel siswa
+      if (profile.role === "siswa") {
+        if (profile.nis && profile.nis !== trimmedInput) {
+          const { error: siswaErr } = await supabaseAdminAuth
+            .from("siswa")
+            .update({ nis: trimmedInput, nama: editNama.toUpperCase() })
+            .eq("nis", profile.nis);
+          if (siswaErr) console.warn("Peringatan update NIS di tabel siswa:", siswaErr.message);
+        } else {
+          await supabaseAdminAuth.from("siswa").upsert(
+            {
+              nis: trimmedInput,
+              nama: editNama.toUpperCase(),
+              kelas: "Umum",
+              total_poin: 0,
+            },
+            { onConflict: "nis" }
+          );
+        }
       }
 
       // 3. Update tabel profiles via supabaseAdminAuth (service_role)
       const profileUpdates: any = {};
       if (editNama !== profile.nama) profileUpdates.nama = editNama;
       if (fullEmail !== profile.email) profileUpdates.email = fullEmail;
-
-      if (profile.role === "siswa") {
-        // Cek ketersediaan NIS di tabel siswa sebelum mengupdate profiles.nis
-        const { data: matchingSiswa } = await supabaseAdminAuth
-          .from("siswa")
-          .select("nis")
-          .eq("nis", trimmedInput)
-          .maybeSingle();
-
-        if (matchingSiswa) {
-          profileUpdates.nis = trimmedInput;
-        } else if (profile.nis && profile.nis !== trimmedInput) {
-          profileUpdates.nis = null;
-        }
-      }
+      if (profile.role === "siswa") profileUpdates.nis = trimmedInput;
 
       if (Object.keys(profileUpdates).length > 0) {
         const { error: profileErr } = await supabaseAdminAuth

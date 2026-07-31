@@ -42,6 +42,7 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
   const [newValue, setNewValue] = useState("");
   const [addAllowedEmails, setAddAllowedEmails] = useState<string[]>([]);
   const [addAccessType, setAddAccessType] = useState<"semua" | "khusus">("semua");
+  const [addTeacherQuery, setAddTeacherQuery] = useState("");
   const [isAdding, setIsAdding] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
 
@@ -54,6 +55,7 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
   const [isBulkAccessModalOpen, setIsBulkAccessModalOpen] = useState(false);
   const [bulkAccessType, setBulkAccessType] = useState<"semua" | "khusus">("semua");
   const [bulkAllowedEmails, setBulkAllowedEmails] = useState<string[]>([]);
+  const [bulkTeacherQuery, setBulkTeacherQuery] = useState("");
   const [isSavingBulkAccess, setIsSavingBulkAccess] = useState(false);
 
   // Edit state
@@ -62,6 +64,7 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
   const [editValue, setEditValue] = useState("");
   const [editAllowedEmails, setEditAllowedEmails] = useState<string[]>([]);
   const [editAccessType, setEditAccessType] = useState<"semua" | "khusus">("semua");
+  const [editTeacherQuery, setEditTeacherQuery] = useState("");
   const [isSavingEdit, setIsSavingEdit] = useState(false);
 
   const showToast = (msg: string) => {
@@ -105,6 +108,7 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
       setNewValue("");
       setAddAllowedEmails([]);
       setAddAccessType("semua");
+      setAddTeacherQuery("");
       setIsAdding(false);
       showToast(`Aturan "${newRule.nama_poin}" disimpan!`);
     } catch (err: any) {
@@ -212,6 +216,7 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
     const allowed = rule.allowed_guru_emails || [];
     setEditAllowedEmails(allowed);
     setEditAccessType(allowed.length > 0 ? "khusus" : "semua");
+    setEditTeacherQuery("");
   };
 
   const handleSaveEdit = async (e: React.FormEvent) => {
@@ -338,6 +343,7 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
                   onClick={() => {
                     setBulkAccessType("semua");
                     setBulkAllowedEmails([]);
+                    setBulkTeacherQuery("");
                     setIsBulkAccessModalOpen(true);
                   }}
                   className="flex items-center gap-1.5 px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-black rounded-lg transition-all shadow-md cursor-pointer"
@@ -364,7 +370,10 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            onClick={() => setIsAdding(true)}
+            onClick={() => {
+              setAddTeacherQuery("");
+              setIsAdding(true);
+            }}
             className="flex items-center gap-1.5 px-4 py-2 brand-gradient text-white text-xs font-black rounded-lg transition-all shadow-md cursor-pointer ml-auto md:ml-0"
           >
             <Plus className="w-4 h-4" />
@@ -573,30 +582,56 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
                 </div>
 
                 {addAccessType === "khusus" && (
-                  <div className="max-h-40 overflow-y-auto bg-brand-50/50 p-2.5 rounded-xl border border-brand-100 space-y-1.5 mt-2">
-                    <p className="text-[10px] text-brand-400 font-extrabold uppercase">Pilih Guru yang Diizinkan:</p>
-                    {teachersList.length > 0 ? (
-                      teachersList.map((t) => {
-                        const isChecked = addAllowedEmails.includes(t.email);
-                        return (
-                          <label key={t.id} className="flex items-center gap-2 text-xs font-semibold text-brand-900 cursor-pointer hover:bg-white p-1 rounded-lg transition-colors">
-                            <input
-                              type="checkbox"
-                              checked={isChecked}
-                              onChange={() => {
-                                setAddAllowedEmails((prev) =>
-                                  isChecked ? prev.filter((e) => e !== t.email) : [...prev, t.email]
-                                );
-                              }}
-                              className="w-3.5 h-3.5 rounded border-brand-300 text-brand-600 focus:ring-brand-500"
-                            />
-                            <span>{t.nama} <span className="text-[10px] text-brand-400">({t.email})</span></span>
-                          </label>
-                        );
-                      })
-                    ) : (
-                      <p className="text-xs text-brand-400 font-semibold">Tidak ada akun guru terdaftar.</p>
-                    )}
+                  <div className="space-y-2 mt-2">
+                    <div className="relative">
+                      <Search className="w-3.5 h-3.5 text-brand-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        placeholder="Cari nama atau email guru..."
+                        value={addTeacherQuery}
+                        onChange={(e) => setAddTeacherQuery(e.target.value)}
+                        className="w-full pl-8.5 pr-7 py-1.5 text-xs font-bold text-brand-900 border border-brand-200 rounded-xl outline-none bg-brand-50/40 focus:bg-white focus:ring-2 focus:ring-amber-500/20"
+                      />
+                      {addTeacherQuery && (
+                        <button
+                          type="button"
+                          onClick={() => setAddTeacherQuery("")}
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-brand-400 hover:text-brand-600"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="max-h-40 overflow-y-auto bg-brand-50/50 p-2.5 rounded-xl border border-brand-100 space-y-1.5">
+                      <p className="text-[10px] text-brand-400 font-extrabold uppercase">Pilih Guru yang Diizinkan:</p>
+                      {teachersList.filter(t => t.nama.toLowerCase().includes(addTeacherQuery.toLowerCase()) || t.email.toLowerCase().includes(addTeacherQuery.toLowerCase())).length > 0 ? (
+                        teachersList
+                          .filter(t => t.nama.toLowerCase().includes(addTeacherQuery.toLowerCase()) || t.email.toLowerCase().includes(addTeacherQuery.toLowerCase()))
+                          .map((t) => {
+                            const isChecked = addAllowedEmails.includes(t.email);
+                            return (
+                              <label key={t.id} className="flex items-center gap-2 text-xs font-semibold text-brand-900 cursor-pointer hover:bg-white p-1 rounded-lg transition-colors">
+                                <input
+                                  type="checkbox"
+                                  checked={isChecked}
+                                  onChange={() => {
+                                    setAddAllowedEmails((prev) =>
+                                      isChecked ? prev.filter((e) => e !== t.email) : [...prev, t.email]
+                                    );
+                                  }}
+                                  className="w-3.5 h-3.5 rounded border-brand-300 text-brand-600 focus:ring-brand-500"
+                                />
+                                <span>{t.nama} <span className="text-[10px] text-brand-400">({t.email})</span></span>
+                              </label>
+                            );
+                          })
+                      ) : (
+                        <p className="text-xs text-brand-400 font-semibold py-2 text-center">
+                          {addTeacherQuery ? "Guru tidak ditemukan." : "Tidak ada akun guru terdaftar."}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
@@ -678,30 +713,56 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
                 </div>
 
                 {bulkAccessType === "khusus" && (
-                  <div className="max-h-48 overflow-y-auto bg-brand-50/50 p-3 rounded-xl border border-brand-100 space-y-2">
-                    <p className="text-[10px] text-brand-400 font-extrabold uppercase">Pilih Guru yang Diizinkan:</p>
-                    {teachersList.length > 0 ? (
-                      teachersList.map((t) => {
-                        const isChecked = bulkAllowedEmails.includes(t.email);
-                        return (
-                          <label key={t.id} className="flex items-center gap-2 text-xs font-semibold text-brand-900 cursor-pointer hover:bg-white p-1.5 rounded-lg transition-colors">
-                            <input
-                              type="checkbox"
-                              checked={isChecked}
-                              onChange={() => {
-                                setBulkAllowedEmails((prev) =>
-                                  isChecked ? prev.filter((e) => e !== t.email) : [...prev, t.email]
-                                );
-                              }}
-                              className="w-3.5 h-3.5 rounded border-brand-300 text-brand-600 focus:ring-brand-500"
-                            />
-                            <span>{t.nama} <span className="text-[10px] text-brand-400">({t.email})</span></span>
-                          </label>
-                        );
-                      })
-                    ) : (
-                      <p className="text-xs text-brand-400 font-semibold">Tidak ada akun guru terdaftar.</p>
-                    )}
+                  <div className="space-y-2">
+                    <div className="relative">
+                      <Search className="w-3.5 h-3.5 text-brand-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        placeholder="Cari nama atau email guru..."
+                        value={bulkTeacherQuery}
+                        onChange={(e) => setBulkTeacherQuery(e.target.value)}
+                        className="w-full pl-8.5 pr-7 py-1.5 text-xs font-bold text-brand-900 border border-brand-200 rounded-xl outline-none bg-brand-50/40 focus:bg-white focus:ring-2 focus:ring-amber-500/20"
+                      />
+                      {bulkTeacherQuery && (
+                        <button
+                          type="button"
+                          onClick={() => setBulkTeacherQuery("")}
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-brand-400 hover:text-brand-600"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="max-h-48 overflow-y-auto bg-brand-50/50 p-3 rounded-xl border border-brand-100 space-y-2">
+                      <p className="text-[10px] text-brand-400 font-extrabold uppercase">Pilih Guru yang Diizinkan:</p>
+                      {teachersList.filter(t => t.nama.toLowerCase().includes(bulkTeacherQuery.toLowerCase()) || t.email.toLowerCase().includes(bulkTeacherQuery.toLowerCase())).length > 0 ? (
+                        teachersList
+                          .filter(t => t.nama.toLowerCase().includes(bulkTeacherQuery.toLowerCase()) || t.email.toLowerCase().includes(bulkTeacherQuery.toLowerCase()))
+                          .map((t) => {
+                            const isChecked = bulkAllowedEmails.includes(t.email);
+                            return (
+                              <label key={t.id} className="flex items-center gap-2 text-xs font-semibold text-brand-900 cursor-pointer hover:bg-white p-1.5 rounded-lg transition-colors">
+                                <input
+                                  type="checkbox"
+                                  checked={isChecked}
+                                  onChange={() => {
+                                    setBulkAllowedEmails((prev) =>
+                                      isChecked ? prev.filter((e) => e !== t.email) : [...prev, t.email]
+                                    );
+                                  }}
+                                  className="w-3.5 h-3.5 rounded border-brand-300 text-brand-600 focus:ring-brand-500"
+                                />
+                                <span>{t.nama} <span className="text-[10px] text-brand-400">({t.email})</span></span>
+                              </label>
+                            );
+                          })
+                      ) : (
+                        <p className="text-xs text-brand-400 font-semibold py-2 text-center">
+                          {bulkTeacherQuery ? "Guru tidak ditemukan." : "Tidak ada akun guru terdaftar."}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
@@ -812,30 +873,56 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
                   </div>
 
                   {editAccessType === "khusus" && (
-                    <div className="max-h-40 overflow-y-auto bg-brand-50/50 p-2.5 rounded-xl border border-brand-100 space-y-1.5 mt-2">
-                      <p className="text-[10px] text-brand-400 font-extrabold uppercase">Pilih Guru yang Diizinkan:</p>
-                      {teachersList.length > 0 ? (
-                        teachersList.map((t) => {
-                          const isChecked = editAllowedEmails.includes(t.email);
-                          return (
-                            <label key={t.id} className="flex items-center gap-2 text-xs font-semibold text-brand-900 cursor-pointer hover:bg-white p-1 rounded-lg transition-colors">
-                              <input
-                                type="checkbox"
-                                checked={isChecked}
-                                onChange={() => {
-                                  setEditAllowedEmails((prev) =>
-                                    isChecked ? prev.filter((e) => e !== t.email) : [...prev, t.email]
-                                  );
-                                }}
-                                className="w-3.5 h-3.5 rounded border-brand-300 text-brand-600 focus:ring-brand-500"
-                              />
-                              <span>{t.nama} <span className="text-[10px] text-brand-400">({t.email})</span></span>
-                            </label>
-                          );
-                        })
-                      ) : (
-                        <p className="text-xs text-brand-400 font-semibold">Tidak ada akun guru terdaftar.</p>
-                      )}
+                    <div className="space-y-2 mt-2">
+                      <div className="relative">
+                        <Search className="w-3.5 h-3.5 text-brand-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                        <input
+                          type="text"
+                          placeholder="Cari nama atau email guru..."
+                          value={editTeacherQuery}
+                          onChange={(e) => setEditTeacherQuery(e.target.value)}
+                          className="w-full pl-8.5 pr-7 py-1.5 text-xs font-bold text-brand-900 border border-brand-200 rounded-xl outline-none bg-brand-50/40 focus:bg-white focus:ring-2 focus:ring-amber-500/20"
+                        />
+                        {editTeacherQuery && (
+                          <button
+                            type="button"
+                            onClick={() => setEditTeacherQuery("")}
+                            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-brand-400 hover:text-brand-600"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="max-h-40 overflow-y-auto bg-brand-50/50 p-2.5 rounded-xl border border-brand-100 space-y-1.5">
+                        <p className="text-[10px] text-brand-400 font-extrabold uppercase">Pilih Guru yang Diizinkan:</p>
+                        {teachersList.filter(t => t.nama.toLowerCase().includes(editTeacherQuery.toLowerCase()) || t.email.toLowerCase().includes(editTeacherQuery.toLowerCase())).length > 0 ? (
+                          teachersList
+                            .filter(t => t.nama.toLowerCase().includes(editTeacherQuery.toLowerCase()) || t.email.toLowerCase().includes(editTeacherQuery.toLowerCase()))
+                            .map((t) => {
+                              const isChecked = editAllowedEmails.includes(t.email);
+                              return (
+                                <label key={t.id} className="flex items-center gap-2 text-xs font-semibold text-brand-900 cursor-pointer hover:bg-white p-1 rounded-lg transition-colors">
+                                  <input
+                                    type="checkbox"
+                                    checked={isChecked}
+                                    onChange={() => {
+                                      setEditAllowedEmails((prev) =>
+                                        isChecked ? prev.filter((e) => e !== t.email) : [...prev, t.email]
+                                      );
+                                    }}
+                                    className="w-3.5 h-3.5 rounded border-brand-300 text-brand-600 focus:ring-brand-500"
+                                  />
+                                  <span>{t.nama} <span className="text-[10px] text-brand-400">({t.email})</span></span>
+                                </label>
+                              );
+                            })
+                        ) : (
+                          <p className="text-xs text-brand-400 font-semibold py-2 text-center">
+                            {editTeacherQuery ? "Guru tidak ditemukan." : "Tidak ada akun guru terdaftar."}
+                          </p>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>

@@ -70,19 +70,51 @@ export default function EditAccountModal({
         if (authErr) throw new Error("Gagal update Auth: " + authErr.message);
       }
 
-      // 2. Jika role siswa, update atau buat data di tabel siswa
+      // 2. Jika role adalah siswa, pastikan NIS dan Nama di tabel 'siswa' di-upsert/di-update
       if (profile.role === "siswa") {
-        if (profile.nis && profile.nis !== trimmedInput) {
-          const { error: siswaErr } = await supabaseAdminAuth
+        const oldUsername = profile.email ? profile.email.split("@")[0].trim() : "";
+        const searchNisList = Array.from(new Set([profile.nis, oldUsername].filter(Boolean)));
+
+        let existingSiswaRow = null;
+
+        for (const nisToSearch of searchNisList) {
+          const { data } = await supabaseAdminAuth
             .from("siswa")
-            .update({ nis: trimmedInput, nama: editNama.toUpperCase() })
-            .eq("nis", profile.nis);
-          if (siswaErr) console.warn("Peringatan update NIS di tabel siswa:", siswaErr.message);
+            .select("id, nis, kelas, total_poin")
+            .eq("nis", nisToSearch)
+            .maybeSingle();
+          if (data) {
+            existingSiswaRow = data;
+            break;
+          }
+        }
+
+        if (existingSiswaRow) {
+          const { error: sUpdateErr } = await supabaseAdminAuth
+            .from("siswa")
+            .update({
+              nis: trimmedInput,
+              nama: editNama.trim().toUpperCase(),
+            })
+            .eq("id", existingSiswaRow.id);
+
+          if (sUpdateErr) {
+            console.warn("Update siswa by ID failed, attempting upsert:", sUpdateErr.message);
+            await supabaseAdminAuth.from("siswa").upsert(
+              {
+                nis: trimmedInput,
+                nama: editNama.trim().toUpperCase(),
+                kelas: existingSiswaRow.kelas || "Umum",
+                total_poin: existingSiswaRow.total_poin ?? 0,
+              },
+              { onConflict: "nis" }
+            );
+          }
         } else {
           await supabaseAdminAuth.from("siswa").upsert(
             {
               nis: trimmedInput,
-              nama: editNama.toUpperCase(),
+              nama: editNama.trim().toUpperCase(),
               kelas: "Umum",
               total_poin: 0,
             },
@@ -102,7 +134,34 @@ export default function EditAccountModal({
           .from("profiles")
           .update(profileUpdates)
           .eq("id", profile.id);
-        if (profileErr) throw new Error("Gagal update profil database: " + profileErr.message);
+
+        if (profileErr) {
+          if (
+            profileErr.message.includes("profiles_nis_fkey") ||
+            profileErr.message.includes("foreign key constraint")
+          ) {
+            await supabaseAdminAuth.from("siswa").upsert(
+              {
+                nis: trimmedInput,
+                nama: editNama.trim().toUpperCase(),
+                kelas: "Umum",
+                total_poin: 0,
+              },
+              { onConflict: "nis" }
+            );
+
+            const { error: retryErr } = await supabaseAdminAuth
+              .from("profiles")
+              .update(profileUpdates)
+              .eq("id", profile.id);
+
+            if (retryErr) {
+              throw new Error("Gagal update profil database: " + retryErr.message);
+            }
+          } else {
+            throw new Error("Gagal update profil database: " + profileErr.message);
+          }
+        }
       }
 
       onClose();

@@ -27,10 +27,14 @@ ALTER TABLE public.siswa ADD COLUMN IF NOT EXISTS foto_url TEXT;
 
 -- 1b. TABEL MASTER BOBOT POIN (ATURAN BAKU)
 CREATE TABLE IF NOT EXISTS public.master_poin (
-  id         UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  nama_poin  TEXT NOT NULL,
-  nilai_poin INT NOT NULL
+  id                  UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  nama_poin           TEXT NOT NULL,
+  nilai_poin          INT NOT NULL,
+  allowed_guru_emails TEXT[]
 );
+
+-- Kolom tambahan (aman untuk DB yang sudah jalan)
+ALTER TABLE public.master_poin ADD COLUMN IF NOT EXISTS allowed_guru_emails TEXT[];
 
 -- 1c. TABEL RIWAYAT POIN SISWA (LOG AUDIT)
 CREATE TABLE IF NOT EXISTS public.riwayat_poin (

@@ -40,7 +40,14 @@ export default function EditAccountModal({
       const fullEmail = trimmedInput.includes("@") ? trimmedInput : `${trimmedInput}@sman19.sch.id`;
 
       const updates: any = {};
-      if (fullEmail !== profile.email) updates.email = fullEmail;
+      if (fullEmail !== profile.email) {
+        updates.email = fullEmail;
+        if (profile.role === "siswa") {
+          updates.user_metadata = { nis: trimmedInput };
+        } else if (profile.role === "guru" || profile.role === "kepala_sekolah") {
+          updates.user_metadata = { nip: trimmedInput };
+        }
+      }
       if (editPassword) updates.password = editPassword;
 
       if (Object.keys(updates).length > 0) {
@@ -51,18 +58,28 @@ export default function EditAccountModal({
         if (authErr) throw new Error("Gagal update auth: " + authErr.message);
       }
 
-      if (editNama !== profile.nama) {
+      // Jika role siswa & NIS berubah, update juga tabel siswa lebih dulu
+      if (profile.role === "siswa" && profile.nis && trimmedInput !== profile.nis) {
+        const { error: siswaErr } = await supabase
+          .from("siswa")
+          .update({ nis: trimmedInput })
+          .eq("nis", profile.nis);
+        if (siswaErr) console.warn("Peringatan update NIS di tabel siswa:", siswaErr.message);
+      }
+
+      const profileUpdates: any = {};
+      if (editNama !== profile.nama) profileUpdates.nama = editNama;
+      if (fullEmail !== profile.email) {
+        profileUpdates.email = fullEmail;
+        if (profile.role === "siswa") profileUpdates.nis = trimmedInput;
+      }
+
+      if (Object.keys(profileUpdates).length > 0) {
         const { error: profileErr } = await supabase
           .from("profiles")
-          .update({ nama: editNama, email: fullEmail })
+          .update(profileUpdates)
           .eq("id", profile.id);
         if (profileErr) throw new Error("Gagal update profil: " + profileErr.message);
-      } else if (fullEmail !== profile.email) {
-        const { error: profileErr } = await supabase
-          .from("profiles")
-          .update({ email: fullEmail })
-          .eq("id", profile.id);
-        if (profileErr) throw new Error("Gagal update email profil: " + profileErr.message);
       }
 
       onClose();
@@ -73,9 +90,6 @@ export default function EditAccountModal({
       setIsEditing(false);
     }
   };
-
-  const isSiswaOrGuru =
-    profile?.role === "siswa" || profile?.role === "guru" || profile?.role === "kepala_sekolah";
 
   return (
     <ModalPortal isOpen={isOpen} onClose={onClose} title="Edit Akun" icon={Pencil}>
@@ -96,7 +110,7 @@ export default function EditAccountModal({
 
         <div className="space-y-1">
           <label className="text-xs font-black text-brand-900 uppercase block">
-            {isSiswaOrGuru ? "Username (Login)" : "Email / Username Login"}
+            Username Login
           </label>
           <div className="relative">
             <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-brand-400" />
@@ -105,15 +119,13 @@ export default function EditAccountModal({
               required
               value={editEmail}
               onChange={(e) => setEditEmail(e.target.value)}
-              readOnly={isSiswaOrGuru}
-              className={`w-full border border-brand-100 rounded-xl py-2.5 pl-10 pr-4 text-sm font-semibold focus:ring-1 focus:ring-brand-500 outline-none text-brand-900 bg-brand-50/20${
-                isSiswaOrGuru ? " opacity-75 cursor-not-allowed" : ""
-              }`}
+              placeholder="Username / NIS / NIP"
+              className="w-full border border-brand-100 rounded-xl py-2.5 pl-10 pr-4 text-sm font-semibold focus:ring-1 focus:ring-brand-500 outline-none text-brand-900 bg-brand-50/20"
             />
           </div>
-          {isSiswaOrGuru && (
-            <p className="text-[10px] text-brand-400 font-medium">Username tidak dapat diubah.</p>
-          )}
+          <p className="text-[10px] text-brand-400 font-medium">
+            Masukkan username tanpa @domain (contoh: NIS, NIP, atau nama pengguna).
+          </p>
         </div>
 
         <div className="space-y-1">

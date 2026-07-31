@@ -11,6 +11,7 @@ export interface MasterPoin {
   id: string;
   nama_poin: string;
   nilai_poin: number;
+  allowed_guru_emails?: string[] | null;
 }
 
 export interface RiwayatPoin {

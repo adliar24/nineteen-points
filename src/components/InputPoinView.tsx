@@ -217,13 +217,23 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
       if (!isPiketAllowed) return false;
     }
 
+    // Teacher access assignment check (super_admin & kepala_sekolah can see all points)
+    if (userSession?.role !== "super_admin" && userSession?.role !== "kepala_sekolah") {
+      const allowed = p.allowed_guru_emails;
+      if (allowed && Array.isArray(allowed) && allowed.length > 0) {
+        const userEmail = (userSession?.email || "").toLowerCase().trim();
+        const isAllowed = allowed.some((email) => email.toLowerCase().trim() === userEmail);
+        if (!isAllowed) return false;
+      }
+    }
+
     const matchesFilter =
       ruleFilterType === "Semua" ||
       (ruleFilterType === "Positif" && p.nilai_poin > 0) ||
       (ruleFilterType === "Negatif" && p.nilai_poin < 0);
     const matchesSearch = p.nama_poin.toLowerCase().includes(ruleSearchQuery.toLowerCase());
     return matchesFilter && matchesSearch;
-  }), [masterPoin, userSession?.role, ruleFilterType, ruleSearchQuery]);
+  }), [masterPoin, userSession?.role, userSession?.email, ruleFilterType, ruleSearchQuery]);
 
   // Submission
   const handleApplyPoint = async () => {

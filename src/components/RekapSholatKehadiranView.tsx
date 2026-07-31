@@ -73,8 +73,9 @@ export default function RekapSholatKehadiranView({ userSession }: RekapSholatKeh
     let count = 0;
     rekapData.forEach((row) => {
       datesInRange.forEach((d) => {
-        if (row.sholat[d]) count++;
+        if (row.sholat && row.sholat[d]) count++;
         if (row.sholatDhuha && row.sholatDhuha[d]) count++;
+        if (row.sholatJumat && row.sholatJumat[d]) count++;
       });
     });
     return count;
@@ -84,15 +85,17 @@ export default function RekapSholatKehadiranView({ userSession }: RekapSholatKeh
     const headers = ["NIS", "Nama", "Kelas"];
     datesInRange.forEach((d) => {
       const label = parseDateSafe(d).toLocaleDateString("id-ID", { day: "2-digit", month: "short" });
-      headers.push(`Sholat Berjamaah (${label})`);
       headers.push(`Sholat Dhuha (${label})`);
+      headers.push(`Sholat Jumat (${label})`);
+      headers.push(`Sholat Berjamaah (${label})`);
     });
 
     const rows = filteredData.map((row) => {
       const cells = [row.siswa_nis, row.siswa_nama, row.siswa_kelas];
       datesInRange.forEach((d) => {
-        cells.push(row.sholat[d] ? "Ya" : "Tidak");
         cells.push(row.sholatDhuha && row.sholatDhuha[d] ? "Ya" : "Tidak");
+        cells.push(row.sholatJumat && row.sholatJumat[d] ? "Ya" : "Tidak");
+        cells.push(row.sholat && row.sholat[d] ? "Ya" : "Tidak");
       });
       return cells.join(",");
     });
@@ -234,9 +237,9 @@ export default function RekapSholatKehadiranView({ userSession }: RekapSholatKeh
                       <td key={`${row.siswa_id}-${d}`} className="px-3 py-3 text-center">
                         <div className="flex flex-col gap-1 items-center">
                           <div className="flex items-center gap-1">
-                            <span className="text-[8px] font-black text-emerald-800 bg-emerald-100/70 px-1.5 py-0.5 rounded">Jm:</span>
-                            {row.sholat[d] ? (
-                              <span className="inline-flex items-center gap-0.5 text-[9px] font-black text-emerald-700">
+                            <span className="text-[8px] font-black text-amber-800 bg-amber-100/70 px-1.5 py-0.5 rounded">Dh:</span>
+                            {row.sholatDhuha && row.sholatDhuha[d] ? (
+                              <span className="inline-flex items-center gap-0.5 text-[9px] font-black text-amber-700">
                                 <Check className="w-2.5 h-2.5" /> Ya
                               </span>
                             ) : (
@@ -244,9 +247,19 @@ export default function RekapSholatKehadiranView({ userSession }: RekapSholatKeh
                             )}
                           </div>
                           <div className="flex items-center gap-1">
-                            <span className="text-[8px] font-black text-amber-800 bg-amber-100/70 px-1.5 py-0.5 rounded">Dh:</span>
-                            {row.sholatDhuha && row.sholatDhuha[d] ? (
-                              <span className="inline-flex items-center gap-0.5 text-[9px] font-black text-amber-700">
+                            <span className="text-[8px] font-black text-indigo-800 bg-indigo-100/70 px-1.5 py-0.5 rounded">Jm:</span>
+                            {row.sholatJumat && row.sholatJumat[d] ? (
+                              <span className="inline-flex items-center gap-0.5 text-[9px] font-black text-indigo-700">
+                                <Check className="w-2.5 h-2.5" /> Ya
+                              </span>
+                            ) : (
+                              <span className="text-[9px] text-brand-300 font-bold">-</span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <span className="text-[8px] font-black text-emerald-800 bg-emerald-100/70 px-1.5 py-0.5 rounded">Bj:</span>
+                            {row.sholat && row.sholat[d] ? (
+                              <span className="inline-flex items-center gap-0.5 text-[9px] font-black text-emerald-700">
                                 <Check className="w-2.5 h-2.5" /> Ya
                               </span>
                             ) : (

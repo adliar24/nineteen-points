@@ -24,7 +24,9 @@ import {
   SHOLAT_POIN_NAMA,
   SHOLAT_POIN_VALUE,
   SHOLAT_DHUHA_POIN_NAMA,
-  SHOLAT_DHUHA_POIN_VALUE
+  SHOLAT_DHUHA_POIN_VALUE,
+  SHOLAT_JUMAT_POIN_NAMA,
+  SHOLAT_JUMAT_POIN_VALUE
 } from "../dbStore";
 import { toSentenceCase } from "../formatName";
 
@@ -33,10 +35,21 @@ interface SholatScanViewProps {
 }
 
 export default function SholatScanView({ userSession }: SholatScanViewProps) {
-  const [sholatType, setSholatType] = useState<"berjamaah" | "dhuha">("berjamaah");
+  const [sholatType, setSholatType] = useState<"dhuha" | "jumat" | "berjamaah">("dhuha");
 
-  const currentPoinNama = sholatType === "dhuha" ? SHOLAT_DHUHA_POIN_NAMA : SHOLAT_POIN_NAMA;
-  const currentPoinValue = sholatType === "dhuha" ? SHOLAT_DHUHA_POIN_VALUE : SHOLAT_POIN_VALUE;
+  const currentPoinNama =
+    sholatType === "dhuha"
+      ? SHOLAT_DHUHA_POIN_NAMA
+      : sholatType === "jumat"
+      ? SHOLAT_JUMAT_POIN_NAMA
+      : SHOLAT_POIN_NAMA;
+
+  const currentPoinValue =
+    sholatType === "dhuha"
+      ? SHOLAT_DHUHA_POIN_VALUE
+      : sholatType === "jumat"
+      ? SHOLAT_JUMAT_POIN_VALUE
+      : SHOLAT_POIN_VALUE;
 
   const { data: siswaList = [] } = useQuery({
     queryKey: ["siswa"],
@@ -185,10 +198,10 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
         <div>
           <h2 className="text-xl font-extrabold text-brand-950 tracking-tight flex items-center gap-2">
             <BookOpen className="w-6 h-6 text-emerald-600" />
-            Scan {sholatType === "dhuha" ? "Sholat Dhuha" : "Sholat Berjamaah"}
+            Scan {sholatType === "dhuha" ? "Sholat Dhuha" : sholatType === "jumat" ? "Sholat Jumat" : "Sholat Berjamaah"}
           </h2>
           <p className="text-xs text-brand-500 font-semibold mt-1">
-            Pindai QR kartu pelajar — otomatis +{currentPoinValue} poin {sholatType === "dhuha" ? "sholat dhuha" : "sholat berjamaah"} tercatat.
+            Pindai QR kartu pelajar — otomatis +{currentPoinValue} poin {currentPoinNama.toLowerCase()} tercatat.
           </p>
         </div>
 
@@ -198,29 +211,43 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
             onClick={() => {
               if (cameraActive) stopScanner();
               setCameraActive(false);
-              setSholatType("berjamaah");
-            }}
-            className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
-              sholatType === "berjamaah"
-                ? "bg-white text-emerald-700 shadow-md"
-                : "text-slate-500 hover:text-slate-800"
-            }`}
-          >
-            Sholat Berjamaah
-          </button>
-          <button
-            onClick={() => {
-              if (cameraActive) stopScanner();
-              setCameraActive(false);
               setSholatType("dhuha");
             }}
-            className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+            className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
               sholatType === "dhuha"
                 ? "bg-white text-amber-700 shadow-md"
                 : "text-slate-500 hover:text-slate-800"
             }`}
           >
             Sholat Dhuha
+          </button>
+          <button
+            onClick={() => {
+              if (cameraActive) stopScanner();
+              setCameraActive(false);
+              setSholatType("jumat");
+            }}
+            className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+              sholatType === "jumat"
+                ? "bg-white text-indigo-700 shadow-md"
+                : "text-slate-500 hover:text-slate-800"
+            }`}
+          >
+            Sholat Jumat
+          </button>
+          <button
+            onClick={() => {
+              if (cameraActive) stopScanner();
+              setCameraActive(false);
+              setSholatType("berjamaah");
+            }}
+            className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+              sholatType === "berjamaah"
+                ? "bg-white text-emerald-700 shadow-md"
+                : "text-slate-500 hover:text-slate-800"
+            }`}
+          >
+            Berjamaah
           </button>
         </div>
       </div>

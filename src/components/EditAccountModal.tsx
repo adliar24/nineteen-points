@@ -39,47 +39,72 @@ export default function EditAccountModal({
       const trimmedInput = editEmail.trim();
       const fullEmail = trimmedInput.includes("@") ? trimmedInput : `${trimmedInput}@sman19.sch.id`;
 
+      // 1. Ambil data auth user saat ini agar user_metadata tidak terhapus
+      const { data: userData } = await supabaseAdminAuth.auth.admin.getUserById(profile.id);
+      const existingMeta = userData?.user?.user_metadata || {};
+
       const updates: any = {};
       if (fullEmail !== profile.email) {
         updates.email = fullEmail;
-        if (profile.role === "siswa") {
-          updates.user_metadata = { nis: trimmedInput };
-        } else if (profile.role === "guru" || profile.role === "kepala_sekolah") {
-          updates.user_metadata = { nip: trimmedInput };
-        }
       }
-      if (editPassword) updates.password = editPassword;
+      if (editPassword) {
+        updates.password = editPassword;
+      }
+
+      const newMeta = { ...existingMeta };
+      if (editNama && editNama !== profile.nama) {
+        newMeta.fullName = editNama;
+      }
+      if (profile.role === "siswa") {
+        newMeta.nis = trimmedInput;
+      } else if (profile.role === "guru" || profile.role === "kepala_sekolah") {
+        newMeta.nip = trimmedInput;
+      }
+      updates.user_metadata = newMeta;
 
       if (Object.keys(updates).length > 0) {
         const { error: authErr } = await supabaseAdminAuth.auth.admin.updateUserById(
           profile.id,
           updates
         );
-        if (authErr) throw new Error("Gagal update auth: " + authErr.message);
+        if (authErr) throw new Error("Gagal update Auth: " + authErr.message);
       }
 
-      // Jika role siswa & NIS berubah, update juga tabel siswa lebih dulu
+      // 2. Jika role siswa & NIS berubah, update juga tabel siswa lebih dulu
       if (profile.role === "siswa" && profile.nis && trimmedInput !== profile.nis) {
-        const { error: siswaErr } = await supabase
+        const { error: siswaErr } = await supabaseAdminAuth
           .from("siswa")
           .update({ nis: trimmedInput })
           .eq("nis", profile.nis);
         if (siswaErr) console.warn("Peringatan update NIS di tabel siswa:", siswaErr.message);
       }
 
+      // 3. Update tabel profiles via supabaseAdminAuth (service_role)
       const profileUpdates: any = {};
       if (editNama !== profile.nama) profileUpdates.nama = editNama;
-      if (fullEmail !== profile.email) {
-        profileUpdates.email = fullEmail;
-        if (profile.role === "siswa") profileUpdates.nis = trimmedInput;
+      if (fullEmail !== profile.email) profileUpdates.email = fullEmail;
+
+      if (profile.role === "siswa") {
+        // Cek ketersediaan NIS di tabel siswa sebelum mengupdate profiles.nis
+        const { data: matchingSiswa } = await supabaseAdminAuth
+          .from("siswa")
+          .select("nis")
+          .eq("nis", trimmedInput)
+          .maybeSingle();
+
+        if (matchingSiswa) {
+          profileUpdates.nis = trimmedInput;
+        } else if (profile.nis && profile.nis !== trimmedInput) {
+          profileUpdates.nis = null;
+        }
       }
 
       if (Object.keys(profileUpdates).length > 0) {
-        const { error: profileErr } = await supabase
+        const { error: profileErr } = await supabaseAdminAuth
           .from("profiles")
           .update(profileUpdates)
           .eq("id", profile.id);
-        if (profileErr) throw new Error("Gagal update profil: " + profileErr.message);
+        if (profileErr) throw new Error("Gagal update profil database: " + profileErr.message);
       }
 
       onClose();

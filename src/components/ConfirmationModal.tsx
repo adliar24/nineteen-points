@@ -10,6 +10,7 @@ interface ConfirmationModalProps {
   title: string;
   message: string;
   confirmText?: string;
+  confirmVariant?: string;
   cancelText?: string;
   type?: "danger" | "warning" | "info" | "success";
 }

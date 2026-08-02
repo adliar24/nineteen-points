@@ -13,7 +13,8 @@ import {
   Clock,
   RefreshCw,
   Sparkles,
-  BookOpen
+  BookOpen,
+  ScanFace
 } from "lucide-react";
 import { Siswa, UserSession } from "../types";
 import {
@@ -29,6 +30,7 @@ import {
   SHOLAT_JUMAT_POIN_VALUE
 } from "../dbStore";
 import { toSentenceCase } from "../formatName";
+import FaceScanner from "./face/FaceScanner";
 
 interface SholatScanViewProps {
   userSession: UserSession;
@@ -62,6 +64,7 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
   });
 
   const [cameraActive, setCameraActive] = useState(false);
+  const [showFaceScanner, setShowFaceScanner] = useState(false);
   const [scannerError, setScannerError] = useState<string | null>(null);
   const scannerRef = useRef<Html5Qrcode | null>(null);
 
@@ -70,6 +73,27 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
     kelas: string;
     status: "success" | "duplicate" | "not_found";
   } | null>(null);
+
+  const handleStudentSholatAttendance = async (student: Siswa) => {
+    try {
+      const alreadyScanned = await checkSholatToday(student.id, currentPoinNama);
+      if (alreadyScanned) {
+        setLastScanned({ nama: student.nama, kelas: student.kelas, status: "duplicate" });
+        setTimeout(() => setLastScanned(null), 3000);
+        return;
+      }
+
+      await addRiwayat(student.id, currentPoinNama, currentPoinValue, userSession.fullName);
+      playBeep();
+      setLastScanned({ nama: student.nama, kelas: student.kelas, status: "success" });
+      await refetchRecap();
+      await queryClient.invalidateQueries({ queryKey: ["siswa"] });
+      setTimeout(() => setLastScanned(null), 3000);
+    } catch (err: any) {
+      setScannerError("Gagal mencatat sholat: " + err.message);
+      setTimeout(() => setScannerError(null), 4000);
+    }
+  };
 
   const lastProcessedRef = useRef<string>("");
   const processingRef = useRef(false);
@@ -291,12 +315,22 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
               <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto border border-emerald-100">
                 <Camera className="w-6 h-6 animate-pulse" />
               </div>
-              <button
-                onClick={handleToggleCamera}
-                className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-md cursor-pointer border-0 transition-all"
-              >
-                Aktifkan Kamera
-              </button>
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={handleToggleCamera}
+                  className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-md cursor-pointer border-0 transition-all flex items-center justify-center gap-2"
+                >
+                  <Camera className="w-4 h-4" />
+                  Mulai Scan QR Kamera
+                </button>
+                <button
+                  onClick={() => setShowFaceScanner(true)}
+                  className="px-6 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-xs rounded-xl shadow-md cursor-pointer border-0 transition-all flex items-center justify-center gap-2"
+                >
+                  <ScanFace className="w-4 h-4" />
+                  Scan Wajah (AI)
+                </button>
+              </div>
             </div>
           )}
           {cameraActive && (
@@ -391,6 +425,16 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
           </div>
         )}
       </div>
+
+      {showFaceScanner && (
+        <FaceScanner
+          siswaList={siswaList}
+          title={`Scan Wajah - Presensi ${sholatType === "dhuha" ? "Sholat Dhuha" : sholatType === "jumat" ? "Sholat Jumat" : "Sholat Berjamaah"}`}
+          subtitle={`Setiap siswa yang terdeteksi otomatis memperoleh +${currentPoinValue} poin sholat`}
+          onMatchSuccess={handleStudentSholatAttendance}
+          onClose={() => setShowFaceScanner(false)}
+        />
+      )}
     </div>
   );
 }

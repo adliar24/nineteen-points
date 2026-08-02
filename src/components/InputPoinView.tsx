@@ -17,11 +17,13 @@ import {
   FileText,
   MousePointer,
   RotateCcw,
-  Sparkles
+  Sparkles,
+  ScanFace
 } from "lucide-react";
 import { Siswa, MasterPoin, UserSession } from "../types";
 import { getSiswaList, getMasterPoinList, addRiwayat } from "../dbStore";
 import { toSentenceCase } from "../formatName";
+import FaceScanner from "./face/FaceScanner";
 
 interface InputPoinViewProps {
   userSession: UserSession;
@@ -38,8 +40,11 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
     queryFn: getMasterPoinList,
   });
   
-  // Tab selector: "qr" for camera/simulator, "manual" for lookup search
-  const [inputMethod, setInputMethod] = useState<"qr" | "manual">("qr");
+  // Tab selector: "face" for AI face scan, "qr" for camera/simulator, "manual" for lookup search
+  const [inputMethod, setInputMethod] = useState<"face" | "qr" | "manual">("face");
+
+  // Face Scanner Modal state
+  const [showFaceScannerModal, setShowFaceScannerModal] = useState(false);
 
   // Selected student state (unified for both methods)
   const [selectedSiswa, setSelectedSiswa] = useState<Siswa | null>(null);
@@ -314,13 +319,28 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
 
         {/* METHOD TAB SELECTOR */}
         {!selectedSiswa && (
-          <div className="bg-white rounded-2xl p-1.5 border border-brand-100/60 flex gap-2">
+          <div className="bg-white rounded-2xl p-1.5 border border-brand-100/60 flex gap-2 overflow-x-auto">
+            <button
+              onClick={() => {
+                setInputMethod("face");
+                setCameraActive(false);
+                setScannerError(null);
+              }}
+              className={`flex-1 py-3 px-4 text-xs sm:text-sm font-bold rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
+                inputMethod === "face"
+                  ? "bg-brand-600 text-white shadow-md"
+                  : "text-brand-600 hover:bg-brand-50"
+              }`}
+            >
+              <ScanFace className="w-4 h-4" />
+              Scan Wajah (AI)
+            </button>
             <button
               onClick={() => {
                 setInputMethod("qr");
                 setScannerError(null);
               }}
-              className={`flex-1 py-3 text-sm font-bold rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
+              className={`flex-1 py-3 px-4 text-xs sm:text-sm font-bold rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
                 inputMethod === "qr"
                   ? "bg-brand-600 text-white shadow-md"
                   : "text-brand-600 hover:bg-brand-50"
@@ -335,7 +355,7 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
                 setCameraActive(false);
                 setScannerError(null);
               }}
-              className={`flex-1 py-3 text-sm font-bold rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
+              className={`flex-1 py-3 px-4 text-xs sm:text-sm font-bold rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
                 inputMethod === "manual"
                   ? "bg-brand-600 text-white shadow-md"
                   : "text-brand-600 hover:bg-brand-50"
@@ -359,6 +379,27 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
                 exit={{ opacity: 0, y: -10 }}
                 className="space-y-4 flex-1 flex flex-col justify-center"
               >
+                {/* METHOD 1: FACE SCANNER AI */}
+                {inputMethod === "face" && (
+                  <div className="space-y-5 text-center py-6">
+                    <div className="mx-auto w-20 h-20 bg-brand-50 border-2 border-brand-200 rounded-3xl flex items-center justify-center shadow-lg shadow-brand-900/5 text-brand-600 animate-pulse">
+                      <ScanFace className="w-10 h-10" />
+                    </div>
+                    <div className="max-w-md mx-auto space-y-1.5">
+                      <h3 className="font-extrabold text-lg text-brand-950">Pilih Murid via Scan Wajah (AI)</h3>
+                      <p className="text-xs text-brand-600 font-medium leading-relaxed">
+                        Arahkan kamera ke wajah siswa yang bersangkutan. Sistem AI akan secara otomatis mencocokkan wajah dan memilih profil murid untuk pencatatan poin.
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setShowFaceScannerModal(true)}
+                      className="px-6 py-3.5 brand-gradient text-white rounded-2xl text-sm font-bold shadow-lg shadow-brand-500/20 hover:opacity-95 transition-all flex items-center justify-center gap-2 mx-auto cursor-pointer"
+                    >
+                      <ScanFace className="w-5 h-5" />
+                      Mulai Kamera Scan Wajah
+                    </button>
+                  </div>
+                )}
                 {/* METHOD 1: QR SCANNER CONTAINER */}
                 {inputMethod === "qr" && (
                   <div className="space-y-4">
@@ -724,7 +765,18 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
         </div>
       </div>
 
-
+      {showFaceScannerModal && (
+        <FaceScanner
+          siswaList={siswaList}
+          title="Pilih Siswa via Scan Wajah (AI)"
+          subtitle="Posisikan wajah siswa di depan kamera untuk memilih profil murid secara otomatis"
+          onMatchSuccess={(siswa) => {
+            setSelectedSiswa(siswa);
+            setShowFaceScannerModal(false);
+          }}
+          onClose={() => setShowFaceScannerModal(false)}
+        />
+      )}
 
     </div>
   );

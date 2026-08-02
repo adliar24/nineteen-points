@@ -14,6 +14,8 @@ import {
   Printer,
   Users,
   PackageOpen,
+  ScanFace,
+  Loader2,
 } from "lucide-react";
 import { Siswa, UserSession } from "../types";
 import { getSiswaList, getSiswaSeparatePoinMap, fetchAllPages } from "../dbStore";
@@ -26,6 +28,8 @@ import StudentQRCard from "./StudentQRCard";
 import AddStudentModal from "./AddStudentModal";
 import ImportStudentModal from "./ImportStudentModal";
 import StudentDetailPopup from "./StudentDetailPopup";
+import FaceEnrollModal from "./face/FaceEnrollModal";
+import { batchGenerateEmbeddingsFromPhotos } from "../services/face";
 
 interface KelolaSiswaViewProps {
   userSession: UserSession;
@@ -50,6 +54,11 @@ export default function KelolaSiswaView({
   const [toastMessage, setToastMessage] = useState("");
   const [isExporting, setIsExporting] = useState(false);
   const [isSyncingAccounts, setIsSyncingAccounts] = useState(false);
+
+  // Face AI states
+  const [enrollSiswaTarget, setEnrollSiswaTarget] = useState<Siswa | null>(null);
+  const [isBatchProcessingFaces, setIsBatchProcessingFaces] = useState(false);
+  const [batchProgressMsg, setBatchProgressMsg] = useState("");
 
   // Separate poin map: siswa_id → { positif, negatif }
   const [poinMap, setPoinMap] = useState<Record<string, { positif: number; negatif: number }>>({}); 
@@ -120,6 +129,31 @@ export default function KelolaSiswaView({
     syncSiswa();
     showToast("Data disinkronkan.");
     onRefreshHistory();
+  };
+
+  const handleBatchGenerateFaceEmbeddings = async () => {
+    const withPhotos = siswaList.filter((s) => s.foto_url && s.foto_url.trim() !== "");
+    if (withPhotos.length === 0) {
+      showToast("Tidak ada siswa yang memiliki pas foto untuk diproses.");
+      return;
+    }
+
+    setIsBatchProcessingFaces(true);
+    setBatchProgressMsg(`Memulai ekstraksi AI... (0/${withPhotos.length})`);
+
+    try {
+      const res = await batchGenerateEmbeddingsFromPhotos(siswaList, (processed, total, currentName) => {
+        setBatchProgressMsg(`Memproses ${processed}/${total}: ${currentName}`);
+      });
+
+      showToast(`Sukses mengestrak ${res.successCount} wajah siswa dari pas foto! (${res.failedCount} gagal/foto kurang jelas)`);
+      syncSiswa();
+    } catch (err: any) {
+      showToast("Terjadi kesalahan saat memproses foto: " + err.message);
+    } finally {
+      setIsBatchProcessingFaces(false);
+      setBatchProgressMsg("");
+    }
   };
 
   const handleSyncMissingAccounts = async () => {
@@ -516,6 +550,24 @@ export default function KelolaSiswaView({
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
+              onClick={handleBatchGenerateFaceEmbeddings}
+              disabled={isBatchProcessingFaces}
+              title="Ekstrak sampel AI wajah secara massal dari pas foto siswa yang ada di database"
+              className="flex items-center justify-center gap-2 p-3 md:px-5 md:py-3 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 rounded-2xl text-sm font-black transition-all cursor-pointer shadow-xs disabled:opacity-50"
+            >
+              {isBatchProcessingFaces ? (
+                <Loader2 className="w-4.5 h-4.5 animate-spin text-purple-600" />
+              ) : (
+                <ScanFace className="w-4.5 h-4.5 text-purple-600" />
+              )}
+              <span className="hidden md:inline">
+                {isBatchProcessingFaces ? batchProgressMsg : "Ekstrak Wajah (Massal)"}
+              </span>
+            </motion.button>
+
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={handleSyncMissingAccounts}
               disabled={isSyncingAccounts}
               className="flex items-center justify-center gap-2 p-3 md:px-5 md:py-3 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-100 rounded-2xl text-sm font-black transition-all cursor-pointer shadow-xs disabled:opacity-50"
@@ -763,6 +815,13 @@ export default function KelolaSiswaView({
                           onClick={(e) => e.stopPropagation()}
                         >
                           <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              onClick={() => setEnrollSiswaTarget(siswa)}
+                              className="p-2 hover:bg-purple-50 text-purple-600 hover:text-purple-800 rounded-xl transition-all cursor-pointer border border-transparent hover:border-purple-200 flex items-center gap-1"
+                              title="Daftarkan / Sampel Wajah AI"
+                            >
+                              <ScanFace className="w-4.5 h-4.5" />
+                            </button>
                             {isAdmin && (
                               <button
                                 onClick={() => handleDeleteSiswa(siswa.id, siswa.nama)}
@@ -884,6 +943,17 @@ export default function KelolaSiswaView({
               />
             ))}
       </div>
+
+      {enrollSiswaTarget && (
+        <FaceEnrollModal
+          siswa={enrollSiswaTarget}
+          onClose={() => setEnrollSiswaTarget(null)}
+          onSuccess={() => {
+            showToast(`Sukses mendaftarkan sampel wajah AI untuk ${enrollSiswaTarget.nama}!`);
+            syncSiswa();
+          }}
+        />
+      )}
     </div>
   );
 }

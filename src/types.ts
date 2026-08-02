@@ -5,6 +5,7 @@ export interface Siswa {
   kelas: string;
   total_poin: number;
   foto_url?: string | null;
+  face_embedding?: string | null;
 }
 
 export interface MasterPoin {
@@ -44,6 +45,7 @@ export interface Profile {
   role: string;
   nis: string | null;
   foto_url: string | null;
+  face_embedding?: string | null;
   created_at: string;
 }
 

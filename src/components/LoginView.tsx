@@ -251,12 +251,12 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
       <div className="absolute top-0 right-0 w-[45rem] h-[45rem] bg-gradient-to-br from-brand-500/20 to-accent-500/15 rounded-full filter blur-3xl translate-x-1/3 -translate-y-1/3 pointer-events-none z-0"></div>
       <div className="absolute bottom-0 left-0 w-[45rem] h-[45rem] bg-gradient-to-tr from-accent-500/15 to-brand-600/20 rounded-full filter blur-3xl -translate-x-1/3 translate-y-1/3 pointer-events-none z-0"></div>
 
-      {/* ===== LAYER 1: Header Logo & Title (Lowered 120px) ===== */}
+      {/* ===== LAYER 1: Header Logo & Title (Raised 100px) ===== */}
       <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
-        className="w-full max-w-md mx-auto text-center pt-[120px] sm:pt-[130px] z-20 relative"
+        className="w-full max-w-md mx-auto text-center pt-[20px] sm:pt-[30px] z-20 relative"
       >
         <motion.div 
           initial={{ scale: 0.7, opacity: 0, rotate: -10 }}
@@ -274,8 +274,8 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
         </p>
       </motion.header>
 
-      {/* ===== LAYER 2: Main Papan Login Card (Elevated 50px Higher) ===== */}
-      <div className="w-full flex-1 flex items-center justify-center my-auto -mt-22 sm:-mt-28 py-2 z-10 relative">
+      {/* ===== LAYER 2: Main Papan Login Card (Raised 100px) ===== */}
+      <div className="w-full flex-1 flex items-center justify-center my-auto -mt-20 sm:-mt-24 py-2 z-10 relative">
         <motion.main
           initial={{ opacity: 0, scale: 0.96, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}

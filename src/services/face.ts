@@ -122,7 +122,7 @@ export async function detectFaceFromVideo(
 
 /**
  * Extract face descriptor from an HTMLImageElement, Canvas, or HTMLVideoElement
- * Uses TinyFaceDetector first, then fallbacks to high-precision SsdMobilenetv1 for static pas foto
+ * Multi-stage pipeline: detectAllFaces (Tiny) -> detectAllFaces (SSD) -> multi-resolution (224/320/512)
  */
 export async function extractFaceDescriptorFromImage(
   image: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement
@@ -133,26 +133,46 @@ export async function extractFaceDescriptorFromImage(
   }
 
   try {
-    // 1. Try TinyFaceDetector with low scoreThreshold
-    let detection = await faceapi
-      .detectSingleFace(image, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.15 }))
+    // Stage 1: Try TinyFaceDetector with detectAllFaces (takes largest face box)
+    let detections = await faceapi
+      .detectAllFaces(image, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.1 }))
       .withFaceLandmarks()
-      .withFaceDescriptor();
+      .withFaceDescriptors();
 
-    // 2. Fallback to high-precision SsdMobilenetv1 if TinyFaceDetector missed the face
-    if (!detection) {
-      try {
-        await faceapi.nets.ssdMobilenetv1.loadFromUri('/models');
-        detection = await faceapi
-          .detectSingleFace(image, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.15 }))
-          .withFaceLandmarks()
-          .withFaceDescriptor();
-      } catch (e) {
-        // SsdMobilenetv1 fallback optional load
-      }
+    if (detections && detections.length > 0) {
+      detections.sort((a, b) => (b.detection.box.width * b.detection.box.height) - (a.detection.box.width * a.detection.box.height));
+      return detections[0].descriptor;
     }
 
-    return detection?.descriptor || null;
+    // Stage 2: Fallback to high-precision SsdMobilenetv1
+    try {
+      await faceapi.nets.ssdMobilenetv1.loadFromUri('/models');
+      detections = await faceapi
+        .detectAllFaces(image, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.1 }))
+        .withFaceLandmarks()
+        .withFaceDescriptors();
+
+      if (detections && detections.length > 0) {
+        detections.sort((a, b) => (b.detection.box.width * b.detection.box.height) - (a.detection.box.width * a.detection.box.height));
+        return detections[0].descriptor;
+      }
+    } catch (e) {
+      // SsdMobilenetv1 optional load
+    }
+
+    // Stage 3: Multi-resolution fallback (224, 320, 512, 608)
+    for (const size of [224, 320, 512, 608]) {
+      try {
+        const single = await faceapi
+          .detectSingleFace(image, new faceapi.TinyFaceDetectorOptions({ inputSize: size, scoreThreshold: 0.05 }))
+          .withFaceLandmarks()
+          .withFaceDescriptor();
+
+        if (single?.descriptor) return single.descriptor;
+      } catch (e) {}
+    }
+
+    return null;
   } catch (err) {
     console.error('[FaceService] Image extraction error:', err);
     return null;

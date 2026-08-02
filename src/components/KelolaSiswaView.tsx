@@ -797,8 +797,14 @@ export default function KelolaSiswaView({
                           {siswa.nis}
                         </td>
                         <td className="py-4 px-6 overflow-hidden whitespace-nowrap">
-                          <div className="font-extrabold text-sm text-brand-950 truncate">
-                            {toSentenceCase(siswa.nama)}
+                          <div className="font-extrabold text-sm text-brand-950 truncate flex items-center gap-2">
+                            <span>{toSentenceCase(siswa.nama)}</span>
+                            {siswa.face_embedding && siswa.face_embedding.trim() !== '' && (
+                              <span className="px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200 text-[10px] font-black flex items-center gap-1 shadow-2xs shrink-0" title="Data sampel AI wajah siswa ini sudah tersimpan di Supabase & siap digunakan">
+                                <ScanFace className="w-3 h-3 text-purple-600" />
+                                AI Ready
+                              </span>
+                            )}
                           </div>
                         </td>
                         <td className="py-4 px-6 text-sm font-semibold text-brand-800">

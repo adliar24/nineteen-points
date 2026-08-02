@@ -285,7 +285,8 @@ export async function syncFaceEmbeddingsFromSupabase(siswaList: Siswa[]): Promis
 
 /**
  * Smart Batch generate face embeddings:
- * Only processes NEW or UNPROCESSED students who don't have a valid face descriptor in IndexedDB/Supabase yet!
+ * Only processes students who don't have a valid face_embedding in Supabase database yet!
+ * If local IndexedDB already has the descriptor, pushes it to Supabase instantly.
  */
 export async function batchGenerateEmbeddingsFromPhotos(
   siswaList: Siswa[],
@@ -296,27 +297,19 @@ export async function batchGenerateEmbeddingsFromPhotos(
 
   const eligibleSiswa = siswaList.filter((s) => s.foto_url && s.foto_url.trim() !== '');
 
-  // 1. Fetch existing local descriptors from IndexedDB
+  // 1. Map of local descriptors from IndexedDB
   const localDescriptors = await getAllFaceDescriptorsLocal();
-  const existingSet = new Set<string>();
-
+  const localMap = new Map<string, StoredFaceDescriptor>();
   for (const entry of localDescriptors) {
     if (entry.descriptor && entry.descriptor.trim() !== '') {
-      existingSet.add(entry.siswaId);
+      localMap.set(entry.siswaId, entry);
     }
   }
 
-  // Also check students with face_embedding in database
-  for (const s of siswaList) {
-    if (s.face_embedding && s.face_embedding.trim() !== '') {
-      existingSet.add(s.id);
-    }
-  }
-
-  // Filter students needing processing
+  // 2. Identify students missing face_embedding in Supabase DB
   const targetSiswa = forceRebuild
     ? eligibleSiswa
-    : eligibleSiswa.filter((s) => !existingSet.has(s.id));
+    : eligibleSiswa.filter((s) => !s.face_embedding || s.face_embedding.trim() === '');
 
   const skippedCount = eligibleSiswa.length - targetSiswa.length;
 
@@ -339,6 +332,22 @@ export async function batchGenerateEmbeddingsFromPhotos(
     }
 
     try {
+      // Check if IndexedDB already has it, sync to Supabase directly
+      const cached = localMap.get(siswa.id);
+      if (cached && cached.descriptor) {
+        const desc = stringToDescriptor(cached.descriptor);
+        if (desc) {
+          await saveFaceEmbedding(siswa.id, desc, {
+            nama: siswa.nama,
+            kelas: siswa.kelas,
+            nis: siswa.nis,
+          });
+          successCount++;
+          continue;
+        }
+      }
+
+      // Otherwise extract from photo
       const img = await loadImageFromUrl(siswa.foto_url!);
       const descriptor = await extractFaceDescriptorFromImage(img);
 

@@ -153,7 +153,24 @@ export default function ExcelImportUserModal({
           }
 
           try {
-            // Register user in Supabase Auth
+            // 1. Sync student data to `siswa` table first if role is 'siswa' and NIS is not in `siswa` table yet
+            // This satisfies the profiles.nis foreign key constraint when the Auth creation trigger fires.
+            if (roleVal === "siswa" && nisVal) {
+              if (!existingNisSet.has(nisVal)) {
+                const { error: insertSiswaErr } = await supabase.from("siswa").insert({
+                  nis: nisVal,
+                  nama: name.toUpperCase(),
+                  kelas: kelasVal || "Umum",
+                  total_poin: 0,
+                });
+                if (insertSiswaErr) {
+                  throw new Error(`Gagal menyimpan ke tabel siswa: ${insertSiswaErr.message}`);
+                }
+                existingNisSet.add(nisVal);
+              }
+            }
+
+            // 2. Register user in Supabase Auth
             const { error: signUpError } = await supabaseAdminAuth.auth.admin.createUser({
               email: emailVal,
               password: finalPassword,
@@ -173,19 +190,6 @@ export default function ExcelImportUserModal({
                 duplicateCount++;
               }
               throw signUpError;
-            }
-
-            // Sync student data to `siswa` table if role is 'siswa' and NIS is not in `siswa` table yet
-            if (roleVal === "siswa" && nisVal) {
-              if (!existingNisSet.has(nisVal)) {
-                await supabase.from("siswa").insert({
-                  nis: nisVal,
-                  nama: name.toUpperCase(),
-                  kelas: kelasVal || "Umum",
-                  total_poin: 0,
-                });
-                existingNisSet.add(nisVal);
-              }
             }
 
             addedCount++;

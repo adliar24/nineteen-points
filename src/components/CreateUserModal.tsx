@@ -107,7 +107,24 @@ export default function CreateUserModal({
 
     setIsSubmitting(true);
     try {
-      // 1. Create User in Supabase Auth
+      // 1. If role is siswa, upsert into `siswa` table first to satisfy foreign key constraint on profiles.nis
+      if (role === "siswa" && finalNis) {
+        const upperNama = fullName.trim().toUpperCase();
+        const { error: siswaErr } = await supabaseAdminAuth.from("siswa").upsert(
+          {
+            nis: finalNis,
+            nama: upperNama,
+            kelas: finalKelas || "Umum",
+            total_poin: 0,
+          },
+          { onConflict: "nis" }
+        );
+        if (siswaErr) {
+          throw new Error("Gagal menyimpan data murid ke tabel siswa: " + siswaErr.message);
+        }
+      }
+
+      // 2. Create User in Supabase Auth
       const { data: newAuth, error: signUpError } = await supabaseAdminAuth.auth.admin.createUser({
         email: finalEmail,
         password: finalPassword,
@@ -121,31 +138,16 @@ export default function CreateUserModal({
 
       if (signUpError) throw signUpError;
 
-      // 2. If role is siswa, upsert into `siswa` table and `profiles` table
-      if (role === "siswa" && finalNis) {
-        const upperNama = fullName.trim().toUpperCase();
-
-        const { error: siswaErr } = await supabaseAdminAuth.from("siswa").upsert(
-          {
-            nis: finalNis,
-            nama: upperNama,
-            kelas: finalKelas || "Umum",
-            total_poin: 0,
-          },
-          { onConflict: "nis" }
-        );
-        if (siswaErr) console.warn("Peringatan simpan tabel siswa:", siswaErr.message);
-
-        if (newAuth?.user) {
-          const { error: profErr } = await supabaseAdminAuth.from("profiles").upsert({
-            id: newAuth.user.id,
-            email: finalEmail,
-            nama: fullName.trim(),
-            role: "siswa",
-            nis: finalNis,
-          });
-          if (profErr) console.warn("Peringatan simpan tabel profiles:", profErr.message);
-        }
+      // 3. Profiles table is auto-created by the trigger, but we update or upsert here as a safety measure
+      if (role === "siswa" && finalNis && newAuth?.user) {
+        const { error: profErr } = await supabaseAdminAuth.from("profiles").upsert({
+          id: newAuth.user.id,
+          email: finalEmail,
+          nama: fullName.trim(),
+          role: "siswa",
+          nis: finalNis,
+        });
+        if (profErr) console.warn("Peringatan simpan tabel profiles:", profErr.message);
       }
 
       resetForm();

@@ -65,3 +65,12 @@ export async function clearFaceDescriptorsLocal(): Promise<void> {
     console.error('[FaceDB] Error clearing local descriptors:', err);
   }
 }
+
+export async function deleteFaceDescriptorLocal(siswaId: string): Promise<void> {
+  try {
+    const db = await getDB();
+    await db.delete(STORE_NAME, siswaId);
+  } catch (err) {
+    console.error('[FaceDB] Error deleting local descriptor:', err);
+  }
+}

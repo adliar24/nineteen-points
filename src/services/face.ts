@@ -4,6 +4,7 @@ import { Siswa } from '../types';
 import {
   saveFaceDescriptorLocal,
   getAllFaceDescriptorsLocal,
+  deleteFaceDescriptorLocal,
   StoredFaceDescriptor
 } from './faceDb';
 
@@ -416,4 +417,46 @@ export async function batchGenerateEmbeddingsFromPhotos(
     skippedCount,
     totalEligible: eligibleSiswa.length
   };
+}
+
+/**
+ * Clear stale face embedding for one student (Supabase + IndexedDB)
+ * then re-extract from their current foto_url.
+ * Use this when a student's photo is updated.
+ */
+export async function clearAndReExtractOneSiswa(
+  siswa: Siswa
+): Promise<'success' | 'no_face' | 'no_photo' | 'error'> {
+  if (!siswa.foto_url || siswa.foto_url.trim() === '') return 'no_photo';
+
+  try {
+    // 1. Delete from local IndexedDB cache
+    await deleteFaceDescriptorLocal(siswa.id);
+
+    // 2. Clear Supabase face_embedding column
+    const { error } = await supabase
+      .from('siswa')
+      .update({ face_embedding: null })
+      .eq('id', siswa.id);
+    if (error) console.warn('[FaceService] Supabase clear warning:', error.message);
+
+    // 3. Load models & re-extract from current photo URL
+    await loadModels();
+    const img = await loadImageFromUrl(siswa.foto_url);
+    const descriptor = await extractFaceDescriptorFromImage(img);
+
+    if (!descriptor) return 'no_face';
+
+    // 4. Save new embedding to Supabase + IndexedDB
+    await saveFaceEmbedding(siswa.id, descriptor, {
+      nama: siswa.nama,
+      kelas: siswa.kelas,
+      nis: siswa.nis,
+    });
+
+    return 'success';
+  } catch (err) {
+    console.error('[FaceService] clearAndReExtractOneSiswa error:', err);
+    return 'error';
+  }
 }

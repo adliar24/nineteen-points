@@ -16,6 +16,7 @@ import {
   PackageOpen,
   ScanFace,
   Loader2,
+  RotateCcw,
 } from "lucide-react";
 import { Siswa, UserSession } from "../types";
 import { getSiswaList, getSiswaSeparatePoinMap, fetchAllPages } from "../dbStore";
@@ -29,7 +30,7 @@ import AddStudentModal from "./AddStudentModal";
 import ImportStudentModal from "./ImportStudentModal";
 import StudentDetailPopup from "./StudentDetailPopup";
 import FaceEnrollModal from "./face/FaceEnrollModal";
-import { batchGenerateEmbeddingsFromPhotos, syncFaceEmbeddingsFromSupabase } from "../services/face";
+import { batchGenerateEmbeddingsFromPhotos, syncFaceEmbeddingsFromSupabase, clearAndReExtractOneSiswa } from "../services/face";
 
 interface KelolaSiswaViewProps {
   userSession: UserSession;
@@ -59,6 +60,7 @@ export default function KelolaSiswaView({
   const [enrollSiswaTarget, setEnrollSiswaTarget] = useState<Siswa | null>(null);
   const [isBatchProcessingFaces, setIsBatchProcessingFaces] = useState(false);
   const [batchProgressMsg, setBatchProgressMsg] = useState("");
+  const [reExtractingSiswaId, setReExtractingSiswaId] = useState<string | null>(null);
 
   // Separate poin map: siswa_id → { positif, negatif }
   const [poinMap, setPoinMap] = useState<Record<string, { positif: number; negatif: number }>>({}); 
@@ -827,6 +829,31 @@ export default function KelolaSiswaView({
                           onClick={(e) => e.stopPropagation()}
                         >
                           <div className="flex items-center justify-end gap-1.5">
+                            {/* Reset & Re-extract AI button — shown when foto exists */}
+                            {siswa.foto_url && (
+                              <button
+                                onClick={async () => {
+                                  setReExtractingSiswaId(siswa.id);
+                                  const result = await clearAndReExtractOneSiswa(siswa);
+                                  setReExtractingSiswaId(null);
+                                  if (result === 'success') {
+                                    showToast(`✅ Data AI wajah ${toSentenceCase(siswa.nama)} berhasil diperbarui!`);
+                                    syncSiswa();
+                                  } else if (result === 'no_face') {
+                                    showToast(`⚠️ Wajah tidak terdeteksi di foto baru ${toSentenceCase(siswa.nama)}. Coba scan via kamera.`);
+                                  } else {
+                                    showToast(`❌ Gagal memperbarui AI wajah ${toSentenceCase(siswa.nama)}.`);
+                                  }
+                                }}
+                                disabled={reExtractingSiswaId === siswa.id}
+                                className="p-2 hover:bg-amber-50 text-amber-500 hover:text-amber-700 rounded-xl transition-all cursor-pointer border border-transparent hover:border-amber-200 disabled:opacity-50 disabled:cursor-wait"
+                                title="Reset & Re-extract Data AI Wajah dari Foto Terbaru"
+                              >
+                                {reExtractingSiswaId === siswa.id
+                                  ? <Loader2 className="w-4.5 h-4.5 animate-spin" />
+                                  : <RotateCcw className="w-4.5 h-4.5" />}
+                              </button>
+                            )}
                             <button
                               onClick={() => setEnrollSiswaTarget(siswa)}
                               className="p-2 hover:bg-purple-50 text-purple-600 hover:text-purple-800 rounded-xl transition-all cursor-pointer border border-transparent hover:border-purple-200 flex items-center gap-1"

@@ -180,9 +180,9 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
 
   return (
     <div className="min-h-screen w-full flex flex-col justify-between items-center bg-[#faf9ff] px-4 py-4 sm:py-6 sm:px-6 lg:px-8 relative overflow-hidden notranslate select-none">
-      {/* ===== Dynamic Harmonized Animated SVG Waves ===== */}
+      {/* ===== Dynamic Harmonized Animated SVG Waves (Theme Variable Driven) ===== */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 filter blur-[4px] sm:blur-[6px] scale-105">
-        {/* Layer 1: Top Back Wave (Soft magenta/purple) */}
+        {/* Layer 1: Top Back Wave (Accent/Brand gradient) */}
         <div className="absolute left-0 bottom-0 w-[400%] sm:w-[250%] lg:w-[200%] min-w-[1400px] sm:min-w-[2400px] h-full animate-wave-slow opacity-35">
           <svg viewBox="0 0 5760 1000" className="w-full h-full" preserveAspectRatio="none">
             <path
@@ -191,8 +191,8 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
             />
             <defs>
               <linearGradient id="brandWaveGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#d946ef" />
-                <stop offset="100%" stopColor="#8b5cf6" />
+                <stop offset="0%" stopColor="var(--color-accent-500, #d946ef)" />
+                <stop offset="100%" stopColor="var(--color-brand-500, #8b5cf6)" />
               </linearGradient>
             </defs>
           </svg>
@@ -207,8 +207,8 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
             />
             <defs>
               <linearGradient id="brandWaveGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#a855f7" />
-                <stop offset="100%" stopColor="#6d28d9" />
+                <stop offset="0%" stopColor="var(--color-brand-500, #a855f7)" />
+                <stop offset="100%" stopColor="var(--color-brand-600, #6d28d9)" />
               </linearGradient>
             </defs>
           </svg>
@@ -223,14 +223,14 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
             />
             <defs>
               <linearGradient id="brandWaveGrad3" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#7c3aed" />
-                <stop offset="100%" stopColor="#5b21b6" />
+                <stop offset="0%" stopColor="var(--color-brand-600, #7c3aed)" />
+                <stop offset="100%" stopColor="var(--color-brand-700, #5b21b6)" />
               </linearGradient>
             </defs>
           </svg>
         </div>
 
-        {/* Layer 4: Bottom Wave (Wide Sweeping Wave in Deep Royal Purple) */}
+        {/* Layer 4: Bottom Wave (Wide Sweeping Wave in Deep Theme Color) */}
         <div className="absolute left-0 bottom-0 w-[400%] sm:w-[250%] lg:w-[200%] min-w-[1400px] sm:min-w-[2400px] h-full animate-wave-bottom opacity-65">
           <svg viewBox="0 0 5760 1000" className="w-full h-full" preserveAspectRatio="none">
             <path
@@ -239,8 +239,8 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
             />
             <defs>
               <linearGradient id="brandWaveGrad4" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#5b21b6" />
-                <stop offset="100%" stopColor="#3b0764" />
+                <stop offset="0%" stopColor="var(--color-brand-700, #5b21b6)" />
+                <stop offset="100%" stopColor="var(--color-brand-800, #3b0764)" />
               </linearGradient>
             </defs>
           </svg>
@@ -369,7 +369,7 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
       </div>
 
       {/* ===== LAYER 3: Footer Copyright (Elevated Higher Up for Mobile) ===== */}
-      <footer className="w-full max-w-md mx-auto text-center pb-14 sm:pb-12 -mt-12 sm:-mt-8 pt-1 shrink-0 z-20 relative">
+      <footer className="w-full max-w-md mx-auto text-center pb-16 sm:pb-12 -mt-16 sm:-mt-8 pt-1 shrink-0 z-20 relative">
         <p className="text-xs sm:text-sm font-bold text-white drop-shadow-[0_1.5px_3px_rgba(0,0,0,0.6)] tracking-wider">
           &copy; {new Date().getFullYear()} SMAN 19 Bandung. Hak Cipta Dilindungi.
         </p>

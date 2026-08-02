@@ -480,7 +480,7 @@ export default function App() {
     sidebarElements = [
       { type: "item", id: "input_kehadiran", label: "Input Kehadiran", icon: ClipboardCheck, description: "Scan QR & input absen harian" },
       { type: "item", id: "kehadiran", label: "Kehadiran Murid", icon: Users, description: "Rekap absensi & poin murid" },
-      { type: "item", id: "scan_sholat", label: "Scan Sholat", icon: BookOpen, description: "Scan QR sholat murid" },
+      { type: "item", id: "scan_sholat", label: "Input Keagamaan", icon: BookOpen, description: "Scan QR sholat murid" },
       { type: "item", id: "rekap_sholat_kehadiran", label: "Rekap Sholat", icon: ClipboardList, description: "Rekap sholat berjamaah murid" },
       { type: "item", id: "change_password", label: "Tema & Keamanan", icon: Settings, description: "Ubah warna tema aplikasi" }
     ];
@@ -493,7 +493,7 @@ export default function App() {
       // { type: "item", id: "guru_jadwal", label: "Jadwal Mengajar", icon: Calendar, description: "Jadwal mengajar Anda" },
       { type: "item", id: "guru_kartu", label: "Kartu Guru", icon: CreditCard, description: "QR Kartu Guru Digital" },
       { type: "item", id: "input", label: "Input Poin", icon: ClipboardCheck, description: "Catat via QR atau pencarian" },
-      { type: "item", id: "scan_sholat", label: "Scan Sholat", icon: BookOpen, description: "Scan QR sholat murid" },
+      { type: "item", id: "scan_sholat", label: "Input Keagamaan", icon: BookOpen, description: "Scan QR sholat murid" },
       { type: "item", id: "rekap_sholat_kehadiran", label: "Rekap Sholat", icon: ClipboardList, description: "Rekap sholat berjamaah murid" },
       { type: "item", id: "history", label: "Riwayat Poin", icon: Calendar, description: "Audit trail pencatatan" },
       { type: "item", id: "students", label: "Data Murid", icon: Users, description: "Lihat database & kartu pelajar" },
@@ -502,7 +502,7 @@ export default function App() {
   } else if (userSession.role === "tata_usaha") {
     sidebarElements = [
       { type: "item", id: "input", label: "Input Poin", icon: ClipboardCheck, description: "Catat via QR atau pencarian" },
-      { type: "item", id: "scan_sholat", label: "Scan Sholat", icon: BookOpen, description: "Scan QR sholat murid" },
+      { type: "item", id: "scan_sholat", label: "Input Keagamaan", icon: BookOpen, description: "Scan QR sholat murid" },
       { type: "item", id: "rekap_sholat_kehadiran", label: "Rekap Sholat", icon: ClipboardList, description: "Rekap sholat berjamaah murid" },
       { type: "item", id: "guru_sertifikat", label: "Sertifikat Kegiatan", icon: Award, description: "Unduh sertifikat pelatihan" },
       { type: "item", id: "change_password", label: "Tema & Keamanan", icon: Settings, description: "Ubah sandi & tema warna" }
@@ -517,7 +517,7 @@ export default function App() {
         items: [
           { id: "input_kehadiran", label: "Input Kehadiran", icon: LogIn, description: "Absensi guru & murid" },
           { id: "input", label: "Input Poin", icon: Edit3, description: "Pencatatan sanksi & prestasi" },
-          { id: "scan_sholat", label: "Scan Sholat", icon: BookOpen, description: "Scan QR sholat murid" }
+          { id: "scan_sholat", label: "Input Keagamaan", icon: BookOpen, description: "Scan QR sholat murid" }
         ]
       },
       { type: "item", id: "kehadiran", label: "Kehadiran Murid", icon: Users, description: "Monitoring absensi murid" },
@@ -541,7 +541,7 @@ export default function App() {
         items: [
           { id: "input_kehadiran", label: "Input Kehadiran", icon: LogIn, description: "Absensi guru & murid" },
           { id: "input", label: "Input Poin", icon: Edit3, description: "Pencatatan sanksi & prestasi" },
-          { id: "scan_sholat", label: "Scan Sholat", icon: BookOpen, description: "Scan QR sholat murid" }
+          { id: "scan_sholat", label: "Input Keagamaan", icon: BookOpen, description: "Scan QR sholat murid" }
         ]
       },
       { type: "item", id: "kehadiran", label: "Kehadiran Murid", icon: Users, description: "Rekap absensi murid" },

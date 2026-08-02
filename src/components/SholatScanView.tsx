@@ -381,7 +381,7 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
             <div className="w-12 h-12 bg-brand-50 text-brand-300 rounded-full flex items-center justify-center mx-auto">
               <Sparkles className="w-6 h-6" />
             </div>
-            <p className="text-xs font-bold text-brand-400">Belum ada murid yang scan sholat hari ini.</p>
+            <p className="text-xs font-bold text-brand-400">Belum ada murid yang melakukan input keagamaan hari ini.</p>
           </div>
         ) : (
           <div className="divide-y border border-brand-100 rounded-2xl overflow-hidden max-h-[300px] overflow-y-auto">

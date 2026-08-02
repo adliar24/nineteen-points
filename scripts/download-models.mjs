@@ -9,32 +9,40 @@ const __dirname = path.dirname(__filename);
 
 const MODEL_URLS = [
   {
-    url: 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/tiny_face_detector_model-weights_manifest.json',
-    file: 'tiny_face_detector_model-weights_manifest.json'
+    url: 'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights/ssd_mobilenetv1_model-weights_manifest.json',
+    file: 'ssd_mobilenetv1_model-weights_manifest.json'
   },
   {
-    url: 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/tiny_face_detector_model-shard1',
-    file: 'tiny_face_detector_model-shard1'
+    url: 'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights/ssd_mobilenetv1_model-shard1',
+    file: 'ssd_mobilenetv1_model-shard1'
   },
   {
-    url: 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/face_landmark_68_model-weights_manifest.json',
+    url: 'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights/face_landmark_68_model-weights_manifest.json',
     file: 'face_landmark_68_model-weights_manifest.json'
   },
   {
-    url: 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/face_landmark_68_model-shard1',
+    url: 'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights/face_landmark_68_model-shard1',
     file: 'face_landmark_68_model-shard1'
   },
   {
-    url: 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/face_recognition_model-weights_manifest.json',
+    url: 'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights/face_recognition_model-weights_manifest.json',
     file: 'face_recognition_model-weights_manifest.json'
   },
   {
-    url: 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/face_recognition_model-shard1',
+    url: 'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights/face_recognition_model-shard1',
     file: 'face_recognition_model-shard1'
   },
   {
-    url: 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/face_recognition_model-shard2',
+    url: 'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights/face_recognition_model-shard2',
     file: 'face_recognition_model-shard2'
+  },
+  {
+    url: 'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights/tiny_face_detector_model-weights_manifest.json',
+    file: 'tiny_face_detector_model-weights_manifest.json'
+  },
+  {
+    url: 'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights/tiny_face_detector_model-shard1',
+    file: 'tiny_face_detector_model-shard1'
   }
 ];
 
@@ -81,7 +89,7 @@ async function run() {
   for (const model of MODEL_URLS) {
     const dest = path.join(OUTPUT_DIR, model.file);
     if (!fs.existsSync(dest) || fs.statSync(dest).size === 0) {
-      console.log(`[Models] Downloading missing model: ${model.file}`);
+      console.log(`[Models] Downloading model: ${model.file}`);
       try {
         await downloadFile(model.url, dest);
       } catch (err) {

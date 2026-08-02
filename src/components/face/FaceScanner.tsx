@@ -372,7 +372,7 @@ export default function FaceScanner({
             ) : (
               <div className="flex items-center gap-2 text-brand-700 font-medium text-xs">
                 <Sparkles className="w-4 h-4 text-brand-500" />
-                <span>Kamera Aktif • Deteksi Realtime AI ($d &lt; 0.55$)</span>
+                <span>Kamera Aktif • Deteksi Realtime AI (Bebas Biaya • 100% Offline)</span>
               </div>
             )}
 

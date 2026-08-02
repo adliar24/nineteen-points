@@ -1,4 +1,4 @@
-import * as faceapi from '@vladmandic/face-api';
+import * as faceapi from 'face-api.js';
 import { supabase } from '../supabaseClient';
 import { Siswa } from '../types';
 import {
@@ -28,7 +28,7 @@ export interface MatchResult {
 }
 
 /**
- * Load face-api models from /models static directory
+ * Load face-api models from /models static directory with absolute URL
  */
 export async function loadModels(): Promise<boolean> {
   if (modelsLoaded) return true;
@@ -36,11 +36,12 @@ export async function loadModels(): Promise<boolean> {
 
   modelLoadingPromise = (async () => {
     try {
-      console.log('[FaceService] Loading models from:', MODEL_URL);
+      const fullUrl = new URL(MODEL_URL, window.location.origin).href;
+      console.log('[FaceService] Loading models from:', fullUrl);
       await Promise.all([
-        faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
-        faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
-        faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
+        faceapi.nets.tinyFaceDetector.loadFromUri(fullUrl),
+        faceapi.nets.faceLandmark68Net.loadFromUri(fullUrl),
+        faceapi.nets.faceRecognitionNet.loadFromUri(fullUrl),
       ]);
       modelsLoaded = true;
       console.log('[FaceService] All face-api models loaded successfully');

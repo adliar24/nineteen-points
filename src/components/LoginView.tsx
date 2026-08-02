@@ -179,7 +179,7 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#faf9ff] px-4 py-10 sm:px-6 lg:px-8 relative overflow-hidden notranslate select-none">
+    <div className="min-h-screen w-full flex flex-col justify-between items-center bg-[#faf9ff] px-4 py-8 sm:px-6 lg:px-8 relative overflow-hidden notranslate select-none">
       {/* ===== Dynamic Harmonized Animated SVG Waves ===== */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 filter blur-[4px] sm:blur-[6px] scale-105">
         {/* Layer 1: Top Back Wave (Soft magenta/purple) */}
@@ -248,38 +248,40 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
       </div>
 
       {/* Decorative Blur Orbs */}
-      <div className="absolute top-0 right-0 w-[45rem] h-[45rem] bg-gradient-to-br from-brand-500/20 to-accent-500/15 rounded-full filter blur-3xl translate-x-1/3 -translate-y-1/3 pointer-events-none"></div>
-      <div className="absolute bottom-0 left-0 w-[45rem] h-[45rem] bg-gradient-to-tr from-accent-500/15 to-brand-600/20 rounded-full filter blur-3xl -translate-x-1/3 translate-y-1/3 pointer-events-none"></div>
+      <div className="absolute top-0 right-0 w-[45rem] h-[45rem] bg-gradient-to-br from-brand-500/20 to-accent-500/15 rounded-full filter blur-3xl translate-x-1/3 -translate-y-1/3 pointer-events-none z-0"></div>
+      <div className="absolute bottom-0 left-0 w-[45rem] h-[45rem] bg-gradient-to-tr from-accent-500/15 to-brand-600/20 rounded-full filter blur-3xl -translate-x-1/3 translate-y-1/3 pointer-events-none z-0"></div>
 
-      <motion.div 
-        initial={{ opacity: 0, y: 30 }}
+      {/* ===== LAYER 1: Header Logo & Title (Z-20 Layer Above Card) ===== */}
+      <motion.header
+        initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
-        className="max-w-md w-full space-y-6 sm:space-y-8 z-10 relative my-auto"
+        transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
+        className="w-full max-w-md mx-auto text-center pt-2 sm:pt-4 z-20 relative"
       >
-        <div className="text-center">
-          <motion.div 
-            initial={{ scale: 0.7, opacity: 0, rotate: -10 }}
-            animate={{ scale: 1, opacity: 1, rotate: 0 }}
-            transition={{ delay: 0.15, duration: 0.6, type: "spring", stiffness: 200 }}
-            className="mx-auto h-20 w-20 sm:h-22 sm:w-22 flex items-center justify-center relative bg-white border-2 border-brand-100 rounded-2xl sm:rounded-3xl p-3 sm:p-3.5 shadow-md shadow-brand-500/5"
-          >
-            <img src="/logo.png" className="w-full h-full object-contain z-10" alt="Logo" />
-          </motion.div>
-          <h2 className="mt-5 sm:mt-6 text-2xl sm:text-3xl font-extrabold tracking-tight text-brand-900 font-sans bg-gradient-to-r from-brand-700 to-accent-600 bg-clip-text text-transparent">
-            Nineteen Space
-          </h2>
-          <p className="mt-1.5 sm:mt-2 text-xs sm:text-sm font-medium text-brand-600 px-2">
-            Manajemen Poin & Karakter Murid SMAN 19 Bandung
-          </p>
-        </div>
-
         <motion.div 
-          initial={{ opacity: 0, scale: 0.97 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.25, duration: 0.6 }}
-          className="bg-white/95 backdrop-blur-md p-6 sm:p-8 rounded-2xl sm:rounded-3xl shadow-2xl shadow-brand-900/10 border border-brand-100"
+          initial={{ scale: 0.7, opacity: 0, rotate: -10 }}
+          animate={{ scale: 1, opacity: 1, rotate: 0 }}
+          transition={{ delay: 0.1, duration: 0.5, type: "spring", stiffness: 200 }}
+          className="mx-auto h-20 w-20 sm:h-22 sm:w-22 flex items-center justify-center relative bg-white border-2 border-brand-100 rounded-2xl sm:rounded-3xl p-3 sm:p-3.5 shadow-lg shadow-brand-900/10"
         >
+          <img src="/logo.png" className="w-full h-full object-contain z-10" alt="Logo SMAN 19" />
+        </motion.div>
+        <h1 className="mt-4 sm:mt-5 text-2xl sm:text-3xl font-extrabold tracking-tight text-brand-900 font-sans bg-gradient-to-r from-brand-700 to-accent-600 bg-clip-text text-transparent">
+          Nineteen Space
+        </h1>
+        <p className="mt-1 sm:mt-1.5 text-xs sm:text-sm font-semibold text-brand-700 px-2 drop-shadow-sm">
+          Manajemen Poin & Karakter Murid SMAN 19 Bandung
+        </p>
+      </motion.header>
+
+      {/* ===== LAYER 2: Center Login Card (Z-10 Layer directly in Page Center) ===== */}
+      <motion.main
+        initial={{ opacity: 0, scale: 0.96, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ delay: 0.2, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className="max-w-md w-full my-auto py-6 z-10 relative"
+      >
+        <div className="bg-white/95 backdrop-blur-md p-6 sm:p-8 rounded-2xl sm:rounded-3xl shadow-2xl shadow-brand-900/10 border border-brand-100">
           <form className="space-y-4 sm:space-y-5" onSubmit={handleLogin} autoComplete="off">
             {error && (
               <motion.div 
@@ -361,13 +363,15 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
               )}
             </motion.button>
           </form>
-        </motion.div>
+        </div>
+      </motion.main>
 
-        {/* Clean Plain White Copyright Text */}
-        <p className="text-center text-xs sm:text-sm font-bold text-white drop-shadow-[0_1.5px_3px_rgba(0,0,0,0.5)] tracking-wider pt-1">
+      {/* ===== LAYER 3: Footer Copyright (Z-20 Layer at Bottom) ===== */}
+      <footer className="w-full max-w-md mx-auto text-center pb-2 z-20 relative">
+        <p className="text-xs sm:text-sm font-bold text-white drop-shadow-[0_1.5px_3px_rgba(0,0,0,0.5)] tracking-wider">
           &copy; {new Date().getFullYear()} SMAN 19 Bandung. Hak Cipta Dilindungi.
         </p>
-      </motion.div>
+      </footer>
     </div>
   );
 }

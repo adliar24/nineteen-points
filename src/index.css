@@ -103,6 +103,63 @@ body {
   box-shadow: 0 20px 25px -5px rgba(109, 40, 217, 0.1), 0 10px 10px -5px rgba(109, 40, 217, 0.04);
 }
 
+/* Animated Seamless Waves */
+@keyframes waveFlow1 {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes waveFlow2 {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes waveFlow3 {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes waveFlow4 {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.animate-wave-slow {
+  animation: waveFlow1 32s linear infinite;
+  will-change: transform;
+}
+
+.animate-wave-mid {
+  animation: waveFlow2 24s linear infinite;
+  will-change: transform;
+}
+
+.animate-wave-fast {
+  animation: waveFlow3 18s linear infinite;
+  will-change: transform;
+}
+
+.animate-wave-bottom {
+  animation: waveFlow4 14s linear infinite;
+  will-change: transform;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;

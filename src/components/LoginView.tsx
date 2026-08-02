@@ -179,222 +179,194 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
   };
 
   return (
-    <div className="min-h-screen w-full relative overflow-hidden bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-950 text-white flex flex-col justify-between p-6 sm:p-10 lg:p-12 notranslate select-none">
-      {/* ===== Dynamic Harmonized Animated SVG Waves (Long Sweeping Wavelengths) ===== */}
+    <div className="min-h-screen flex items-center justify-center bg-[#faf9ff] px-4 py-12 sm:px-6 lg:px-8 relative overflow-hidden notranslate select-none">
+      {/* ===== Dynamic Harmonized Animated SVG Waves (Brand Theme Colors) ===== */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
-        {/* Layer 1: Top Back Wave (Long wide sweep, slowest flow) */}
-        <div className="absolute inset-x-0 bottom-0 w-[200%] h-full animate-wave-slow opacity-30">
+        {/* Layer 1: Top Back Wave (Slowest flow, soft lavender/purple) */}
+        <div className="absolute inset-x-0 bottom-0 w-[200%] h-full animate-wave-slow opacity-20">
           <svg viewBox="0 0 5760 1000" className="w-full h-full" preserveAspectRatio="none">
             <path
-              d="M 0,320 C 400,230 1040,230 1440,320 C 1840,410 2480,410 2880,320 C 3280,230 3920,230 4320,320 C 4720,410 5360,410 5760,320 L 5760,1000 L 0,1000 Z"
-              fill="url(#waveGrad1)"
+              d="M 0,350 C 400,260 1040,260 1440,350 C 1840,440 2480,440 2880,350 C 3280,260 3920,260 4320,350 C 4720,440 5360,440 5760,350 L 5760,1000 L 0,1000 Z"
+              fill="url(#brandWaveGrad1)"
             />
             <defs>
-              <linearGradient id="waveGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#3b82f6" />
-                <stop offset="100%" stopColor="#1d4ed8" />
+              <linearGradient id="brandWaveGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#c026d3" />
+                <stop offset="100%" stopColor="#7c3aed" />
               </linearGradient>
             </defs>
           </svg>
         </div>
 
         {/* Layer 2: Upper Middle Wave */}
-        <div className="absolute inset-x-0 bottom-0 w-[200%] h-full animate-wave-mid opacity-45">
+        <div className="absolute inset-x-0 bottom-0 w-[200%] h-full animate-wave-mid opacity-25">
           <svg viewBox="0 0 5760 1000" className="w-full h-full" preserveAspectRatio="none">
             <path
-              d="M 0,440 C 400,525 1040,525 1440,440 C 1840,355 2480,355 2880,440 C 3280,525 3920,525 4320,440 C 4720,355 5360,355 5760,440 L 5760,1000 L 0,1000 Z"
-              fill="url(#waveGrad2)"
+              d="M 0,470 C 400,555 1040,555 1440,470 C 1840,385 2480,385 2880,470 C 3280,555 3920,555 4320,470 C 4720,385 5360,385 5760,470 L 5760,1000 L 0,1000 Z"
+              fill="url(#brandWaveGrad2)"
             />
             <defs>
-              <linearGradient id="waveGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#60a5fa" />
-                <stop offset="100%" stopColor="#2563eb" />
+              <linearGradient id="brandWaveGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#8b5cf6" />
+                <stop offset="100%" stopColor="#6d28d9" />
               </linearGradient>
             </defs>
           </svg>
         </div>
 
         {/* Layer 3: Lower Middle Wave */}
-        <div className="absolute inset-x-0 bottom-0 w-[200%] h-full animate-wave-fast opacity-60">
+        <div className="absolute inset-x-0 bottom-0 w-[200%] h-full animate-wave-fast opacity-30">
           <svg viewBox="0 0 5760 1000" className="w-full h-full" preserveAspectRatio="none">
             <path
-              d="M 0,560 C 400,480 1040,480 1440,560 C 1840,640 2480,640 2880,560 C 3280,480 3920,480 4320,560 C 4720,640 5360,640 5760,560 L 5760,1000 L 0,1000 Z"
-              fill="url(#waveGrad3)"
+              d="M 0,590 C 400,510 1040,510 1440,590 C 1840,670 2480,670 2880,590 C 3280,510 3920,510 4320,590 C 4720,670 5360,670 5760,590 L 5760,1000 L 0,1000 Z"
+              fill="url(#brandWaveGrad3)"
             />
             <defs>
-              <linearGradient id="waveGrad3" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#2563eb" />
-                <stop offset="100%" stopColor="#1d4ed8" />
+              <linearGradient id="brandWaveGrad3" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#6d28d9" />
+                <stop offset="100%" stopColor="#5b21b6" />
               </linearGradient>
             </defs>
           </svg>
         </div>
 
-        {/* Layer 4: Bottom Wave (Long Wide Sweeping Wave, Harmonized with Upper Waves) */}
-        <div className="absolute inset-x-0 bottom-0 w-[200%] h-full animate-wave-bottom opacity-85">
+        {/* Layer 4: Bottom Wave (Wide Sweeping Wave in Royal Brand Purple) */}
+        <div className="absolute inset-x-0 bottom-0 w-[200%] h-full animate-wave-bottom opacity-40">
           <svg viewBox="0 0 5760 1000" className="w-full h-full" preserveAspectRatio="none">
             <path
-              d="M 0,680 C 400,755 1040,755 1440,680 C 1840,605 2480,605 2880,680 C 3280,755 3920,755 4320,680 C 4720,605 5360,605 5760,680 L 5760,1000 L 0,1000 Z"
-              fill="url(#waveGrad4)"
+              d="M 0,710 C 400,785 1040,785 1440,710 C 1840,635 2480,635 2880,710 C 3280,785 3920,785 4320,710 C 4720,635 5360,635 5760,710 L 5760,1000 L 0,1000 Z"
+              fill="url(#brandWaveGrad4)"
             />
             <defs>
-              <linearGradient id="waveGrad4" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#1d4ed8" />
-                <stop offset="100%" stopColor="#1e3a8a" />
+              <linearGradient id="brandWaveGrad4" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#5b21b6" />
+                <stop offset="100%" stopColor="#3b0764" />
               </linearGradient>
             </defs>
           </svg>
         </div>
       </div>
 
-      {/* ===== Header Navigation ===== */}
-      <header className="relative z-10 flex items-center justify-between max-w-7xl mx-auto w-full">
-        <div className="flex items-center gap-3">
-          <div className="w-11 h-11 bg-white/15 backdrop-blur-md border border-white/30 rounded-2xl flex items-center justify-center shadow-lg">
-            <School className="w-6 h-6 text-white" />
-          </div>
-          <span className="text-2xl font-bold tracking-tight font-sans text-white">
-            EduVerse
-          </span>
-        </div>
-      </header>
+      {/* Decorative Orbs */}
+      <div className="absolute top-0 right-0 w-[45rem] h-[45rem] bg-gradient-to-br from-brand-500/15 to-accent-500/10 rounded-full filter blur-3xl translate-x-1/3 -translate-y-1/3 pointer-events-none"></div>
+      <div className="absolute bottom-0 left-0 w-[45rem] h-[45rem] bg-gradient-to-tr from-accent-500/10 to-brand-600/15 rounded-full filter blur-3xl -translate-x-1/3 translate-y-1/3 pointer-events-none"></div>
 
-      {/* ===== Main Body (Split Layout: Text Left, Card Right) ===== */}
-      <main className="relative z-10 grid grid-cols-1 lg:grid-cols-12 items-center gap-12 lg:gap-16 max-w-7xl mx-auto w-full my-auto py-8">
-        {/* Left Side: Brand Text & Info */}
-        <motion.div
-          initial={{ opacity: 0, x: -30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="lg:col-span-7 space-y-6 text-left"
-        >
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.15] font-sans">
-            Aplikasi Manajemen<br />
-            Kelas & <span className="text-cyan-300 drop-shadow-md">Presensi Digital</span><br />
-            Terpadu
-          </h1>
-
-          <p className="text-base sm:text-lg text-blue-100/90 font-medium max-w-2xl leading-relaxed">
-            Kelola absensi murid (QR & Wajah), buku nilai, rekapitulasi, dan perangkat mengajar Anda secara terpadu.
+      <motion.div 
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
+        className="max-w-md w-full space-y-8 z-10 relative"
+      >
+        <div className="text-center">
+          <motion.div 
+            initial={{ scale: 0.7, opacity: 0, rotate: -10 }}
+            animate={{ scale: 1, opacity: 1, rotate: 0 }}
+            transition={{ delay: 0.15, duration: 0.6, type: "spring", stiffness: 200 }}
+            className="mx-auto h-22 w-22 flex items-center justify-center relative bg-white border-2 border-brand-100 rounded-3xl p-3.5 shadow-md shadow-brand-500/5"
+          >
+            <img src="/logo.png" className="w-full h-full object-contain z-10" alt="Logo" />
+          </motion.div>
+          <h2 className="mt-6 text-3xl font-extrabold tracking-tight text-brand-900 font-sans bg-gradient-to-r from-brand-700 to-accent-600 bg-clip-text text-transparent">
+            Nineteen Space
+          </h2>
+          <p className="mt-2 text-sm font-medium text-brand-600">
+            Manajemen Poin & Karakter Murid SMAN 19 Bandung
           </p>
-        </motion.div>
+        </div>
 
-        {/* Right Side: Login Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 30, scale: 0.96 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ delay: 0.15, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="lg:col-span-5 w-full max-w-md mx-auto lg:ml-auto"
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.97 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.25, duration: 0.6 }}
+          className="bg-white/95 backdrop-blur-md p-8 rounded-3xl shadow-2xl shadow-brand-900/5 border border-brand-100"
         >
-          <div className="bg-white text-slate-800 p-8 sm:p-10 rounded-[32px] shadow-2xl shadow-blue-950/40 border border-white/60 relative overflow-hidden">
-            {/* Top Back Link */}
-            <div className="mb-6 flex items-center gap-1 text-xs font-semibold text-slate-400 hover:text-slate-600 transition-colors cursor-pointer">
-              <span>‹ Kembali ke Pilihan</span>
-            </div>
+          <form className="space-y-5" onSubmit={handleLogin} autoComplete="off">
+            {error && (
+              <motion.div 
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="p-4 bg-rose-50 rounded-2xl border border-rose-100 text-sm text-rose-700 flex items-start gap-3 glow-purple"
+              >
+                <ShieldAlert className="w-5 h-5 flex-shrink-0 text-rose-500 mt-0.5" />
+                <span className="font-medium text-xs leading-relaxed">{error}</span>
+              </motion.div>
+            )}
 
-            {/* Card Header */}
-            <div className="space-y-1.5 mb-7">
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight font-sans">
-                Selamat Datang, Guru
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-500 font-medium leading-relaxed">
-                Masuk untuk mengelola ujian, absensi, dan pengolahan nilai murid.
-              </p>
-            </div>
-
-            {/* Login Form */}
-            <form className="space-y-5" onSubmit={handleLogin} autoComplete="off">
-              {error && (
-                <motion.div
-                  initial={{ opacity: 0, y: -6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="p-3.5 bg-rose-50 rounded-2xl border border-rose-200 text-xs font-semibold text-rose-700 flex items-start gap-2.5"
-                >
-                  <ShieldAlert className="w-4.5 h-4.5 text-rose-500 flex-shrink-0 mt-0.5" />
-                  <span className="leading-relaxed">{error}</span>
-                </motion.div>
-              )}
-
-              {/* Username Input */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700 block">
-                  Email Akun
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <Mail className="h-4.5 w-4.5 text-slate-400" />
-                  </div>
-                  <input
-                    type="text"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="adlizers24@gmail.com"
-                    autoComplete="off"
-                    data-form-type="other"
-                    className="block w-full pl-11 pr-4 py-3.5 border border-slate-200 rounded-2xl bg-slate-50/70 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all text-sm font-medium"
-                  />
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-brand-700 uppercase tracking-wider block">
+                Username / NIS / NIP
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Mail className="h-5 w-5 text-brand-500/70" />
                 </div>
+                <input
+                  type="text"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="NIS, NIP, atau Email"
+                  autoComplete="off"
+                  data-form-type="other"
+                  className="block w-full pl-12 pr-4 py-3.5 border border-brand-100 rounded-2xl bg-brand-50/30 text-brand-900 placeholder-brand-500/30 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all text-sm font-medium"
+                />
               </div>
+            </div>
 
-              {/* Password Input */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700 block">
+            <div className="space-y-1.5">
+              <div className="flex justify-between items-center">
+                <label className="text-xs font-bold text-brand-700 uppercase tracking-wider block">
                   Password
                 </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <Key className="h-4.5 w-4.5 text-slate-400" />
-                  </div>
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••••••"
-                    autoComplete="off"
-                    data-form-type="other"
-                    className="block w-full pl-11 pr-11 py-3.5 border border-slate-200 rounded-2xl bg-slate-50/70 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all text-sm font-medium"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
-                    tabIndex={-1}
-                  >
-                    {showPassword ? <EyeOff className="h-4.5 w-4.5" /> : <Eye className="h-4.5 w-4.5" />}
-                  </button>
-                </div>
               </div>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Key className="h-5 w-5 text-brand-500/70" />
+                </div>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  autoComplete="off"
+                  data-form-type="other"
+                  className="block w-full pl-12 pr-12 py-3.5 border border-brand-100 rounded-2xl bg-brand-50/30 text-brand-900 placeholder-brand-500/30 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all text-sm font-medium"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-brand-500/70 hover:text-brand-600 transition-colors cursor-pointer"
+                  tabIndex={-1}
+                >
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
+              </div>
+            </div>
 
-              {/* Submit Button */}
-              <motion.button
-                whileHover={{ scale: 1.015 }}
-                whileTap={{ scale: 0.985 }}
-                type="submit"
-                disabled={isLoading}
-                className="w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-2xl text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-xl shadow-blue-600/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer mt-4"
-              >
-                {isLoading ? (
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                ) : (
-                  <>
-                    <span>Masuk Sekarang</span>
-                    <span className="text-base leading-none">→</span>
-                  </>
-                )}
-              </motion.button>
-            </form>
-          </div>
+            <motion.button
+              whileHover={{ scale: 1.015, y: -1 }}
+              whileTap={{ scale: 0.985 }}
+              type="submit"
+              disabled={isLoading}
+              className="w-full flex justify-center py-3.5 px-4 rounded-2xl text-sm font-bold text-white brand-gradient hover:opacity-95 shadow-lg shadow-brand-500/25 disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer mt-2"
+            >
+              {isLoading ? (
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                <div className="flex items-center gap-2 tracking-wide font-sans">
+                  <LogIn className="w-4.5 h-4.5" />
+                  Masuk
+                </div>
+              )}
+            </motion.button>
+          </form>
         </motion.div>
-      </main>
 
-      {/* ===== Footer ===== */}
-      <footer className="relative z-10 max-w-7xl mx-auto w-full text-left">
-        <p className="text-xs font-medium text-blue-200/70 tracking-wide">
-          © {new Date().getFullYear()} EduVerse. Dikelola Secara Mandiri.
+        <p className="text-center text-[11px] font-semibold text-brand-500/60 tracking-wider">
+          &copy; {new Date().getFullYear()} SMAN 19 Bandung. Hak Cipta Dilindungi.
         </p>
-      </footer>
+      </motion.div>
     </div>
   );
 }

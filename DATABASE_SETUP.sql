@@ -33,6 +33,27 @@ $$;
 GRANT EXECUTE ON FUNCTION public.is_staff() TO authenticated;
 
 
+-- resolve_login(): untuk halaman login (belum autentikasi / anon).
+-- Menerima username alternatif (dari nama) ATAU NIS, mengembalikan NIS
+-- (yang sama dengan prefix email auth) supaya bisa login via email.
+-- SECURITY DEFINER: anon hanya mendapat satu scalar NIS, bukan data siswa.
+CREATE OR REPLACE FUNCTION public.resolve_login(p_login TEXT)
+RETURNS TEXT
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT s.nis::text
+  FROM public.siswa s
+  WHERE lower(s.username) = lower(regexp_replace(p_login, '[^a-z0-9]', '', 'g'))
+     OR s.nis::text = lower(p_login)
+  LIMIT 1;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.resolve_login(TEXT) TO anon, authenticated;
+
+
 -- =========================================================================
 -- 2. TABEL
 -- =========================================================================
@@ -46,12 +67,19 @@ CREATE TABLE IF NOT EXISTS public.siswa (
   total_poin     INT DEFAULT 0 NOT NULL,
   foto_url       TEXT,
   face_embedding TEXT,
+  username       TEXT,
   created_at     TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
 ALTER TABLE public.siswa ADD COLUMN IF NOT EXISTS foto_url TEXT;
 ALTER TABLE public.siswa ADD COLUMN IF NOT EXISTS face_embedding TEXT;
+ALTER TABLE public.siswa ADD COLUMN IF NOT EXISTS username TEXT;
 COMMENT ON COLUMN public.siswa.face_embedding IS 'Vektor 128-float embedding wajah dalam format string dipisahkan koma';
+COMMENT ON COLUMN public.siswa.username IS 'Username alternatif (dari nama, lowercase tanpa spasi) untuk login murid';
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_siswa_username
+  ON public.siswa (username)
+  WHERE username IS NOT NULL;
 
 -- 2b. MASTER BOBOT POIN (ATURAN BAKU)
 CREATE TABLE IF NOT EXISTS public.master_poin (

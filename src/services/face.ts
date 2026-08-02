@@ -122,6 +122,7 @@ export async function detectFaceFromVideo(
 
 /**
  * Extract face descriptor from an HTMLImageElement, Canvas, or HTMLVideoElement
+ * Uses TinyFaceDetector first, then fallbacks to high-precision SsdMobilenetv1 for static pas foto
  */
 export async function extractFaceDescriptorFromImage(
   image: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement
@@ -132,10 +133,24 @@ export async function extractFaceDescriptorFromImage(
   }
 
   try {
-    const detection = await faceapi
-      .detectSingleFace(image, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.3 }))
+    // 1. Try TinyFaceDetector with low scoreThreshold
+    let detection = await faceapi
+      .detectSingleFace(image, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.15 }))
       .withFaceLandmarks()
       .withFaceDescriptor();
+
+    // 2. Fallback to high-precision SsdMobilenetv1 if TinyFaceDetector missed the face
+    if (!detection) {
+      try {
+        await faceapi.nets.ssdMobilenetv1.loadFromUri('/models');
+        detection = await faceapi
+          .detectSingleFace(image, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.15 }))
+          .withFaceLandmarks()
+          .withFaceDescriptor();
+      } catch (e) {
+        // SsdMobilenetv1 fallback optional load
+      }
+    }
 
     return detection?.descriptor || null;
   } catch (err) {

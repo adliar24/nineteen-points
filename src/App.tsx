@@ -209,6 +209,32 @@ export default function App() {
   useEffect(() => {
     applyTheme(activeTheme);
   }, []);
+
+  // Automatic Version Checking & Cache Invalidation
+  useEffect(() => {
+    fetch("/version.json?t=" + Date.now())
+      .then((res) => res.json())
+      .then((data) => {
+        const localVersion = localStorage.getItem("app_version");
+        if (localVersion && localVersion !== String(data.version)) {
+          // New version detected! Clear all caches and reload
+          if (typeof caches !== "undefined") {
+            caches.keys().then((names) => {
+              return Promise.all(names.map((name) => caches.delete(name)));
+            }).then(() => {
+              localStorage.setItem("app_version", String(data.version));
+              location.reload();
+            });
+          } else {
+            localStorage.setItem("app_version", String(data.version));
+            location.reload();
+          }
+        } else if (!localVersion) {
+          localStorage.setItem("app_version", String(data.version));
+        }
+      })
+      .catch((err) => console.log("Gagal memeriksa versi aplikasi:", err));
+  }, []);
   
   const getDefaultTab = (role: string) => {
     if (role === "siswa") return "siswa_stats";

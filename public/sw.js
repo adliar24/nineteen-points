@@ -1,4 +1,4 @@
-const CACHE_NAME = "nineteen-points-v3";
+const CACHE_NAME = "nineteen-points-v4";
 
 self.addEventListener("install", (e) => {
   self.skipWaiting();

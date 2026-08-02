@@ -177,22 +177,22 @@ body {
 }
 
 .animate-wave-slow {
-  animation: waveOrganic1 38s cubic-bezier(0.42, 0, 0.58, 1) infinite;
+  animation: waveOrganic1 18s cubic-bezier(0.42, 0, 0.58, 1) infinite;
   will-change: transform;
 }
 
 .animate-wave-mid {
-  animation: waveOrganic2 28s cubic-bezier(0.42, 0, 0.58, 1) infinite;
+  animation: waveOrganic2 14s cubic-bezier(0.42, 0, 0.58, 1) infinite;
   will-change: transform;
 }
 
 .animate-wave-fast {
-  animation: waveOrganic3 21s cubic-bezier(0.42, 0, 0.58, 1) infinite;
+  animation: waveOrganic3 10s cubic-bezier(0.42, 0, 0.58, 1) infinite;
   will-change: transform;
 }
 
 .animate-wave-bottom {
-  animation: waveOrganic4 16s cubic-bezier(0.42, 0, 0.58, 1) infinite;
+  animation: waveOrganic4 8s cubic-bezier(0.42, 0, 0.58, 1) infinite;
   will-change: transform;
 }
 

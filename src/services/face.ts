@@ -28,31 +28,39 @@ export interface MatchResult {
 }
 
 /**
- * Load face-api models from /models static directory with absolute URL
+ * Load face-api models from /models static directory with multiple path fallbacks
  */
 export async function loadModels(): Promise<boolean> {
   if (modelsLoaded) return true;
   if (modelLoadingPromise) return modelLoadingPromise;
 
   modelLoadingPromise = (async () => {
-    try {
-      const fullUrl = new URL(MODEL_URL, window.location.origin).href;
-      console.log('[FaceService] Loading models from:', fullUrl);
-      await Promise.all([
-        faceapi.nets.tinyFaceDetector.loadFromUri(fullUrl),
-        faceapi.nets.faceLandmark68Net.loadFromUri(fullUrl),
-        faceapi.nets.faceRecognitionNet.loadFromUri(fullUrl),
-      ]);
-      modelsLoaded = true;
-      console.log('[FaceService] All face-api models loaded successfully');
-      return true;
-    } catch (err) {
-      console.error('[FaceService] Error loading models:', err);
-      modelsLoaded = false;
-      return false;
-    } finally {
-      modelLoadingPromise = null;
+    const candidatePaths = [
+      '/models',
+      './models',
+      `${window.location.origin}/models`,
+      `${window.location.protocol}//${window.location.host}/models`
+    ];
+
+    for (const path of candidatePaths) {
+      try {
+        console.log('[FaceService] Trying to load models from:', path);
+        await Promise.all([
+          faceapi.nets.tinyFaceDetector.loadFromUri(path),
+          faceapi.nets.faceLandmark68Net.loadFromUri(path),
+          faceapi.nets.faceRecognitionNet.loadFromUri(path),
+        ]);
+        modelsLoaded = true;
+        console.log('[FaceService] Successfully loaded face-api models from:', path);
+        return true;
+      } catch (err) {
+        console.warn(`[FaceService] Failed to load models from ${path}, trying next fallback...`, err);
+      }
     }
+
+    console.error('[FaceService] All model loading fallbacks failed.');
+    modelsLoaded = false;
+    return false;
   })();
 
   return modelLoadingPromise;

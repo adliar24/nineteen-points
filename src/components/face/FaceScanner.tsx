@@ -76,19 +76,19 @@ export default function FaceScanner({
     }
   }, []);
 
-  // Initialize face-api models
+  // Initialize camera & face-api models in parallel on mount
   useEffect(() => {
     let mounted = true;
+    startCamera();
+
     (async () => {
       setIsLoadingModels(true);
       const ok = await loadModels();
       if (mounted) {
         setIsLoadingModels(false);
-        if (!ok) {
-          setCameraError('Gagal memuat model AI Pengenalan Wajah. Periksa koneksi internet Anda.');
-        }
       }
     })();
+
     return () => {
       mounted = false;
       stopCamera();
@@ -141,11 +141,7 @@ export default function FaceScanner({
     isDetectingRef.current = false;
   };
 
-  useEffect(() => {
-    if (!isLoadingModels && !cameraError) {
-      startCamera(selectedCameraId);
-    }
-  }, [isLoadingModels, selectedCameraId]);
+
 
   // Main Detection Loop
   useEffect(() => {
@@ -347,42 +343,6 @@ export default function FaceScanner({
                 </motion.div>
               )}
             </AnimatePresence>
-          </div>
-
-          {/* Camera Selection & Info Controls */}
-          <div className="w-full flex items-center justify-between gap-3 text-xs">
-            {cameras.length > 1 ? (
-              <div className="flex items-center gap-2 flex-1">
-                <Camera className="w-4 h-4 text-brand-600 shrink-0" />
-                <select
-                  value={selectedCameraId}
-                  onChange={(e) => {
-                    setSelectedCameraId(e.target.value);
-                    startCamera(e.target.value);
-                  }}
-                  className="w-full py-2 px-3 bg-brand-50 border border-brand-200 rounded-xl text-brand-900 font-medium focus:outline-none focus:ring-2 focus:ring-brand-500"
-                >
-                  {cameras.map((cam, idx) => (
-                    <option key={cam.deviceId || idx} value={cam.deviceId}>
-                      {cam.label || `Kamera ${idx + 1}`}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 text-brand-700 font-medium text-xs">
-                <Sparkles className="w-4 h-4 text-brand-500" />
-                <span>Kamera Aktif • Deteksi Realtime AI (Bebas Biaya • 100% Offline)</span>
-              </div>
-            )}
-
-            <button
-              onClick={() => startCamera(selectedCameraId)}
-              title="Refresh Kamera"
-              className="p-2 bg-brand-50 hover:bg-brand-100 border border-brand-200 text-brand-700 rounded-xl transition-colors cursor-pointer"
-            >
-              <RotateCw className="w-4 h-4" />
-            </button>
           </div>
         </div>
       </motion.div>

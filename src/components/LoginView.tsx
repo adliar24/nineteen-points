@@ -251,128 +251,122 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
       <div className="absolute top-0 right-0 w-[45rem] h-[45rem] bg-gradient-to-br from-brand-500/20 to-accent-500/15 rounded-full filter blur-3xl translate-x-1/3 -translate-y-1/3 pointer-events-none z-0"></div>
       <div className="absolute bottom-0 left-0 w-[45rem] h-[45rem] bg-gradient-to-tr from-accent-500/15 to-brand-600/20 rounded-full filter blur-3xl -translate-x-1/3 translate-y-1/3 pointer-events-none z-0"></div>
 
-      {/* Top Spacer Balance */}
-      <div className="h-1 sm:h-2 w-full"></div>
-
-      {/* ===== Center Content Composition (Logo, Title + Login Card Centered Together) ===== */}
-      <div className="w-full max-w-md mx-auto flex flex-col items-center justify-center my-auto py-2 sm:py-4 gap-4 sm:gap-6 z-10 relative">
-        {/* LAYER 1: Header Logo & Title */}
-        <motion.header
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
-          className="w-full text-center z-20 relative"
+      {/* ===== LAYER 1: Header Logo & Title (Pinned at VERY TOP) ===== */}
+      <motion.header
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
+        className="w-full max-w-md mx-auto text-center pt-2 sm:pt-4 z-20 relative"
+      >
+        <motion.div 
+          initial={{ scale: 0.7, opacity: 0, rotate: -10 }}
+          animate={{ scale: 1, opacity: 1, rotate: 0 }}
+          transition={{ delay: 0.1, duration: 0.5, type: "spring", stiffness: 200 }}
+          className="mx-auto h-18 w-18 sm:h-22 sm:w-22 flex items-center justify-center relative bg-white border-2 border-brand-100 rounded-2xl sm:rounded-3xl p-2.5 sm:p-3.5 shadow-lg shadow-brand-900/10"
         >
-          <motion.div 
-            initial={{ scale: 0.7, opacity: 0, rotate: -10 }}
-            animate={{ scale: 1, opacity: 1, rotate: 0 }}
-            transition={{ delay: 0.1, duration: 0.5, type: "spring", stiffness: 200 }}
-            className="mx-auto h-18 w-18 sm:h-22 sm:w-22 flex items-center justify-center relative bg-white border-2 border-brand-100 rounded-2xl sm:rounded-3xl p-2.5 sm:p-3.5 shadow-lg shadow-brand-900/10"
-          >
-            <img src="/logo.png" className="w-full h-full object-contain z-10" alt="Logo SMAN 19" />
-          </motion.div>
-          <h1 className="mt-3 sm:mt-4 text-2xl sm:text-3xl font-extrabold tracking-tight text-brand-900 font-sans bg-gradient-to-r from-brand-700 to-accent-600 bg-clip-text text-transparent">
-            Nineteen Space
-          </h1>
-          <p className="mt-1 text-xs sm:text-sm font-semibold text-brand-700 px-2 drop-shadow-sm">
-            Manajemen Poin & Karakter Murid SMAN 19 Bandung
-          </p>
-        </motion.header>
+          <img src="/logo.png" className="w-full h-full object-contain z-10" alt="Logo SMAN 19" />
+        </motion.div>
+        <h1 className="mt-3 sm:mt-4 text-2xl sm:text-3xl font-extrabold tracking-tight text-brand-900 font-sans bg-gradient-to-r from-brand-700 to-accent-600 bg-clip-text text-transparent">
+          Nineteen Space
+        </h1>
+        <p className="mt-1 text-xs sm:text-sm font-semibold text-brand-700 px-2 drop-shadow-sm">
+          Manajemen Poin & Karakter Murid SMAN 19 Bandung
+        </p>
+      </motion.header>
 
-        {/* LAYER 2: Center Login Card */}
-        <motion.main
-          initial={{ opacity: 0, scale: 0.96, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="w-full z-10 relative"
-        >
-          <div className="bg-white/95 backdrop-blur-md p-6 sm:p-8 rounded-2xl sm:rounded-3xl shadow-2xl shadow-brand-900/10 border border-brand-100">
-            <form className="space-y-4 sm:space-y-5" onSubmit={handleLogin} autoComplete="off">
-              {error && (
-                <motion.div 
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="p-3.5 sm:p-4 bg-rose-50 rounded-2xl border border-rose-100 text-xs sm:text-sm text-rose-700 flex items-start gap-3 glow-purple"
-                >
-                  <ShieldAlert className="w-4.5 h-4.5 sm:w-5 sm:h-5 flex-shrink-0 text-rose-500 mt-0.5" />
-                  <span className="font-medium text-xs leading-relaxed">{error}</span>
-                </motion.div>
-              )}
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-brand-700 uppercase tracking-wider block">
-                  Username / NIS / NIP
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <Mail className="h-5 w-5 text-brand-500/70" />
-                  </div>
-                  <input
-                    type="text"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="NIS, NIP, atau Email"
-                    autoComplete="off"
-                    data-form-type="other"
-                    className="block w-full pl-12 pr-4 py-3 sm:py-3.5 border border-brand-100 rounded-2xl bg-brand-50/30 text-brand-900 placeholder-brand-500/30 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all text-sm font-medium"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <div className="flex justify-between items-center">
-                  <label className="text-xs font-bold text-brand-700 uppercase tracking-wider block">
-                    Password
-                  </label>
-                </div>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <Key className="h-5 w-5 text-brand-500/70" />
-                  </div>
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    autoComplete="off"
-                    data-form-type="other"
-                    className="block w-full pl-12 pr-12 py-3 sm:py-3.5 border border-brand-100 rounded-2xl bg-brand-50/30 text-brand-900 placeholder-brand-500/30 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all text-sm font-medium"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-brand-500/70 hover:text-brand-600 transition-colors cursor-pointer"
-                    tabIndex={-1}
-                  >
-                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                  </button>
-                </div>
-              </div>
-
-              <motion.button
-                whileHover={{ scale: 1.015, y: -1 }}
-                whileTap={{ scale: 0.985 }}
-                type="submit"
-                disabled={isLoading}
-                className="w-full flex justify-center py-3 sm:py-3.5 px-4 rounded-2xl text-sm font-bold text-white brand-gradient hover:opacity-95 shadow-lg shadow-brand-500/25 disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer mt-2"
+      {/* ===== LAYER 2: Center Login Card (Positioned in Center & Elevated Higher Up) ===== */}
+      <motion.main
+        initial={{ opacity: 0, scale: 0.96, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ delay: 0.2, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className="max-w-md w-full my-auto -mt-6 sm:-mt-10 py-4 z-10 relative"
+      >
+        <div className="bg-white/95 backdrop-blur-md p-6 sm:p-8 rounded-2xl sm:rounded-3xl shadow-2xl shadow-brand-900/10 border border-brand-100">
+          <form className="space-y-4 sm:space-y-5" onSubmit={handleLogin} autoComplete="off">
+            {error && (
+              <motion.div 
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="p-3.5 sm:p-4 bg-rose-50 rounded-2xl border border-rose-100 text-xs sm:text-sm text-rose-700 flex items-start gap-3 glow-purple"
               >
-                {isLoading ? (
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                ) : (
-                  <div className="flex items-center gap-2 tracking-wide font-sans">
-                    <LogIn className="w-4.5 h-4.5" />
-                    Masuk
-                  </div>
-                )}
-              </motion.button>
-            </form>
-          </div>
-        </motion.main>
-      </div>
+                <ShieldAlert className="w-4.5 h-4.5 sm:w-5 sm:h-5 flex-shrink-0 text-rose-500 mt-0.5" />
+                <span className="font-medium text-xs leading-relaxed">{error}</span>
+              </motion.div>
+            )}
 
-      {/* ===== LAYER 3: Footer Copyright ===== */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-brand-700 uppercase tracking-wider block">
+                Username / NIS / NIP
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Mail className="h-5 w-5 text-brand-500/70" />
+                </div>
+                <input
+                  type="text"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="NIS, NIP, atau Email"
+                  autoComplete="off"
+                  data-form-type="other"
+                  className="block w-full pl-12 pr-4 py-3 sm:py-3.5 border border-brand-100 rounded-2xl bg-brand-50/30 text-brand-900 placeholder-brand-500/30 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all text-sm font-medium"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <div className="flex justify-between items-center">
+                <label className="text-xs font-bold text-brand-700 uppercase tracking-wider block">
+                  Password
+                </label>
+              </div>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Key className="h-5 w-5 text-brand-500/70" />
+                </div>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  autoComplete="off"
+                  data-form-type="other"
+                  className="block w-full pl-12 pr-12 py-3 sm:py-3.5 border border-brand-100 rounded-2xl bg-brand-50/30 text-brand-900 placeholder-brand-500/30 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all text-sm font-medium"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-brand-500/70 hover:text-brand-600 transition-colors cursor-pointer"
+                  tabIndex={-1}
+                >
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
+              </div>
+            </div>
+
+            <motion.button
+              whileHover={{ scale: 1.015, y: -1 }}
+              whileTap={{ scale: 0.985 }}
+              type="submit"
+              disabled={isLoading}
+              className="w-full flex justify-center py-3 sm:py-3.5 px-4 rounded-2xl text-sm font-bold text-white brand-gradient hover:opacity-95 shadow-lg shadow-brand-500/25 disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer mt-2"
+            >
+              {isLoading ? (
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                <div className="flex items-center gap-2 tracking-wide font-sans">
+                  <LogIn className="w-4.5 h-4.5" />
+                  Masuk
+                </div>
+              )}
+            </motion.button>
+          </form>
+        </div>
+      </motion.main>
+
+      {/* ===== LAYER 3: Footer Copyright (Pinned at VERY BOTTOM) ===== */}
       <footer className="w-full max-w-md mx-auto text-center pb-2 sm:pb-3 z-20 relative">
         <p className="text-xs sm:text-sm font-bold text-white drop-shadow-[0_1.5px_3px_rgba(0,0,0,0.5)] tracking-wider">
           &copy; {new Date().getFullYear()} SMAN 19 Bandung. Hak Cipta Dilindungi.

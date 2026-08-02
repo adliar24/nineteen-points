@@ -251,12 +251,12 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
       <div className="absolute top-0 right-0 w-[45rem] h-[45rem] bg-gradient-to-br from-brand-500/20 to-accent-500/15 rounded-full filter blur-3xl translate-x-1/3 -translate-y-1/3 pointer-events-none z-0"></div>
       <div className="absolute bottom-0 left-0 w-[45rem] h-[45rem] bg-gradient-to-tr from-accent-500/15 to-brand-600/20 rounded-full filter blur-3xl -translate-x-1/3 translate-y-1/3 pointer-events-none z-0"></div>
 
-      {/* ===== LAYER 1: Header Logo & Title (AT VERY TOP OF PAGE) ===== */}
+      {/* ===== LAYER 1: Header Logo & Title (Lowered 120px) ===== */}
       <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
-        className="w-full max-w-md mx-auto text-center pt-2 sm:pt-4 z-20 relative"
+        className="w-full max-w-md mx-auto text-center pt-[120px] sm:pt-[130px] z-20 relative"
       >
         <motion.div 
           initial={{ scale: 0.7, opacity: 0, rotate: -10 }}

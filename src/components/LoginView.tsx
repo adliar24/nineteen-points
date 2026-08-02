@@ -197,7 +197,7 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col justify-between items-center bg-[#faf9ff] px-4 py-4 sm:py-6 sm:px-6 lg:px-8 relative overflow-hidden notranslate select-none">
+    <div className="min-h-screen w-full flex flex-col justify-start sm:justify-between items-center bg-[#faf9ff] px-4 py-4 sm:py-6 sm:px-6 lg:px-8 relative overflow-hidden notranslate select-none">
       {/* ===== Dynamic Harmonized Animated SVG Waves (Theme Variable Driven) ===== */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 filter blur-[4px] sm:blur-[6px] scale-105">
         {/* Layer 1: Top Back Wave (Accent/Brand gradient) */}
@@ -293,7 +293,7 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
       </motion.header>
 
       {/* ===== LAYER 2: Main Papan Login Card (Raised 100px) ===== */}
-      <div className="w-full flex-1 flex items-center justify-center my-auto -mt-32 sm:-mt-24 py-2 z-10 relative">
+      <div className="w-full flex-none sm:flex-1 flex items-center justify-center mt-6 sm:-mt-24 py-2 z-10 relative">
         <motion.main
           initial={{ opacity: 0, scale: 0.96, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -387,7 +387,7 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
       </div>
 
       {/* ===== LAYER 3: Footer Copyright (Elevated Higher Up for Mobile) ===== */}
-      <footer className="w-full max-w-md mx-auto text-center pb-10 sm:pb-12 -mt-24 sm:-mt-8 pt-1 shrink-0 z-20 relative">
+      <footer className="w-full max-w-md mx-auto text-center pb-6 sm:pb-12 mt-6 sm:-mt-8 pt-1 shrink-0 z-20 relative">
         <p className="text-[10px] sm:text-xs font-bold text-white drop-shadow-[0_1.5px_3px_rgba(0,0,0,0.6)] tracking-wider">
           &copy; {new Date().getFullYear()} SMAN 19 Bandung. Hak Cipta Dilindungi.
         </p>

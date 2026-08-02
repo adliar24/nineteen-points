@@ -12,7 +12,8 @@ const MODEL_URL = '/models';
 let modelsLoaded = false;
 let modelLoadingPromise: Promise<boolean> | null = null;
 
-export const MATCH_THRESHOLD = 0.45; // Strict distance threshold for high-accuracy matching without false positives
+export const MATCH_THRESHOLD = 0.40; // Very strict — prevents false positives. Lower = stricter.
+export const MATCH_MARGIN = 0.08;    // Required gap between best and second-best candidate to confirm identity
 
 export interface FaceDetectionResult {
   boundingBox: { x: number; y: number; width: number; height: number };
@@ -249,6 +250,7 @@ export async function findBestMatch(
   }
 
   let minDistance = 999;
+  let secondDistance = 999;
   let bestMatchSiswa: Siswa | undefined = undefined;
 
   for (const s of siswaList) {
@@ -272,14 +274,19 @@ export async function findBestMatch(
     if (targetDescriptor) {
       const dist = euclideanDistance(detectedDescriptor, targetDescriptor);
       if (dist < minDistance) {
+        secondDistance = minDistance;
         minDistance = dist;
         bestMatchSiswa = s;
+      } else if (dist < secondDistance) {
+        secondDistance = dist;
       }
     }
   }
 
-  if (bestMatchSiswa && minDistance < MATCH_THRESHOLD) {
-    const confidence = Math.max(0, Math.min(1, 1 - (minDistance / 0.8)));
+  // Must pass: (1) below threshold, (2) clear margin gap from second-best candidate
+  const marginOk = (secondDistance - minDistance) >= MATCH_MARGIN;
+  if (bestMatchSiswa && minDistance < MATCH_THRESHOLD && marginOk) {
+    const confidence = Math.max(0, Math.min(1, 1 - (minDistance / 0.7)));
     return {
       success: true,
       siswa: bestMatchSiswa,
@@ -293,7 +300,7 @@ export async function findBestMatch(
     success: false,
     confidence: 0,
     distance: minDistance,
-    message: minDistance < 0.8 ? 'Wajah mirip tetapi belum cukup yakin' : 'Wajah tidak dikenali',
+    message: minDistance < MATCH_THRESHOLD ? 'Wajah terlalu mirip dua murid, tidak bisa dikonfirmasi' : 'Wajah tidak dikenali',
   };
 }
 

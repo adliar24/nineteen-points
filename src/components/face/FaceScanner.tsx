@@ -208,7 +208,7 @@ export default function FaceScanner({
               consecutiveMatchRef.current = { siswaId: result.siswa.id, count: 1 };
             }
 
-            if (consecutiveMatchRef.current.count >= 2) {
+            if (consecutiveMatchRef.current.count >= 3) {
               setDetectionStatus('matched');
               playSound('success');
               cooldownUntilRef.current = Date.now() + 2500; // 2.5s cooldown

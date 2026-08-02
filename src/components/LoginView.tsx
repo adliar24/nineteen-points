@@ -179,7 +179,7 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col justify-between items-center bg-[#faf9ff] px-4 py-8 sm:px-6 lg:px-8 relative overflow-hidden notranslate select-none">
+    <div className="min-h-screen w-full flex flex-col justify-between items-center bg-[#faf9ff] px-4 py-4 sm:py-6 sm:px-6 lg:px-8 relative overflow-hidden notranslate select-none">
       {/* ===== Dynamic Harmonized Animated SVG Waves ===== */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 filter blur-[4px] sm:blur-[6px] scale-105">
         {/* Layer 1: Top Back Wave (Soft magenta/purple) */}
@@ -251,12 +251,12 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
       <div className="absolute top-0 right-0 w-[45rem] h-[45rem] bg-gradient-to-br from-brand-500/20 to-accent-500/15 rounded-full filter blur-3xl translate-x-1/3 -translate-y-1/3 pointer-events-none z-0"></div>
       <div className="absolute bottom-0 left-0 w-[45rem] h-[45rem] bg-gradient-to-tr from-accent-500/15 to-brand-600/20 rounded-full filter blur-3xl -translate-x-1/3 translate-y-1/3 pointer-events-none z-0"></div>
 
-      {/* ===== True Centered Unified Composition (Logo, Title, & Login Card) ===== */}
+      {/* ===== Perfectly Balanced & Elevated Composition (Logo, Title, & Login Card) ===== */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
-        className="max-w-md w-full mx-auto my-auto space-y-5 sm:space-y-6 z-10 relative py-4"
+        className="max-w-md w-full mx-auto my-auto -mt-4 sm:-mt-6 space-y-4 sm:space-y-6 z-10 relative py-2 sm:py-4"
       >
         {/* Header (Logo & Title) */}
         <div className="text-center">
@@ -264,14 +264,14 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
             initial={{ scale: 0.7, opacity: 0, rotate: -10 }}
             animate={{ scale: 1, opacity: 1, rotate: 0 }}
             transition={{ delay: 0.1, duration: 0.5, type: "spring", stiffness: 200 }}
-            className="mx-auto h-20 w-20 sm:h-22 sm:w-22 flex items-center justify-center relative bg-white border-2 border-brand-100 rounded-2xl sm:rounded-3xl p-3 sm:p-3.5 shadow-lg shadow-brand-900/10"
+            className="mx-auto h-16 w-16 sm:h-20 sm:w-20 flex items-center justify-center relative bg-white border-2 border-brand-100 rounded-2xl sm:rounded-3xl p-2.5 sm:p-3 shadow-lg shadow-brand-900/10"
           >
             <img src="/logo.png" className="w-full h-full object-contain z-10" alt="Logo SMAN 19" />
           </motion.div>
-          <h1 className="mt-4 sm:mt-5 text-2xl sm:text-3xl font-extrabold tracking-tight text-brand-900 font-sans bg-gradient-to-r from-brand-700 to-accent-600 bg-clip-text text-transparent">
+          <h1 className="mt-3 sm:mt-4 text-2xl sm:text-3xl font-extrabold tracking-tight text-brand-900 font-sans bg-gradient-to-r from-brand-700 to-accent-600 bg-clip-text text-transparent">
             Nineteen Space
           </h1>
-          <p className="mt-1 sm:mt-1.5 text-xs sm:text-sm font-semibold text-brand-700 px-2 drop-shadow-sm">
+          <p className="mt-1 text-xs sm:text-sm font-semibold text-brand-700 px-2 drop-shadow-sm">
             Manajemen Poin & Karakter Murid SMAN 19 Bandung
           </p>
         </div>
@@ -281,9 +281,9 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
           initial={{ opacity: 0, scale: 0.96 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2, duration: 0.5 }}
-          className="bg-white/95 backdrop-blur-md p-6 sm:p-8 rounded-2xl sm:rounded-3xl shadow-2xl shadow-brand-900/10 border border-brand-100"
+          className="bg-white/95 backdrop-blur-md p-5 sm:p-8 rounded-2xl sm:rounded-3xl shadow-2xl shadow-brand-900/10 border border-brand-100"
         >
-          <form className="space-y-4 sm:space-y-5" onSubmit={handleLogin} autoComplete="off">
+          <form className="space-y-3.5 sm:space-y-5" onSubmit={handleLogin} autoComplete="off">
             {error && (
               <motion.div 
                 initial={{ opacity: 0, x: -10 }}
@@ -367,9 +367,9 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
         </motion.div>
       </motion.div>
 
-      {/* ===== Footer Copyright ===== */}
-      <footer className="w-full max-w-md mx-auto text-center pb-2 sm:pb-3 z-20 relative">
-        <p className="text-xs sm:text-sm font-bold text-white drop-shadow-[0_1.5px_3px_rgba(0,0,0,0.5)] tracking-wider">
+      {/* ===== Footer Copyright (Always Visible on Mobile) ===== */}
+      <footer className="w-full max-w-md mx-auto text-center pb-2 sm:pb-3 pt-1 shrink-0 z-20 relative">
+        <p className="text-[11px] sm:text-xs font-bold text-white drop-shadow-[0_1.5px_3px_rgba(0,0,0,0.6)] tracking-wider">
           &copy; {new Date().getFullYear()} SMAN 19 Bandung. Hak Cipta Dilindungi.
         </p>
       </footer>

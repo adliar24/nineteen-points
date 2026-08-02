@@ -294,7 +294,7 @@ export default function FaceScanner({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-[200] bg-black flex flex-col overflow-hidden">
       {/* Fullscreen video */}
       <video
         ref={videoRef}

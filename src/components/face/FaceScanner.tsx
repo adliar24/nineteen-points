@@ -48,7 +48,7 @@ export default function FaceScanner({
   const [lastMatchResult, setLastMatchResult] = useState<MatchResult | null>(null);
   const [cameras, setCameras] = useState<MediaDeviceInfo[]>([]);
   const [selectedCameraId, setSelectedCameraId] = useState<string>('');
-  const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user');
+  const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment');
 
   // Play audio beep feedback
   const playSound = useCallback((type: 'success' | 'fail') => {
@@ -107,12 +107,21 @@ export default function FaceScanner({
     const activeFacing = mode || facingMode;
 
     try {
-      const constraints: MediaStreamConstraints = {
-        video: deviceId ? { deviceId: { exact: deviceId } } : { facingMode: activeFacing, width: { ideal: 640 }, height: { ideal: 480 } },
-        audio: false
-      };
+      let stream: MediaStream;
+      try {
+        const constraints: MediaStreamConstraints = {
+          video: deviceId ? { deviceId: { exact: deviceId } } : { facingMode: { ideal: activeFacing }, width: { ideal: 640 }, height: { ideal: 480 } },
+          audio: false
+        };
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
+      } catch (e) {
+        // Fallback to generic user camera if requested camera mode unavailable
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { width: { ideal: 640 }, height: { ideal: 480 } },
+          audio: false
+        });
+      }
 
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
       streamRef.current = stream;
 
       if (videoRef.current) {
@@ -289,12 +298,12 @@ export default function FaceScanner({
               </div>
             )}
 
-            {/* Video stream */}
+            {/* Video stream (unmirrored for natural movement) */}
             <video
               ref={videoRef}
               playsInline
               muted
-              className="w-full h-full object-cover transform -scale-x-100"
+              className="w-full h-full object-cover"
             />
 
             {/* Floating Camera Switch Button */}
@@ -321,10 +330,10 @@ export default function FaceScanner({
               <span className="text-[11px] font-bold">Ganti Kamera</span>
             </button>
 
-            {/* Overlay Canvas for face bounding box */}
+            {/* Overlay Canvas for face bounding box (unmirrored) */}
             <canvas
               ref={canvasRef}
-              className="absolute inset-0 w-full h-full pointer-events-none transform -scale-x-100 z-10"
+              className="absolute inset-0 w-full h-full pointer-events-none z-10"
             />
 
             {/* Target Scanning Oval Guide */}

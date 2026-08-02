@@ -139,14 +139,18 @@ export default function KelolaSiswaView({
     }
 
     setIsBatchProcessingFaces(true);
-    setBatchProgressMsg(`Memulai ekstraksi AI... (0/${withPhotos.length})`);
+    setBatchProgressMsg("Memeriksa status AI data wajah...");
 
     try {
       const res = await batchGenerateEmbeddingsFromPhotos(siswaList, (processed, total, currentName) => {
         setBatchProgressMsg(`Memproses ${processed}/${total}: ${currentName}`);
       });
 
-      showToast(`Sukses mengestrak ${res.successCount} wajah siswa dari pas foto! (${res.failedCount} gagal/foto kurang jelas)`);
+      if (res.skippedCount === res.totalEligible) {
+        showToast(`Semua ${res.totalEligible} siswa berfoto sudah terdaftar AI & siap dipakai! (0 data baru)`);
+      } else {
+        showToast(`Sukses mengekstrak ${res.successCount} data wajah baru! (${res.skippedCount} siswa sudah ada sebelumnya)`);
+      }
       syncSiswa();
     } catch (err: any) {
       showToast("Terjadi kesalahan saat memproses foto: " + err.message);

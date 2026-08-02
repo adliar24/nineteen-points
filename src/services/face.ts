@@ -254,22 +254,58 @@ export async function findBestMatch(
 }
 
 /**
- * Batch generate face embeddings for all students who have foto_url
+ * Smart Batch generate face embeddings:
+ * Only processes NEW or UNPROCESSED students who don't have a valid face descriptor in IndexedDB/Supabase yet!
  */
 export async function batchGenerateEmbeddingsFromPhotos(
   siswaList: Siswa[],
-  onProgress?: (processed: number, total: number, currentName: string) => void
-): Promise<{ successCount: number; failedCount: number }> {
+  onProgress?: (processed: number, total: number, currentName: string) => void,
+  forceRebuild: boolean = false
+): Promise<{ successCount: number; failedCount: number; skippedCount: number; totalEligible: number }> {
   await loadModels();
 
   const eligibleSiswa = siswaList.filter((s) => s.foto_url && s.foto_url.trim() !== '');
+
+  // 1. Fetch existing local descriptors from IndexedDB
+  const localDescriptors = await getAllFaceDescriptorsLocal();
+  const existingSet = new Set<string>();
+
+  for (const entry of localDescriptors) {
+    if (entry.descriptor && entry.descriptor.trim() !== '') {
+      existingSet.add(entry.siswaId);
+    }
+  }
+
+  // Also check students with face_embedding in database
+  for (const s of siswaList) {
+    if (s.face_embedding && s.face_embedding.trim() !== '') {
+      existingSet.add(s.id);
+    }
+  }
+
+  // Filter students needing processing
+  const targetSiswa = forceRebuild
+    ? eligibleSiswa
+    : eligibleSiswa.filter((s) => !existingSet.has(s.id));
+
+  const skippedCount = eligibleSiswa.length - targetSiswa.length;
+
+  if (targetSiswa.length === 0) {
+    return {
+      successCount: 0,
+      failedCount: 0,
+      skippedCount,
+      totalEligible: eligibleSiswa.length
+    };
+  }
+
   let successCount = 0;
   let failedCount = 0;
 
-  for (let i = 0; i < eligibleSiswa.length; i++) {
-    const siswa = eligibleSiswa[i];
+  for (let i = 0; i < targetSiswa.length; i++) {
+    const siswa = targetSiswa[i];
     if (onProgress) {
-      onProgress(i + 1, eligibleSiswa.length, siswa.nama);
+      onProgress(i + 1, targetSiswa.length, siswa.nama);
     }
 
     try {
@@ -293,5 +329,10 @@ export async function batchGenerateEmbeddingsFromPhotos(
     }
   }
 
-  return { successCount, failedCount };
+  return {
+    successCount,
+    failedCount,
+    skippedCount,
+    totalEligible: eligibleSiswa.length
+  };
 }

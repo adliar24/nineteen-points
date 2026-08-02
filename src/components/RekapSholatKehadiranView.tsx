@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { UserSession } from "../types";
 import { getRekapGabungan } from "../dbStore";
-import { toSentenceCase } from "../formatName";
+import { toSentenceCase, compareClasses } from "../formatName";
 
 interface RekapSholatKehadiranViewProps {
   userSession: UserSession;
@@ -48,7 +48,7 @@ export default function RekapSholatKehadiranView({ userSession }: RekapSholatKeh
   }, [startDate, endDate]);
 
   const classes = useMemo(
-    () => ["Semua", ...Array.from(new Set(rekapData.map((r) => r.siswa_kelas))).sort()],
+    () => ["Semua", ...Array.from(new Set(rekapData.map((r) => r.siswa_kelas).filter(Boolean))).sort(compareClasses)],
     [rekapData]
   );
 

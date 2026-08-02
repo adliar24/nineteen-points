@@ -21,7 +21,7 @@ import {
 import { Siswa, UserSession } from "../types";
 import { getSiswaList, getSiswaSeparatePoinMap, fetchAllPages } from "../dbStore";
 import ConfirmationModal from "./ConfirmationModal";
-import { toSentenceCase } from "../formatName";
+import { toSentenceCase, compareClasses } from "../formatName";
 import { supabase, supabaseAdminAuth } from "../supabaseClient";
 import PaginationFooter from "./PaginationFooter";
 import BulkActionsBanner from "./BulkActionsBanner";
@@ -229,9 +229,7 @@ export default function KelolaSiswaView({
 
   const classes = [
     "Semua",
-    ...Array.from(new Set(siswaList.map((s) => s.kelas))).sort((a: string, b: string) =>
-      a.localeCompare(b, "id")
-    ),
+    ...Array.from(new Set(siswaList.map((s) => s.kelas).filter(Boolean))).sort(compareClasses),
   ];
 
   const filteredSiswa = siswaList.filter((s) => {

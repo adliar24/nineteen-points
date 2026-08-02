@@ -3,6 +3,7 @@ import { UserPlus, User, Key, Mail, School } from "lucide-react";
 import { supabaseAdminAuth } from "../supabaseClient";
 import { Siswa } from "../types";
 import ModalPortal from "./ModalPortal";
+import { compareClasses } from "../formatName";
 
 interface CreateUserModalProps {
   isOpen: boolean;
@@ -30,7 +31,7 @@ export default function CreateUserModal({
   const [errorMsg, setErrorMsg] = useState("");
 
   const existingClasses = useMemo(() => {
-    const list = Array.from(new Set(studentsList.map((s) => s.kelas).filter(Boolean))).sort();
+    const list = Array.from(new Set(studentsList.map((s) => s.kelas).filter(Boolean))).sort(compareClasses);
     if (!list.includes("X-A")) list.unshift("X-A");
     return list;
   }, [studentsList]);

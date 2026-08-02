@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { Siswa, MasterPoin, UserSession } from "../types";
 import { getSiswaList, getMasterPoinList, addRiwayat } from "../dbStore";
-import { toSentenceCase } from "../formatName";
+import { toSentenceCase, compareClasses } from "../formatName";
 import FaceScanner from "./face/FaceScanner";
 import QrScanner, { QrScanFeedback } from "./scan/QrScanner";
 import InputModeTabs, { InputMode, ScanType } from "./scan/InputModeTabs";
@@ -184,8 +184,11 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
     setSuccessMessage(null);
   };
 
-  // Unique classes for manual filter dropdown
-  const classes = useMemo(() => ["Semua", ...Array.from(new Set(siswaList.map(s => s.kelas)))], [siswaList]);
+  // Unique classes for manual filter dropdown (sorted by grade and alphabetically)
+  const classes = useMemo(() => {
+    const rawClasses = Array.from(new Set(siswaList.map(s => s.kelas).filter(Boolean)));
+    return ["Semua", ...rawClasses.sort(compareClasses)];
+  }, [siswaList]);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 pb-8">

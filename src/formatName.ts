@@ -61,3 +61,31 @@ export function formatSubjectName(subject: string): string {
     })
     .join(" ");
 }
+
+/**
+ * Custom sort comparator for class names like X-A, XI-B, XII-C.
+ * Sorts by grade Roman numeral (X < XI < XII) and then alphabetically.
+ */
+export function compareClasses(a: string, b: string): number {
+  if (a === b) return 0;
+
+  const parseClass = (c: string) => {
+    const match = c.match(/^(XII|XI|X)\b[- ]*(.*)$/i);
+    if (match) {
+      const grade = match[1].toUpperCase();
+      const section = match[2];
+      const gradeValue = grade === "XII" ? 12 : grade === "XI" ? 11 : 10;
+      return { gradeValue, section };
+    }
+    return { gradeValue: 99, section: c };
+  };
+
+  const pA = parseClass(a);
+  const pB = parseClass(b);
+
+  if (pA.gradeValue !== pB.gradeValue) {
+    return pA.gradeValue - pB.gradeValue;
+  }
+  return pA.section.localeCompare(pB.section, undefined, { numeric: true, sensitivity: "base" });
+}
+

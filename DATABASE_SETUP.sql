@@ -1,31 +1,59 @@
 -- =========================================================================
--- NINETEEN POINTS — FULL DATABASE SETUP
+-- NINETEEN POINTS — FULL DATABASE SETUP (MASTER)
 -- SMAN 19 BANDUNG
 --
+-- File SATU-SATUNYA untuk setup & migrasi database.
+-- Semua migrasi terdahulu (kehadiran siswa, fitur guru, sertifikat,
+-- face embedding, poin akses guru, dst.) sudah digabung ke file ini.
+--
 -- AMAN DIJALANKAN BERULANG KALI (idempotent — IF NOT EXISTS / CREATE OR REPLACE)
--- Jalankan SELURUH isi file ini di Supabase SQL Editor SEKALI SAJA.
+-- NON-DESTRUKTIF — TIDAK MENGHAPUS DATA YANG SUDAH ADA.
+--
+-- Cara pakai: jalankan SELURUH isi file ini di Supabase SQL Editor.
 -- =========================================================================
 
 
 -- =========================================================================
--- 1. TABEL
+-- 1. HELPER FUNGSI
+-- =========================================================================
+-- is_staff(): true jika user adalah staf sekolah (bukan siswa)
+CREATE OR REPLACE FUNCTION public.is_staff()
+RETURNS BOOLEAN
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.profiles
+    WHERE id = auth.uid()
+      AND role IN ('super_admin', 'kepala_sekolah', 'guru', 'piket', 'tata_usaha')
+  );
+$$;
+
+GRANT EXECUTE ON FUNCTION public.is_staff() TO authenticated;
+
+
+-- =========================================================================
+-- 2. TABEL
 -- =========================================================================
 
--- 1a. TABEL SISWA
+-- 2a. SISWA
 CREATE TABLE IF NOT EXISTS public.siswa (
-  id         UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  nis        TEXT UNIQUE NOT NULL,
-  nama       TEXT NOT NULL,
-  kelas      TEXT NOT NULL,
-  total_poin INT DEFAULT 0 NOT NULL,
-  foto_url   TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+  id             UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  nis            TEXT UNIQUE NOT NULL,
+  nama           TEXT NOT NULL,
+  kelas          TEXT NOT NULL,
+  total_poin     INT DEFAULT 0 NOT NULL,
+  foto_url       TEXT,
+  face_embedding TEXT,
+  created_at     TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- Kolom tambahan (aman untuk DB yang sudah jalan)
 ALTER TABLE public.siswa ADD COLUMN IF NOT EXISTS foto_url TEXT;
+ALTER TABLE public.siswa ADD COLUMN IF NOT EXISTS face_embedding TEXT;
+COMMENT ON COLUMN public.siswa.face_embedding IS 'Vektor 128-float embedding wajah dalam format string dipisahkan koma';
 
--- 1b. TABEL MASTER BOBOT POIN (ATURAN BAKU)
+-- 2b. MASTER BOBOT POIN (ATURAN BAKU)
 CREATE TABLE IF NOT EXISTS public.master_poin (
   id                  UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   nama_poin           TEXT NOT NULL,
@@ -33,10 +61,9 @@ CREATE TABLE IF NOT EXISTS public.master_poin (
   allowed_guru_emails TEXT[]
 );
 
--- Kolom tambahan (aman untuk DB yang sudah jalan)
 ALTER TABLE public.master_poin ADD COLUMN IF NOT EXISTS allowed_guru_emails TEXT[];
 
--- 1c. TABEL RIWAYAT POIN SISWA (LOG AUDIT)
+-- 2c. RIWAYAT POIN SISWA (LOG AUDIT)
 CREATE TABLE IF NOT EXISTS public.riwayat_poin (
   id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   siswa_id        UUID REFERENCES public.siswa(id) ON DELETE CASCADE NOT NULL,
@@ -47,37 +74,41 @@ CREATE TABLE IF NOT EXISTS public.riwayat_poin (
   created_at      TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- Kolom semester (aman untuk DB yang sudah jalan)
 ALTER TABLE public.riwayat_poin ADD COLUMN IF NOT EXISTS semester TEXT NOT NULL DEFAULT '2025/2026 Ganjil';
 ALTER TABLE public.riwayat_poin ADD COLUMN IF NOT EXISTS kehadiran_id UUID;
 
--- 1d. TABEL PROFILES (HAK AKSES / ROLE-BASED ACCESS CONTROL)
+-- 2d. PROFILES (HAK AKSES / ROLE-BASED ACCESS CONTROL)
 CREATE TABLE IF NOT EXISTS public.profiles (
-  id         UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  email      TEXT NOT NULL,
-  nama       TEXT NOT NULL,
-  role       TEXT NOT NULL CHECK (role IN ('super_admin', 'kepala_sekolah', 'guru', 'siswa', 'piket', 'tata_usaha')),
-  nis        TEXT REFERENCES public.siswa(nis) ON DELETE SET NULL,
-  foto_url   TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+  id             UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  email          TEXT NOT NULL,
+  nama           TEXT NOT NULL,
+  role           TEXT NOT NULL CHECK (role IN ('super_admin', 'kepala_sekolah', 'guru', 'siswa', 'piket', 'tata_usaha')),
+  nis            TEXT REFERENCES public.siswa(nis) ON DELETE SET NULL,
+  foto_url       TEXT,
+  face_embedding TEXT,
+  created_at     TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- Kolom tambahan (aman untuk DB yang sudah jalan)
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS foto_url TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS face_embedding TEXT;
 
--- Constraint role — pastikan semua role terdaftar
+-- Pastikan semua role terdaftar di constraint
 ALTER TABLE public.profiles DROP CONSTRAINT IF EXISTS profiles_role_check;
 ALTER TABLE public.profiles ADD CONSTRAINT profiles_role_check
   CHECK (role IN ('super_admin', 'kepala_sekolah', 'guru', 'siswa', 'piket', 'tata_usaha'));
 
--- 1e. TABEL ATURAN KEHADIRAN
+-- 2e. ATURAN KEHADIRAN
 CREATE TABLE IF NOT EXISTS public.aturan_kehadiran (
-  status       TEXT PRIMARY KEY CHECK (status IN ('tepat_waktu', 'telat_5', 'telat_10', 'telat_15', 'alfa', 'sakit', 'izin')),
-  label        TEXT NOT NULL,
-  nilai_poin   INT NOT NULL
+  status     TEXT PRIMARY KEY CHECK (status IN ('tepat_waktu', 'telat_5', 'telat_10', 'telat_15', 'alfa', 'sakit', 'izin')),
+  label      TEXT NOT NULL,
+  nilai_poin INT NOT NULL
 );
 
--- 1f. TABEL CATATAN KEHADIRAN
+ALTER TABLE public.aturan_kehadiran DROP CONSTRAINT IF EXISTS aturan_kehadiran_status_check;
+ALTER TABLE public.aturan_kehadiran ADD CONSTRAINT aturan_kehadiran_status_check
+  CHECK (status IN ('tepat_waktu', 'telat_5', 'telat_10', 'telat_15', 'alfa', 'sakit', 'izin'));
+
+-- 2f. CATATAN KEHADIRAN
 CREATE TABLE IF NOT EXISTS public.kehadiran (
   id                   UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   siswa_id             UUID REFERENCES public.siswa(id) ON DELETE CASCADE NOT NULL,
@@ -89,80 +120,140 @@ CREATE TABLE IF NOT EXISTS public.kehadiran (
   UNIQUE (siswa_id, tanggal)
 );
 
--- Hubungkan foreign key di riwayat_poin jika belum terhubung
+-- Hubungkan foreign key kehadiran_id di riwayat_poin (setelah tabel kehadiran ada)
 ALTER TABLE public.riwayat_poin DROP CONSTRAINT IF EXISTS riwayat_poin_kehadiran_id_fkey;
 ALTER TABLE public.riwayat_poin ADD CONSTRAINT riwayat_poin_kehadiran_id_fkey
   FOREIGN KEY (kehadiran_id) REFERENCES public.kehadiran(id) ON DELETE CASCADE;
 
+-- 2g. JADWAL GURU (MENGAJAR KBM)
+CREATE TABLE IF NOT EXISTS public.jadwal_guru (
+  id             UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id        UUID NOT NULL,                                             -- guru pengajar
+  hari           TEXT NOT NULL,                                             -- "Senin", "Selasa", ...
+  mata_pelajaran TEXT NOT NULL,
+  kelas          TEXT NOT NULL,
+  jam_mulai      TIME WITHOUT TIME ZONE NOT NULL,
+  jam_selesai    TIME WITHOUT TIME ZONE NOT NULL,
+  created_at     TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
 
--- 1g. TABEL KEHADIRAN GURU
+ALTER TABLE public.jadwal_guru DROP CONSTRAINT IF EXISTS jadwal_guru_user_id_fkey;
+ALTER TABLE public.jadwal_guru ADD CONSTRAINT jadwal_guru_user_id_fkey
+  FOREIGN KEY (user_id) REFERENCES public.profiles(id) ON DELETE CASCADE;
+
+-- 2h. KEHADIRAN GURU
+-- DIBUAT NON-DESTRUKTIF: tidak memakai DROP TABLE, data lama tetap aman.
 CREATE TABLE IF NOT EXISTS public.kehadiran_guru (
-  id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id         UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
-  tanggal         DATE DEFAULT CURRENT_DATE NOT NULL,
-  jam_masuk       TIME WITHOUT TIME ZONE,
-  jam_keluar      TIME WITHOUT TIME ZONE,
-  status          TEXT CHECK (status IN ('hadir', 'sakit', 'izin', 'alfa')) DEFAULT 'hadir' NOT NULL,
-  keterangan      TEXT,
-  created_at      TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
-  UNIQUE (user_id, tanggal)
+  id         UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id    UUID NOT NULL,
+  tanggal    DATE DEFAULT CURRENT_DATE NOT NULL,
+  jam_masuk  TIME WITHOUT TIME ZONE,
+  status     TEXT CHECK (status IN ('hadir', 'sakit', 'izin', 'alfa')) DEFAULT 'hadir' NOT NULL,
+  keterangan TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 1h. TABEL KEGIATAN GURU (DATA SERTIFIKAT)
+ALTER TABLE public.kehadiran_guru DROP CONSTRAINT IF EXISTS kehadiran_guru_user_id_fkey;
+ALTER TABLE public.kehadiran_guru ADD CONSTRAINT kehadiran_guru_user_id_fkey
+  FOREIGN KEY (user_id) REFERENCES public.profiles(id) ON DELETE CASCADE;
+
+ALTER TABLE public.kehadiran_guru ALTER COLUMN jam_masuk DROP NOT NULL;
+ALTER TABLE public.kehadiran_guru ADD COLUMN IF NOT EXISTS jadwal_id UUID REFERENCES public.jadwal_guru(id) ON DELETE CASCADE;
+
+-- Satu slot jadwal mengajar hanya boleh di-absen sekali per tanggal
+ALTER TABLE public.kehadiran_guru DROP CONSTRAINT IF EXISTS kehadiran_guru_user_id_tanggal_key;
+ALTER TABLE public.kehadiran_guru DROP CONSTRAINT IF EXISTS kehadiran_guru_jadwal_id_tanggal_key;
+ALTER TABLE public.kehadiran_guru ADD CONSTRAINT kehadiran_guru_jadwal_id_tanggal_key UNIQUE (jadwal_id, tanggal);
+
+-- 2i. KEGIATAN GURU (DATA SERTIFIKAT)
 CREATE TABLE IF NOT EXISTS public.kegiatan_guru (
-  id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id         UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
-  nama_kegiatan   TEXT NOT NULL,
+  id               UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id          UUID NOT NULL,                                             -- penerima sertifikat (guru)
+  nama_kegiatan    TEXT NOT NULL,
   tanggal_kegiatan DATE NOT NULL,
-  peran           TEXT NOT NULL,
-  no_sertifikat   TEXT,
-  penyelenggara   TEXT DEFAULT 'SMAN 19 Bandung' NOT NULL,
-  durasi_jam      INT,
-  created_at      TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+  peran            TEXT NOT NULL,                                             -- "Peserta", "Narasumber", "Panitia"
+  no_sertifikat    TEXT,
+  penyelenggara    TEXT DEFAULT 'SMAN 19 Bandung' NOT NULL,
+  durasi_jam       INT,                                                       -- JP (Jam Pelajaran)
+  materi_jp        JSONB,
+  created_at       TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.kegiatan_guru DROP CONSTRAINT IF EXISTS kegiatan_guru_user_id_fkey;
+ALTER TABLE public.kegiatan_guru ADD CONSTRAINT kegiatan_guru_user_id_fkey
+  FOREIGN KEY (user_id) REFERENCES public.profiles(id) ON DELETE CASCADE;
+
+ALTER TABLE public.kegiatan_guru ADD COLUMN IF NOT EXISTS materi_jp JSONB DEFAULT NULL;
+
+-- 2j. POIN AKSES GURU (relasi pendukung allowed_guru_emails)
+CREATE TABLE IF NOT EXISTS public.poin_akses_guru (
+  id         UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  poin_id    UUID REFERENCES public.master_poin(id) ON DELETE CASCADE,
+  guru_email TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- 2k. KONFIGURASI DESAIN SERTIFIKAT
+CREATE TABLE IF NOT EXISTS public.sertifikat_config (
+  id         TEXT PRIMARY KEY,
+  config     JSONB NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
 
 -- =========================================================================
--- 2. INDEXES (PERFORMANCE)
+-- 3. INDEXES (PERFORMA)
 -- =========================================================================
 
--- Siswa
 CREATE INDEX IF NOT EXISTS idx_siswa_nis   ON public.siswa(nis);
 CREATE INDEX IF NOT EXISTS idx_siswa_nama  ON public.siswa(nama);
 
--- Riwayat poin (query paling berat)
 CREATE INDEX IF NOT EXISTS idx_riwayat_poin_siswa_id   ON public.riwayat_poin(siswa_id);
 CREATE INDEX IF NOT EXISTS idx_riwayat_poin_created_at ON public.riwayat_poin(created_at DESC);
 
--- Profiles
 CREATE INDEX IF NOT EXISTS idx_profiles_email ON public.profiles(email);
 CREATE INDEX IF NOT EXISTS idx_profiles_role  ON public.profiles(role);
+CREATE INDEX IF NOT EXISTS idx_profiles_nis   ON public.profiles(nis);
 
--- Kehadiran
 CREATE INDEX IF NOT EXISTS idx_kehadiran_siswa_id ON public.kehadiran(siswa_id);
 CREATE INDEX IF NOT EXISTS idx_kehadiran_tanggal ON public.kehadiran(tanggal DESC);
 
--- Kehadiran Guru & Kegiatan
+CREATE INDEX IF NOT EXISTS idx_jadwal_guru_user_id ON public.jadwal_guru(user_id);
+CREATE INDEX IF NOT EXISTS idx_jadwal_guru_hari    ON public.jadwal_guru(hari);
+
 CREATE INDEX IF NOT EXISTS idx_kehadiran_guru_user_id ON public.kehadiran_guru(user_id);
 CREATE INDEX IF NOT EXISTS idx_kehadiran_guru_tanggal ON public.kehadiran_guru(tanggal DESC);
+
 CREATE INDEX IF NOT EXISTS idx_kegiatan_guru_user_id ON public.kegiatan_guru(user_id);
 
+CREATE INDEX IF NOT EXISTS idx_poin_akses_guru_poin_id ON public.poin_akses_guru(poin_id);
+CREATE INDEX IF NOT EXISTS idx_poin_akses_guru_email   ON public.poin_akses_guru(guru_email);
+
 
 -- =========================================================================
--- 3. TRIGGERS
+-- 4. TRIGGERS
 -- =========================================================================
 
--- 3a. AUTO-CREATE PROFIL SAAT USER BARU DAFTAR (via Supabase Auth)
+-- 4a. AUTO-CREATE PROFIL SAAT USER BARU DAFTAR + AUTO-SYNC FOTO DARI TABEL SISWA
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
+DECLARE
+  v_foto_url TEXT := NULL;
+  v_nis TEXT;
 BEGIN
-  INSERT INTO public.profiles (id, email, nama, role, nis)
+  v_nis := NEW.raw_user_meta_data->>'nis';
+  IF v_nis IS NOT NULL THEN
+    SELECT foto_url INTO v_foto_url FROM public.siswa WHERE nis = v_nis LIMIT 1;
+  END IF;
+
+  INSERT INTO public.profiles (id, email, nama, role, nis, foto_url)
   VALUES (
     NEW.id,
     NEW.email,
     COALESCE(NEW.raw_user_meta_data->>'fullName', 'Pengguna Baru'),
     COALESCE(NEW.raw_user_meta_data->>'role', 'siswa'),
-    NEW.raw_user_meta_data->>'nis'
+    v_nis,
+    v_foto_url
   );
   RETURN NEW;
 END;
@@ -173,7 +264,7 @@ CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
--- 3b. AUTO-UPDATE total_poin SAAT RIWAYAT DITAMBAH
+-- 4b. AUTO-UPDATE total_poin SAAT RIWAYAT DITAMBAH
 CREATE OR REPLACE FUNCTION public.update_total_poin_on_insert()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -189,7 +280,7 @@ CREATE TRIGGER trg_riwayat_poin_insert
   AFTER INSERT ON public.riwayat_poin
   FOR EACH ROW EXECUTE FUNCTION public.update_total_poin_on_insert();
 
--- 3c. AUTO-UPDATE total_poin SAAT RIWAYAT DIHAPUS
+-- 4c. AUTO-UPDATE total_poin SAAT RIWAYAT DIHAPUS
 CREATE OR REPLACE FUNCTION public.update_total_poin_on_delete()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -205,7 +296,7 @@ CREATE TRIGGER trg_riwayat_poin_delete
   AFTER DELETE ON public.riwayat_poin
   FOR EACH ROW EXECUTE FUNCTION public.update_total_poin_on_delete();
 
--- 3d. AUTO-UPDATE total_poin SAAT RIWAYAT DIUBAH (UPDATE)
+-- 4d. AUTO-UPDATE total_poin SAAT RIWAYAT DIUBAH (UPDATE)
 CREATE OR REPLACE FUNCTION public.update_total_poin_on_update()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -221,7 +312,7 @@ CREATE TRIGGER trg_riwayat_poin_update
   AFTER UPDATE ON public.riwayat_poin
   FOR EACH ROW EXECUTE FUNCTION public.update_total_poin_on_update();
 
--- 3e. AUTO-SYNC RIWAYAT POIN SAAT KEHADIRAN DITAMBAH (INSERT)
+-- 4e. AUTO-SYNC RIWAYAT POIN SAAT KEHADIRAN DITAMBAH (INSERT)
 CREATE OR REPLACE FUNCTION public.sync_kehadiran_to_riwayat_insert()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -239,7 +330,7 @@ CREATE TRIGGER trg_kehadiran_insert
   AFTER INSERT ON public.kehadiran
   FOR EACH ROW EXECUTE FUNCTION public.sync_kehadiran_to_riwayat_insert();
 
--- 3f. AUTO-SYNC RIWAYAT POIN SAAT KEHADIRAN DIUBAH (UPDATE)
+-- 4f. AUTO-SYNC RIWAYAT POIN SAAT KEHADIRAN DIUBAH (UPDATE)
 CREATE OR REPLACE FUNCTION public.sync_kehadiran_to_riwayat_update()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -262,7 +353,7 @@ CREATE TRIGGER trg_kehadiran_update
 
 
 -- =========================================================================
--- 4. SEED DATA — ATURAN MASTER POIN BAKU SMAN 19 BANDUNG
+-- 5. SEED DATA — ATURAN MASTER POIN BAKU SMAN 19 BANDUNG
 -- =========================================================================
 
 INSERT INTO public.master_poin (nama_poin, nilai_poin) VALUES
@@ -279,12 +370,7 @@ INSERT INTO public.master_poin (nama_poin, nilai_poin) VALUES
 ('Bolos Jam Pelajaran', -25)
 ON CONFLICT DO NOTHING;
 
--- 4a. UPDATE CONSTRAINT (jika tabel sudah ada dengan constraint lama)
-ALTER TABLE public.aturan_kehadiran DROP CONSTRAINT IF EXISTS aturan_kehadiran_status_check;
-ALTER TABLE public.aturan_kehadiran ADD CONSTRAINT aturan_kehadiran_status_check
-  CHECK (status IN ('tepat_waktu', 'telat_5', 'telat_10', 'telat_15', 'alfa', 'sakit', 'izin'));
-
--- 4b. SEED DATA — ATURAN KEHADIRAN DEFAULT SMAN 19 BANDUNG
+-- Seed data aturan kehadiran default
 INSERT INTO public.aturan_kehadiran (status, label, nilai_poin) VALUES
 ('tepat_waktu', 'Hadir Tepat Waktu', 15),
 ('telat_5',      'Terlambat 5 Menit', -5),
@@ -298,20 +384,25 @@ SET label = EXCLUDED.label, nilai_poin = EXCLUDED.nilai_poin;
 
 
 -- =========================================================================
--- 5. ROW LEVEL SECURITY (RLS) POLICIES
+-- 6. ROW LEVEL SECURITY (RLS) — POLICY LONGGAR
 -- =========================================================================
+-- Filosofi: SEMUA staf (super_admin, kepala_sekolah, guru, piket, tata_usaha)
+-- dapat membaca & menulis SEMUA tabel tanpa error. Siswa hanya bisa membaca.
+-- Service role (kunci admin di backend) otomatis melewati RLS.
 
--- Aktifkan RLS untuk semua tabel
 ALTER TABLE public.siswa            ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.master_poin      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.riwayat_poin     ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.profiles         ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.aturan_kehadiran ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.kehadiran        ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.jadwal_guru      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.kehadiran_guru   ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.kegiatan_guru    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.poin_akses_guru  ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.sertifikat_config ENABLE ROW LEVEL SECURITY;
 
--- Hapus semua policies lama (agar bisa dijalankan ulang tanpa duplikat)
+-- Hapus semua policies lama agar bisa dijalankan ulang tanpa duplikat
 DO $$
 DECLARE
   pol RECORD;
@@ -320,244 +411,201 @@ BEGIN
     SELECT policyname, tablename
     FROM pg_policies
     WHERE schemaname = 'public'
-      AND tablename IN ('profiles', 'siswa', 'master_poin', 'riwayat_poin', 'aturan_kehadiran', 'kehadiran', 'kehadiran_guru', 'kegiatan_guru')
+      AND tablename IN (
+        'profiles', 'siswa', 'master_poin', 'riwayat_poin',
+        'aturan_kehadiran', 'kehadiran', 'jadwal_guru',
+        'kehadiran_guru', 'kegiatan_guru', 'poin_akses_guru',
+        'sertifikat_config'
+      )
   LOOP
     EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I', pol.policyname, pol.tablename);
   END LOOP;
 END $$;
 
 -- -----------------------------------------------
--- PROFILES
+-- PROFILES (baca semua; tulis hanya staf)
 -- -----------------------------------------------
--- Baca: semua authenticated user
-CREATE POLICY "profiles_select"
-  ON public.profiles FOR SELECT
-  TO authenticated USING (true);
+CREATE POLICY "profiles_select" ON public.profiles
+  FOR SELECT TO authenticated USING (true);
 
--- Insert: hanya super_admin
-CREATE POLICY "profiles_insert"
-  ON public.profiles FOR INSERT
-  TO authenticated
-  WITH CHECK (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
-  );
+CREATE POLICY "profiles_insert" ON public.profiles
+  FOR INSERT TO authenticated
+  WITH CHECK (public.is_staff());
 
--- Update: hanya super_admin
-CREATE POLICY "profiles_update"
-  ON public.profiles FOR UPDATE
-  TO authenticated
-  USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
-  );
+CREATE POLICY "profiles_update" ON public.profiles
+  FOR UPDATE TO authenticated
+  USING (public.is_staff())
+  WITH CHECK (public.is_staff());
 
--- Delete: hanya super_admin
-CREATE POLICY "profiles_delete"
-  ON public.profiles FOR DELETE
-  TO authenticated
-  USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
-  );
+CREATE POLICY "profiles_delete" ON public.profiles
+  FOR DELETE TO authenticated
+  USING (public.is_staff());
 
 -- -----------------------------------------------
--- SISWA
+-- SISWA (baca semua; tulis hanya staf)
 -- -----------------------------------------------
--- Baca: semua authenticated user
-CREATE POLICY "siswa_select"
-  ON public.siswa FOR SELECT
-  TO authenticated USING (true);
+CREATE POLICY "siswa_select" ON public.siswa
+  FOR SELECT TO authenticated USING (true);
 
--- Insert: admin, guru, kepala_sekolah, piket
-CREATE POLICY "siswa_insert"
-  ON public.siswa FOR INSERT
-  TO authenticated
-  WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE id = auth.uid()
-        AND role IN ('super_admin', 'guru', 'kepala_sekolah', 'piket')
-    )
-  );
+CREATE POLICY "siswa_insert" ON public.siswa
+  FOR INSERT TO authenticated
+  WITH CHECK (public.is_staff());
 
--- Update: admin, guru, kepala_sekolah, piket
-CREATE POLICY "siswa_update"
-  ON public.siswa FOR UPDATE
-  TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE id = auth.uid()
-        AND role IN ('super_admin', 'guru', 'kepala_sekolah', 'piket')
-    )
-  );
+CREATE POLICY "siswa_update" ON public.siswa
+  FOR UPDATE TO authenticated
+  USING (public.is_staff())
+  WITH CHECK (public.is_staff());
 
--- Delete: hanya super_admin
-CREATE POLICY "siswa_delete"
-  ON public.siswa FOR DELETE
-  TO authenticated
-  USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
-  );
+CREATE POLICY "siswa_delete" ON public.siswa
+  FOR DELETE TO authenticated
+  USING (public.is_staff());
 
 -- -----------------------------------------------
--- MASTER_POIN
+-- MASTER_POIN (baca semua; tulis hanya staf)
 -- -----------------------------------------------
--- Baca: semua authenticated user
-CREATE POLICY "master_poin_select"
-  ON public.master_poin FOR SELECT
-  TO authenticated USING (true);
+CREATE POLICY "master_poin_select" ON public.master_poin
+  FOR SELECT TO authenticated USING (true);
 
--- Insert/Update/Delete: hanya super_admin
-CREATE POLICY "master_poin_insert"
-  ON public.master_poin FOR INSERT
-  TO authenticated
-  WITH CHECK (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
-  );
+CREATE POLICY "master_poin_insert" ON public.master_poin
+  FOR INSERT TO authenticated
+  WITH CHECK (public.is_staff());
 
-CREATE POLICY "master_poin_update"
-  ON public.master_poin FOR UPDATE
-  TO authenticated
-  USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
-  );
+CREATE POLICY "master_poin_update" ON public.master_poin
+  FOR UPDATE TO authenticated
+  USING (public.is_staff())
+  WITH CHECK (public.is_staff());
 
-CREATE POLICY "master_poin_delete"
-  ON public.master_poin FOR DELETE
-  TO authenticated
-  USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
-  );
+CREATE POLICY "master_poin_delete" ON public.master_poin
+  FOR DELETE TO authenticated
+  USING (public.is_staff());
 
 -- -----------------------------------------------
--- RIWAYAT_POIN
+-- RIWAYAT_POIN (baca semua; tulis hanya staf)
 -- -----------------------------------------------
--- Baca: semua authenticated user
-CREATE POLICY "riwayat_select"
-  ON public.riwayat_poin FOR SELECT
-  TO authenticated USING (true);
+CREATE POLICY "riwayat_select" ON public.riwayat_poin
+  FOR SELECT TO authenticated USING (true);
 
--- Insert: admin, guru, kepala_sekolah, piket
-CREATE POLICY "riwayat_insert"
-  ON public.riwayat_poin FOR INSERT
-  TO authenticated
-  WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE id = auth.uid()
-        AND role IN ('super_admin', 'guru', 'kepala_sekolah', 'piket')
-    )
-  );
+CREATE POLICY "riwayat_insert" ON public.riwayat_poin
+  FOR INSERT TO authenticated
+  WITH CHECK (public.is_staff());
 
--- Delete: super_admin, atau guru yang mencatat poin tersebut
-CREATE POLICY "riwayat_delete"
-  ON public.riwayat_poin FOR DELETE
-  TO authenticated
-  USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
-    OR guru_email = (SELECT email FROM public.profiles WHERE id = auth.uid())
-  );
+CREATE POLICY "riwayat_update" ON public.riwayat_poin
+  FOR UPDATE TO authenticated
+  USING (public.is_staff())
+  WITH CHECK (public.is_staff());
 
--- Note: UPDATE pada riwayat_poin di-handle secara aplikasi
--- (delete + insert dengan trigger), bukan via RLS UPDATE policy.
+CREATE POLICY "riwayat_delete" ON public.riwayat_poin
+  FOR DELETE TO authenticated
+  USING (public.is_staff());
 
 -- -----------------------------------------------
--- ATURAN_KEHADIRAN
+-- ATURAN_KEHADIRAN (baca semua; tulis hanya staf)
 -- -----------------------------------------------
--- Baca: semua authenticated user
 CREATE POLICY "aturan_kehadiran_select" ON public.aturan_kehadiran
   FOR SELECT TO authenticated USING (true);
 
--- Insert/Update/Delete: hanya super_admin
 CREATE POLICY "aturan_kehadiran_insert" ON public.aturan_kehadiran
-  FOR INSERT TO authenticated WITH CHECK (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin'));
+  FOR INSERT TO authenticated WITH CHECK (public.is_staff());
 
 CREATE POLICY "aturan_kehadiran_update" ON public.aturan_kehadiran
-  FOR UPDATE TO authenticated USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin'));
+  FOR UPDATE TO authenticated USING (public.is_staff()) WITH CHECK (public.is_staff());
 
 CREATE POLICY "aturan_kehadiran_delete" ON public.aturan_kehadiran
-  FOR DELETE TO authenticated USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin'));
+  FOR DELETE TO authenticated USING (public.is_staff());
 
 -- -----------------------------------------------
--- KEHADIRAN
+-- KEHADIRAN (baca semua; tulis hanya staf)
 -- -----------------------------------------------
--- Baca: semua authenticated user
 CREATE POLICY "kehadiran_select" ON public.kehadiran
   FOR SELECT TO authenticated USING (true);
 
--- Insert: super_admin, guru, kepala_sekolah, piket
 CREATE POLICY "kehadiran_insert" ON public.kehadiran
-  FOR INSERT TO authenticated WITH CHECK (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('super_admin', 'guru', 'kepala_sekolah', 'piket')));
+  FOR INSERT TO authenticated WITH CHECK (public.is_staff());
 
--- Update: super_admin, guru, kepala_sekolah, piket
 CREATE POLICY "kehadiran_update" ON public.kehadiran
-  FOR UPDATE TO authenticated USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('super_admin', 'guru', 'kepala_sekolah', 'piket')));
+  FOR UPDATE TO authenticated USING (public.is_staff()) WITH CHECK (public.is_staff());
 
--- Delete: super_admin, guru, kepala_sekolah, piket
 CREATE POLICY "kehadiran_delete" ON public.kehadiran
-  FOR DELETE TO authenticated USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('super_admin', 'guru', 'kepala_sekolah', 'piket')));
-
+  FOR DELETE TO authenticated USING (public.is_staff());
 
 -- -----------------------------------------------
--- KEHADIRAN GURU
+-- JADWAL_GURU (baca semua; tulis hanya staf)
 -- -----------------------------------------------
--- Baca: guru ybs, admin, kepala_sekolah
+CREATE POLICY "jadwal_guru_select" ON public.jadwal_guru
+  FOR SELECT TO authenticated USING (true);
+
+CREATE POLICY "jadwal_guru_insert" ON public.jadwal_guru
+  FOR INSERT TO authenticated WITH CHECK (public.is_staff());
+
+CREATE POLICY "jadwal_guru_update" ON public.jadwal_guru
+  FOR UPDATE TO authenticated USING (public.is_staff()) WITH CHECK (public.is_staff());
+
+CREATE POLICY "jadwal_guru_delete" ON public.jadwal_guru
+  FOR DELETE TO authenticated USING (public.is_staff());
+
+-- -----------------------------------------------
+-- KEHADIRAN_GURU (baca semua; tulis hanya staf)
+-- -----------------------------------------------
 CREATE POLICY "kehadiran_guru_select" ON public.kehadiran_guru
-  FOR SELECT TO authenticated
-  USING (
-    user_id = auth.uid() OR
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('super_admin', 'kepala_sekolah'))
-  );
+  FOR SELECT TO authenticated USING (true);
 
--- Insert: guru ybs
 CREATE POLICY "kehadiran_guru_insert" ON public.kehadiran_guru
-  FOR INSERT TO authenticated
-  WITH CHECK (user_id = auth.uid());
+  FOR INSERT TO authenticated WITH CHECK (public.is_staff());
 
--- Update: guru ybs (absen pulang), super_admin (koreksi)
 CREATE POLICY "kehadiran_guru_update" ON public.kehadiran_guru
-  FOR UPDATE TO authenticated
-  USING (
-    user_id = auth.uid() OR
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
-  )
-  WITH CHECK (
-    user_id = auth.uid() OR
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
-  );
+  FOR UPDATE TO authenticated USING (public.is_staff()) WITH CHECK (public.is_staff());
 
--- Delete: super_admin
 CREATE POLICY "kehadiran_guru_delete" ON public.kehadiran_guru
-  FOR DELETE TO authenticated
-  USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin'));
+  FOR DELETE TO authenticated USING (public.is_staff());
 
 -- -----------------------------------------------
--- KEGIATAN GURU
+-- KEGIATAN_GURU (baca semua; tulis hanya staf)
 -- -----------------------------------------------
--- Baca: guru ybs, admin, kepala_sekolah
 CREATE POLICY "kegiatan_guru_select" ON public.kegiatan_guru
-  FOR SELECT TO authenticated
-  USING (
-    user_id = auth.uid() OR
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('super_admin', 'kepala_sekolah'))
-  );
+  FOR SELECT TO authenticated USING (true);
 
--- Insert/Update/Delete: hanya super_admin
 CREATE POLICY "kegiatan_guru_insert" ON public.kegiatan_guru
-  FOR INSERT TO authenticated
-  WITH CHECK (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin'));
+  FOR INSERT TO authenticated WITH CHECK (public.is_staff());
 
 CREATE POLICY "kegiatan_guru_update" ON public.kegiatan_guru
-  FOR UPDATE TO authenticated
-  USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin'))
-  WITH CHECK (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin'));
+  FOR UPDATE TO authenticated USING (public.is_staff()) WITH CHECK (public.is_staff());
 
 CREATE POLICY "kegiatan_guru_delete" ON public.kegiatan_guru
-  FOR DELETE TO authenticated
-  USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin'));
+  FOR DELETE TO authenticated USING (public.is_staff());
+
+-- -----------------------------------------------
+-- POIN_AKSES_GURU (baca semua; tulis hanya staf)
+-- -----------------------------------------------
+CREATE POLICY "poin_akses_guru_select" ON public.poin_akses_guru
+  FOR SELECT TO authenticated USING (true);
+
+CREATE POLICY "poin_akses_guru_insert" ON public.poin_akses_guru
+  FOR INSERT TO authenticated WITH CHECK (public.is_staff());
+
+CREATE POLICY "poin_akses_guru_update" ON public.poin_akses_guru
+  FOR UPDATE TO authenticated USING (public.is_staff()) WITH CHECK (public.is_staff());
+
+CREATE POLICY "poin_akses_guru_delete" ON public.poin_akses_guru
+  FOR DELETE TO authenticated USING (public.is_staff());
+
+-- -----------------------------------------------
+-- SERTIFIKAT_CONFIG (baca semua; tulis hanya staf)
+-- -----------------------------------------------
+CREATE POLICY "sertifikat_config_select" ON public.sertifikat_config
+  FOR SELECT TO authenticated USING (true);
+
+CREATE POLICY "sertifikat_config_insert" ON public.sertifikat_config
+  FOR INSERT TO authenticated WITH CHECK (public.is_staff());
+
+CREATE POLICY "sertifikat_config_update" ON public.sertifikat_config
+  FOR UPDATE TO authenticated USING (public.is_staff()) WITH CHECK (public.is_staff());
+
+CREATE POLICY "sertifikat_config_delete" ON public.sertifikat_config
+  FOR DELETE TO authenticated USING (public.is_staff());
 
 
 -- =========================================================================
--- 6. STORAGE — FOTO PROFIL
+-- 7. STORAGE — FOTO PROFIL
 -- =========================================================================
 
 -- Buat bucket (jika belum ada, abaikan duplikat)
@@ -610,220 +658,3 @@ CREATE POLICY "foto_delete_authenticated"
 -- =========================================================================
 -- SELESAI! Database siap digunakan.
 -- =========================================================================
-
-
--- =========================================================================
--- 7. FITUR GURU (JADWAL GURU, KEHADIRAN GURU, KEGIATAN GURU)
--- =========================================================================
-
--- 7a. TABEL JADWAL GURU
-CREATE TABLE IF NOT EXISTS public.jadwal_guru (
-  id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id         UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL, -- guru pengajar
-  hari            TEXT NOT NULL,                                             -- "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"
-  mata_pelajaran  TEXT NOT NULL,                                             -- e.g. "Matematika", "Fisika"
-  kelas           TEXT NOT NULL,                                             -- e.g. "XI-A", "XII-B"
-  jam_mulai       TIME WITHOUT TIME ZONE NOT NULL,                           -- e.g. "07:30:00"
-  jam_selesai     TIME WITHOUT TIME ZONE NOT NULL,                           -- e.g. "09:00:00"
-  created_at      TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
-);
-
--- 7b. TABEL KEHADIRAN GURU (ABSENSI KBM BERDASARKAN JADWAL)
--- Drop tabel lama untuk menyelaraskan perubahan absensi per jadwal
-DROP TABLE IF EXISTS public.kehadiran_guru CASCADE;
-
-CREATE TABLE public.kehadiran_guru (
-  id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id         UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
-  tanggal         DATE DEFAULT CURRENT_DATE NOT NULL,
-  jam_masuk       TIME WITHOUT TIME ZONE,
-  status          TEXT CHECK (status IN ('hadir', 'sakit', 'izin', 'alfa')) DEFAULT 'hadir' NOT NULL,
-  keterangan      TEXT,
-  jadwal_id       UUID REFERENCES public.jadwal_guru(id) ON DELETE CASCADE NOT NULL,
-  created_at      TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
-  UNIQUE (jadwal_id, tanggal)
-);
-
--- 7c. TABEL KEGIATAN GURU (DATA SERTIFIKAT)
-CREATE TABLE IF NOT EXISTS public.kegiatan_guru (
-  id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id         UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL, -- penerima sertifikat (guru)
-  nama_kegiatan   TEXT NOT NULL,                                             -- contoh: "IHT Implementasi Kurikulum Merdeka"
-  tanggal_kegiatan DATE NOT NULL,
-  peran           TEXT NOT NULL,                                             -- "Peserta", "Narasumber", "Panitia"
-  no_sertifikat   TEXT,                                                      -- nomor surat sertifikat
-  penyelenggara   TEXT DEFAULT 'SMAN 19 Bandung' NOT NULL,
-  durasi_jam      INT,                                                       -- JP (Jam Pelajaran), contoh: 32
-  created_at      TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
-);
-
--- 7d. INDEX UNTUK PERFORMA
-CREATE INDEX IF NOT EXISTS idx_jadwal_guru_user_id ON public.jadwal_guru(user_id);
-CREATE INDEX IF NOT EXISTS idx_jadwal_guru_hari ON public.jadwal_guru(hari);
-CREATE INDEX IF NOT EXISTS idx_kehadiran_guru_user_id ON public.kehadiran_guru(user_id);
-CREATE INDEX IF NOT EXISTS idx_kehadiran_guru_tanggal ON public.kehadiran_guru(tanggal DESC);
-CREATE INDEX IF NOT EXISTS idx_kegiatan_guru_user_id ON public.kegiatan_guru(user_id);
-
--- 7e. PENYESUAIAN RELASI UNTUK SUPABASE JOIN (Bila tabel sudah ada)
-ALTER TABLE public.jadwal_guru DROP CONSTRAINT IF EXISTS jadwal_guru_user_id_fkey;
-ALTER TABLE public.jadwal_guru ADD CONSTRAINT jadwal_guru_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.profiles(id) ON DELETE CASCADE;
-
-ALTER TABLE public.kegiatan_guru DROP CONSTRAINT IF EXISTS kegiatan_guru_user_id_fkey;
-ALTER TABLE public.kegiatan_guru ADD CONSTRAINT kegiatan_guru_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.profiles(id) ON DELETE CASCADE;
-
--- 7e. ENABLE ROW LEVEL SECURITY (RLS)
-ALTER TABLE public.jadwal_guru ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.kehadiran_guru ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.kegiatan_guru ENABLE ROW LEVEL SECURITY;
-
--- Hapus policy lama jika ada
-DO $$
-DECLARE
-  pol RECORD;
-BEGIN
-  FOR pol IN
-    SELECT policyname, tablename
-    FROM pg_policies
-    WHERE schemaname = 'public'
-      AND tablename IN ('jadwal_guru', 'kehadiran_guru', 'kegiatan_guru')
-  LOOP
-    EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I', pol.policyname, pol.tablename);
-  END LOOP;
-END $$;
-
--- 7f. POLICIES JADWAL GURU
-CREATE POLICY "jadwal_guru_select" ON public.jadwal_guru
-  FOR SELECT TO authenticated
-  USING (true);
-
-CREATE POLICY "jadwal_guru_insert" ON public.jadwal_guru
-  FOR INSERT TO authenticated
-  WITH CHECK (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
-  );
-
-CREATE POLICY "jadwal_guru_update" ON public.jadwal_guru
-  FOR UPDATE TO authenticated
-  USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
-  )
-  WITH CHECK (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
-  );
-
-CREATE POLICY "jadwal_guru_delete" ON public.jadwal_guru
-  FOR DELETE TO authenticated
-  USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
-  );
-
--- 7g. POLICIES KEHADIRAN GURU
-CREATE POLICY "kehadiran_guru_select" ON public.kehadiran_guru
-  FOR SELECT TO authenticated
-  USING (true);
-
-CREATE POLICY "kehadiran_guru_insert" ON public.kehadiran_guru
-  FOR INSERT TO authenticated
-  WITH CHECK (
-    user_id = auth.uid() OR
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('super_admin', 'kepala_sekolah', 'piket'))
-  );
-
-CREATE POLICY "kehadiran_guru_update" ON public.kehadiran_guru
-  FOR UPDATE TO authenticated
-  USING (
-    user_id = auth.uid() OR
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('super_admin', 'kepala_sekolah', 'piket'))
-  )
-  WITH CHECK (
-    user_id = auth.uid() OR
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('super_admin', 'kepala_sekolah', 'piket'))
-  );
-
-CREATE POLICY "kehadiran_guru_delete" ON public.kehadiran_guru
-  FOR DELETE TO authenticated
-  USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('super_admin', 'kepala_sekolah', 'piket'))
-  );
-
--- 7h. POLICIES KEGIATAN GURU (SERTIFIKAT)
-CREATE POLICY "kegiatan_guru_select" ON public.kegiatan_guru
-  FOR SELECT TO authenticated
-  USING (
-    user_id = auth.uid() OR
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('super_admin', 'kepala_sekolah'))
-  );
-
-CREATE POLICY "kegiatan_guru_insert" ON public.kegiatan_guru
-  FOR INSERT TO authenticated
-  WITH CHECK (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
-  );
-
-CREATE POLICY "kegiatan_guru_update" ON public.kegiatan_guru
-  FOR UPDATE TO authenticated
-  USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
-  )
-  WITH CHECK (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
-  );
-
-CREATE POLICY "kegiatan_guru_delete" ON public.kegiatan_guru
-  FOR DELETE TO authenticated
-  USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
-  );
-
-
--- =========================================================================
--- 8. TABEL KONFIGURASI DESAIN SERTIFIKAT & MATERI JP
--- =========================================================================
-
--- 8a. Kolom Materi JP (Jam Pelajaran Detail)
-ALTER TABLE public.kegiatan_guru ADD COLUMN IF NOT EXISTS materi_jp JSONB DEFAULT NULL;
-
--- 8b. Tabel Konfigurasi Desain Sertifikat
-CREATE TABLE IF NOT EXISTS public.sertifikat_config (
-  id          TEXT PRIMARY KEY,
-  config      JSONB NOT NULL,
-  updated_at  TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
-);
-
-ALTER TABLE public.sertifikat_config ENABLE ROW LEVEL SECURITY;
-
-DO $$
-BEGIN
-  DROP POLICY IF EXISTS "sertifikat_config_select" ON public.sertifikat_config;
-  DROP POLICY IF EXISTS "sertifikat_config_all" ON public.sertifikat_config;
-EXCEPTION
-  WHEN others THEN NULL;
-END $$;
-
-CREATE POLICY "sertifikat_config_select" ON public.sertifikat_config
-  FOR SELECT TO authenticated
-  USING (true);
-
-CREATE POLICY "sertifikat_config_all" ON public.sertifikat_config
-  FOR ALL TO authenticated
-  USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
-  )
-  WITH CHECK (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
-  );
-
-
--- =========================================================================
--- 9. PERFORMA & INDEX OPTIMIZATION (TAMBAHAN PERFORMA HIGH-LOAD)
--- =========================================================================
-
-CREATE INDEX IF NOT EXISTS idx_riwayat_poin_siswa_id ON public.riwayat_poin(siswa_id);
-CREATE INDEX IF NOT EXISTS idx_riwayat_poin_created_at ON public.riwayat_poin(created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_kehadiran_siswa_id ON public.kehadiran(siswa_id);
-CREATE INDEX IF NOT EXISTS idx_kehadiran_tanggal ON public.kehadiran(tanggal);
-CREATE INDEX IF NOT EXISTS idx_jadwal_guru_user_id ON public.jadwal_guru(user_id);
-CREATE INDEX IF NOT EXISTS idx_jadwal_guru_hari ON public.jadwal_guru(hari);
-CREATE INDEX IF NOT EXISTS idx_siswa_nis ON public.siswa(nis);
-CREATE INDEX IF NOT EXISTS idx_profiles_nis ON public.profiles(nis);
-

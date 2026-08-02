@@ -19,7 +19,7 @@ import {
   saveKehadiran,
   AturanKehadiran
 } from "../dbStore";
-import { toSentenceCase } from "../formatName";
+import { toSentenceCase, compareClasses } from "../formatName";
 import FaceScanner from "./face/FaceScanner";
 import QrScanner, { QrScanFeedback } from "./scan/QrScanner";
 import InputModeTabs, { InputMode, ScanType } from "./scan/InputModeTabs";
@@ -63,6 +63,7 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
 
   // Search filter query inputs
   const [searchSiswaQuery, setSearchSiswaQuery] = useState("");
+  const [manualSelectedClass, setManualSelectedClass] = useState("Semua");
 
   // Aturan points map
   const aturanMap = useMemo(() => {
@@ -92,7 +93,9 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
     return {
       type: "success",
       title: "BERHASIL TERDETEKSI",
-      message: `${toSentenceCase(student.nama)} (${student.kelas})`,
+      message: toSentenceCase(student.nama),
+      kelas: student.kelas,
+      fotoUrl: student.foto_url || undefined,
     };
   };
 
@@ -130,14 +133,23 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
     }
   };
 
+  // Unique classes for manual filter dropdown (sorted by grade and alphabetically)
+  const classes = useMemo(() => {
+    const rawClasses = Array.from(new Set(siswaList.map(s => s.kelas).filter(Boolean)));
+    return ["Semua", ...rawClasses.sort(compareClasses)];
+  }, [siswaList]);
+
   // Filters manual dropdown lookup
   const filteredSiswaLookup = useMemo(() => {
-    if (!searchSiswaQuery) return [];
-    return siswaList.filter(s => 
-      s.nama.toLowerCase().includes(searchSiswaQuery.toLowerCase()) ||
-      s.nis.includes(searchSiswaQuery)
-    ).slice(0, 8);
-  }, [siswaList, searchSiswaQuery]);
+    const list = siswaList.filter(s => {
+      const matchesSearch = !searchSiswaQuery.trim() ||
+                            s.nama.toLowerCase().includes(searchSiswaQuery.toLowerCase()) ||
+                            s.nis.includes(searchSiswaQuery);
+      const matchesClass = manualSelectedClass === "Semua" || s.kelas === manualSelectedClass;
+      return matchesSearch && matchesClass;
+    });
+    return list.slice(0, 100);
+  }, [siswaList, searchSiswaQuery, manualSelectedClass]);
 
   const activateSiswa = (student: Siswa) => {
     setActiveSiswa(student);
@@ -259,15 +271,26 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
             <p className="text-xs text-brand-500 font-semibold">Cari nama atau nomor NIS siswa untuk input absensi manual.</p>
           </div>
 
-          <div className="relative">
-            <Search className="absolute left-3.5 top-3.5 text-brand-500/50 w-4.5 h-4.5" />
-            <input
-              type="text"
-              placeholder="Masukkan nama atau NIS murid..."
-              value={searchSiswaQuery}
-              onChange={(e) => setSearchSiswaQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-[#faf9ff] rounded-2xl border border-brand-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 text-brand-950 placeholder-brand-500/30"
-            />
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3.5 top-3.5 text-brand-500/50 w-4.5 h-4.5" />
+              <input
+                type="text"
+                placeholder="Masukkan nama atau NIS murid..."
+                value={searchSiswaQuery}
+                onChange={(e) => setSearchSiswaQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 bg-[#faf9ff] rounded-2xl border border-brand-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 text-brand-950 placeholder-brand-500/30"
+              />
+            </div>
+            <select
+              value={manualSelectedClass}
+              onChange={(e) => setManualSelectedClass(e.target.value)}
+              className="border border-brand-100 rounded-2xl py-3 px-4 text-xs font-bold text-brand-700 outline-none focus:ring-2 focus:ring-brand-500 bg-white"
+            >
+              {classes.map(c => (
+                <option key={c} value={c}>Kelas: {c}</option>
+              ))}
+            </select>
           </div>
 
           {filteredSiswaLookup.length > 0 && (
@@ -287,6 +310,11 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
                   </span>
                 </button>
               ))}
+              {filteredSiswaLookup.length === 100 && (
+                <div className="p-3 bg-amber-50/60 text-[10px] text-amber-800 font-bold border-t border-brand-100 text-center">
+                  Menampilkan 100 murid pertama. Gunakan kolom pencarian atau filter kelas untuk hasil spesifik.
+                </div>
+              )}
             </div>
           )}
         </div>

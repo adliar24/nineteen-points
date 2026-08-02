@@ -45,6 +45,8 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
 
   // Selected student state (unified for both methods)
   const [selectedSiswa, setSelectedSiswa] = useState<Siswa | null>(null);
+  const [isBatchMode, setIsBatchMode] = useState(false);
+  const [selectedSiswaBatch, setSelectedSiswaBatch] = useState<Siswa[]>([]);
 
   // Manual Search states
   const [manualSearchQuery, setManualSearchQuery] = useState("");
@@ -70,26 +72,58 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
         message: `QR: "${trimmed}"`,
       };
     }
-    setSelectedSiswa(student);
-    setSuccessMessage(null);
-    setTimeout(() => setShowQrScanner(false), 900);
-    return {
-      type: "success",
-      title: "BERHASIL TERDETEKSI",
-      message: `${toSentenceCase(student.nama)} (${student.kelas})`,
-    };
+
+    if (isBatchMode) {
+      if (selectedSiswaBatch.some(s => s.id === student.id)) {
+        return {
+          type: "duplicate",
+          title: "SUDAH ADA DI DAFTAR BATCH",
+          message: toSentenceCase(student.nama),
+          kelas: student.kelas,
+          fotoUrl: student.foto_url || undefined,
+        };
+      }
+      setSelectedSiswaBatch(prev => [...prev, student]);
+      setSuccessMessage(null);
+      return {
+        type: "success",
+        title: "BERHASIL TERDETEKSI",
+        message: toSentenceCase(student.nama),
+        kelas: student.kelas,
+        fotoUrl: student.foto_url || undefined,
+      };
+    } else {
+      setSelectedSiswa(student);
+      setSuccessMessage(null);
+      setTimeout(() => setShowQrScanner(false), 900);
+      return {
+        type: "success",
+        title: "BERHASIL TERDETEKSI",
+        message: toSentenceCase(student.nama),
+        kelas: student.kelas,
+        fotoUrl: student.foto_url || undefined,
+      };
+    }
   };
 
   // Manual filter search list of students
-  const filteredStudentsForManual = useMemo(() => siswaList.filter(s => {
-    const matchesSearch = s.nama.toLowerCase().includes(manualSearchQuery.toLowerCase()) || 
-                          s.nis.includes(manualSearchQuery);
-    const matchesClass = manualSelectedClass === "Semua" || s.kelas === manualSelectedClass;
-    return matchesSearch && matchesClass;
-  }), [siswaList, manualSearchQuery, manualSelectedClass]);
+  const filteredStudentsForManual = useMemo(() => {
+    const list = siswaList.filter(s => {
+      const matchesSearch = s.nama.toLowerCase().includes(manualSearchQuery.toLowerCase()) || 
+                            s.nis.includes(manualSearchQuery);
+      const matchesClass = manualSelectedClass === "Semua" || s.kelas === manualSelectedClass;
+      return matchesSearch && matchesClass;
+    });
+    return list.slice(0, 100);
+  }, [siswaList, manualSearchQuery, manualSelectedClass]);
 
   const handleSelectManualSiswa = (siswa: Siswa) => {
-    setSelectedSiswa(siswa);
+    if (isBatchMode) {
+      if (selectedSiswaBatch.some(s => s.id === siswa.id)) return;
+      setSelectedSiswaBatch(prev => [...prev, siswa]);
+    } else {
+      setSelectedSiswa(siswa);
+    }
     setSuccessMessage(null);
   };
 
@@ -128,7 +162,7 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
 
   // Submission
   const handleApplyPoint = async () => {
-    if (!selectedSiswa) return;
+    if (!selectedSiswa && selectedSiswaBatch.length === 0) return;
 
     let name = "";
     let value = 0;
@@ -152,22 +186,28 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
     }
 
     try {
-      // Write to DB
-      await addRiwayat(selectedSiswa.id, name, value, userSession.fullName);
+      if (selectedSiswa) {
+        // Write to DB
+        await addRiwayat(selectedSiswa.id, name, value, userSession.fullName);
+        setSuccessMessage(
+          `Sukses mencatat poin! ${selectedSiswa.nama} (${selectedSiswa.kelas}) menerima ${
+            value > 0 ? `+${value}` : value
+          } poin untuk "${name}".`
+        );
+        const updatedSiswa = { ...selectedSiswa, total_poin: selectedSiswa.total_poin + value };
+        setSelectedSiswa(updatedSiswa);
+      } else {
+        // Write to DB (batch mode)
+        for (const student of selectedSiswaBatch) {
+          await addRiwayat(student.id, name, value, userSession.fullName);
+        }
+        setSuccessMessage(
+          `Sukses mencatat poin untuk ${selectedSiswaBatch.length} murid sekaligus untuk "${name}".`
+        );
+        setSelectedSiswaBatch([]);
+      }
+
       onRefreshHistory();
-
-      // Success state
-      setSuccessMessage(
-        `Sukses mencatat poin! ${selectedSiswa.nama} (${selectedSiswa.kelas}) menerima ${
-          value > 0 ? `+${value}` : value
-        } poin untuk "${name}".`
-      );
-
-      // Update state to show updated student stats instantly
-      const updatedSiswa = { ...selectedSiswa, total_poin: selectedSiswa.total_poin + value };
-      setSelectedSiswa(updatedSiswa);
-
-      // Re-sync local student list
       await queryClient.invalidateQueries({ queryKey: ["siswa"] });
 
       // Reset input fields
@@ -181,6 +221,7 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
 
   const handleResetTarget = () => {
     setSelectedSiswa(null);
+    setSelectedSiswaBatch([]);
     setSuccessMessage(null);
   };
 
@@ -205,7 +246,7 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
         </div>
 
         {/* METHOD TAB SELECTOR */}
-        {!selectedSiswa && (
+        {!(selectedSiswa || selectedSiswaBatch.length > 0) && (
           <InputModeTabs
             mode={mode}
             scanType={scanType}
@@ -218,7 +259,7 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
         <div className="bg-white rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 p-6 min-h-[400px] flex flex-col justify-start">
           
           <AnimatePresence mode="wait">
-            {!selectedSiswa ? (
+            {!(selectedSiswa || selectedSiswaBatch.length > 0) ? (
               <motion.div
                 key={`${mode}-${scanType}`}
                 initial={{ opacity: 0, y: 10 }}
@@ -237,6 +278,21 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
                       <p className="text-xs text-brand-600 font-medium leading-relaxed">
                         Arahkan kamera ke wajah siswa yang bersangkutan. Sistem AI akan secara otomatis mencocokkan wajah dan memilih profil murid untuk pencatatan poin.
                       </p>
+                    </div>
+                    <div className="flex items-center justify-center gap-3 py-2 bg-brand-50/50 rounded-2xl max-w-xs mx-auto border border-brand-100/50 mb-1">
+                      <input
+                        type="checkbox"
+                        id="batch-mode-toggle-face"
+                        checked={isBatchMode}
+                        onChange={(e) => {
+                          setIsBatchMode(e.target.checked);
+                          setSelectedSiswaBatch([]);
+                        }}
+                        className="w-4 h-4 text-brand-600 border-brand-200 rounded focus:ring-brand-500 cursor-pointer"
+                      />
+                      <label htmlFor="batch-mode-toggle-face" className="text-xs font-black text-brand-900 cursor-pointer select-none">
+                        Mode Batch (Scan Massal)
+                      </label>
                     </div>
                     <button
                       onClick={() => setShowFaceScannerModal(true)}
@@ -259,6 +315,21 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
                       <p className="text-xs text-brand-600 font-medium leading-relaxed">
                         Pindai QR kartu pelajar murid. Sistem otomatis mengenali NIS dan memilih profil murid untuk pencatatan poin.
                       </p>
+                    </div>
+                    <div className="flex items-center justify-center gap-3 py-2 bg-brand-50/50 rounded-2xl max-w-xs mx-auto border border-brand-100/50 mb-1">
+                      <input
+                        type="checkbox"
+                        id="batch-mode-toggle-qr"
+                        checked={isBatchMode}
+                        onChange={(e) => {
+                          setIsBatchMode(e.target.checked);
+                          setSelectedSiswaBatch([]);
+                        }}
+                        className="w-4 h-4 text-brand-600 border-brand-200 rounded focus:ring-brand-500 cursor-pointer"
+                      />
+                      <label htmlFor="batch-mode-toggle-qr" className="text-xs font-black text-brand-900 cursor-pointer select-none">
+                        Mode Batch (Scan Massal)
+                      </label>
                     </div>
                     <button
                       onClick={() => setShowQrScanner(true)}
@@ -301,23 +372,30 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
                     {/* SEARCH RESULTS LIST */}
                     <div className="flex-1 overflow-y-auto max-h-[300px] border border-brand-50 rounded-2xl divide-y divide-brand-50">
                       {filteredStudentsForManual.length > 0 ? (
-                        filteredStudentsForManual.map(siswa => (
-                          <button
-                            key={siswa.id}
-                            onClick={() => handleSelectManualSiswa(siswa)}
-                            className="w-full px-4 py-3.5 text-left hover:bg-brand-50/50 flex items-center justify-between group transition-colors cursor-pointer"
-                          >
-                            <div>
-                              <p className="text-sm font-black text-brand-900 group-hover:text-brand-600 transition-colors">{toSentenceCase(siswa.nama)}</p>
-                              <p className="text-[10px] text-brand-400 font-semibold uppercase mt-0.5">{siswa.kelas} &bull; NIS {siswa.nis}</p>
+                        <>
+                          {filteredStudentsForManual.map(siswa => (
+                            <button
+                              key={siswa.id}
+                              onClick={() => handleSelectManualSiswa(siswa)}
+                              className="w-full px-4 py-3.5 text-left hover:bg-brand-50/50 flex items-center justify-between group transition-colors cursor-pointer bg-transparent border-0"
+                            >
+                              <div>
+                                <p className="text-sm font-black text-brand-900 group-hover:text-brand-600 transition-colors">{toSentenceCase(siswa.nama)}</p>
+                                <p className="text-[10px] text-brand-400 font-semibold uppercase mt-0.5">{siswa.kelas} &bull; NIS {siswa.nis}</p>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-bold text-brand-500 group-hover:translate-x-1 transition-transform">
+                                  Pilih &rarr;
+                                </span>
+                              </div>
+                            </button>
+                          ))}
+                          {filteredStudentsForManual.length === 100 && (
+                            <div className="p-3.5 bg-amber-50/60 text-[10px] text-amber-800 font-bold border-t border-brand-100 text-center">
+                              Menampilkan 100 murid pertama. Gunakan kolom pencarian atau filter kelas untuk hasil spesifik.
                             </div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-[10px] font-bold text-brand-500 group-hover:translate-x-1 transition-transform">
-                                Pilih &rarr;
-                              </span>
-                            </div>
-                          </button>
-                        ))
+                          )}
+                        </>
                       ) : (
                         <div className="py-12 text-center text-xs text-brand-400 font-bold">
                           Murid tidak ditemukan. Silakan periksa kembali ketikan Anda.
@@ -336,33 +414,68 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
                 className="space-y-6 flex-1"
               >
                 {/* Result header */}
-                <div className="bg-brand-50/30 p-5 rounded-2xl border border-brand-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-accent-500 to-amber-400 border border-white/20 flex items-center justify-center font-black text-sm uppercase text-white shadow-md">
-                      {selectedSiswa.nama.slice(0, 2)}
+                {selectedSiswaBatch.length > 0 ? (
+                  <div className="bg-brand-50/30 p-5 rounded-2xl border border-brand-100 flex flex-col gap-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="text-base font-black text-brand-950 leading-tight">Pencatatan Massal ({selectedSiswaBatch.length} Murid)</h4>
+                        <p className="text-[10px] text-brand-500 font-bold uppercase mt-0.5">
+                          Murid-murid berikut akan menerima poin yang sama secara bersamaan.
+                        </p>
+                      </div>
+                      <button
+                        onClick={handleResetTarget}
+                        className="p-2 hover:bg-brand-100/60 text-brand-400 hover:text-brand-700 rounded-xl transition-all cursor-pointer"
+                        title="Batalkan Semua"
+                      >
+                        <RotateCcw className="w-4.5 h-4.5" />
+                      </button>
                     </div>
-                    <div>
-                      <h4 className="text-base font-black text-brand-950 leading-tight">{toSentenceCase(selectedSiswa.nama)}</h4>
-                      <p className="text-[10px] text-brand-500 font-bold uppercase mt-0.5">
-                        {selectedSiswa.kelas} &bull; NIS {selectedSiswa.nis}
-                      </p>
+
+                    <div className="flex flex-wrap gap-2 max-h-[120px] overflow-y-auto p-3 bg-white rounded-2xl border border-brand-100">
+                      {selectedSiswaBatch.map(s => (
+                        <div key={s.id} className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-brand-50 border border-brand-100 text-brand-950 text-xs font-bold">
+                          <span>{toSentenceCase(s.nama)} ({s.kelas})</span>
+                          <button
+                            onClick={() => setSelectedSiswaBatch(prev => prev.filter(x => x.id !== s.id))}
+                            className="text-brand-400 hover:text-rose-500 p-0.5 rounded-full cursor-pointer transition-colors"
+                            title="Hapus"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                  
-                  <div className="flex items-center gap-3 self-start sm:self-auto">
-                    <div className="text-right">
-                      <p className="text-[9px] font-black text-brand-400 uppercase tracking-wider">Poin Saat Ini</p>
-                      <p className="text-sm font-mono font-black text-brand-900">{selectedSiswa.total_poin} pts</p>
+                ) : selectedSiswa ? (
+                  <div className="bg-brand-50/30 p-5 rounded-2xl border border-brand-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-accent-500 to-amber-400 border border-white/20 flex items-center justify-center font-black text-sm uppercase text-white shadow-md">
+                        {selectedSiswa.nama.slice(0, 2)}
+                      </div>
+                      <div>
+                        <h4 className="text-base font-black text-brand-950 leading-tight">{toSentenceCase(selectedSiswa.nama)}</h4>
+                        <p className="text-[10px] text-brand-500 font-bold uppercase mt-0.5">
+                          {selectedSiswa.kelas} &bull; NIS {selectedSiswa.nis}
+                        </p>
+                      </div>
                     </div>
-                    <button
-                      onClick={handleResetTarget}
-                      className="p-2 hover:bg-brand-100/60 text-brand-400 hover:text-brand-700 rounded-xl transition-all cursor-pointer"
-                      title="Batalkan Pilihan"
-                    >
-                      <RotateCcw className="w-4.5 h-4.5" />
-                    </button>
+
+                    <div className="flex items-center gap-3 self-start sm:self-auto">
+                      <div className="text-right">
+                        <p className="text-[9px] font-black text-brand-400 uppercase tracking-wider">Poin Saat Ini</p>
+                        <p className="text-sm font-mono font-black text-brand-900">{selectedSiswa.total_poin} pts</p>
+                      </div>
+                      <button
+                        onClick={handleResetTarget}
+                        className="p-2 hover:bg-brand-100/60 text-brand-400 hover:text-brand-700 rounded-xl transition-all cursor-pointer"
+                        title="Batalkan Pilihan"
+                      >
+                        <RotateCcw className="w-4.5 h-4.5" />
+                      </button>
+                    </div>
                   </div>
-                </div>
+                ) : null}
 
                 {/* FORMULIR INPUT POIN */}
                 <div className="space-y-4">
@@ -590,23 +703,33 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
 
       {showQrScanner && (
         <QrScanner
-          title="Scan QR - Pilih Murid"
-          subtitle="Pindai kartu pelajar murid untuk pencatatan poin"
+          title={isBatchMode ? "Scan QR Massal - Pindai Murid" : "Scan QR - Pilih Murid"}
+          subtitle={isBatchMode ? "Pindai kartu pelajar beberapa murid secara berurutan" : "Pindai kartu pelajar murid untuk pencatatan poin"}
           onScanSuccess={handleQrScan}
           onClose={() => setShowQrScanner(false)}
+          batchCount={isBatchMode ? selectedSiswaBatch.length : undefined}
+          onBatchConfirm={isBatchMode ? () => setShowQrScanner(false) : undefined}
         />
       )}
 
       {showFaceScannerModal && (
         <FaceScanner
           siswaList={siswaList}
-          title="Pilih Siswa via Scan Wajah (AI)"
-          subtitle="Posisikan wajah siswa di depan kamera untuk memilih profil murid secara otomatis"
+          title={isBatchMode ? "Scan Wajah Massal - Pindai Siswa" : "Pilih Siswa via Scan Wajah (AI)"}
+          subtitle={isBatchMode ? "Posisikan wajah siswa secara bergiliran" : "Posisikan wajah siswa di depan kamera untuk memilih profil murid secara otomatis"}
           onMatchSuccess={(siswa) => {
-            setSelectedSiswa(siswa);
-            setShowFaceScannerModal(false);
+            if (isBatchMode) {
+              if (selectedSiswaBatch.some(s => s.id === siswa.id)) return;
+              setSelectedSiswaBatch(prev => [...prev, siswa]);
+            } else {
+              setSelectedSiswa(siswa);
+              setShowFaceScannerModal(false);
+            }
           }}
           onClose={() => setShowFaceScannerModal(false)}
+          batchCount={isBatchMode ? selectedSiswaBatch.length : undefined}
+          onBatchConfirm={isBatchMode ? () => setShowFaceScannerModal(false) : undefined}
+          scannedIds={isBatchMode ? selectedSiswaBatch.map(s => s.id) : undefined}
         />
       )}
 

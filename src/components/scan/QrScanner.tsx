@@ -12,12 +12,15 @@ import {
   Loader2,
   ShieldAlert,
   ArrowRightLeft,
+  Check,
 } from 'lucide-react';
 
 export interface QrScanFeedback {
   type: 'success' | 'duplicate' | 'not_found';
   title: string;
   message: string;
+  kelas?: string;
+  fotoUrl?: string;
 }
 
 interface QrScannerProps {
@@ -25,6 +28,8 @@ interface QrScannerProps {
   onClose: () => void;
   title?: string;
   subtitle?: string;
+  batchCount?: number;
+  onBatchConfirm?: () => void;
 }
 
 interface Feedback extends QrScanFeedback {
@@ -41,6 +46,8 @@ export default function QrScanner({
   onClose,
   title = 'Scan QR',
   subtitle = 'Pindai Kartu Murid',
+  batchCount,
+  onBatchConfirm,
 }: QrScannerProps) {
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const elementIdRef = useRef(`qr-scanner-${++scannerIdCounter}`);
@@ -389,12 +396,23 @@ export default function QrScanner({
               className={`w-full max-w-md mx-auto rounded-2xl md:rounded-3xl p-5 md:p-6 border shadow-2xl backdrop-blur-xl text-white ${getFeedbackStyle(feedback.type)}`}
             >
               <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center flex-shrink-0">
-                  {getFeedbackIcon(feedback.type)}
-                </div>
-                <div className="min-w-0">
+                {(feedback.type === 'success' || feedback.type === 'duplicate') && feedback.fotoUrl ? (
+                  <img
+                    src={feedback.fotoUrl}
+                    className="w-14 h-14 rounded-2xl object-cover border border-white/20 flex-shrink-0 shadow-lg"
+                    alt={feedback.message}
+                  />
+                ) : (
+                  <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center flex-shrink-0">
+                    {getFeedbackIcon(feedback.type)}
+                  </div>
+                )}
+                <div className="min-w-0 flex-1">
                   <p className="font-black text-xs uppercase tracking-widest opacity-80">{feedback.title}</p>
-                  <p className="font-extrabold text-lg md:text-xl truncate mt-0.5">{feedback.message}</p>
+                  <p className="font-extrabold text-base md:text-lg truncate mt-0.5">{feedback.message}</p>
+                  {feedback.kelas && (
+                    <p className="text-xs text-white/70 font-semibold uppercase mt-0.5">{feedback.kelas}</p>
+                  )}
                 </div>
               </div>
             </motion.div>
@@ -409,6 +427,22 @@ export default function QrScanner({
           )}
         </AnimatePresence>
       </div>
+
+      {onBatchConfirm && (
+        <div className="fixed bottom-36 inset-x-0 flex justify-center pointer-events-auto z-[60]">
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={onBatchConfirm}
+            className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 border border-emerald-400/40 text-white rounded-full font-black text-xs shadow-xl flex items-center gap-3 transition-colors cursor-pointer"
+          >
+            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-white/20 text-white font-extrabold text-[10px]">
+              {batchCount || 0}
+            </span>
+            <span>Selesai & Terapkan</span>
+            <Check className="w-3.5 h-3.5 text-white" />
+          </motion.button>
+        </div>
+      )}
     </div>,
     document.body
   );

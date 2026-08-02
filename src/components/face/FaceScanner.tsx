@@ -10,6 +10,7 @@ import {
   Loader2,
   ShieldAlert,
   ArrowRightLeft,
+  Check,
 } from 'lucide-react';
 import { Siswa } from '../../types';
 import { loadModels, detectFaceFromVideo, findBestMatch, MatchResult } from '../../services/face';
@@ -20,6 +21,9 @@ interface FaceScannerProps {
   onClose: () => void;
   title?: string;
   subtitle?: string;
+  batchCount?: number;
+  onBatchConfirm?: () => void;
+  scannedIds?: string[];
 }
 
 type FeedbackType = 'success' | 'unmatched' | 'error';
@@ -28,6 +32,8 @@ interface Feedback {
   type: FeedbackType;
   title: string;
   message: string;
+  kelas?: string;
+  fotoUrl?: string;
   ts: number;
 }
 
@@ -39,6 +45,9 @@ export default function FaceScanner({
   onClose,
   title = 'Scan Wajah',
   subtitle = 'Absensi Otomatis',
+  batchCount,
+  onBatchConfirm,
+  scannedIds,
 }: FaceScannerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -223,19 +232,39 @@ export default function FaceScanner({
             setMatchProgress(consecutiveMatchRef.current.count);
 
             if (consecutiveMatchRef.current.count >= 3) {
-              playSound('success');
-              setFeedback({
-                type: 'success',
-                title: 'BERHASIL TERDETEKSI',
-                message: result.siswa.nama,
-                ts: Date.now(),
-              });
-              setDetectionStatus('no_face');
-              setMatchProgress(0);
-              cooldownUntilRef.current = Date.now() + 2500;
-              onMatchSuccess(result.siswa);
-              consecutiveMatchRef.current = null;
-              setTimeout(() => setFeedback(null), 3000);
+              const isDuplicate = scannedIds && scannedIds.includes(result.siswa.id);
+              if (isDuplicate) {
+                playSound('fail');
+                setFeedback({
+                  type: 'unmatched',
+                  title: 'SUDAH ADA DI DAFTAR BATCH',
+                  message: result.siswa.nama,
+                  kelas: result.siswa.kelas,
+                  fotoUrl: result.siswa.foto_url || undefined,
+                  ts: Date.now(),
+                });
+                setDetectionStatus('no_face');
+                setMatchProgress(0);
+                cooldownUntilRef.current = Date.now() + 2500;
+                consecutiveMatchRef.current = null;
+                setTimeout(() => setFeedback(null), 3000);
+              } else {
+                playSound('success');
+                setFeedback({
+                  type: 'success',
+                  title: 'BERHASIL TERDETEKSI',
+                  message: result.siswa.nama,
+                  kelas: result.siswa.kelas,
+                  fotoUrl: result.siswa.foto_url || undefined,
+                  ts: Date.now(),
+                });
+                setDetectionStatus('no_face');
+                setMatchProgress(0);
+                cooldownUntilRef.current = Date.now() + 2500;
+                onMatchSuccess(result.siswa);
+                consecutiveMatchRef.current = null;
+                setTimeout(() => setFeedback(null), 3000);
+              }
             }
           } else {
             consecutiveMatchRef.current = null;
@@ -505,12 +534,23 @@ export default function FaceScanner({
               className={`w-full max-w-md mx-auto rounded-2xl md:rounded-3xl p-5 md:p-6 border shadow-2xl backdrop-blur-xl text-white ${getFeedbackStyle(feedback.type)}`}
             >
               <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center flex-shrink-0">
-                  {getFeedbackIcon(feedback.type)}
-                </div>
-                <div className="min-w-0">
+                {(feedback.type === 'success' || feedback.type === 'unmatched') && feedback.fotoUrl ? (
+                  <img
+                    src={feedback.fotoUrl}
+                    className="w-14 h-14 rounded-2xl object-cover border border-white/20 flex-shrink-0 shadow-lg"
+                    alt={feedback.message}
+                  />
+                ) : (
+                  <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center flex-shrink-0">
+                    {getFeedbackIcon(feedback.type)}
+                  </div>
+                )}
+                <div className="min-w-0 flex-1">
                   <p className="font-black text-xs uppercase tracking-widest opacity-80">{feedback.title}</p>
-                  <p className="font-extrabold text-lg md:text-xl truncate mt-0.5">{feedback.message}</p>
+                  <p className="font-extrabold text-base md:text-lg truncate mt-0.5">{feedback.message}</p>
+                  {feedback.kelas && (
+                    <p className="text-xs text-white/70 font-semibold uppercase mt-0.5">{feedback.kelas}</p>
+                  )}
                 </div>
               </div>
             </motion.div>
@@ -525,6 +565,22 @@ export default function FaceScanner({
           )}
         </AnimatePresence>
       </div>
+
+      {onBatchConfirm && (
+        <div className="fixed bottom-36 inset-x-0 flex justify-center pointer-events-auto z-[60]">
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={onBatchConfirm}
+            className="px-6 py-3 bg-purple-600 hover:bg-purple-700 border border-purple-400/40 text-white rounded-full font-black text-xs shadow-xl flex items-center gap-3 transition-colors cursor-pointer"
+          >
+            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-white/20 text-white font-extrabold text-[10px]">
+              {batchCount || 0}
+            </span>
+            <span>Selesai & Terapkan</span>
+            <Check className="w-3.5 h-3.5 text-white" />
+          </motion.button>
+        </div>
+      )}
     </div>,
     document.body
   );

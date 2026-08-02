@@ -26,7 +26,7 @@ import {
   SHOLAT_JUMAT_POIN_NAMA,
   SHOLAT_JUMAT_POIN_VALUE
 } from "../dbStore";
-import { toSentenceCase } from "../formatName";
+import { toSentenceCase, compareClasses } from "../formatName";
 import FaceScanner from "./face/FaceScanner";
 import QrScanner, { QrScanFeedback } from "./scan/QrScanner";
 import InputModeTabs, { InputMode, ScanType } from "./scan/InputModeTabs";
@@ -37,6 +37,7 @@ interface SholatScanViewProps {
 
 export default function SholatScanView({ userSession }: SholatScanViewProps) {
   const [sholatType, setSholatType] = useState<"dhuha" | "jumat" | "berjamaah">("dhuha");
+  const [manualSelectedClass, setManualSelectedClass] = useState("Semua");
 
   const currentPoinNama =
     sholatType === "dhuha"
@@ -109,7 +110,9 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
       return {
         type: "duplicate",
         title: "SUDAH TERCATAT",
-        message: `${toSentenceCase(student.nama)} (${student.kelas}) sudah tercatat ${currentPoinNama.toLowerCase()} hari ini`,
+        message: toSentenceCase(student.nama),
+        kelas: student.kelas,
+        fotoUrl: student.foto_url || undefined,
       };
     }
 
@@ -119,21 +122,30 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
     return {
       type: "success",
       title: "BERHASIL TERCATAT",
-      message: `${toSentenceCase(student.nama)} (${student.kelas}) +${currentPoinValue} poin ${currentPoinNama.toLowerCase()}`,
+      message: toSentenceCase(student.nama),
+      kelas: student.kelas,
+      fotoUrl: student.foto_url || undefined,
     };
   };
 
   const scannedCount = useMemo(() => todayRecap.length, [todayRecap]);
 
+  // Unique classes for manual filter dropdown (sorted by grade and alphabetically)
+  const classes = useMemo(() => {
+    const rawClasses = Array.from(new Set(siswaList.map(s => s.kelas).filter(Boolean)));
+    return ["Semua", ...rawClasses.sort(compareClasses)];
+  }, [siswaList]);
+
   const filteredStudents = useMemo(() => {
-    if (!manualQuery.trim()) return [];
-    return siswaList
-      .filter(s =>
-        s.nama.toLowerCase().includes(manualQuery.toLowerCase()) ||
-        s.nis.includes(manualQuery)
-      )
-      .slice(0, 20);
-  }, [siswaList, manualQuery]);
+    const list = siswaList.filter(s => {
+      const matchesSearch = !manualQuery.trim() ||
+                            s.nama.toLowerCase().includes(manualQuery.toLowerCase()) ||
+                            s.nis.includes(manualQuery);
+      const matchesClass = manualSelectedClass === "Semua" || s.kelas === manualSelectedClass;
+      return matchesSearch && matchesClass;
+    });
+    return list.slice(0, 100);
+  }, [siswaList, manualQuery, manualSelectedClass]);
 
   const playBeep = () => {
     try {
@@ -286,19 +298,30 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
             <p className="text-xs text-brand-500 font-semibold">Cari nama atau NIS murid untuk mencatat kehadiran sholat.</p>
           </div>
 
-          <div className="relative">
-            <Search className="absolute left-3.5 top-3.5 text-brand-500/50 w-4.5 h-4.5" />
-            <input
-              type="text"
-              placeholder="Masukkan nama atau NIS murid..."
-              value={manualQuery}
-              onChange={(e) => setManualQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-[#faf9ff] rounded-2xl border border-brand-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 text-brand-950 placeholder-brand-500/30"
-            />
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3.5 top-3.5 text-brand-500/50 w-4.5 h-4.5" />
+              <input
+                type="text"
+                placeholder="Masukkan nama atau NIS murid..."
+                value={manualQuery}
+                onChange={(e) => setManualQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 bg-[#faf9ff] rounded-2xl border border-brand-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 text-brand-950 placeholder-brand-500/30"
+              />
+            </div>
+            <select
+              value={manualSelectedClass}
+              onChange={(e) => setManualSelectedClass(e.target.value)}
+              className="border border-brand-100 rounded-2xl py-3 px-4 text-xs font-bold text-brand-700 outline-none focus:ring-2 focus:ring-brand-500 bg-white"
+            >
+              {classes.map(c => (
+                <option key={c} value={c}>Kelas: {c}</option>
+              ))}
+            </select>
           </div>
 
           {filteredStudents.length > 0 && (
-            <div className="divide-y border border-brand-100 rounded-2xl overflow-hidden bg-white max-h-60 overflow-y-auto">
+            <div className="divide-y border border-brand-100 rounded-2xl overflow-hidden bg-white max-h-60 overflow-y-auto font-sans">
               {filteredStudents.map(student => (
                 <button
                   key={student.id}
@@ -317,6 +340,11 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
                   </span>
                 </button>
               ))}
+              {filteredStudents.length === 100 && (
+                <div className="p-3 bg-amber-50/60 text-[10px] text-amber-800 font-bold border-t border-brand-100 text-center">
+                  Menampilkan 100 murid pertama. Gunakan kolom pencarian atau filter kelas untuk hasil spesifik.
+                </div>
+              )}
             </div>
           )}
 

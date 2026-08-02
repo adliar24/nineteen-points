@@ -180,13 +180,13 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
 
   return (
     <div className="min-h-screen w-full relative overflow-hidden bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-950 text-white flex flex-col justify-between p-6 sm:p-10 lg:p-12 notranslate select-none">
-      {/* ===== Dynamic Harmonized Animated SVG Waves ===== */}
+      {/* ===== Dynamic Harmonized Animated SVG Waves (Long Sweeping Wavelengths) ===== */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
-        {/* Layer 1: Top Back Wave (Deepest layer, slowest flow) */}
+        {/* Layer 1: Top Back Wave (Long wide sweep, slowest flow) */}
         <div className="absolute inset-x-0 bottom-0 w-[200%] h-full animate-wave-slow opacity-30">
-          <svg viewBox="0 0 2880 1000" className="w-full h-full" preserveAspectRatio="none">
+          <svg viewBox="0 0 5760 1000" className="w-full h-full" preserveAspectRatio="none">
             <path
-              d="M 0,320 C 200,240 520,240 720,320 C 920,400 1240,400 1440,320 C 1640,240 1960,240 2160,320 C 2360,400 2680,400 2880,320 L 2880,1000 L 0,1000 Z"
+              d="M 0,320 C 400,230 1040,230 1440,320 C 1840,410 2480,410 2880,320 C 3280,230 3920,230 4320,320 C 4720,410 5360,410 5760,320 L 5760,1000 L 0,1000 Z"
               fill="url(#waveGrad1)"
             />
             <defs>
@@ -200,9 +200,9 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
 
         {/* Layer 2: Upper Middle Wave */}
         <div className="absolute inset-x-0 bottom-0 w-[200%] h-full animate-wave-mid opacity-45">
-          <svg viewBox="0 0 2880 1000" className="w-full h-full" preserveAspectRatio="none">
+          <svg viewBox="0 0 5760 1000" className="w-full h-full" preserveAspectRatio="none">
             <path
-              d="M 0,440 C 200,365 520,365 720,440 C 920,515 1240,515 1440,440 C 1640,365 1960,365 2160,440 C 2360,515 2680,515 2880,440 L 2880,1000 L 0,1000 Z"
+              d="M 0,440 C 400,525 1040,525 1440,440 C 1840,355 2480,355 2880,440 C 3280,525 3920,525 4320,440 C 4720,355 5360,355 5760,440 L 5760,1000 L 0,1000 Z"
               fill="url(#waveGrad2)"
             />
             <defs>
@@ -216,9 +216,9 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
 
         {/* Layer 3: Lower Middle Wave */}
         <div className="absolute inset-x-0 bottom-0 w-[200%] h-full animate-wave-fast opacity-60">
-          <svg viewBox="0 0 2880 1000" className="w-full h-full" preserveAspectRatio="none">
+          <svg viewBox="0 0 5760 1000" className="w-full h-full" preserveAspectRatio="none">
             <path
-              d="M 0,560 C 200,490 520,490 720,560 C 920,630 1240,630 1440,560 C 1640,490 1960,490 2160,560 C 2360,630 2680,630 2880,560 L 2880,1000 L 0,1000 Z"
+              d="M 0,560 C 400,480 1040,480 1440,560 C 1840,640 2480,640 2880,560 C 3280,480 3920,480 4320,560 C 4720,640 5360,640 5760,560 L 5760,1000 L 0,1000 Z"
               fill="url(#waveGrad3)"
             />
             <defs>
@@ -230,11 +230,11 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
           </svg>
         </div>
 
-        {/* Layer 4: Bottom Wave (Harmonized & Perfectly Synchronized with Upper Waves) */}
+        {/* Layer 4: Bottom Wave (Long Wide Sweeping Wave, Harmonized with Upper Waves) */}
         <div className="absolute inset-x-0 bottom-0 w-[200%] h-full animate-wave-bottom opacity-85">
-          <svg viewBox="0 0 2880 1000" className="w-full h-full" preserveAspectRatio="none">
+          <svg viewBox="0 0 5760 1000" className="w-full h-full" preserveAspectRatio="none">
             <path
-              d="M 0,680 C 200,615 520,615 720,680 C 920,745 1240,745 1440,680 C 1640,615 1960,615 2160,680 C 2360,745 2680,745 2880,680 L 2880,1000 L 0,1000 Z"
+              d="M 0,680 C 400,755 1040,755 1440,680 C 1840,605 2480,605 2880,680 C 3280,755 3920,755 4320,680 C 4720,605 5360,605 5760,680 L 5760,1000 L 0,1000 Z"
               fill="url(#waveGrad4)"
             />
             <defs>

@@ -263,6 +263,27 @@ export async function findBestMatch(
 }
 
 /**
+ * Auto-sync face embeddings from Supabase payload into local IndexedDB
+ */
+export async function syncFaceEmbeddingsFromSupabase(siswaList: Siswa[]): Promise<number> {
+  let synced = 0;
+  for (const s of siswaList) {
+    if (s.face_embedding && s.face_embedding.trim() !== '') {
+      await saveFaceDescriptorLocal({
+        siswaId: s.id,
+        name: s.nama,
+        kelas: s.kelas,
+        nis: s.nis,
+        descriptor: s.face_embedding,
+        updatedAt: Date.now(),
+      });
+      synced++;
+    }
+  }
+  return synced;
+}
+
+/**
  * Smart Batch generate face embeddings:
  * Only processes NEW or UNPROCESSED students who don't have a valid face descriptor in IndexedDB/Supabase yet!
  */

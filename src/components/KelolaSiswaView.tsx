@@ -29,7 +29,7 @@ import AddStudentModal from "./AddStudentModal";
 import ImportStudentModal from "./ImportStudentModal";
 import StudentDetailPopup from "./StudentDetailPopup";
 import FaceEnrollModal from "./face/FaceEnrollModal";
-import { batchGenerateEmbeddingsFromPhotos } from "../services/face";
+import { batchGenerateEmbeddingsFromPhotos, syncFaceEmbeddingsFromSupabase } from "../services/face";
 
 interface KelolaSiswaViewProps {
   userSession: UserSession;
@@ -97,6 +97,7 @@ export default function KelolaSiswaView({
         ]);
         setSiswaList(siswa);
         setPoinMap(pm);
+        syncFaceEmbeddingsFromSupabase(siswa);
       } catch (err) {
         console.error("Gagal memuat siswa:", err);
       }
@@ -114,6 +115,7 @@ export default function KelolaSiswaView({
       ]);
       setSiswaList(siswa);
       setPoinMap(pm);
+      syncFaceEmbeddingsFromSupabase(siswa);
     } catch (err) {
       console.error("Gagal sinkronisasi siswa:", err);
     }

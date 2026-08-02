@@ -368,8 +368,8 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
         </motion.main>
       </div>
 
-      {/* ===== LAYER 3: Footer Copyright (AT VERY BOTTOM OF PAGE) ===== */}
-      <footer className="w-full max-w-md mx-auto text-center pb-2 sm:pb-4 pt-1 shrink-0 z-20 relative">
+      {/* ===== LAYER 3: Footer Copyright (Elevated Higher Up) ===== */}
+      <footer className="w-full max-w-md mx-auto text-center pb-8 sm:pb-12 -mt-6 sm:-mt-8 pt-1 shrink-0 z-20 relative">
         <p className="text-xs sm:text-sm font-bold text-white drop-shadow-[0_1.5px_3px_rgba(0,0,0,0.6)] tracking-wider">
           &copy; {new Date().getFullYear()} SMAN 19 Bandung. Hak Cipta Dilindungi.
         </p>

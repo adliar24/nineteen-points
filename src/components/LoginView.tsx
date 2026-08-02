@@ -274,7 +274,7 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
-        className="w-full max-w-md mx-auto text-center pt-[20px] sm:pt-[30px] z-20 relative"
+        className="w-full max-w-md mx-auto text-center pt-[40px] sm:pt-[30px] z-20 relative"
       >
         <motion.div 
           initial={{ scale: 0.7, opacity: 0, rotate: -10 }}
@@ -293,7 +293,7 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
       </motion.header>
 
       {/* ===== LAYER 2: Main Papan Login Card (Raised 100px) ===== */}
-      <div className="w-full flex-1 flex items-center justify-center my-auto -mt-20 sm:-mt-24 py-2 z-10 relative">
+      <div className="w-full flex-1 flex items-center justify-center my-auto -mt-32 sm:-mt-24 py-2 z-10 relative">
         <motion.main
           initial={{ opacity: 0, scale: 0.96, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -387,8 +387,8 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
       </div>
 
       {/* ===== LAYER 3: Footer Copyright (Elevated Higher Up for Mobile) ===== */}
-      <footer className="w-full max-w-md mx-auto text-center pb-16 sm:pb-12 -mt-16 sm:-mt-8 pt-1 shrink-0 z-20 relative">
-        <p className="text-xs sm:text-sm font-bold text-white drop-shadow-[0_1.5px_3px_rgba(0,0,0,0.6)] tracking-wider">
+      <footer className="w-full max-w-md mx-auto text-center pb-10 sm:pb-12 -mt-24 sm:-mt-8 pt-1 shrink-0 z-20 relative">
+        <p className="text-[10px] sm:text-xs font-bold text-white drop-shadow-[0_1.5px_3px_rgba(0,0,0,0.6)] tracking-wider">
           &copy; {new Date().getFullYear()} SMAN 19 Bandung. Hak Cipta Dilindungi.
         </p>
       </footer>

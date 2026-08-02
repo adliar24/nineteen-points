@@ -38,6 +38,7 @@ export default function FaceScanner({
   const isDetectingRef = useRef(false);
   const cooldownUntilRef = useRef<number>(0);
   const lastDetectionTimeRef = useRef<number>(0);
+  const consecutiveMatchRef = useRef<{ siswaId: string; count: number } | null>(null);
 
   const [isLoadingModels, setIsLoadingModels] = useState(true);
   const [isCameraReady, setIsCameraReady] = useState(false);
@@ -187,18 +188,28 @@ export default function FaceScanner({
             ctx.strokeRect(x, y, width, height);
           }
 
-          // Perform matching
+          // Perform matching with 2-frame consecutive verification
           const result = await findBestMatch(detection.descriptor, siswaList);
           setLastMatchResult(result);
 
           if (result.success && result.siswa) {
-            setDetectionStatus('matched');
-            playSound('success');
-            cooldownUntilRef.current = Date.now() + 2500; // 2.5s cooldown
-            onMatchSuccess(result.siswa);
+            if (consecutiveMatchRef.current?.siswaId === result.siswa.id) {
+              consecutiveMatchRef.current.count += 1;
+            } else {
+              consecutiveMatchRef.current = { siswaId: result.siswa.id, count: 1 };
+            }
+
+            if (consecutiveMatchRef.current.count >= 2) {
+              setDetectionStatus('matched');
+              playSound('success');
+              cooldownUntilRef.current = Date.now() + 2500; // 2.5s cooldown
+              onMatchSuccess(result.siswa);
+              consecutiveMatchRef.current = null;
+            }
           } else {
+            consecutiveMatchRef.current = null;
             setDetectionStatus('unmatched');
-            cooldownUntilRef.current = Date.now() + 1500; // 1.5s retry
+            cooldownUntilRef.current = Date.now() + 1000; // 1s retry
           }
         } else {
           setDetectionStatus('idle');

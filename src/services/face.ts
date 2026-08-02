@@ -12,7 +12,7 @@ const MODEL_URL = '/models';
 let modelsLoaded = false;
 let modelLoadingPromise: Promise<boolean> | null = null;
 
-export const MATCH_THRESHOLD = 0.55; // Lower = stricter match, higher = more lenient
+export const MATCH_THRESHOLD = 0.45; // Strict distance threshold for high-accuracy matching without false positives
 
 export interface FaceDetectionResult {
   boundingBox: { x: number; y: number; width: number; height: number };

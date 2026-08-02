@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   X,
@@ -293,8 +294,8 @@ export default function FaceScanner({
     return <AlertTriangle className="w-8 h-8" />;
   };
 
-  return (
-    <div className="fixed inset-0 z-[200] bg-black flex flex-col overflow-hidden">
+  return createPortal(
+    <div className="fixed inset-0 z-[99999] bg-black flex flex-col overflow-hidden">
       {/* Fullscreen video */}
       <video
         ref={videoRef}
@@ -524,6 +525,7 @@ export default function FaceScanner({
           )}
         </AnimatePresence>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

@@ -1,29 +1,24 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Html5Qrcode } from "html5-qrcode";
 import { useQuery } from "@tanstack/react-query";
 import { queryClient } from "../queryClient";
 import { 
-  Camera, 
   Search, 
   AlertCircle, 
   Check, 
   Award, 
-  Users, 
-  Zap, 
   X, 
-  ShieldCheck, 
-  UserCheck, 
   FileText,
-  MousePointer,
   RotateCcw,
-  Sparkles,
-  ScanFace
+  ScanFace,
+  QrCode
 } from "lucide-react";
 import { Siswa, MasterPoin, UserSession } from "../types";
 import { getSiswaList, getMasterPoinList, addRiwayat } from "../dbStore";
 import { toSentenceCase } from "../formatName";
 import FaceScanner from "./face/FaceScanner";
+import QrScanner, { QrScanFeedback } from "./scan/QrScanner";
+import InputModeTabs, { InputMode, ScanType } from "./scan/InputModeTabs";
 
 interface InputPoinViewProps {
   userSession: UserSession;
@@ -40,20 +35,16 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
     queryFn: getMasterPoinList,
   });
   
-  // Tab selector: "face" for AI face scan, "qr" for camera/simulator, "manual" for lookup search
-  const [inputMethod, setInputMethod] = useState<"face" | "qr" | "manual">("face");
+  // Two big tabs: "Scan" (QR / Wajah) and "Input Manual"
+  const [mode, setMode] = useState<InputMode>("scan");
+  const [scanType, setScanType] = useState<ScanType>("qr");
 
-  // Face Scanner Modal state
+  // Fullscreen scanner states
+  const [showQrScanner, setShowQrScanner] = useState(false);
   const [showFaceScannerModal, setShowFaceScannerModal] = useState(false);
 
   // Selected student state (unified for both methods)
   const [selectedSiswa, setSelectedSiswa] = useState<Siswa | null>(null);
-
-  // QR / Scanner states
-  const [scanResult, setScanResult] = useState<string | null>(null);
-  const [cameraActive, setCameraActive] = useState(false);
-  const [scannerError, setScannerError] = useState<string | null>(null);
-  const scannerRef = useRef<Html5Qrcode | null>(null);
 
   // Manual Search states
   const [manualSearchQuery, setManualSearchQuery] = useState("");
@@ -69,129 +60,24 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
   const [customPointType, setCustomPointType] = useState<"positif" | "negatif">("positif");
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // QR Scanner initialization (Html5Qrcode core API)
-  useEffect(() => {
-    if (cameraActive && inputMethod === "qr") {
-      setScannerError(null);
-      const timer = setTimeout(() => {
-        try {
-          const scanner = new Html5Qrcode("reader-input");
-          scannerRef.current = scanner;
-
-          scanner.start(
-            { facingMode: "environment" },
-            {
-              fps: 10,
-              qrbox: { width: 250, height: 250 }
-            },
-            onScanSuccess,
-            onScanFailure
-          ).catch((err) => {
-            console.error("Camera start failed", err);
-            setScannerError("Gagal mengaktifkan kamera. Mohon berikan izin kamera pada browser Anda.");
-            setCameraActive(false);
-          });
-        } catch (err: any) {
-          console.error("Camera init failed", err);
-          setScannerError("Gagal mengakses kamera. Mohon aktifkan izin kamera.");
-          setCameraActive(false);
-        }
-      }, 400); // 400ms delay to guarantee reader-input DOM node is painted by React
-
-      return () => {
-        clearTimeout(timer);
-        if (scannerRef.current) {
-          try {
-            if (scannerRef.current.isScanning) {
-              scannerRef.current.stop()
-                .then(() => {
-                  scannerRef.current = null;
-                })
-                .catch(err => console.warn("Failed to stop scanning on cleanup", err));
-            } else {
-              scannerRef.current = null;
-            }
-          } catch (e) {
-            scannerRef.current = null;
-          }
-        }
+  const handleQrScan = async (decodedText: string): Promise<QrScanFeedback> => {
+    const trimmed = decodedText.trim();
+    const student = siswaList.find(s => s.nis === trimmed || s.id === trimmed);
+    if (!student) {
+      return {
+        type: "not_found",
+        title: "TIDAK DIKENALI",
+        message: `QR: "${trimmed}"`,
       };
     }
-  }, [cameraActive, inputMethod]);
-
-  function onScanSuccess(decodedText: string) {
-    const trimmed = decodedText.trim();
-    setScanResult(trimmed);
-
-    const student = siswaList.find(s => s.nis === trimmed || s.id === trimmed);
-    if (student) {
-      setSelectedSiswa(student);
-      setSuccessMessage(null);
-      
-      // Stop scanning and turn off camera
-      if (scannerRef.current) {
-        try {
-          if (scannerRef.current.isScanning) {
-            scannerRef.current.stop()
-              .then(() => {
-                scannerRef.current = null;
-                setCameraActive(false);
-              })
-              .catch(err => {
-                console.warn(err);
-                scannerRef.current = null;
-                setCameraActive(false);
-              });
-          } else {
-            scannerRef.current = null;
-            setCameraActive(false);
-          }
-        } catch (e) {
-          scannerRef.current = null;
-          setCameraActive(false);
-        }
-      } else {
-        setCameraActive(false);
-      }
-    } else {
-      setScannerError(`QR Terbaca: "${trimmed}", namun murid tidak ditemukan.`);
-      setTimeout(() => setScannerError(null), 4000);
-    }
-  }
-
-  function onScanFailure(err: any) {
-    // Ignore normal scan failure logs
-  }
-
-  // Handle tap simulation from right side cards
-  const handleSimulateScan = (siswa: Siswa) => {
-    setScanResult(siswa.nis);
-    setSelectedSiswa(siswa);
+    setSelectedSiswa(student);
     setSuccessMessage(null);
-    if (scannerRef.current) {
-      try {
-        if (scannerRef.current.isScanning) {
-          scannerRef.current.stop()
-            .then(() => {
-              scannerRef.current = null;
-              setCameraActive(false);
-            })
-            .catch(err => {
-              console.warn(err);
-              scannerRef.current = null;
-              setCameraActive(false);
-            });
-        } else {
-          scannerRef.current = null;
-          setCameraActive(false);
-        }
-      } catch (e) {
-        scannerRef.current = null;
-        setCameraActive(false);
-      }
-    } else {
-      setCameraActive(false);
-    }
+    setTimeout(() => setShowQrScanner(false), 900);
+    return {
+      type: "success",
+      title: "BERHASIL TERDETEKSI",
+      message: `${toSentenceCase(student.nama)} (${student.kelas})`,
+    };
   };
 
   // Manual filter search list of students
@@ -295,9 +181,7 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
 
   const handleResetTarget = () => {
     setSelectedSiswa(null);
-    setScanResult(null);
     setSuccessMessage(null);
-    setScannerError(null);
   };
 
   // Unique classes for manual filter dropdown
@@ -319,52 +203,12 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
 
         {/* METHOD TAB SELECTOR */}
         {!selectedSiswa && (
-          <div className="bg-white rounded-2xl p-1.5 border border-brand-100/60 flex gap-2 overflow-x-auto">
-            <button
-              onClick={() => {
-                setInputMethod("face");
-                setCameraActive(false);
-                setScannerError(null);
-              }}
-              className={`flex-1 py-3 px-4 text-xs sm:text-sm font-bold rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
-                inputMethod === "face"
-                  ? "bg-brand-600 text-white shadow-md"
-                  : "text-brand-600 hover:bg-brand-50"
-              }`}
-            >
-              <ScanFace className="w-4 h-4" />
-              Scan Wajah (AI)
-            </button>
-            <button
-              onClick={() => {
-                setInputMethod("qr");
-                setScannerError(null);
-              }}
-              className={`flex-1 py-3 px-4 text-xs sm:text-sm font-bold rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
-                inputMethod === "qr"
-                  ? "bg-brand-600 text-white shadow-md"
-                  : "text-brand-600 hover:bg-brand-50"
-              }`}
-            >
-              <Camera className="w-4 h-4" />
-              Pindai QR
-            </button>
-            <button
-              onClick={() => {
-                setInputMethod("manual");
-                setCameraActive(false);
-                setScannerError(null);
-              }}
-              className={`flex-1 py-3 px-4 text-xs sm:text-sm font-bold rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
-                inputMethod === "manual"
-                  ? "bg-brand-600 text-white shadow-md"
-                  : "text-brand-600 hover:bg-brand-50"
-              }`}
-            >
-              <Search className="w-4 h-4" />
-              Cari Murid
-            </button>
-          </div>
+          <InputModeTabs
+            mode={mode}
+            scanType={scanType}
+            onModeChange={setMode}
+            onScanTypeChange={setScanType}
+          />
         )}
 
         {/* WORKSPACE AREA */}
@@ -373,14 +217,14 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
           <AnimatePresence mode="wait">
             {!selectedSiswa ? (
               <motion.div
-                key={inputMethod}
+                key={`${mode}-${scanType}`}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 className="space-y-4 flex-1 flex flex-col justify-center"
               >
                 {/* METHOD 1: FACE SCANNER AI */}
-                {inputMethod === "face" && (
+                {mode === "scan" && scanType === "face" && (
                   <div className="space-y-5 text-center py-6">
                     <div className="mx-auto w-20 h-20 bg-brand-50 border-2 border-brand-200 rounded-3xl flex items-center justify-center shadow-lg shadow-brand-900/5 text-brand-600 animate-pulse">
                       <ScanFace className="w-10 h-10" />
@@ -396,59 +240,35 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
                       className="px-6 py-3.5 brand-gradient text-white rounded-2xl text-sm font-bold shadow-lg shadow-brand-500/20 hover:opacity-95 transition-all flex items-center justify-center gap-2 mx-auto cursor-pointer"
                     >
                       <ScanFace className="w-5 h-5" />
-                      Mulai Kamera Scan Wajah
+                      Mulai Scan Wajah
                     </button>
                   </div>
                 )}
-                {/* METHOD 1: QR SCANNER CONTAINER */}
-                {inputMethod === "qr" && (
-                  <div className="space-y-4">
-                    {cameraActive ? (
-                      <div className="relative overflow-hidden rounded-3xl border-2 border-brand-600 bg-brand-950 max-w-sm mx-auto aspect-square flex flex-col justify-between shadow-2xl">
-                        <div id="reader-input" className="w-full h-full"></div>
-                        <div className="absolute top-4 left-4 z-10 bg-brand-900/90 text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full animate-pulse flex items-center gap-1.5 border border-brand-500/55 shadow-md">
-                          <span className="w-2 h-2 bg-accent-500 rounded-full animate-ping"></span>
-                          Kamera Siap
-                        </div>
-                        <button
-                          onClick={() => setCameraActive(false)}
-                          className="absolute bottom-4 right-4 z-10 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl shadow-lg cursor-pointer"
-                        >
-                          Tutup
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="border-2 border-dashed border-brand-200 rounded-3xl p-8 text-center flex flex-col items-center justify-center bg-brand-50/10 hover:bg-brand-50/30 transition-all max-w-sm mx-auto aspect-square group">
-                        <div className="w-14 h-14 bg-brand-100 text-brand-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-105 transition-transform shadow-sm">
-                          <Camera className="w-7 h-7" />
-                        </div>
-                        <h4 className="text-sm font-bold text-brand-900">Scan QR Kartu Pelajar</h4>
-                        <p className="text-xs text-brand-500 max-w-xs mt-1 mb-5 leading-relaxed">
-                          Nyalakan kamera untuk mendeteksi QR Code secara langsung dari kartu cetak atau ponsel murid.
-                        </p>
-                        <motion.button
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          onClick={() => setCameraActive(true)}
-                          className="px-5 py-3 brand-gradient text-white font-bold rounded-xl text-xs transition-all shadow-md shadow-brand-500/25 flex items-center gap-2 cursor-pointer"
-                        >
-                          <Camera className="w-4 h-4" />
-                          Buka Kamera
-                        </motion.button>
-                      </div>
-                    )}
 
-                    {scannerError && (
-                      <div className="p-3.5 bg-amber-50 rounded-2xl border border-amber-200 text-xs text-amber-800 flex items-start gap-2 max-w-sm mx-auto">
-                        <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-                        <span className="font-medium">{scannerError}</span>
-                      </div>
-                    )}
+                {/* METHOD 2: QR SCANNER */}
+                {mode === "scan" && scanType === "qr" && (
+                  <div className="space-y-5 text-center py-6">
+                    <div className="mx-auto w-20 h-20 bg-emerald-50 border-2 border-emerald-200 rounded-3xl flex items-center justify-center shadow-lg shadow-emerald-900/5 text-emerald-600 animate-pulse">
+                      <QrCode className="w-10 h-10" />
+                    </div>
+                    <div className="max-w-md mx-auto space-y-1.5">
+                      <h3 className="font-extrabold text-lg text-brand-950">Pilih Murid via Scan QR</h3>
+                      <p className="text-xs text-brand-600 font-medium leading-relaxed">
+                        Pindai QR kartu pelajar murid. Sistem otomatis mengenali NIS dan memilih profil murid untuk pencatatan poin.
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setShowQrScanner(true)}
+                      className="px-6 py-3.5 brand-gradient text-white rounded-2xl text-sm font-bold shadow-lg shadow-brand-500/20 hover:opacity-95 transition-all flex items-center justify-center gap-2 mx-auto cursor-pointer"
+                    >
+                      <QrCode className="w-5 h-5" />
+                      Mulai Scan QR
+                    </button>
                   </div>
                 )}
 
-                {/* METHOD 2: SEARCH MANUAL AUTOCOMPLETE */}
-                {inputMethod === "manual" && (
+                {/* METHOD 3: SEARCH MANUAL AUTOCOMPLETE */}
+                {mode === "manual" && (
                   <div className="space-y-4 flex-1 flex flex-col justify-start">
                     <div className="space-y-2">
                       <label className="text-xs font-black text-brand-900 uppercase tracking-wider block">Cari Murid Terdaftar</label>
@@ -764,6 +584,15 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
           </AnimatePresence>
         </div>
       </div>
+
+      {showQrScanner && (
+        <QrScanner
+          title="Scan QR - Pilih Murid"
+          subtitle="Pindai kartu pelajar murid untuk pencatatan poin"
+          onScanSuccess={handleQrScan}
+          onClose={() => setShowQrScanner(false)}
+        />
+      )}
 
       {showFaceScannerModal && (
         <FaceScanner

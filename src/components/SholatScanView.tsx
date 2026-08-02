@@ -1,20 +1,17 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Html5Qrcode } from "html5-qrcode";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { queryClient } from "../queryClient";
 import {
-  Camera,
   AlertCircle,
   Check,
-  X,
-  Zap,
   Users,
-  Clock,
   RefreshCw,
   Sparkles,
   BookOpen,
-  ScanFace
+  ScanFace,
+  QrCode,
+  Search,
 } from "lucide-react";
 import { Siswa, UserSession } from "../types";
 import {
@@ -31,6 +28,8 @@ import {
 } from "../dbStore";
 import { toSentenceCase } from "../formatName";
 import FaceScanner from "./face/FaceScanner";
+import QrScanner, { QrScanFeedback } from "./scan/QrScanner";
+import InputModeTabs, { InputMode, ScanType } from "./scan/InputModeTabs";
 
 interface SholatScanViewProps {
   userSession: UserSession;
@@ -63,10 +62,13 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
     queryFn: () => getSholatRecapToday(currentPoinNama),
   });
 
-  const [cameraActive, setCameraActive] = useState(false);
+  const [mode, setMode] = useState<InputMode>("scan");
+  const [scanType, setScanType] = useState<ScanType>("qr");
+  const [showQrScanner, setShowQrScanner] = useState(false);
   const [showFaceScanner, setShowFaceScanner] = useState(false);
   const [scannerError, setScannerError] = useState<string | null>(null);
-  const scannerRef = useRef<Html5Qrcode | null>(null);
+
+  const [manualQuery, setManualQuery] = useState("");
 
   const [lastScanned, setLastScanned] = useState<{
     nama: string;
@@ -95,61 +97,43 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
     }
   };
 
-  const lastProcessedRef = useRef<string>("");
-  const processingRef = useRef(false);
+  const handleQrScan = async (decodedText: string): Promise<QrScanFeedback> => {
+    const trimmed = decodedText.trim();
+    const student = siswaList.find(s => s.nis === trimmed || s.id === trimmed);
+    if (!student) {
+      return { type: "not_found", title: "TIDAK DIKENALI", message: `QR: ${trimmed}` };
+    }
+
+    const alreadyScanned = await checkSholatToday(student.id, currentPoinNama);
+    if (alreadyScanned) {
+      return {
+        type: "duplicate",
+        title: "SUDAH TERCATAT",
+        message: `${toSentenceCase(student.nama)} (${student.kelas}) sudah tercatat ${currentPoinNama.toLowerCase()} hari ini`,
+      };
+    }
+
+    await addRiwayat(student.id, currentPoinNama, currentPoinValue, userSession.fullName);
+    await refetchRecap();
+    await queryClient.invalidateQueries({ queryKey: ["siswa"] });
+    return {
+      type: "success",
+      title: "BERHASIL TERCATAT",
+      message: `${toSentenceCase(student.nama)} (${student.kelas}) +${currentPoinValue} poin ${currentPoinNama.toLowerCase()}`,
+    };
+  };
 
   const scannedCount = useMemo(() => todayRecap.length, [todayRecap]);
 
-  const stopScanner = () => {
-    if (scannerRef.current) {
-      const s = scannerRef.current;
-      scannerRef.current = null;
-      try {
-        s.stop().then(() => { try { s.clear(); } catch {} }).catch(() => { try { s.clear(); } catch {} });
-      } catch {
-        try { s.clear(); } catch {}
-      }
-    }
-  };
-
-  useEffect(() => {
-    return () => {
-      if (scannerRef.current) {
-        const s = scannerRef.current;
-        scannerRef.current = null;
-        try { s.stop().then(() => { try { s.clear(); } catch {} }).catch(() => { try { s.clear(); } catch {} }); } catch { try { s.clear(); } catch {} }
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    if (cameraActive) {
-      setScannerError(null);
-      const timer = setTimeout(() => {
-        try {
-          const scanner = new Html5Qrcode("sholat-reader");
-          scannerRef.current = scanner;
-          scanner.start(
-            { facingMode: "environment" },
-            { fps: 10, qrbox: { width: 250, height: 250 } },
-            onScanSuccess,
-            () => {}
-          ).catch(() => {
-            setScannerError("Gagal mengaktifkan kamera. Berikan izin kamera pada browser.");
-            setCameraActive(false);
-          });
-        } catch {
-          setScannerError("Gagal mengakses kamera.");
-          setCameraActive(false);
-        }
-      }, 400);
-
-      return () => {
-        clearTimeout(timer);
-        stopScanner();
-      };
-    }
-  }, [cameraActive, sholatType]);
+  const filteredStudents = useMemo(() => {
+    if (!manualQuery.trim()) return [];
+    return siswaList
+      .filter(s =>
+        s.nama.toLowerCase().includes(manualQuery.toLowerCase()) ||
+        s.nis.includes(manualQuery)
+      )
+      .slice(0, 20);
+  }, [siswaList, manualQuery]);
 
   const playBeep = () => {
     try {
@@ -169,52 +153,8 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
     }
   };
 
-  const onScanSuccess = async (decodedText: string) => {
-    const trimmed = decodedText.trim();
-
-    if (processingRef.current || trimmed === lastProcessedRef.current) return;
-    processingRef.current = true;
-    lastProcessedRef.current = trimmed;
-    setTimeout(() => { lastProcessedRef.current = ""; }, 2000);
-
-    try {
-      const student = siswaList.find(s => s.nis === trimmed || s.id === trimmed);
-      if (!student) {
-        setLastScanned({ nama: `QR: ${trimmed}`, kelas: "-", status: "not_found" });
-        setTimeout(() => setLastScanned(null), 3000);
-        return;
-      }
-
-      const alreadyScanned = await checkSholatToday(student.id, currentPoinNama);
-      if (alreadyScanned) {
-        setLastScanned({ nama: student.nama, kelas: student.kelas, status: "duplicate" });
-        setTimeout(() => setLastScanned(null), 3000);
-        return;
-      }
-
-      await addRiwayat(student.id, currentPoinNama, currentPoinValue, userSession.fullName);
-      playBeep();
-      setLastScanned({ nama: student.nama, kelas: student.kelas, status: "success" });
-      await refetchRecap();
-      await queryClient.invalidateQueries({ queryKey: ["siswa"] });
-      setTimeout(() => setLastScanned(null), 2000);
-    } catch (err: any) {
-      setScannerError("Gagal mencatat: " + err.message);
-      setTimeout(() => setScannerError(null), 4000);
-    } finally {
-      processingRef.current = false;
-    }
-  };
-
-  const handleToggleCamera = () => {
-    if (cameraActive) {
-      stopScanner();
-      setCameraActive(false);
-    } else {
-      setLastScanned(null);
-      setCameraActive(true);
-    }
-  };
+  const sholatTypeLabel =
+    sholatType === "dhuha" ? "Sholat Dhuha" : sholatType === "jumat" ? "Sholat Jumat" : "Sholat Berjamaah";
 
   return (
     <div className="space-y-6 pb-12 animate-fade-in font-sans">
@@ -222,7 +162,7 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
         <div>
           <h2 className="text-xl font-extrabold text-brand-950 tracking-tight flex items-center gap-2">
             <BookOpen className="w-6 h-6 text-emerald-600" />
-            Scan {sholatType === "dhuha" ? "Sholat Dhuha" : sholatType === "jumat" ? "Sholat Jumat" : "Sholat Berjamaah"}
+            Scan {sholatTypeLabel}
           </h2>
           <p className="text-xs text-brand-500 font-semibold mt-1">
             Pindai QR kartu pelajar — otomatis +{currentPoinValue} poin {currentPoinNama.toLowerCase()} tercatat.
@@ -232,11 +172,7 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
         {/* Tab Selector for Sholat Type */}
         <div className="flex bg-slate-100 p-1 rounded-2xl border border-slate-200 w-fit shrink-0">
           <button
-            onClick={() => {
-              if (cameraActive) stopScanner();
-              setCameraActive(false);
-              setSholatType("dhuha");
-            }}
+            onClick={() => setSholatType("dhuha")}
             className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
               sholatType === "dhuha"
                 ? "bg-white text-amber-700 shadow-md"
@@ -246,11 +182,7 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
             Sholat Dhuha
           </button>
           <button
-            onClick={() => {
-              if (cameraActive) stopScanner();
-              setCameraActive(false);
-              setSholatType("jumat");
-            }}
+            onClick={() => setSholatType("jumat")}
             className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
               sholatType === "jumat"
                 ? "bg-white text-indigo-700 shadow-md"
@@ -260,11 +192,7 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
             Sholat Jumat
           </button>
           <button
-            onClick={() => {
-              if (cameraActive) stopScanner();
-              setCameraActive(false);
-              setSholatType("berjamaah");
-            }}
+            onClick={() => setSholatType("berjamaah")}
             className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
               sholatType === "berjamaah"
                 ? "bg-white text-emerald-700 shadow-md"
@@ -275,6 +203,14 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
           </button>
         </div>
       </div>
+
+      {/* Method Tabs */}
+      <InputModeTabs
+        mode={mode}
+        scanType={scanType}
+        onModeChange={setMode}
+        onScanTypeChange={setScanType}
+      />
 
       <AnimatePresence>
         {scannerError && (
@@ -292,97 +228,145 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
         )}
       </AnimatePresence>
 
-      <div className="max-w-xl mx-auto bg-white p-6 rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 space-y-6 text-center">
-        <div className="flex items-center justify-between">
-          <div className="text-left space-y-1">
-            <h4 className="font-extrabold text-sm text-brand-950">Scanner {sholatType === "dhuha" ? "Sholat Dhuha" : "Sholat Berjamaah"}</h4>
-            <p className="text-xs text-brand-500 font-semibold">Aktifkan kamera lalu arahkan ke QR murid.</p>
+      {/* SCAN MODE */}
+      {mode === "scan" && (
+        <div className="max-w-xl mx-auto bg-white p-6 rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 space-y-6 text-center">
+          <div className="flex items-center justify-between">
+            <div className="text-left space-y-1">
+              <h4 className="font-extrabold text-sm text-brand-950">Scanner {sholatTypeLabel}</h4>
+              <p className="text-xs text-brand-500 font-semibold">Pilih metode untuk mencatat kehadiran sholat murid.</p>
+            </div>
+            <div className="text-right">
+              <p className="text-[9px] font-black text-brand-400 uppercase tracking-wider">Total Hari Ini</p>
+              <p className="text-lg font-mono font-black text-emerald-700">{scannedCount}</p>
+            </div>
           </div>
-          <div className="text-right">
-            <p className="text-[9px] font-black text-brand-400 uppercase tracking-wider">Total Hari Ini</p>
-            <p className="text-lg font-mono font-black text-emerald-700">{scannedCount}</p>
-          </div>
-        </div>
 
-        <div className="relative aspect-square w-full max-w-xs mx-auto rounded-2xl overflow-hidden border border-brand-100 bg-[#faf9ff] flex items-center justify-center shadow-inner">
-          {cameraActive ? (
-            <>
-              <div id="sholat-reader" className="w-full h-full object-cover relative" />
-              <div className="absolute left-0 right-0 h-0.5 bg-emerald-500/80 animate-scan z-10 shadow-md shadow-emerald-500/20" />
-            </>
-          ) : (
+          {scanType === "qr" ? (
             <div className="p-8 text-center space-y-4">
               <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto border border-emerald-100">
-                <Camera className="w-6 h-6 animate-pulse" />
+                <QrCode className="w-6 h-6 animate-pulse" />
               </div>
-              <div className="flex flex-col gap-2">
-                <button
-                  onClick={handleToggleCamera}
-                  className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-md cursor-pointer border-0 transition-all flex items-center justify-center gap-2"
-                >
-                  <Camera className="w-4 h-4" />
-                  Mulai Scan QR Kamera
-                </button>
-                <button
-                  onClick={() => setShowFaceScanner(true)}
-                  className="px-6 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-xs rounded-xl shadow-md cursor-pointer border-0 transition-all flex items-center justify-center gap-2"
-                >
-                  <ScanFace className="w-4 h-4" />
-                  Scan Wajah (AI)
-                </button>
+              <p className="text-xs text-brand-500 font-semibold max-w-xs mx-auto">
+                Arahkan kamera ke QR kartu murid. Scanner terbuka layar penuh dan dapat memindai banyak murid sekaligus.
+              </p>
+              <button
+                onClick={() => setShowQrScanner(true)}
+                className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-md cursor-pointer border-0 transition-all flex items-center justify-center gap-2 mx-auto"
+              >
+                <QrCode className="w-4 h-4" />
+                Mulai Scan QR
+              </button>
+            </div>
+          ) : (
+            <div className="p-8 text-center space-y-4">
+              <div className="w-14 h-14 bg-brand-50 text-brand-600 rounded-full flex items-center justify-center mx-auto border border-brand-100">
+                <ScanFace className="w-6 h-6 animate-pulse" />
               </div>
+              <p className="text-xs text-brand-500 font-semibold max-w-xs mx-auto">
+                Posisikan wajah murid di depan kamera. Sistem AI mencocokkan wajah dan mencatat kehadiran secara otomatis.
+              </p>
+              <button
+                onClick={() => setShowFaceScanner(true)}
+                className="px-6 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-xs rounded-xl shadow-md cursor-pointer border-0 transition-all flex items-center justify-center gap-2 mx-auto"
+              >
+                <ScanFace className="w-4 h-4" />
+                Mulai Scan Wajah
+              </button>
             </div>
           )}
-          {cameraActive && (
-            <button
-              onClick={handleToggleCamera}
-              className="absolute bottom-3 right-3 z-10 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl shadow-lg cursor-pointer"
-            >
-              Tutup
-            </button>
+        </div>
+      )}
+
+      {/* MANUAL MODE */}
+      {mode === "manual" && (
+        <div className="max-w-xl mx-auto bg-white p-6 rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 space-y-4">
+          <div className="space-y-1">
+            <h4 className="font-extrabold text-sm text-brand-950">Input Manual</h4>
+            <p className="text-xs text-brand-500 font-semibold">Cari nama atau NIS murid untuk mencatat kehadiran sholat.</p>
+          </div>
+
+          <div className="relative">
+            <Search className="absolute left-3.5 top-3.5 text-brand-500/50 w-4.5 h-4.5" />
+            <input
+              type="text"
+              placeholder="Masukkan nama atau NIS murid..."
+              value={manualQuery}
+              onChange={(e) => setManualQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 bg-[#faf9ff] rounded-2xl border border-brand-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 text-brand-950 placeholder-brand-500/30"
+            />
+          </div>
+
+          {filteredStudents.length > 0 && (
+            <div className="divide-y border border-brand-100 rounded-2xl overflow-hidden bg-white max-h-60 overflow-y-auto">
+              {filteredStudents.map(student => (
+                <button
+                  key={student.id}
+                  onClick={() => {
+                    setManualQuery("");
+                    handleStudentSholatAttendance(student);
+                  }}
+                  className="w-full p-4 hover:bg-brand-50/40 transition-colors flex items-center justify-between text-left cursor-pointer border-0 bg-transparent"
+                >
+                  <div>
+                    <span className="font-extrabold text-xs text-brand-950 block">{toSentenceCase(student.nama)}</span>
+                    <span className="text-[10px] text-slate-400 font-bold">NIS {student.nis}</span>
+                  </div>
+                  <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-lg">
+                    Kelas {student.kelas}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {manualQuery.trim() && filteredStudents.length === 0 && (
+            <div className="py-8 text-center text-xs font-bold text-brand-400">
+              Murid tidak ditemukan. Silakan periksa kembali ketikan Anda.
+            </div>
           )}
         </div>
+      )}
 
-        <AnimatePresence>
-          {lastScanned && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className={`p-4 rounded-2xl border text-xs font-bold flex items-center gap-3 ${
-                lastScanned.status === "success"
-                  ? "bg-emerald-50 border-emerald-200 text-emerald-800"
-                  : lastScanned.status === "duplicate"
-                  ? "bg-amber-50 border-amber-200 text-amber-800"
-                  : "bg-rose-50 border-rose-200 text-rose-800"
-              }`}
-            >
-              <div className={`w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 text-white ${
-                lastScanned.status === "success" ? "bg-emerald-500" : lastScanned.status === "duplicate" ? "bg-amber-500" : "bg-rose-500"
-              }`}>
-                {lastScanned.status === "success" ? <Check className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
-              </div>
-              <div>
-                {lastScanned.status === "success" && (
-                  <span>{toSentenceCase(lastScanned.nama)} ({lastScanned.kelas}) — <span className="text-emerald-600">+{currentPoinValue} Poin ({currentPoinNama})</span></span>
-                )}
-                {lastScanned.status === "duplicate" && (
-                  <span>{toSentenceCase(lastScanned.nama)} ({lastScanned.kelas}) — Sudah tercatat {currentPoinNama} hari ini</span>
-                )}
-                {lastScanned.status === "not_found" && (
-                  <span>{lastScanned.nama} — Tidak dikenali</span>
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+      <AnimatePresence>
+        {lastScanned && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className={`max-w-xl mx-auto p-4 rounded-2xl border text-xs font-bold flex items-center gap-3 ${
+              lastScanned.status === "success"
+                ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+                : lastScanned.status === "duplicate"
+                ? "bg-amber-50 border-amber-200 text-amber-800"
+                : "bg-rose-50 border-rose-200 text-rose-800"
+            }`}
+          >
+            <div className={`w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 text-white ${
+              lastScanned.status === "success" ? "bg-emerald-500" : lastScanned.status === "duplicate" ? "bg-amber-500" : "bg-rose-500"
+            }`}>
+              {lastScanned.status === "success" ? <Check className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
+            </div>
+            <div>
+              {lastScanned.status === "success" && (
+                <span>{toSentenceCase(lastScanned.nama)} ({lastScanned.kelas}) — <span className="text-emerald-600">+{currentPoinValue} Poin ({currentPoinNama})</span></span>
+              )}
+              {lastScanned.status === "duplicate" && (
+                <span>{toSentenceCase(lastScanned.nama)} ({lastScanned.kelas}) — Sudah tercatat {currentPoinNama} hari ini</span>
+              )}
+              {lastScanned.status === "not_found" && (
+                <span>{lastScanned.nama} — Tidak dikenali</span>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="max-w-xl mx-auto bg-white p-6 rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 space-y-4">
         <div className="flex items-center justify-between">
           <h4 className="font-extrabold text-sm text-brand-950 flex items-center gap-2">
             <Users className="w-4 h-4 text-brand-600" />
-            Rekap {sholatType === "dhuha" ? "Sholat Dhuha" : "Sholat Berjamaah"} Hari Ini
+            Rekap {sholatTypeLabel} Hari Ini
           </h4>
           <button
             onClick={() => refetchRecap()}
@@ -426,10 +410,19 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
         )}
       </div>
 
+      {showQrScanner && (
+        <QrScanner
+          title={`Scan QR - ${sholatTypeLabel}`}
+          subtitle={`Setiap murid yang terpindai otomatis memperoleh +${currentPoinValue} poin sholat`}
+          onScanSuccess={handleQrScan}
+          onClose={() => setShowQrScanner(false)}
+        />
+      )}
+
       {showFaceScanner && (
         <FaceScanner
           siswaList={siswaList}
-          title={`Scan Wajah - Presensi ${sholatType === "dhuha" ? "Sholat Dhuha" : sholatType === "jumat" ? "Sholat Jumat" : "Sholat Berjamaah"}`}
+          title={`Scan Wajah - ${sholatTypeLabel}`}
           subtitle={`Setiap siswa yang terdeteksi otomatis memperoleh +${currentPoinValue} poin sholat`}
           onMatchSuccess={handleStudentSholatAttendance}
           onClose={() => setShowFaceScanner(false)}

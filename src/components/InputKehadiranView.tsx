@@ -1,36 +1,28 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Html5Qrcode } from "html5-qrcode";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { queryClient } from "../queryClient";
 import {
-  Camera,
   Search,
   AlertCircle,
   Check,
-  Calendar,
-  Clock,
-  UserCheck,
-  Users,
   Zap,
-  LogIn,
   X,
-  RefreshCw,
-  BookOpen,
-  User
+  User,
+  ScanFace,
+  QrCode,
 } from "lucide-react";
 import { Siswa, UserSession } from "../types";
 import {
   getSiswaList,
   getAturanKehadiranList,
-  getTodayKehadiranGuru,
   saveKehadiran,
-  saveKehadiranGuruManual,
-  getJadwalGuruList,
   AturanKehadiran
 } from "../dbStore";
-import { toSentenceCase, formatSubjectName } from "../formatName";
-import { supabase } from "../supabaseClient";
+import { toSentenceCase } from "../formatName";
+import FaceScanner from "./face/FaceScanner";
+import QrScanner, { QrScanFeedback } from "./scan/QrScanner";
+import InputModeTabs, { InputMode, ScanType } from "./scan/InputModeTabs";
 
 interface InputKehadiranViewProps {
   userSession: UserSession;
@@ -41,13 +33,13 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Core tab for input type: "scan" (Unified QR Scanner), "manual_siswa", "manual_guru"
-  const [inputTab, setInputTab] = useState<"scan" | "siswa" | "guru">("scan");
+  // Two big tabs: "Scan" (QR / Wajah) and "Input Manual"
+  const [mode, setMode] = useState<InputMode>("scan");
+  const [scanType, setScanType] = useState<ScanType>("qr");
 
-  // QR Scanner States
-  const [cameraActive, setCameraActive] = useState(false);
-  const [scannerError, setScannerError] = useState<string | null>(null);
-  const scannerRef = useRef<Html5Qrcode | null>(null);
+  // Fullscreen scanner states
+  const [showQrScanner, setShowQrScanner] = useState(false);
+  const [showFaceScanner, setShowFaceScanner] = useState(false);
 
   // Core Data Queries
   const { data: siswaList = [] } = useQuery({
@@ -55,31 +47,13 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
     queryFn: getSiswaList,
   });
 
-  const { data: teachersList = [] } = useQuery({
-    queryKey: ["teachersList"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("id, nama, email, role")
-        .eq("role", "guru")
-        .order("nama", { ascending: true });
-      if (error) throw error;
-      return data || [];
-    }
-  });
-
   const { data: aturanList = [] } = useQuery({
     queryKey: ["aturanKehadiran"],
     queryFn: getAturanKehadiranList,
   });
 
-  // Determine Day Name
-  const days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
-  const todayDayName = days[new Date().getDay()];
-
-  // Active check-in targets after scanning / manual lookup
+  // Active check-in target after scanning / manual lookup
   const [activeSiswa, setActiveSiswa] = useState<Siswa | null>(null);
-  const [activeGuru, setActiveGuru] = useState<any | null>(null);
 
   // Siswa Attendance form states
   const [siswaCategory, setSiswaCategory] = useState<"tepat_waktu" | "terlambat" | "izin_sakit" | "alfa">("tepat_waktu");
@@ -87,32 +61,8 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
   const [siswaPoints, setSiswaPoints] = useState(15);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Guru Attendance form states
-  const [activeGuruJadwal, setActiveGuruJadwal] = useState<any | null>(null);
-  const [guruStatus, setGuruStatus] = useState<'hadir' | 'sakit' | 'izin' | 'alfa'>('hadir');
-  const [guruKeterangan, setGuruKeterangan] = useState("");
-
   // Search filter query inputs
   const [searchSiswaQuery, setSearchSiswaQuery] = useState("");
-  const [searchGuruQuery, setSearchGuruQuery] = useState("");
-
-  // Fetch selected teacher's schedules for today
-  const { data: activeGuruSchedules = [], isLoading: loadingGuruSchedules } = useQuery({
-    queryKey: ["guruSchedulesToday", activeGuru?.id],
-    queryFn: async () => {
-      if (!activeGuru?.id) return [];
-      const list = await getJadwalGuruList(activeGuru.id);
-      return list.filter((s: any) => s.hari === todayDayName);
-    },
-    enabled: !!activeGuru?.id
-  });
-
-  // Fetch selected teacher's presence records for today
-  const { data: activeGuruTodayAttendance = [], refetch: refetchActiveGuruAttendance } = useQuery({
-    queryKey: ["guruTodayKehadiran", activeGuru?.id],
-    queryFn: () => getTodayKehadiranGuru(activeGuru.id, todayStr),
-    enabled: !!activeGuru?.id
-  });
 
   // Aturan points map
   const aturanMap = useMemo(() => {
@@ -123,89 +73,36 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
     return map;
   }, [aturanList]);
 
-  // Handle camera scanning cycle
-  useEffect(() => {
-    if (cameraActive && inputTab === "scan") {
-      setScannerError(null);
-      const timer = setTimeout(() => {
-        try {
-          const scanner = new Html5Qrcode("unified-reader");
-          scannerRef.current = scanner;
-          scanner.start(
-            { facingMode: "environment" },
-            { fps: 10, qrbox: { width: 250, height: 250 } },
-            onScanSuccess,
-            onScanFailure
-          ).catch((err) => {
-            console.error("Camera start failed", err);
-            setScannerError("Gagal membuka kamera. Pastikan akses diizinkan.");
-            setCameraActive(false);
-          });
-        } catch (err) {
-          console.error("Camera init failed", err);
-          setScannerError("Gagal mengakses kamera.");
-          setCameraActive(false);
-        }
-      }, 400);
-
-      return () => {
-        clearTimeout(timer);
-        stopScanner();
+  const handleQrScan = async (decodedText: string): Promise<QrScanFeedback> => {
+    const trimmed = decodedText.trim();
+    const student = siswaList.find(s => s.nis === trimmed || s.id === trimmed);
+    if (!student) {
+      return {
+        type: "not_found",
+        title: "TIDAK DIKENALI",
+        message: `QR: "${trimmed}"`,
       };
     }
-  }, [cameraActive, inputTab]);
-
-  useEffect(() => {
-    return () => {
-      if (scannerRef.current) {
-        const s = scannerRef.current;
-        scannerRef.current = null;
-        try { s.stop().then(() => { try { s.clear(); } catch {} }).catch(() => { try { s.clear(); } catch {} }); } catch { try { s.clear(); } catch {} }
-      }
+    setActiveSiswa(student);
+    setSiswaCategory("tepat_waktu");
+    setSiswaStatus("tepat_waktu");
+    setSiswaPoints(aturanMap["tepat_waktu"]?.nilai_poin ?? 15);
+    setSuccessMsg(null);
+    setTimeout(() => setShowQrScanner(false), 900);
+    return {
+      type: "success",
+      title: "BERHASIL TERDETEKSI",
+      message: `${toSentenceCase(student.nama)} (${student.kelas})`,
     };
-  }, []);
-
-  const stopScanner = () => {
-    if (scannerRef.current) {
-      const s = scannerRef.current;
-      scannerRef.current = null;
-      try {
-        s.stop().then(() => { try { s.clear(); } catch {} }).catch(() => { try { s.clear(); } catch {} });
-      } catch (e) {
-        try { s.clear(); } catch {}
-      }
-    }
   };
 
-  const onScanSuccess = (decodedText: string) => {
-    const trimmed = decodedText.trim();
-    // 1. Check if matches student
-    const student = siswaList.find(s => s.nis === trimmed || s.id === trimmed);
-    if (student) {
-      setActiveSiswa(student);
-      setSiswaCategory("tepat_waktu");
-      setSiswaStatus("tepat_waktu");
-      setSiswaPoints(aturanMap["tepat_waktu"]?.nilai_poin ?? 15);
-      setCameraActive(false);
-      setSuccessMsg(null);
-      return;
-    }
-
-    // 2. Check if matches teacher
-    const teacher = teachersList.find(t => t.id === trimmed || t.email === trimmed);
-    if (teacher) {
-      setActiveGuru(teacher);
-      setCameraActive(false);
-      setSuccessMsg(null);
-      return;
-    }
-
-    setScannerError(`Barcode/QR "${trimmed}" tidak dikenali sebagai guru maupun murid.`);
-    setTimeout(() => setScannerError(null), 4000);
-  };
-
-  const onScanFailure = () => {
-    // Silent fail scanning logs
+  const handleFaceMatch = (student: Siswa) => {
+    setActiveSiswa(student);
+    setSiswaCategory("tepat_waktu");
+    setSiswaStatus("tepat_waktu");
+    setSiswaPoints(aturanMap["tepat_waktu"]?.nilai_poin ?? 15);
+    setSuccessMsg(null);
+    setShowFaceScanner(false);
   };
 
   // Student Attendance Submit
@@ -233,73 +130,6 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
     }
   };
 
-  // Helper to merge consecutive teacher schedules
-  const mergeSchedules = (list: any[]) => {
-    if (list.length === 0) return [];
-    const sorted = [...list].sort((a, b) => a.jam_mulai.localeCompare(b.jam_mulai));
-    const merged: any[] = [];
-    let current = { ...sorted[0], ids: [sorted[0].id] };
-
-    for (let i = 1; i < sorted.length; i++) {
-      const next = sorted[i];
-      const [currH, currM] = current.jam_selesai.split(":").map(Number);
-      const [nextH, nextM] = next.jam_mulai.split(":").map(Number);
-      const gapMinutes = (nextH * 60 + nextM) - (currH * 60 + currM);
-
-      const isSame = current.kelas === next.kelas && current.mata_pelajaran === next.mata_pelajaran;
-      if (isSame && gapMinutes >= 0 && gapMinutes <= 35) {
-        current = {
-          ...current,
-          jam_selesai: next.jam_selesai,
-          ids: [...current.ids, next.id]
-        };
-      } else {
-        merged.push(current);
-        current = { ...next, ids: [next.id] };
-      }
-    }
-    merged.push(current);
-    return merged;
-  };
-
-  const processedGuruSchedules = useMemo(() => mergeSchedules(activeGuruSchedules), [activeGuruSchedules]);
-
-  // Guru Attendance Submit
-  const handleSaveGuruAttendance = async () => {
-    if (!activeGuruJadwal || !activeGuru) return;
-    setIsSubmitting(true);
-    try {
-      const now = new Date();
-      const pad = (n: number) => n.toString().padStart(2, "0");
-      const timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-      
-      const promises = activeGuruJadwal.ids.map((id: string) => 
-        saveKehadiranGuruManual(activeGuru.id, todayStr, guruStatus, timeStr, guruKeterangan, id)
-      );
-      await Promise.all(promises);
-
-      setSuccessMsg(`Absensi mengajar ${toSentenceCase(activeGuru.nama)} berhasil dicatat.`);
-      setActiveGuruJadwal(null);
-      refetchActiveGuruAttendance();
-      queryClient.invalidateQueries({ queryKey: ["kehadiranGuruAll"] });
-      setTimeout(() => setSuccessMsg(null), 5000);
-    } catch (err: any) {
-      setErrorMsg("Gagal menyimpan absensi guru: " + err.message);
-      setTimeout(() => setErrorMsg(null), 5000);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // Inactive vs Active slots styling helper
-  const isScheduleActive = (jamMulai: string, jamSelesai: string) => {
-    const now = new Date();
-    const currentMinutes = now.getHours() * 60 + now.getMinutes();
-    const [startH, startM] = jamMulai.split(":").map(Number);
-    const [endH, endM] = jamSelesai.split(":").map(Number);
-    return currentMinutes >= (startH * 60 + startM) && currentMinutes <= (endH * 60 + endM);
-  };
-
   // Filters manual dropdown lookup
   const filteredSiswaLookup = useMemo(() => {
     if (!searchSiswaQuery) return [];
@@ -309,13 +139,12 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
     ).slice(0, 8);
   }, [siswaList, searchSiswaQuery]);
 
-  const filteredGuruLookup = useMemo(() => {
-    if (!searchGuruQuery) return [];
-    return teachersList.filter(t => 
-      t.nama.toLowerCase().includes(searchGuruQuery.toLowerCase()) ||
-      t.email.toLowerCase().includes(searchGuruQuery.toLowerCase())
-    ).slice(0, 8);
-  }, [teachersList, searchGuruQuery]);
+  const activateSiswa = (student: Siswa) => {
+    setActiveSiswa(student);
+    setSiswaCategory("tepat_waktu");
+    setSiswaStatus("tepat_waktu");
+    setSiswaPoints(aturanMap["tepat_waktu"]?.nilai_poin ?? 15);
+  };
 
   return (
     <div className="space-y-6 pb-12 animate-fade-in font-sans">
@@ -325,7 +154,7 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
           Pencatatan Kehadiran Harian (KBM)
         </h2>
         <p className="text-xs text-brand-500 font-semibold mt-1">
-          Scan kartu pengenal atau cari nama guru/murid untuk melakukan input kehadiran manual.
+          Scan kartu pelajar atau cari nama murid untuk melakukan input kehadiran manual.
         </p>
       </div>
 
@@ -360,79 +189,70 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
         )}
       </AnimatePresence>
 
-      {/* Tabs */}
-      <div className="flex border-b border-brand-100 pb-px gap-1 overflow-x-auto scrollbar-none">
-        <button
-          onClick={() => { setInputTab("scan"); setActiveSiswa(null); setActiveGuru(null); }}
-          className={`px-5 py-3 text-xs font-black uppercase tracking-wider border-b-2 cursor-pointer transition-all ${
-            inputTab === "scan"
-              ? "border-brand-600 text-brand-800"
-              : "border-transparent text-slate-400 hover:text-slate-600"
-          }`}
-        >
-          Scan QR / Barcode
-        </button>
-        <button
-          onClick={() => { setInputTab("siswa"); setActiveSiswa(null); setActiveGuru(null); }}
-          className={`px-5 py-3 text-xs font-black uppercase tracking-wider border-b-2 cursor-pointer transition-all ${
-            inputTab === "siswa"
-              ? "border-brand-600 text-brand-800"
-              : "border-transparent text-slate-400 hover:text-slate-600"
-          }`}
-        >
-          Manual Murid
-        </button>
-        <button
-          onClick={() => { setInputTab("guru"); setActiveSiswa(null); setActiveGuru(null); }}
-          className={`px-5 py-3 text-xs font-black uppercase tracking-wider border-b-2 cursor-pointer transition-all ${
-            inputTab === "guru"
-              ? "border-brand-600 text-brand-800"
-              : "border-transparent text-slate-400 hover:text-slate-600"
-          }`}
-        >
-          Manual Guru
-        </button>
-      </div>
+      {/* Method Tabs */}
+      {!activeSiswa && (
+        <InputModeTabs
+          mode={mode}
+          scanType={scanType}
+          onModeChange={setMode}
+          onScanTypeChange={setScanType}
+        />
+      )}
 
-      {/* 1. TAB SCAN QR / BARCODE */}
-      {inputTab === "scan" && (
+      {/* 1. TAB SCAN QR */}
+      {!activeSiswa && mode === "scan" && scanType === "qr" && (
         <div className="max-w-xl mx-auto bg-white p-6 rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 space-y-6 text-center">
           <div className="space-y-1">
-            <h4 className="font-extrabold text-sm text-brand-950">Scanner Cerdas Terpadu</h4>
-            <p className="text-xs text-brand-500 font-semibold">Deteksi cerdas barcode langsung membaca kartu pengenal murid atau guru.</p>
+            <h4 className="font-extrabold text-sm text-brand-950">Scan QR Kartu Pelajar</h4>
+            <p className="text-xs text-brand-500 font-semibold">Pindai QR untuk langsung mengenali murid dan mencatat kehadiran.</p>
           </div>
 
-          <div className="relative aspect-square w-full max-w-xs mx-auto rounded-2xl overflow-hidden border border-brand-100 bg-[#faf9ff] flex items-center justify-center shadow-inner">
-            {cameraActive ? (
-              <div id="unified-reader" className="w-full h-full object-cover relative">
-                {/* Visual scan line */}
-                <div className="absolute left-0 right-0 h-0.5 bg-brand-500/80 animate-scan z-10 shadow-md shadow-brand-500/20" />
-              </div>
-            ) : (
-              <div className="p-8 text-center space-y-4">
-                <div className="w-14 h-14 bg-brand-50 text-brand-600 rounded-full flex items-center justify-center mx-auto border border-brand-100">
-                  <Camera className="w-6 h-6 animate-pulse" />
-                </div>
-                <button
-                  onClick={() => setCameraActive(true)}
-                  className="px-6 py-2.5 bg-brand-600 hover:bg-brand-750 text-white font-extrabold text-xs rounded-xl shadow-md cursor-pointer border-0 transition-all"
-                >
-                  Aktifkan Kamera
-                </button>
-              </div>
-            )}
-          </div>
-
-          {scannerError && (
-            <p className="text-xs font-bold text-rose-600 bg-rose-50 border border-rose-100 p-3 rounded-xl max-w-xs mx-auto">
-              {scannerError}
+          <div className="p-8 text-center space-y-4">
+            <div className="w-14 h-14 bg-brand-50 text-brand-600 rounded-full flex items-center justify-center mx-auto border border-brand-100">
+              <QrCode className="w-6 h-6 animate-pulse" />
+            </div>
+            <p className="text-xs text-brand-500 font-semibold max-w-xs mx-auto">
+              Arahkan kamera ke QR kartu pelajar. Scanner terbuka layar penuh dan otomatis mendeteksi murid.
             </p>
-          )}
+            <button
+              onClick={() => setShowQrScanner(true)}
+              className="px-6 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-xs rounded-xl shadow-md cursor-pointer border-0 transition-all flex items-center justify-center gap-2 mx-auto"
+            >
+              <QrCode className="w-4 h-4" />
+              Mulai Scan QR
+            </button>
+          </div>
         </div>
       )}
 
-      {/* 2. TAB MANUAL MURID */}
-      {inputTab === "siswa" && !activeSiswa && (
+      {/* 2. TAB SCAN WAJAH */}
+      {!activeSiswa && mode === "scan" && scanType === "face" && (
+        <div className="max-w-xl mx-auto bg-white p-6 rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 space-y-6 text-center">
+          <div className="space-y-1">
+            <h4 className="font-extrabold text-sm text-brand-950">Scan Wajah (AI)</h4>
+            <p className="text-xs text-brand-500 font-semibold">Posisikan wajah murid di depan kamera untuk absensi otomatis.</p>
+          </div>
+
+          <div className="p-8 text-center space-y-4">
+            <div className="w-14 h-14 bg-brand-50 text-brand-600 rounded-full flex items-center justify-center mx-auto border border-brand-100">
+              <ScanFace className="w-6 h-6 animate-pulse" />
+            </div>
+            <p className="text-xs text-brand-500 font-semibold max-w-xs mx-auto">
+              Sistem AI mencocokkan wajah murid dengan data tersimpan lalu membuka form kehadiran.
+            </p>
+            <button
+              onClick={() => setShowFaceScanner(true)}
+              className="px-6 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-xs rounded-xl shadow-md cursor-pointer border-0 transition-all flex items-center justify-center gap-2 mx-auto"
+            >
+              <ScanFace className="w-4 h-4" />
+              Mulai Scan Wajah
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 3. TAB MANUAL */}
+      {!activeSiswa && mode === "manual" && (
         <div className="max-w-xl mx-auto bg-white p-6 rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 space-y-4">
           <div className="space-y-1">
             <h4 className="font-extrabold text-sm text-brand-950">Lookup Manual Murid</h4>
@@ -455,12 +275,7 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
               {filteredSiswaLookup.map(student => (
                 <button
                   key={student.id}
-                  onClick={() => {
-                    setActiveSiswa(student);
-                    setSiswaCategory("tepat_waktu");
-                    setSiswaStatus("tepat_waktu");
-                    setSiswaPoints(aturanMap["tepat_waktu"]?.nilai_poin ?? 15);
-                  }}
+                  onClick={() => activateSiswa(student)}
                   className="w-full p-4 hover:bg-brand-50/40 transition-colors flex items-center justify-between text-left cursor-pointer border-0 bg-transparent"
                 >
                   <div>
@@ -469,47 +284,6 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
                   </div>
                   <span className="text-[10px] font-black text-brand-600 bg-brand-50 border border-brand-100 px-2.5 py-1 rounded-lg">
                     Kelas {student.kelas}
-                  </span>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* 3. TAB MANUAL GURU */}
-      {inputTab === "guru" && !activeGuru && (
-        <div className="max-w-xl mx-auto bg-white p-6 rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 space-y-4">
-          <div className="space-y-1">
-            <h4 className="font-extrabold text-sm text-brand-950">Lookup Manual Guru</h4>
-            <p className="text-xs text-brand-500 font-semibold">Cari nama atau email guru untuk input absensi mengajar (KBM) hari ini.</p>
-          </div>
-
-          <div className="relative">
-            <Search className="absolute left-3.5 top-3.5 text-brand-500/50 w-4.5 h-4.5" />
-            <input
-              type="text"
-              placeholder="Masukkan nama atau email guru..."
-              value={searchGuruQuery}
-              onChange={(e) => setSearchGuruQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-[#faf9ff] rounded-2xl border border-brand-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 text-brand-950 placeholder-brand-500/30"
-            />
-          </div>
-
-          {filteredGuruLookup.length > 0 && (
-            <div className="divide-y border border-brand-100 rounded-2xl overflow-hidden bg-white max-h-60 overflow-y-auto">
-              {filteredGuruLookup.map(teacher => (
-                <button
-                  key={teacher.id}
-                  onClick={() => setActiveGuru(teacher)}
-                  className="w-full p-4 hover:bg-brand-50/40 transition-colors flex items-center justify-between text-left cursor-pointer border-0 bg-transparent"
-                >
-                  <div>
-                    <span className="font-extrabold text-xs text-brand-950 block">{toSentenceCase(teacher.nama)}</span>
-                    <span className="text-[10px] text-slate-400 font-bold">{teacher.email}</span>
-                  </div>
-                  <span className="text-[10px] font-black text-brand-600 bg-brand-50 border border-brand-100 px-2.5 py-1 rounded-lg uppercase">
-                    GURU
                   </span>
                 </button>
               ))}
@@ -670,198 +444,24 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
         </div>
       )}
 
-      {/* 5. ACTIVE VIEW GURU DAILY SCHEDULES PANEL */}
-      {activeGuru && (
-        <div className="max-w-xl mx-auto space-y-6">
-          <div className="bg-white p-6 rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 space-y-5">
-            <div className="flex justify-between items-start border-b pb-4 border-slate-50">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-brand-100 rounded-xl flex items-center justify-center text-brand-600">
-                  <UserCheck className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="font-extrabold text-sm text-brand-950">Jadwal Mengajar Guru</h4>
-                  <p className="text-[10.5px] font-semibold text-brand-500 mt-0.5">{toSentenceCase(activeGuru.nama)}</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setActiveGuru(null)}
-                className="p-1.5 rounded-xl hover:bg-brand-100 text-slate-400 hover:text-slate-700 cursor-pointer border-0 bg-transparent"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {loadingGuruSchedules ? (
-              <div className="py-12 text-center">
-                <RefreshCw className="w-6 h-6 animate-spin mx-auto text-brand-500" />
-                <p className="text-[11px] font-bold text-brand-400 mt-2">Memuat jadwal guru...</p>
-              </div>
-            ) : processedGuruSchedules.length === 0 ? (
-              <div className="py-12 text-center text-brand-400 font-bold text-xs space-y-2">
-                <BookOpen className="w-10 h-10 text-brand-300 mx-auto" />
-                <p>Tidak ada jadwal mengajar KBM untuk guru ini pada hari {todayDayName}.</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                <p className="text-[10.5px] font-black text-brand-500 uppercase tracking-widest">Daftar Slot KBM Hari Ini ({todayDayName}):</p>
-                
-                {processedGuruSchedules.map((sched) => {
-                  const att = activeGuruTodayAttendance.find((a: any) => sched.ids.includes(a.jadwal_id));
-                  const isCheckedIn = !!att;
-                  const active = isScheduleActive(sched.jam_mulai, sched.jam_selesai);
-
-                  return (
-                    <div
-                      key={sched.id}
-                      className={`p-5 rounded-2xl border transition-all flex items-center justify-between gap-4 relative overflow-hidden ${
-                        isCheckedIn 
-                          ? "bg-emerald-50/25 border-emerald-200 text-brand-900" 
-                          : active
-                          ? "bg-gradient-to-r from-blue-50 to-indigo-50 border-indigo-200 text-slate-900 shadow-md shadow-indigo-100/50 scale-[1.01]"
-                          : "bg-brand-50/40 border-brand-150 text-brand-900 shadow-xs"
-                      }`}
-                    >
-                      <div className="space-y-1.5">
-                        <span className={`px-2.5 py-0.5 text-[10px] font-black rounded-lg uppercase tracking-wide inline-block ${
-                          isCheckedIn
-                            ? "bg-emerald-100 text-emerald-800"
-                            : active
-                            ? "bg-indigo-600 text-white shadow-xs"
-                            : "bg-brand-100/80 text-brand-700"
-                        }`}>
-                          {sched.jam_mulai.slice(0, 5)} - {sched.jam_selesai.slice(0, 5)} {active && !isCheckedIn ? "• AKTIF KBM" : ""}
-                        </span>
-                        <h4 className="font-extrabold text-sm text-brand-950">
-                          {formatSubjectName(sched.mata_pelajaran)}
-                        </h4>
-                        <div className="flex items-center gap-1.5 text-xs font-bold text-brand-500">
-                          <Users className="w-3.5 h-3.5" />
-                          <span>Kelas {sched.kelas}</span>
-                        </div>
-                      </div>
-
-                      {isCheckedIn ? (
-                        <div className="text-right space-y-1 z-10">
-                          <span className={`px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wide inline-block ${
-                            att.status === "hadir" 
-                              ? "bg-emerald-100 text-emerald-800 border border-emerald-200" 
-                              : att.status === "sakit" 
-                              ? "bg-amber-100 text-amber-800" 
-                              : "bg-purple-100 text-purple-800"
-                          }`}>
-                            {att.status === "hadir" ? "Hadir" : att.status === "sakit" ? "Sakit" : "Izin"}
-                          </span>
-                          <p className="text-[10px] text-brand-450 font-bold">{att.jam_masuk ? `${att.jam_masuk.slice(0, 5)} WIB` : "-"}</p>
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => {
-                            setActiveGuruJadwal(sched);
-                            setGuruStatus("hadir");
-                            setGuruKeterangan("");
-                          }}
-                          className={`py-2 px-4 font-extrabold text-xs rounded-xl shadow-sm border transition-all flex items-center gap-1.5 z-10 ${
-                            active
-                              ? "bg-white hover:bg-slate-100 text-slate-900 border-slate-200 cursor-pointer"
-                              : "bg-brand-600 hover:bg-brand-750 text-white border-transparent cursor-pointer"
-                          }`}
-                        >
-                          <LogIn className="w-3.5 h-3.5" />
-                          Absen
-                        </button>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </div>
+      {showQrScanner && (
+        <QrScanner
+          title="Scan QR - Kehadiran"
+          subtitle="Pindai kartu pelajar murid untuk mencatat kehadiran"
+          onScanSuccess={handleQrScan}
+          onClose={() => setShowQrScanner(false)}
+        />
       )}
 
-      {/* 6. GURU CHECK-IN ACTIVE DIALOG MODAL */}
-      <AnimatePresence>
-        {activeGuruJadwal && activeGuru && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-brand-950/60 backdrop-blur-xs">
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden border border-brand-150"
-            >
-              <div className="px-6 py-5 bg-brand-50 border-b border-brand-100 flex items-center justify-between">
-                <div>
-                  <h3 className="font-black text-brand-950 text-sm">Absen Mengajar Guru</h3>
-                  <p className="text-[10.5px] font-bold text-brand-500 mt-0.5">
-                    {toSentenceCase(activeGuru.nama)} | Kelas {activeGuruJadwal.kelas}
-                  </p>
-                </div>
-                <button
-                  onClick={() => setActiveGuruJadwal(null)}
-                  className="p-1.5 rounded-xl hover:bg-brand-200/50 text-brand-400 hover:text-brand-800 transition-all cursor-pointer bg-transparent border-0"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              <div className="p-6 space-y-5">
-                {/* Select Status */}
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-brand-700 uppercase tracking-widest block">Status Kehadiran</label>
-                  <div className="grid grid-cols-4 gap-1.5">
-                    {(['hadir', 'sakit', 'izin', 'alfa'] as const).map((s) => (
-                      <button
-                        key={s}
-                        type="button"
-                        onClick={() => setGuruStatus(s)}
-                        className={`py-3 rounded-2xl border text-[10px] font-black text-center cursor-pointer transition-all uppercase tracking-wider ${
-                          guruStatus === s
-                            ? "bg-brand-600 text-white border-transparent"
-                            : "bg-[#faf9ff] border-brand-100 text-brand-700 hover:bg-slate-50"
-                        }`}
-                      >
-                        {s === "hadir" ? "Hadir" : s === "sakit" ? "Sakit" : s === "izin" ? "Izin" : "Alfa"}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Description Textarea */}
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-brand-700 uppercase tracking-widest block">
-                    Keterangan {guruStatus === "hadir" ? "(Opsional)" : ""}
-                  </label>
-                  <textarea
-                    rows={3}
-                    placeholder={guruStatus === "hadir" ? "Catatan materi/lainnya (opsional)..." : "Tulis alasan sakit/izin/alfa..."}
-                    value={guruKeterangan}
-                    onChange={(e) => setGuruKeterangan(e.target.value)}
-                    required={guruStatus !== "hadir"}
-                    className="w-full border border-brand-100 rounded-2xl p-3 text-xs font-semibold text-brand-900 focus:ring-2 focus:ring-brand-500 outline-none bg-[#faf9ff]"
-                  />
-                </div>
-              </div>
-
-              <div className="px-6 py-4 bg-brand-50/50 border-t border-brand-100 flex items-center justify-end gap-3">
-                <button
-                  onClick={() => setActiveGuruJadwal(null)}
-                  className="px-4 py-2.5 rounded-2xl hover:bg-brand-200/40 text-brand-600 hover:text-brand-900 font-bold text-sm transition-all cursor-pointer bg-transparent border-0"
-                >
-                  Batal
-                </button>
-                <button
-                  onClick={handleSaveGuruAttendance}
-                  disabled={isSubmitting}
-                  className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-brand-600 to-brand-700 hover:from-brand-700 hover:to-brand-800 text-white font-bold text-sm shadow-md transition-all cursor-pointer border-0"
-                >
-                  {isSubmitting ? "Menyimpan..." : "Simpan Absen"}
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      {showFaceScanner && (
+        <FaceScanner
+          siswaList={siswaList}
+          title="Scan Wajah - Kehadiran"
+          subtitle="Posisikan wajah murid untuk membuka form kehadiran"
+          onMatchSuccess={handleFaceMatch}
+          onClose={() => setShowFaceScanner(false)}
+        />
+      )}
     </div>
   );
 }

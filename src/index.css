@@ -103,60 +103,96 @@ body {
   box-shadow: 0 20px 25px -5px rgba(109, 40, 217, 0.1), 0 10px 10px -5px rgba(109, 40, 217, 0.04);
 }
 
-/* Animated Seamless Waves */
-@keyframes waveFlow1 {
+/* Organic Fluid Wave Movement Keyframes */
+@keyframes waveOrganic1 {
   0% {
-    transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0) scaleY(1);
+  }
+  25% {
+    transform: translate3d(-12.5%, -16px, 0) scaleY(1.04);
+  }
+  50% {
+    transform: translate3d(-25%, 12px, 0) scaleY(0.97);
+  }
+  75% {
+    transform: translate3d(-37.5%, -10px, 0) scaleY(1.03);
   }
   100% {
-    transform: translate3d(-50%, 0, 0);
+    transform: translate3d(-50%, 0, 0) scaleY(1);
   }
 }
 
-@keyframes waveFlow2 {
+@keyframes waveOrganic2 {
   0% {
-    transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0) scaleY(1);
+  }
+  20% {
+    transform: translate3d(-10%, 20px, 0) scaleY(0.96);
+  }
+  45% {
+    transform: translate3d(-22.5%, -14px, 0) scaleY(1.03);
+  }
+  70% {
+    transform: translate3d(-35%, 16px, 0) scaleY(0.98);
   }
   100% {
-    transform: translate3d(-50%, 0, 0);
+    transform: translate3d(-50%, 0, 0) scaleY(1);
   }
 }
 
-@keyframes waveFlow3 {
+@keyframes waveOrganic3 {
   0% {
-    transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0) scaleY(1);
+  }
+  30% {
+    transform: translate3d(-15%, -22px, 0) scaleY(1.05);
+  }
+  60% {
+    transform: translate3d(-30%, 18px, 0) scaleY(0.95);
+  }
+  85% {
+    transform: translate3d(-42.5%, -8px, 0) scaleY(1.02);
   }
   100% {
-    transform: translate3d(-50%, 0, 0);
+    transform: translate3d(-50%, 0, 0) scaleY(1);
   }
 }
 
-@keyframes waveFlow4 {
+@keyframes waveOrganic4 {
   0% {
-    transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0) scaleY(1);
+  }
+  25% {
+    transform: translate3d(-12.5%, 16px, 0) scaleY(0.96);
+  }
+  50% {
+    transform: translate3d(-25%, -18px, 0) scaleY(1.05);
+  }
+  75% {
+    transform: translate3d(-37.5%, 10px, 0) scaleY(0.97);
   }
   100% {
-    transform: translate3d(-50%, 0, 0);
+    transform: translate3d(-50%, 0, 0) scaleY(1);
   }
 }
 
 .animate-wave-slow {
-  animation: waveFlow1 32s linear infinite;
+  animation: waveOrganic1 38s cubic-bezier(0.42, 0, 0.58, 1) infinite;
   will-change: transform;
 }
 
 .animate-wave-mid {
-  animation: waveFlow2 24s linear infinite;
+  animation: waveOrganic2 28s cubic-bezier(0.42, 0, 0.58, 1) infinite;
   will-change: transform;
 }
 
 .animate-wave-fast {
-  animation: waveFlow3 18s linear infinite;
+  animation: waveOrganic3 21s cubic-bezier(0.42, 0, 0.58, 1) infinite;
   will-change: transform;
 }
 
 .animate-wave-bottom {
-  animation: waveFlow4 14s linear infinite;
+  animation: waveOrganic4 16s cubic-bezier(0.42, 0, 0.58, 1) infinite;
   will-change: transform;
 }
 

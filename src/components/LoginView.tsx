@@ -183,7 +183,7 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
       {/* ===== Dynamic Harmonized Animated SVG Waves ===== */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 filter blur-[4px] sm:blur-[6px] scale-105">
         {/* Layer 1: Top Back Wave (Soft magenta/purple) */}
-        <div className="absolute inset-x-0 bottom-0 w-[200%] h-full animate-wave-slow opacity-35">
+        <div className="absolute left-0 bottom-0 w-[400%] sm:w-[250%] lg:w-[200%] min-w-[1400px] sm:min-w-[2400px] h-full animate-wave-slow opacity-35">
           <svg viewBox="0 0 5760 1000" className="w-full h-full" preserveAspectRatio="none">
             <path
               d="M 0,350 C 400,260 1040,260 1440,350 C 1840,440 2480,440 2880,350 C 3280,260 3920,260 4320,350 C 4720,440 5360,440 5760,350 L 5760,1000 L 0,1000 Z"
@@ -199,7 +199,7 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
         </div>
 
         {/* Layer 2: Upper Middle Wave */}
-        <div className="absolute inset-x-0 bottom-0 w-[200%] h-full animate-wave-mid opacity-45">
+        <div className="absolute left-0 bottom-0 w-[400%] sm:w-[250%] lg:w-[200%] min-w-[1400px] sm:min-w-[2400px] h-full animate-wave-mid opacity-45">
           <svg viewBox="0 0 5760 1000" className="w-full h-full" preserveAspectRatio="none">
             <path
               d="M 0,470 C 400,555 1040,555 1440,470 C 1840,385 2480,385 2880,470 C 3280,555 3920,555 4320,470 C 4720,385 5360,385 5760,470 L 5760,1000 L 0,1000 Z"
@@ -215,7 +215,7 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
         </div>
 
         {/* Layer 3: Lower Middle Wave */}
-        <div className="absolute inset-x-0 bottom-0 w-[200%] h-full animate-wave-fast opacity-55">
+        <div className="absolute left-0 bottom-0 w-[400%] sm:w-[250%] lg:w-[200%] min-w-[1400px] sm:min-w-[2400px] h-full animate-wave-fast opacity-55">
           <svg viewBox="0 0 5760 1000" className="w-full h-full" preserveAspectRatio="none">
             <path
               d="M 0,590 C 400,510 1040,510 1440,590 C 1840,670 2480,670 2880,590 C 3280,510 3920,510 4320,590 C 4720,670 5360,670 5760,590 L 5760,1000 L 0,1000 Z"
@@ -231,7 +231,7 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
         </div>
 
         {/* Layer 4: Bottom Wave (Wide Sweeping Wave in Deep Royal Purple) */}
-        <div className="absolute inset-x-0 bottom-0 w-[200%] h-full animate-wave-bottom opacity-65">
+        <div className="absolute left-0 bottom-0 w-[400%] sm:w-[250%] lg:w-[200%] min-w-[1400px] sm:min-w-[2400px] h-full animate-wave-bottom opacity-65">
           <svg viewBox="0 0 5760 1000" className="w-full h-full" preserveAspectRatio="none">
             <path
               d="M 0,710 C 400,785 1040,785 1440,710 C 1840,635 2480,635 2880,710 C 3280,785 3920,785 4320,710 C 4720,635 5360,635 5760,710 L 5760,1000 L 0,1000 Z"

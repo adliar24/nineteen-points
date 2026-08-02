@@ -274,12 +274,12 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
         </p>
       </motion.header>
 
-      {/* ===== LAYER 2: Center Login Card (Positioned in Center & Elevated Higher Up) ===== */}
+      {/* ===== LAYER 2: Center Login Card (Positioned in Center with Balanced Spacing) ===== */}
       <motion.main
         initial={{ opacity: 0, scale: 0.96, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ delay: 0.2, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="max-w-md w-full my-auto -mt-6 sm:-mt-10 py-4 z-10 relative"
+        className="max-w-md w-full my-auto -mt-2 sm:-mt-3 py-4 z-10 relative"
       >
         <div className="bg-white/95 backdrop-blur-md p-6 sm:p-8 rounded-2xl sm:rounded-3xl shadow-2xl shadow-brand-900/10 border border-brand-100">
           <form className="space-y-4 sm:space-y-5" onSubmit={handleLogin} autoComplete="off">

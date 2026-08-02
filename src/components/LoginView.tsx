@@ -274,8 +274,8 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
         </p>
       </motion.header>
 
-      {/* ===== LAYER 2: Main Papan Login Card (Exact 50% Viewport Height Center Alignment) ===== */}
-      <div className="w-full flex-1 flex items-center justify-center my-auto -mt-10 sm:-mt-14 py-2 z-10 relative">
+      {/* ===== LAYER 2: Main Papan Login Card (Elevated 50px Higher) ===== */}
+      <div className="w-full flex-1 flex items-center justify-center my-auto -mt-22 sm:-mt-28 py-2 z-10 relative">
         <motion.main
           initial={{ opacity: 0, scale: 0.96, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}

@@ -103,7 +103,7 @@ export async function detectFaceFromVideo(
 
   try {
     const detection = await faceapi
-      .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.35 }))
+      .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.35 }))
       .withFaceLandmarks()
       .withFaceDescriptor();
 

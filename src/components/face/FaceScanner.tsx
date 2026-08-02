@@ -37,6 +37,7 @@ export default function FaceScanner({
   const streamRef = useRef<MediaStream | null>(null);
   const isDetectingRef = useRef(false);
   const cooldownUntilRef = useRef<number>(0);
+  const lastDetectionTimeRef = useRef<number>(0);
 
   const [isLoadingModels, setIsLoadingModels] = useState(true);
   const [isCameraReady, setIsCameraReady] = useState(false);
@@ -156,11 +157,13 @@ export default function FaceScanner({
         return;
       }
 
-      // Respect cooldown
-      if (Date.now() < cooldownUntilRef.current) {
+      // Respect cooldown & 200ms interval throttle for ultra-lightweight CPU usage
+      const now = Date.now();
+      if (now < cooldownUntilRef.current || now - lastDetectionTimeRef.current < 200) {
         animId = requestAnimationFrame(runDetectionLoop);
         return;
       }
+      lastDetectionTimeRef.current = now;
 
       isDetectingRef.current = true;
       setDetectionStatus('detecting');

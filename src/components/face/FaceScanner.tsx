@@ -46,6 +46,7 @@ export default function FaceScanner({
   const [lastMatchResult, setLastMatchResult] = useState<MatchResult | null>(null);
   const [cameras, setCameras] = useState<MediaDeviceInfo[]>([]);
   const [selectedCameraId, setSelectedCameraId] = useState<string>('');
+  const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user');
 
   // Play audio beep feedback
   const playSound = useCallback((type: 'success' | 'fail') => {
@@ -96,14 +97,16 @@ export default function FaceScanner({
   }, []);
 
   // Enumerate cameras & start camera stream
-  const startCamera = useCallback(async (deviceId?: string) => {
+  const startCamera = useCallback(async (deviceId?: string, mode?: 'user' | 'environment') => {
     stopCamera();
     setIsCameraReady(false);
     setCameraError(null);
 
+    const activeFacing = mode || facingMode;
+
     try {
       const constraints: MediaStreamConstraints = {
-        video: deviceId ? { deviceId: { exact: deviceId } } : { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
+        video: deviceId ? { deviceId: { exact: deviceId } } : { facingMode: activeFacing, width: { ideal: 640 }, height: { ideal: 480 } },
         audio: false
       };
 
@@ -279,6 +282,30 @@ export default function FaceScanner({
               muted
               className="w-full h-full object-cover transform -scale-x-100"
             />
+
+            {/* Floating Camera Switch Button */}
+            <button
+              onClick={() => {
+                if (cameras.length > 1) {
+                  const currentIndex = cameras.findIndex(c => c.deviceId === selectedCameraId);
+                  const nextIndex = (currentIndex + 1) % cameras.length;
+                  const nextCam = cameras[nextIndex];
+                  if (nextCam) {
+                    setSelectedCameraId(nextCam.deviceId);
+                    startCamera(nextCam.deviceId);
+                  }
+                } else {
+                  const newFacing = facingMode === 'user' ? 'environment' : 'user';
+                  setFacingMode(newFacing);
+                  startCamera(undefined, newFacing);
+                }
+              }}
+              title="Ganti Kamera Depan / Belakang"
+              className="absolute top-3 right-3 z-30 px-3 py-2 bg-brand-950/60 hover:bg-brand-950/80 text-white backdrop-blur-md rounded-xl border border-white/20 transition-all shadow-lg cursor-pointer flex items-center gap-1.5 active:scale-95"
+            >
+              <RotateCw className="w-3.5 h-3.5 text-brand-300" />
+              <span className="text-[11px] font-bold">Ganti Kamera</span>
+            </button>
 
             {/* Overlay Canvas for face bounding box */}
             <canvas

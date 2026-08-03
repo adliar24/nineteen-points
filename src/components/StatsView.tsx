@@ -37,14 +37,17 @@ export default function StatsView() {
   const { data: siswaList = [], isLoading: loadingSiswa } = useQuery({
     queryKey: ["siswa"],
     queryFn: getSiswaListLight,
+    staleTime: 5 * 60_000,
   });
   const { data: riwayatList = [], isLoading: loadingRiwayat } = useQuery({
     queryKey: ["riwayat"],
     queryFn: getRiwayatList,
+    staleTime: 5 * 60_000,
   });
   const { data: masterPoin = [], isLoading: loadingMaster } = useQuery({
     queryKey: ["masterPoin"],
     queryFn: getMasterPoinList,
+    staleTime: 5 * 60_000,
   });
 
   const isLoading = loadingSiswa || loadingRiwayat || loadingMaster;

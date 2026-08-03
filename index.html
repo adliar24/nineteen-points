@@ -42,6 +42,12 @@
               window.location.reload();
             }
           });
+
+          // Ask for persistent storage so the SW cache (face models ~6MB,
+          // hashed assets) survives browser eviction.
+          if (navigator.storage && navigator.storage.persist) {
+            navigator.storage.persist().catch(() => {});
+          }
         });
       }
     </script>

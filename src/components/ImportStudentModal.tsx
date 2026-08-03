@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FileSpreadsheet, Download, ChevronDown } from "lucide-react";
-import { getSiswaList } from "../dbStore";
+import { getSiswaListLight } from "../dbStore";
 import { supabase, supabaseAdminAuth } from "../supabaseClient";
 import * as XLSX from "xlsx";
 import ModalPortal from "./ModalPortal";
@@ -133,7 +133,7 @@ export default function ImportStudentModal({
           return;
         }
 
-        const currentList = await getSiswaList();
+        const currentList = await getSiswaListLight();
         let addedCount = 0;
         let duplicateCount = 0;
         const newSiswaToInsert: any[] = [];
@@ -195,7 +195,7 @@ export default function ImportStudentModal({
     setImportStatusMsg("Memproses teks CSV...");
 
     const lines = importText.split("\n");
-    const currentList = await getSiswaList();
+    const currentList = await getSiswaListLight();
     let addedCount = 0;
     let duplicateCount = 0;
     const newSiswaToInsert: any[] = [];

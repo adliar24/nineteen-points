@@ -26,7 +26,7 @@ import CreateUserModal from "./CreateUserModal";
 import EditAccountModal from "./EditAccountModal";
 import ExcelImportUserModal from "./ExcelImportUserModal";
 import BulkPhotoUploadModal from "./BulkPhotoUploadModal";
-import { fetchAllPages, getSiswaList } from "../dbStore";
+import { fetchAllPages, getSiswaListLight } from "../dbStore";
 
 interface KelolaPenggunaViewProps {
   userSession: UserSession;
@@ -95,7 +95,7 @@ export default function KelolaPenggunaView({
       );
       setProfiles(profilesData || []);
 
-      const siswaData = await getSiswaList();
+      const siswaData = await getSiswaListLight();
       setStudentsList(siswaData || []);
     } catch (err: any) {
       console.error("Gagal memuat pengguna:", err);

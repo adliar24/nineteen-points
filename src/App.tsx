@@ -283,6 +283,7 @@ export default function App() {
     facePreloadRef.current = true;
     const load = () => {
       import("./services/face").then((m) => m.loadModels()).catch(() => {});
+      import("./components/scan/QrScanner").catch(() => {});
     };
     const ric = (window as any).requestIdleCallback;
     if (typeof ric === "function") {

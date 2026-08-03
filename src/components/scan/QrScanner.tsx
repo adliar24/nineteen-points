@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { Html5Qrcode, CameraDevice } from 'html5-qrcode';
+import { Html5Qrcode, CameraDevice, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import {
   X,
   QrCode,
@@ -170,13 +170,17 @@ export default function QrScanner({
     setCameraError(null);
     setIsStarting(true);
     try {
-      const scanner = new Html5Qrcode(elementIdRef.current);
+      const scanner = new Html5Qrcode(elementIdRef.current, {
+        formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
+        verbose: false
+      });
       scannerRef.current = scanner;
       await scanner.start(
         deviceId ? { deviceId } : { facingMode: 'environment' },
         {
-          fps: 6,
+          fps: 20,
           qrbox: { width: 240, height: 240 },
+          disableFlip: true,
           experimentalFeatures: {
             useBarCodeDetectorIfSupported: true,
           },

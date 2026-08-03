@@ -27,7 +27,7 @@ import {
 } from "lucide-react";
 import { Siswa, UserSession } from "../types";
 import {
-  getSiswaList,
+  getSiswaListLight,
   getAturanKehadiranList,
   updateAturanKehadiranList,
   getKehadiranListByPeriod,
@@ -53,7 +53,7 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
   // Core Data Queries
   const { data: siswaList = [] } = useQuery({
     queryKey: ["siswa"],
-    queryFn: getSiswaList,
+    queryFn: getSiswaListLight,
   });
 
   const { data: aturanList = [], refetch: refetchAturan } = useQuery({

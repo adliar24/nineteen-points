@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
-import { queryClient } from "../queryClient";
 import { 
   Search, 
   AlertCircle, 
@@ -14,7 +13,7 @@ import {
   QrCode
 } from "lucide-react";
 import { Siswa, MasterPoin, UserSession } from "../types";
-import { getSiswaList, getMasterPoinList, addRiwayat } from "../dbStore";
+import { getSiswaListLight, getMasterPoinList, addRiwayat, updateCachedSiswaPoin, updateCachedSiswaPoinBatch } from "../dbStore";
 import { toSentenceCase, compareClasses } from "../formatName";
 import FaceScanner from "./face/FaceScanner";
 import QrScanner, { QrScanFeedback } from "./scan/QrScanner";
@@ -28,7 +27,7 @@ interface InputPoinViewProps {
 export default function InputPoinView({ userSession, onRefreshHistory }: InputPoinViewProps) {
   const { data: siswaList = [] } = useQuery({
     queryKey: ["siswa"],
-    queryFn: getSiswaList,
+    queryFn: getSiswaListLight,
   });
   const { data: masterPoin = [] } = useQuery({
     queryKey: ["masterPoin"],
@@ -196,11 +195,15 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
         );
         const updatedSiswa = { ...selectedSiswa, total_poin: selectedSiswa.total_poin + value };
         setSelectedSiswa(updatedSiswa);
+        updateCachedSiswaPoin(selectedSiswa.id, value);
       } else {
         // Write to DB (batch mode)
+        const updates: { siswaId: string; delta: number }[] = [];
         for (const student of selectedSiswaBatch) {
           await addRiwayat(student.id, name, value, userSession.fullName);
+          updates.push({ siswaId: student.id, delta: value });
         }
+        updateCachedSiswaPoinBatch(updates);
         setSuccessMessage(
           `Sukses mencatat poin untuk ${selectedSiswaBatch.length} murid sekaligus untuk "${name}".`
         );
@@ -208,7 +211,6 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
       }
 
       onRefreshHistory();
-      await queryClient.invalidateQueries({ queryKey: ["siswa"] });
 
       // Reset input fields
       setSelectedPoinId("");

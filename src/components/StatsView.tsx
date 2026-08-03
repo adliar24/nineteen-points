@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { 
-  getSiswaList, 
+  getSiswaListLight, 
   getRiwayatList, 
   getMasterPoinList 
 } from "../dbStore";
@@ -36,7 +36,7 @@ export default function StatsView() {
 
   const { data: siswaList = [], isLoading: loadingSiswa } = useQuery({
     queryKey: ["siswa"],
-    queryFn: getSiswaList,
+    queryFn: getSiswaListLight,
   });
   const { data: riwayatList = [], isLoading: loadingRiwayat } = useQuery({
     queryKey: ["riwayat"],

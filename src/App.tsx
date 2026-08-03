@@ -275,6 +275,23 @@ export default function App() {
     pengaturan: false,
   });
 
+  // Preload face models in the background after login so opening the
+  // face scanner feels instant (models download while the user navigates).
+  const facePreloadRef = useRef(false);
+  useEffect(() => {
+    if (!userSession || facePreloadRef.current) return;
+    facePreloadRef.current = true;
+    const load = () => {
+      import("./services/face").then((m) => m.loadModels()).catch(() => {});
+    };
+    const ric = (window as any).requestIdleCallback;
+    if (typeof ric === "function") {
+      ric(load, { timeout: 5000 });
+    } else {
+      window.setTimeout(load, 3000);
+    }
+  }, [userSession]);
+
   // Sidebar sliding indicator
   const navRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
   const [indicatorStyle, setIndicatorStyle] = useState({ top: 0, height: 0, opacity: 0 });

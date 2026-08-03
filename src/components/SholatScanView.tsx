@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 import { queryClient } from "../queryClient";
@@ -15,10 +15,10 @@ import {
 } from "lucide-react";
 import { Siswa, UserSession } from "../types";
 import {
-  getSiswaList,
+  getSiswaListLight,
   addRiwayat,
-  checkSholatToday,
   getSholatRecapToday,
+  updateCachedSiswaPoin,
   SHOLAT_POIN_NAMA,
   SHOLAT_POIN_VALUE,
   SHOLAT_DHUHA_POIN_NAMA,
@@ -55,13 +55,20 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
 
   const { data: siswaList = [] } = useQuery({
     queryKey: ["siswa"],
-    queryFn: getSiswaList,
+    queryFn: getSiswaListLight,
   });
 
   const { data: todayRecap = [], refetch: refetchRecap } = useQuery({
     queryKey: ["sholatRecapToday", sholatType],
     queryFn: () => getSholatRecapToday(currentPoinNama),
   });
+
+  // Local Set of siswa_id already recorded today for THIS sholat type.
+  // Avoids a Supabase round-trip per scan; updated in-memory on success.
+  const recordedTodayRef = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    recordedTodayRef.current = new Set(todayRecap.map((r) => r.siswa_id));
+  }, [todayRecap]);
 
   const [mode, setMode] = useState<InputMode>("scan");
   const [scanType, setScanType] = useState<ScanType>("qr");
@@ -79,8 +86,7 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
 
   const handleStudentSholatAttendance = async (student: Siswa) => {
     try {
-      const alreadyScanned = await checkSholatToday(student.id, currentPoinNama);
-      if (alreadyScanned) {
+      if (recordedTodayRef.current.has(student.id)) {
         setLastScanned({ nama: student.nama, kelas: student.kelas, status: "duplicate" });
         setTimeout(() => setLastScanned(null), 3000);
         return;
@@ -88,9 +94,10 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
 
       await addRiwayat(student.id, currentPoinNama, currentPoinValue, userSession.fullName);
       playBeep();
+      recordedTodayRef.current.add(student.id);
+      appendToRecap(student);
+      updateCachedSiswaPoin(student.id, currentPoinValue);
       setLastScanned({ nama: student.nama, kelas: student.kelas, status: "success" });
-      await refetchRecap();
-      await queryClient.invalidateQueries({ queryKey: ["siswa"] });
       setTimeout(() => setLastScanned(null), 3000);
     } catch (err: any) {
       setScannerError("Gagal mencatat sholat: " + err.message);
@@ -105,8 +112,7 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
       return { type: "not_found", title: "TIDAK DIKENALI", message: `QR: ${trimmed}` };
     }
 
-    const alreadyScanned = await checkSholatToday(student.id, currentPoinNama);
-    if (alreadyScanned) {
+    if (recordedTodayRef.current.has(student.id)) {
       return {
         type: "duplicate",
         title: "SUDAH TERCATAT",
@@ -117,8 +123,9 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
     }
 
     await addRiwayat(student.id, currentPoinNama, currentPoinValue, userSession.fullName);
-    await refetchRecap();
-    await queryClient.invalidateQueries({ queryKey: ["siswa"] });
+    recordedTodayRef.current.add(student.id);
+    appendToRecap(student);
+    updateCachedSiswaPoin(student.id, currentPoinValue);
     return {
       type: "success",
       title: "BERHASIL TERCATAT",
@@ -126,6 +133,25 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
       kelas: student.kelas,
       fotoUrl: student.foto_url || undefined,
     };
+  };
+
+  // Append a just-scanned student to the live recap cache (no refetch needed).
+  const appendToRecap = (student: Siswa) => {
+    queryClient.setQueryData<any[]>(["sholatRecapToday", sholatType], (old) => {
+      if (!old) return old;
+      return [
+        {
+          id: `local-${student.id}-${Date.now()}`,
+          siswa_id: student.id,
+          siswa_nama: student.nama,
+          siswa_kelas: student.kelas,
+          siswa_nis: student.nis,
+          guru_email: userSession.fullName,
+          created_at: new Date().toISOString(),
+        },
+        ...old,
+      ];
+    });
   };
 
   const scannedCount = useMemo(() => todayRecap.length, [todayRecap]);

@@ -13,6 +13,35 @@ const MODEL_URL = '/models';
 let modelsLoaded = false;
 let modelLoadingPromise: Promise<boolean> | null = null;
 
+// In-memory cache of face descriptors (Float32Array keyed by siswaId).
+// Built ONCE from IndexedDB and reused across detection frames so we never
+// re-read/re-parse the whole descriptor store on every frame (big CPU/GC win).
+let descriptorCache: Map<string, Float32Array> | null = null;
+
+/**
+ * Load (once) all face descriptors from IndexedDB into an in-memory Map.
+ * Returns the cached Map on subsequent calls (no I/O after first load).
+ */
+export async function loadDescriptorCache(): Promise<Map<string, Float32Array>> {
+  if (descriptorCache) return descriptorCache;
+  const local = await getAllFaceDescriptorsLocal();
+  const map = new Map<string, Float32Array>();
+  for (const entry of local) {
+    const desc = stringToDescriptor(entry.descriptor);
+    if (desc) map.set(entry.siswaId, desc);
+  }
+  descriptorCache = map;
+  return map;
+}
+
+/**
+ * Drop the in-memory cache so it is rebuilt from IndexedDB on next use.
+ * Call after any bulk write (enroll / re-extract / sync) to stay consistent.
+ */
+export function invalidateDescriptorCache(): void {
+  descriptorCache = null;
+}
+
 export const MATCH_THRESHOLD = 0.40; // Very strict — prevents false positives. Lower = stricter.
 export const MATCH_MARGIN = 0.08;    // Required gap between best and second-best candidate to confirm identity
 
@@ -214,6 +243,11 @@ export async function saveFaceEmbedding(
     updatedAt: Date.now(),
   });
 
+  // 1b. Keep in-memory cache fresh (no reload needed mid-session)
+  if (descriptorCache) {
+    descriptorCache.set(siswaId, new Float32Array(descriptor));
+  }
+
   // 2. Save to Supabase DB column
   try {
     const { error } = await supabase
@@ -242,25 +276,21 @@ export async function findBestMatch(
     return { success: false, confidence: 0, distance: 1, message: 'Daftar siswa kosong' };
   }
 
-  // 1. Fetch local descriptors from IndexedDB for maximum speed
-  const localDescriptors = await getAllFaceDescriptorsLocal();
-  const localMap = new Map<string, Float32Array>();
-  for (const entry of localDescriptors) {
-    const desc = stringToDescriptor(entry.descriptor);
-    if (desc) localMap.set(entry.siswaId, desc);
-  }
+  // 1. Use the in-memory descriptor cache (built once from IndexedDB) — no I/O per frame
+  const cache = await loadDescriptorCache();
 
   let minDistance = 999;
   let secondDistance = 999;
   let bestMatchSiswa: Siswa | undefined = undefined;
 
   for (const s of siswaList) {
-    let targetDescriptor = localMap.get(s.id);
+    let targetDescriptor = cache.get(s.id);
 
     if (!targetDescriptor && s.face_embedding) {
       targetDescriptor = stringToDescriptor(s.face_embedding) || undefined;
       if (targetDescriptor) {
-        // Cache to local IndexedDB
+        // Cache to memory + IndexedDB
+        cache.set(s.id, targetDescriptor);
         saveFaceDescriptorLocal({
           siswaId: s.id,
           name: s.nama,
@@ -323,6 +353,9 @@ export async function syncFaceEmbeddingsFromSupabase(siswaList: Siswa[]): Promis
       synced++;
     }
   }
+  // Rebuild in-memory cache from the (now up-to-date) IndexedDB store
+  invalidateDescriptorCache();
+  await loadDescriptorCache();
   return synced;
 }
 
@@ -432,6 +465,7 @@ export async function clearAndReExtractOneSiswa(
   try {
     // 1. Delete from local IndexedDB cache
     await deleteFaceDescriptorLocal(siswa.id);
+    if (descriptorCache) descriptorCache.delete(siswa.id);
 
     // 2. Clear Supabase face_embedding column
     const { error } = await supabase

@@ -92,8 +92,14 @@ export default function QrScanner({
   const showFeedback = useCallback((next: QrScanFeedback, ts: number) => {
     setFeedback({ ...next, ts });
     if (clearFeedbackTimerRef.current) window.clearTimeout(clearFeedbackTimerRef.current);
+    // Pause decoding while feedback shows — the 3s cooldown means no new scan
+    // can be accepted anyway, so we save CPU instead of burning frames.
+    if (next.type !== 'not_found') {
+      try { scannerRef.current?.pause(); } catch { /* ignore */ }
+    }
     clearFeedbackTimerRef.current = window.setTimeout(() => {
       setFeedback((prev) => (prev && prev.ts === ts ? null : prev));
+      try { scannerRef.current?.resume(); } catch { /* ignore */ }
     }, FEEDBACK_DURATION_MS);
   }, []);
 
@@ -177,15 +183,15 @@ export default function QrScanner({
       await scanner.start(
         deviceId ? { deviceId } : { facingMode: 'environment' },
         {
-          fps: 20,
-          qrbox: { width: 240, height: 240 },
+          fps: 10,
+          qrbox: { width: 220, height: 220 },
           disableFlip: true,
           experimentalFeatures: {
             useBarCodeDetectorIfSupported: true,
           },
           videoConstraints: deviceId
-            ? { deviceId: { exact: deviceId }, width: { ideal: 640 }, height: { ideal: 480 } }
-            : { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 480 } },
+            ? { deviceId: { exact: deviceId }, width: { ideal: 480 }, height: { ideal: 360 } }
+            : { facingMode: 'environment', width: { ideal: 480 }, height: { ideal: 360 } },
         } as any,
         handleDecoded,
         () => {}

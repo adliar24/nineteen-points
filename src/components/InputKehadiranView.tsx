@@ -14,9 +14,10 @@ import {
 } from "lucide-react";
 import { Siswa, UserSession } from "../types";
 import {
-  getSiswaList,
+  getSiswaListLight,
   getAturanKehadiranList,
   saveKehadiran,
+  updateCachedSiswaPoin,
   AturanKehadiran
 } from "../dbStore";
 import { toSentenceCase, compareClasses } from "../formatName";
@@ -44,7 +45,7 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
   // Core Data Queries
   const { data: siswaList = [] } = useQuery({
     queryKey: ["siswa"],
-    queryFn: getSiswaList,
+    queryFn: getSiswaListLight,
   });
 
   const { data: aturanList = [] } = useQuery({
@@ -123,7 +124,7 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
       setSuccessMsg(`Berhasil mencatat kehadiran ${toSentenceCase(activeSiswa.nama)}.`);
       setActiveSiswa(null);
       queryClient.invalidateQueries({ queryKey: ["kehadiran"] });
-      queryClient.invalidateQueries({ queryKey: ["siswa"] });
+      updateCachedSiswaPoin(activeSiswa.id, siswaPoints);
       setTimeout(() => setSuccessMsg(null), 5000);
     } catch (err: any) {
       setErrorMsg("Gagal menyimpan kehadiran: " + err.message);

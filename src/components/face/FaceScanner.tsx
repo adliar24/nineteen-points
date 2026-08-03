@@ -13,7 +13,12 @@ import {
   Check,
 } from 'lucide-react';
 import { Siswa } from '../../types';
-import { loadModels, detectFaceFromVideo, findBestMatch, MatchResult } from '../../services/face';
+import {
+  loadModels,
+  loadDescriptorCache,
+  detectFaceFromVideo,
+  findBestMatch,
+} from '../../services/face';
 
 interface FaceScannerProps {
   siswaList: Siswa[];
@@ -37,7 +42,8 @@ interface Feedback {
   ts: number;
 }
 
-const DETECTION_THROTTLE_MS = 200;
+const DETECTION_THROTTLE_MS = 150;
+const IDLE_THROTTLE_MS = 500;
 
 export default function FaceScanner({
   siswaList,
@@ -51,12 +57,22 @@ export default function FaceScanner({
 }: FaceScannerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const canvasCtxRef = useRef<CanvasRenderingContext2D | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const animRef = useRef<number | null>(null);
   const isDetectingRef = useRef(false);
   const cooldownUntilRef = useRef<number>(0);
   const lastDetectionTimeRef = useRef<number>(0);
   const consecutiveMatchRef = useRef<{ siswaId: string; count: number } | null>(null);
+
+  // Keep the latest props in refs so the detection loop effect does NOT
+  // restart every time the parent re-renders (prevents loop churn during
+  // continuous scanning).
+  const onMatchSuccessRef = useRef(onMatchSuccess);
+  const onMatchProgressRef = useRef<(_n: number) => void>(() => {});
+  const scannedIdsRef = useRef<string[] | undefined>(scannedIds);
+  onMatchSuccessRef.current = onMatchSuccess;
+  scannedIdsRef.current = scannedIds;
 
   const [isLoadingModels, setIsLoadingModels] = useState(true);
   const [isCameraReady, setIsCameraReady] = useState(false);
@@ -67,6 +83,8 @@ export default function FaceScanner({
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [matchProgress, setMatchProgress] = useState(0);
   const [isBackCamera, setIsBackCamera] = useState(true);
+
+  onMatchProgressRef.current = setMatchProgress;
 
   const [cameras, setCameras] = useState<MediaDeviceInfo[]>([]);
   const [currentCameraIndex, setCurrentCameraIndex] = useState(0);
@@ -169,7 +187,7 @@ export default function FaceScanner({
     startCamera();
     (async () => {
       setIsLoadingModels(true);
-      await loadModels();
+      await Promise.all([loadModels(), loadDescriptorCache()]);
       if (mounted) setIsLoadingModels(false);
     })();
     return () => {
@@ -203,16 +221,16 @@ export default function FaceScanner({
         return;
       }
 
-      // 3. Throttle checking to save CPU
+      // 3. Light guard against running faster than the slowest detection completes
       const elapsed = now - lastDetectionTimeRef.current;
-      if (elapsed < DETECTION_THROTTLE_MS) {
-        const remaining = DETECTION_THROTTLE_MS - elapsed;
-        animRef.current = window.setTimeout(runLoop, Math.max(remaining, 30));
+      if (elapsed < 100) {
+        animRef.current = window.setTimeout(runLoop, 100 - elapsed);
         return;
       }
 
       isDetectingRef.current = true;
       lastDetectionTimeRef.current = Date.now();
+      let detectedFace = false;
 
       try {
         const detection = await detectFaceFromVideo(videoRef.current);
@@ -220,12 +238,16 @@ export default function FaceScanner({
         if (!isMounted) return;
 
         if (detection) {
+          detectedFace = true;
           setDetectionStatus('ideal');
 
-          // Draw bounding box onto canvas
+          // Draw bounding box onto canvas (cached context, no per-frame shadow)
           const canvas = canvasRef.current;
           if (canvas && videoRef.current) {
-            const ctx = canvas.getContext('2d');
+            if (!canvasCtxRef.current) {
+              canvasCtxRef.current = canvas.getContext('2d');
+            }
+            const ctx = canvasCtxRef.current;
             if (ctx) {
               const videoWidth = videoRef.current.videoWidth;
               const videoHeight = videoRef.current.videoHeight;
@@ -237,8 +259,6 @@ export default function FaceScanner({
               const { x, y, width, height } = detection.boundingBox;
               ctx.strokeStyle = 'rgba(52,211,153,0.85)';
               ctx.lineWidth = 3;
-              ctx.shadowColor = 'rgba(52,211,153,0.6)';
-              ctx.shadowBlur = 16;
               ctx.strokeRect(x, y, width, height);
             }
           }
@@ -251,10 +271,10 @@ export default function FaceScanner({
             } else {
               consecutiveMatchRef.current = { siswaId: result.siswa.id, count: 1 };
             }
-            setMatchProgress(consecutiveMatchRef.current.count);
+            onMatchProgressRef.current(consecutiveMatchRef.current.count);
 
             if (consecutiveMatchRef.current.count >= 3) {
-              const isDuplicate = scannedIds && scannedIds.includes(result.siswa.id);
+              const isDuplicate = scannedIdsRef.current && scannedIdsRef.current.includes(result.siswa.id);
               if (isDuplicate) {
                 playSound('fail');
                 setFeedback({
@@ -266,7 +286,7 @@ export default function FaceScanner({
                   ts: Date.now(),
                 });
                 setDetectionStatus('no_face');
-                setMatchProgress(0);
+                onMatchProgressRef.current(0);
                 cooldownUntilRef.current = Date.now() + 2500;
                 consecutiveMatchRef.current = null;
                 setTimeout(() => setFeedback(null), 3000);
@@ -281,23 +301,23 @@ export default function FaceScanner({
                   ts: Date.now(),
                 });
                 setDetectionStatus('no_face');
-                setMatchProgress(0);
+                onMatchProgressRef.current(0);
                 cooldownUntilRef.current = Date.now() + 2500;
-                onMatchSuccess(result.siswa);
+                onMatchSuccessRef.current(result.siswa);
                 consecutiveMatchRef.current = null;
                 setTimeout(() => setFeedback(null), 3000);
               }
             }
           } else {
             consecutiveMatchRef.current = null;
-            setMatchProgress(0);
+            onMatchProgressRef.current(0);
           }
         } else {
           consecutiveMatchRef.current = null;
-          setMatchProgress(0);
+          onMatchProgressRef.current(0);
           setDetectionStatus('no_face');
           // Clear canvas
-          const ctx = canvasRef.current?.getContext('2d');
+          const ctx = canvasCtxRef.current;
           if (ctx && canvasRef.current) {
             ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
           }
@@ -307,7 +327,10 @@ export default function FaceScanner({
       } finally {
         isDetectingRef.current = false;
         if (isMounted) {
-          animRef.current = window.setTimeout(runLoop, DETECTION_THROTTLE_MS);
+          // Dynamic throttle: fast when a face is present, slow when idle —
+          // this cuts wasted CPU on the (common) "no one in front of camera" state.
+          const nextDelay = detectedFace ? DETECTION_THROTTLE_MS : IDLE_THROTTLE_MS;
+          animRef.current = window.setTimeout(runLoop, nextDelay);
         }
       }
     };
@@ -319,7 +342,7 @@ export default function FaceScanner({
         clearTimeout(animRef.current);
       }
     };
-  }, [isCameraReady, isLoadingModels, siswaList, onMatchSuccess, playSound]);
+  }, [isCameraReady, isLoadingModels, siswaList]);
 
   const handleSwitchCamera = async () => {
     if (cameras.length < 2 || isSwitchingCamera) return;

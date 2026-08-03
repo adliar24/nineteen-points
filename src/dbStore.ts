@@ -1,6 +1,7 @@
 import { Siswa, MasterPoin, RiwayatPoin } from "./types";
 import { supabase, supabaseAdminAuth } from "./supabaseClient";
 import { parseDateSafe } from "./parseDateSafe";
+import { queryClient } from "./queryClient";
 import * as XLSX from "xlsx";
 
 // Helper functions for LocalStorage management (fallback/session tracking only)
@@ -56,8 +57,50 @@ export const getSiswaList = async (): Promise<Siswa[]> => {
 };
 
 /**
+ * Lightweight siswa list for scanning/search views — excludes the heavy
+ * face_embedding column (a ~1KB string per student) those views never need.
+ */
+export const getSiswaListLight = async (): Promise<Siswa[]> => {
+  return fetchAllPages<Siswa>((from, to) =>
+    supabase
+      .from("siswa")
+      .select("id, nis, nama, kelas, total_poin, foto_url")
+      .order("nama", { ascending: true })
+      .range(from, to)
+  );
+};
+
+/**
+ * Locally adjust total_poin of one (or many) siswa in the ["siswa"] React Query
+ * cache after a point/attendance write. Avoids re-fetching the whole siswa
+ * table (with heavy face embeddings) after every single scan.
+ */
+export const updateCachedSiswaPoin = (siswaId: string, delta: number): void => {
+  queryClient.setQueryData<Siswa[]>(["siswa"], (old) => {
+    if (!old) return old;
+    return old.map((s) =>
+      s.id === siswaId ? { ...s, total_poin: (s.total_poin || 0) + delta } : s
+    );
+  });
+};
+
+export const updateCachedSiswaPoinBatch = (updates: { siswaId: string; delta: number }[]): void => {
+  if (updates.length === 0) return;
+  queryClient.setQueryData<Siswa[]>(["siswa"], (old) => {
+    if (!old) return old;
+    const map = new Map(updates.map((u) => [u.siswaId, u.delta]));
+    return old.map((s) => {
+      const delta = map.get(s.id);
+      return delta === undefined ? s : { ...s, total_poin: (s.total_poin || 0) + delta };
+    });
+  });
+};
+
+/**
  * Fetches riwayat_poin and returns a map of siswa_id → { positif, negatif }
  * where positif = total nilai_diberikan > 0, negatif = absolute total nilai_diberikan < 0
+ *
+ * Only 2 columns are pulled to keep the payload small even with large histories.
  */
 export const getSiswaSeparatePoinMap = async (): Promise<
   Record<string, { positif: number; negatif: number }>

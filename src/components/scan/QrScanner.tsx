@@ -37,7 +37,7 @@ interface Feedback extends QrScanFeedback {
 }
 
 const FEEDBACK_DURATION_MS = 3000;
-const SCAN_COOLDOWN_MS = 1500;
+const SCAN_COOLDOWN_MS = 3000;
 
 let scannerIdCounter = 0;
 
@@ -139,8 +139,7 @@ export default function QrScanner({
   const handleDecoded = useCallback(async (decodedText: string) => {
     const trimmed = decodedText.trim();
     const now = Date.now();
-    const isSameQr = trimmed === lastScannedRef.current;
-    if (isProcessingRef.current || (isSameQr && now < cooldownUntilRef.current)) {
+    if (isProcessingRef.current || now < cooldownUntilRef.current) {
       return;
     }
     isProcessingRef.current = true;

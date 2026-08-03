@@ -184,10 +184,9 @@ export default function QrScanner({
           experimentalFeatures: {
             useBarCodeDetectorIfSupported: true,
           },
-          videoConstraints: {
-            width: { ideal: 640 },
-            height: { ideal: 480 },
-          },
+          videoConstraints: deviceId
+            ? { deviceId: { exact: deviceId }, width: { ideal: 640 }, height: { ideal: 480 } }
+            : { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 480 } },
         } as any,
         handleDecoded,
         () => {}
@@ -254,7 +253,7 @@ export default function QrScanner({
       {/* Html5Qrcode renders the live camera stream into this container */}
       <div
         id={elementIdRef.current}
-        className="absolute inset-0 w-full h-full [&_video]:w-full [&_video]:h-full [&_video]:object-cover"
+        className="absolute inset-0 w-full h-full [&_video]:w-full [&_video]:h-full [&_video]:object-cover [&_video]:[transform:scaleX(1)_!important]"
       />
 
       {/* ── TOP GRADIENT HEADER ── */}

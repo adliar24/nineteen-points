@@ -95,7 +95,7 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
     } else {
       setSelectedSiswa(student);
       setSuccessMessage(null);
-      setTimeout(() => setShowQrScanner(false), 900);
+      setShowQrScanner(false);
       return {
         type: "success",
         title: "BERHASIL TERDETEKSI",

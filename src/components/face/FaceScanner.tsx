@@ -100,7 +100,7 @@ export default function FaceScanner({
 
   const stopCamera = useCallback(() => {
     if (animRef.current) {
-      cancelAnimationFrame(animRef.current);
+      clearTimeout(animRef.current);
       animRef.current = null;
     }
     if (streamRef.current) {
@@ -125,12 +125,12 @@ export default function FaceScanner({
         stream = await navigator.mediaDevices.getUserMedia({
           video: deviceId
             ? { deviceId: { exact: deviceId } }
-            : { facingMode: { ideal: activeFacing }, width: { ideal: 1280 }, height: { ideal: 720 } },
+            : { facingMode: { ideal: activeFacing }, width: { ideal: 640 }, height: { ideal: 480 } },
           audio: false,
         });
       } catch {
         stream = await navigator.mediaDevices.getUserMedia({
-          video: { width: { ideal: 1280 }, height: { ideal: 720 } },
+          video: { width: { ideal: 640 }, height: { ideal: 480 } },
           audio: false,
         });
       }
@@ -181,25 +181,43 @@ export default function FaceScanner({
   // Detection loop
   useEffect(() => {
     if (!isCameraReady || isLoadingModels) return;
-    let animId: number;
+    let isMounted = true;
 
     const runLoop = async () => {
-      if (!videoRef.current || !canvasRef.current) {
-        animId = requestAnimationFrame(runLoop);
+      if (!isMounted || !videoRef.current || !canvasRef.current) {
         return;
       }
 
       const now = Date.now();
-      if (now < cooldownUntilRef.current || isDetectingRef.current || now - lastDetectionTimeRef.current < DETECTION_THROTTLE_MS) {
-        animId = requestAnimationFrame(runLoop);
+
+      // 1. If in cooldown (e.g. after a success/error feedback is showing), sleep and check later
+      if (now < cooldownUntilRef.current) {
+        const remaining = cooldownUntilRef.current - now;
+        animRef.current = window.setTimeout(runLoop, Math.max(remaining, 100));
+        return;
+      }
+
+      // 2. If already detecting, sleep and check again soon
+      if (isDetectingRef.current) {
+        animRef.current = window.setTimeout(runLoop, 100);
+        return;
+      }
+
+      // 3. Throttle checking to save CPU
+      const elapsed = now - lastDetectionTimeRef.current;
+      if (elapsed < DETECTION_THROTTLE_MS) {
+        const remaining = DETECTION_THROTTLE_MS - elapsed;
+        animRef.current = window.setTimeout(runLoop, Math.max(remaining, 30));
         return;
       }
 
       isDetectingRef.current = true;
-      lastDetectionTimeRef.current = now;
+      lastDetectionTimeRef.current = Date.now();
 
       try {
         const detection = await detectFaceFromVideo(videoRef.current);
+
+        if (!isMounted) return;
 
         if (detection) {
           setDetectionStatus('ideal');
@@ -209,8 +227,12 @@ export default function FaceScanner({
           if (canvas && videoRef.current) {
             const ctx = canvas.getContext('2d');
             if (ctx) {
-              canvas.width = videoRef.current.videoWidth;
-              canvas.height = videoRef.current.videoHeight;
+              const videoWidth = videoRef.current.videoWidth;
+              const videoHeight = videoRef.current.videoHeight;
+              if (canvas.width !== videoWidth || canvas.height !== videoHeight) {
+                canvas.width = videoWidth;
+                canvas.height = videoHeight;
+              }
               ctx.clearRect(0, 0, canvas.width, canvas.height);
               const { x, y, width, height } = detection.boundingBox;
               ctx.strokeStyle = 'rgba(52,211,153,0.85)';
@@ -284,13 +306,19 @@ export default function FaceScanner({
         console.error('[FaceScanner] loop error:', err);
       } finally {
         isDetectingRef.current = false;
-        animId = requestAnimationFrame(runLoop);
+        if (isMounted) {
+          animRef.current = window.setTimeout(runLoop, DETECTION_THROTTLE_MS);
+        }
       }
     };
 
-    animId = requestAnimationFrame(runLoop);
-    animRef.current = animId;
-    return () => cancelAnimationFrame(animId);
+    animRef.current = window.setTimeout(runLoop, 100);
+    return () => {
+      isMounted = false;
+      if (animRef.current) {
+        clearTimeout(animRef.current);
+      }
+    };
   }, [isCameraReady, isLoadingModels, siswaList, onMatchSuccess, playSound]);
 
   const handleSwitchCamera = async () => {

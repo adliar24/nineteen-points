@@ -27,7 +27,8 @@ import {
   Edit3,
   Check,
   BookOpen,
-  ClipboardList
+  ClipboardList,
+  ListChecks
 } from "lucide-react";
 import { UserSession } from "./types";
 import { getLocalStorage, setLocalStorage } from "./dbStore";
@@ -154,6 +155,7 @@ const GuruJadwalView = lazy(() => import("./components/GuruJadwalView"));
 const GuruKartuView = lazy(() => import("./components/GuruKartuView"));
 const SholatScanView = lazy(() => import("./components/SholatScanView"));
 const RekapSholatKehadiranView = lazy(() => import("./components/RekapSholatKehadiranView"));
+const RekapPoinView = lazy(() => import("./components/RekapPoinView"));
 import AkhiriAktivitasModal from "./components/AkhiriAktivitasModal";
 import ExportSummaryModal from "./components/ExportSummaryModal";
 import ImportSummaryModal from "./components/ImportSummaryModal";
@@ -247,11 +249,11 @@ export default function App() {
 
   const isValidTab = (role: string, tab: string) => {
     if (role === "siswa") return ["siswa_stats", "siswa_barcode", "siswa_history", "change_password"].includes(tab);
-    if (role === "piket") return ["kehadiran", "input_kehadiran", "change_password", "scan_sholat", "rekap_sholat_kehadiran"].includes(tab);
-    if (role === "guru") return ["input", "students", "history", "change_password", "guru_sertifikat", "guru_kartu", "scan_sholat", "rekap_sholat_kehadiran"].includes(tab);
-    if (role === "kepala_sekolah") return ["input_kehadiran", "input", "kehadiran", "students", "history", "change_password", "scan_sholat", "rekap_sholat_kehadiran"].includes(tab);
-    if (role === "tata_usaha") return ["input", "scan_sholat", "rekap_sholat_kehadiran", "guru_sertifikat", "change_password"].includes(tab);
-    return ["stats", "input_kehadiran", "input", "kehadiran", "students", "history", "rules", "users", "change_password", "kelola_sertifikat_guru", "scan_sholat", "rekap_sholat_kehadiran"].includes(tab);
+    if (role === "piket") return ["kehadiran", "input_kehadiran", "change_password", "scan_sholat", "rekap_sholat_kehadiran", "rekap_poin"].includes(tab);
+    if (role === "guru") return ["input", "students", "history", "change_password", "guru_sertifikat", "guru_kartu", "scan_sholat", "rekap_sholat_kehadiran", "rekap_poin"].includes(tab);
+    if (role === "kepala_sekolah") return ["input_kehadiran", "input", "kehadiran", "students", "history", "change_password", "scan_sholat", "rekap_sholat_kehadiran", "rekap_poin"].includes(tab);
+    if (role === "tata_usaha") return ["input", "scan_sholat", "rekap_sholat_kehadiran", "guru_sertifikat", "change_password", "rekap_poin"].includes(tab);
+    return ["stats", "input_kehadiran", "input", "kehadiran", "students", "history", "rules", "users", "change_password", "kelola_sertifikat_guru", "scan_sholat", "rekap_sholat_kehadiran", "rekap_poin"].includes(tab);
   };
 
   const [activeTab, setActiveTab] = useState<string>(() => {
@@ -498,6 +500,7 @@ export default function App() {
     sidebarElements = [
       { type: "item", id: "input_kehadiran", label: "Input Kehadiran", icon: ClipboardCheck, description: "Scan QR & input absen harian" },
       { type: "item", id: "kehadiran", label: "Kehadiran Murid", icon: Users, description: "Rekap absensi & poin murid" },
+      { type: "item", id: "rekap_poin", label: "Rekap Poin", icon: ListChecks, description: "Rekapitulasi poin murid" },
       { type: "item", id: "scan_sholat", label: "Input Keagamaan", icon: BookOpen, description: "Scan QR sholat murid" },
       { type: "item", id: "rekap_sholat_kehadiran", label: "Rekap Sholat", icon: ClipboardList, description: "Rekap sholat berjamaah murid" },
       { type: "item", id: "change_password", label: "Tema & Keamanan", icon: Settings, description: "Ubah warna tema aplikasi" }
@@ -515,11 +518,13 @@ export default function App() {
       { type: "item", id: "rekap_sholat_kehadiran", label: "Rekap Sholat", icon: ClipboardList, description: "Rekap sholat berjamaah murid" },
       { type: "item", id: "history", label: "Riwayat Poin", icon: Calendar, description: "Audit trail pencatatan" },
       { type: "item", id: "students", label: "Data Murid", icon: Users, description: "Lihat database & kartu pelajar" },
+      { type: "item", id: "rekap_poin", label: "Rekap Poin", icon: ListChecks, description: "Rekapitulasi poin murid" },
       { type: "item", id: "change_password", label: "Tema & Keamanan", icon: Settings, description: "Ubah sandi & tema warna" }
     ];
   } else if (userSession.role === "tata_usaha") {
     sidebarElements = [
       { type: "item", id: "input", label: "Input Poin", icon: ClipboardCheck, description: "Catat via QR atau pencarian" },
+      { type: "item", id: "rekap_poin", label: "Rekap Poin", icon: ListChecks, description: "Rekapitulasi poin murid" },
       { type: "item", id: "scan_sholat", label: "Input Keagamaan", icon: BookOpen, description: "Scan QR sholat murid" },
       { type: "item", id: "rekap_sholat_kehadiran", label: "Rekap Sholat", icon: ClipboardList, description: "Rekap sholat berjamaah murid" },
       { type: "item", id: "guru_sertifikat", label: "Sertifikat Kegiatan", icon: Award, description: "Unduh sertifikat pelatihan" },
@@ -544,6 +549,7 @@ export default function App() {
       // { type: "item", id: "kelola_kehadiran_guru", label: "Kehadiran Guru", icon: Calendar, description: "Monitoring absensi guru" },
       { type: "item", id: "history", label: "Riwayat Poin", icon: Calendar, description: "Audit trail pencatatan" },
       { type: "item", id: "students", label: "Data Murid", icon: Users, description: "Lihat database & kartu pelajar" },
+      { type: "item", id: "rekap_poin", label: "Rekap Poin", icon: ListChecks, description: "Rekapitulasi poin murid" },
       // Sembunyikan sementara: Jadwal Guru
       // { type: "item", id: "kelola_jadwal_guru", label: "Jadwal Guru", icon: Calendar, description: "Manajemen jadwal mengajar guru" },
       { type: "item", id: "change_password", label: "Tema & Keamanan", icon: Settings, description: "Ubah sandi & tema warna" }
@@ -567,6 +573,7 @@ export default function App() {
       // Sembunyikan sementara: Kehadiran Guru
       // { type: "item", id: "kelola_kehadiran_guru", label: "Kehadiran Guru", icon: Calendar, description: "Monitoring absensi guru" },
       { type: "item", id: "history", label: "Riwayat Poin", icon: Calendar, description: "Audit trail pencatatan" },
+      { type: "item", id: "rekap_poin", label: "Rekap Poin", icon: ListChecks, description: "Rekapitulasi poin murid" },
       {
         type: "group",
         id: "manajemen",
@@ -1082,6 +1089,10 @@ export default function App() {
 
               {activeTab === "rekap_sholat_kehadiran" && ["guru", "super_admin", "kepala_sekolah", "piket", "tata_usaha"].includes(userSession.role) && (
                 <RekapSholatKehadiranView userSession={userSession} />
+              )}
+
+              {activeTab === "rekap_poin" && ["guru", "super_admin", "kepala_sekolah", "piket", "tata_usaha"].includes(userSession.role) && (
+                <RekapPoinView />
               )}
 
               {activeTab === "change_password" && (

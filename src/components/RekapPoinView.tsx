@@ -2,21 +2,14 @@ import React, { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Search,
-  Users,
-  Trophy,
-  TrendingDown,
-  Award,
-  AlertTriangle,
   ArrowDownWideNarrow,
   ArrowUpWideNarrow,
   ArrowUpDown,
   ListChecks,
-  Medal,
 } from "lucide-react";
 import { getSiswaList, getSiswaSeparatePoinMap } from "../dbStore";
 import { toSentenceCase } from "../formatName";
 import PaginationFooter from "./PaginationFooter";
-import SkeletonLoader from "./SkeletonLoader";
 
 type SortMode = "tertinggi" | "terendah" | "nama";
 
@@ -83,18 +76,6 @@ export default function RekapPoinView() {
     currentPage * itemsPerPage
   );
 
-  const stats = useMemo(() => {
-    if (sortedSiswa.length === 0) {
-      return { tertinggi: null, terendah: null, rataRata: 0 };
-    }
-    const totals = sortedSiswa.map((s) => s.total_poin);
-    return {
-      tertinggi: Math.max(...totals),
-      terendah: Math.min(...totals),
-      rataRata: Math.round(totals.reduce((sum, p) => sum + p, 0) / totals.length),
-    };
-  }, [sortedSiswa]);
-
   const medalClass = (rank: number) => {
     if (rank === 1) return "bg-amber-100 text-amber-700 border-amber-300";
     if (rank === 2) return "bg-slate-100 text-slate-600 border-slate-300";
@@ -106,7 +87,6 @@ export default function RekapPoinView() {
     return (
       <div className="space-y-6">
         <h2 className="text-xl font-extrabold text-brand-950 tracking-tight">Rekapitulasi Poin Murid</h2>
-        <SkeletonLoader type="metrics" />
         <div className="bg-white p-5 rounded-3xl border border-brand-100/60 space-y-4">
           <div className="h-11 bg-slate-100 rounded-2xl animate-pulse" />
           <div className="h-72 bg-slate-50 rounded-2xl animate-pulse" />
@@ -122,57 +102,6 @@ export default function RekapPoinView() {
         <p className="text-xs text-brand-500 font-semibold mt-1">
           Rekap poin seluruh murid, urutkan berdasarkan poin tertinggi/terendah serta filter nama & kelas.
         </p>
-      </div>
-
-      {/* METRIC CARDS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white p-5 rounded-3xl border border-brand-100/60 shadow-md shadow-brand-900/5 flex items-center justify-between">
-          <div>
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Total Murid</span>
-            <span className="text-3xl font-black text-brand-950 block mt-1">{sortedSiswa.length}</span>
-            <span className="text-[10px] font-bold text-brand-500 mt-1 block">Hasil Filter</span>
-          </div>
-          <div className="w-14 h-14 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center font-bold">
-            <Users className="w-7 h-7" />
-          </div>
-        </div>
-
-        <div className="bg-white p-5 rounded-3xl border border-brand-100/60 shadow-md shadow-brand-900/5 flex items-center justify-between">
-          <div>
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Poin Tertinggi</span>
-            <span className="text-3xl font-black text-emerald-600 block mt-1">
-              {stats.tertinggi !== null ? stats.tertinggi : 0}
-            </span>
-            <span className="text-[10px] font-bold text-emerald-600 mt-1 block">Skor Terbaik</span>
-          </div>
-          <div className="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
-            <Trophy className="w-7 h-7" />
-          </div>
-        </div>
-
-        <div className="bg-white p-5 rounded-3xl border border-brand-100/60 shadow-md shadow-brand-900/5 flex items-center justify-between">
-          <div>
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Poin Terendah</span>
-            <span className="text-3xl font-black text-rose-600 block mt-1">
-              {stats.terendah !== null ? stats.terendah : 0}
-            </span>
-            <span className="text-[10px] font-bold text-rose-600 mt-1 block">Skor Terendah</span>
-          </div>
-          <div className="w-14 h-14 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold">
-            <TrendingDown className="w-7 h-7" />
-          </div>
-        </div>
-
-        <div className="bg-white p-5 rounded-3xl border border-brand-100/60 shadow-md shadow-brand-900/5 flex items-center justify-between">
-          <div>
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Rata-rata</span>
-            <span className="text-3xl font-black text-brand-950 block mt-1">{stats.rataRata}</span>
-            <span className="text-[10px] font-bold text-amber-600 mt-1 block">Poin per Murid</span>
-          </div>
-          <div className="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
-            <Medal className="w-7 h-7" />
-          </div>
-        </div>
       </div>
 
       {/* FILTER & SORT BAR */}

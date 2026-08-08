@@ -161,6 +161,7 @@ import ExportSummaryModal from "./components/ExportSummaryModal";
 import ImportSummaryModal from "./components/ImportSummaryModal";
 import ConfirmationModal from "./components/ConfirmationModal";
 import ErrorBoundary from "./components/ErrorBoundary";
+import InstallPwaPrompt from "./components/InstallPwaPrompt";
 
 export default function App() {
   if (supabaseEnvError) {
@@ -1226,6 +1227,9 @@ export default function App() {
       onClose={() => setIsImportSummaryOpen(false)}
       onComplete={() => setHistoryRefreshCount((c) => c + 1)}
     />
+
+    {/* PWA Install Notification Prompt */}
+    <InstallPwaPrompt />
     </>
   );
 }

@@ -280,9 +280,9 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
           initial={{ scale: 0.7, opacity: 0, rotate: -10 }}
           animate={{ scale: 1, opacity: 1, rotate: 0 }}
           transition={{ delay: 0.1, duration: 0.5, type: "spring", stiffness: 200 }}
-          className="mx-auto h-18 w-18 sm:h-22 sm:w-22 flex items-center justify-center relative bg-white border-2 border-brand-100 rounded-2xl sm:rounded-3xl p-2.5 sm:p-3.5 shadow-lg shadow-brand-900/10"
+          className="mx-auto h-20 w-20 sm:h-24 sm:w-24 flex items-center justify-center relative filter drop-shadow-md"
         >
-          <img src="/logo.png" className="w-full h-full object-contain z-10" alt="Logo SMAN 19" />
+          <img src="/logo-crest.png" className="w-full h-full object-contain" alt="Logo SMAN 19 Bandung" />
         </motion.div>
         <h1 className="mt-3 sm:mt-4 text-2xl sm:text-3xl font-extrabold tracking-tight text-brand-900 font-sans bg-gradient-to-r from-brand-700 to-accent-600 bg-clip-text text-transparent">
           Nineteen Space

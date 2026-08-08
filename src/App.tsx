@@ -720,8 +720,8 @@ export default function App() {
         <div className="space-y-6">
           {/* Branding inside Sidebar */}
           <div className="flex items-center gap-2.5 pb-4 border-b border-brand-800/60">
-            <div className="w-10 h-10 rounded-2xl bg-white border border-brand-100 p-1.5 flex items-center justify-center shadow-md flex-shrink-0">
-              <img src="/logo.png" className="w-full h-full object-contain" alt="Logo" />
+            <div className="w-10 h-10 flex items-center justify-center flex-shrink-0 filter drop-shadow-sm">
+              <img src="/logo-crest.png" className="w-full h-full object-contain" alt="Logo SMAN 19 Bandung" />
             </div>
             <div>
               <h4 className="text-sm font-black tracking-tight text-white uppercase">SMAN 19 Bandung</h4>

@@ -108,9 +108,9 @@ export default function InstallPwaPrompt() {
                 {/* Application Logo Icon matching Login Page Logo */}
                 <div className="relative flex-none w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-white border border-brand-100 shadow-md p-1.5 flex items-center justify-center overflow-hidden">
                   <img
-                    src="/logo.png"
+                    src="/logo-192.png"
                     alt="Logo Nineteen Space"
-                    className="w-full h-full object-contain"
+                    className="w-full h-full object-contain rounded-lg"
                   />
                 </div>
 
@@ -169,7 +169,7 @@ export default function InstallPwaPrompt() {
 
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-12 h-12 rounded-2xl bg-brand-50 border border-brand-100 p-2 flex items-center justify-center">
-                  <img src="/logo.png" alt="Logo" className="w-full h-full object-contain" />
+                  <img src="/logo-192.png" alt="Logo" className="w-full h-full object-contain rounded-lg" />
                 </div>
                 <div>
                   <h3 className="font-bold text-slate-900">Install di iOS / Safari</h3>

@@ -1,4 +1,4 @@
-const CACHE_NAME = "nineteen-points-v8";
+const CACHE_NAME = "nineteen-points-v9";
 
 self.addEventListener("install", (e) => {
   self.skipWaiting();
@@ -51,9 +51,6 @@ self.addEventListener("fetch", (e) => {
   }
 
   const pathname = new URL(e.request.url).pathname;
-  // Cache-first for versioned/hashed assets and static face models.
-  // /assets/* filenames are content-hashed by Vite; /models/* are the
-  // (rarely changing) face-api.js model weights.
   if (pathname.startsWith("/assets/") || pathname.startsWith("/models/")) {
     e.respondWith(
       caches.match(e.request).then(

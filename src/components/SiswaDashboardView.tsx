@@ -249,6 +249,24 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
       }
 
       setScanSuccessMsg(`🎉 Presensi Berhasil! Anda tercatat HADIR (Tepat Waktu) pada pukul ${now.toLocaleTimeString("id-ID")}.`);
+      
+      // Auto-refetch student details, points, & attendance logs for instant UI update
+      if (siswaDetail?.id) {
+        const { data: updatedSiswa } = await supabase.from("siswa").select("*").eq("id", siswaDetail.id).maybeSingle();
+        if (updatedSiswa) setSiswaDetail(updatedSiswa);
+
+        const { data: riwayatData } = await supabase.from("riwayat_poin").select("*").eq("siswa_id", siswaDetail.id).order("created_at", { ascending: false });
+        if (riwayatData) setRiwayat(riwayatData);
+
+        const { data: absensiData } = await supabase.from("kehadiran").select("*").eq("siswa_id", siswaDetail.id).order("tanggal", { ascending: false });
+        if (absensiData) setAbsensi(absensiData);
+
+        // Invalidate global react-query cache so Admin view updates too
+        import("../queryClient").then(({ queryClient }) => {
+          queryClient.invalidateQueries({ queryKey: ["kehadiran"] });
+          queryClient.invalidateQueries({ queryKey: ["siswaListLight"] });
+        });
+      }
     } catch (err: any) {
       setScanErrorMsg(err.message || "Gagal memproses presensi.");
       throw err;

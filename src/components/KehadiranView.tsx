@@ -42,6 +42,7 @@ import {
   AturanKehadiran
 } from "../dbStore";
 import { toSentenceCase } from "../formatName";
+import { supabase } from "../supabaseClient";
 import * as XLSX from "xlsx";
 
 interface KehadiranViewProps {

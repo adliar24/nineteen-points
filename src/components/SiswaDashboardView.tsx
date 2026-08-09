@@ -429,18 +429,14 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
                   <p className="text-[11px] text-purple-100 font-medium">Pantau poin prestasi dan pelanggaranmu.</p>
                 </div>
                 <div className="flex flex-col gap-2 pt-1">
-                  <button
-                    onClick={() => setShowStudentScanModal(true)}
-                    className="w-full px-4 py-2.5 bg-amber-400 hover:bg-amber-300 text-amber-950 rounded-full font-black text-xs inline-flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer border border-amber-300"
-                  >
-                    <Camera className="w-4 h-4" />
-                    <span>📷 Scan Presensi Kelas</span>
-                  </button>
                   <div className="flex gap-2">
-                    <div className="bg-purple-50/70 border border-purple-100 rounded-2xl px-3 py-2 text-center flex-1">
-                      <span className="text-[8.5px] font-black text-purple-500 block uppercase tracking-wider">Poin Prestasi</span>
-                      <span className="text-base font-black text-purple-900">+{totalPrestasi}</span>
-                    </div>
+                    <button
+                      onClick={() => setShowStudentScanModal(true)}
+                      className="bg-amber-400 hover:bg-amber-300 text-amber-950 px-4 py-2.5 rounded-2xl font-black text-xs inline-flex items-center justify-center gap-1.5 transition-all shadow-md cursor-pointer border border-amber-300 flex-1"
+                    >
+                      <Camera className="w-4 h-4 shrink-0" />
+                      <span>Scan Presensi</span>
+                    </button>
                     <div className="bg-emerald-50/70 border border-emerald-100 rounded-2xl px-3 py-2 text-center flex-1">
                       <span className="text-[8.5px] font-black text-emerald-600 block uppercase tracking-wider">Kelas</span>
                       <span className="text-xs font-extrabold text-emerald-800 truncate">{siswaDetail.kelas}</span>
@@ -467,20 +463,16 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
                   <p className="text-xs text-purple-100 font-medium">
                     Pantau poin prestasi, kedisiplinan, dan presensi harian secara real-time.
                   </p>
-                  <button
-                    onClick={() => setShowStudentScanModal(true)}
-                    className="mt-2.5 px-5 py-2.5 bg-amber-400 hover:bg-amber-300 text-amber-950 rounded-full font-black text-xs inline-flex items-center gap-2 transition-all shadow-md cursor-pointer border border-amber-300"
-                  >
-                    <Camera className="w-4 h-4" />
-                    <span>📷 Scan Presensi Kelas (06.30 - 06.45 WIB)</span>
-                  </button>
                 </div>
               </div>
               <div className="flex gap-4">
-                <div className="bg-purple-50/70 border border-purple-100 rounded-2xl px-5 py-3 text-center min-w-[100px]">
-                  <span className="text-[10px] font-black text-purple-500 block uppercase tracking-wider">Poin Prestasi</span>
-                  <span className="text-xl font-black text-purple-900">+{totalPrestasi} pts</span>
-                </div>
+                <button
+                  onClick={() => setShowStudentScanModal(true)}
+                  className="bg-amber-400 hover:bg-amber-300 text-amber-950 px-5 py-3 rounded-2xl font-black text-xs inline-flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer border border-amber-300 shrink-0 hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  <Camera className="w-4.5 h-4.5" />
+                  <span>📷 Scan Presensi Kelas</span>
+                </button>
                 <div className="bg-emerald-50/70 border border-emerald-100 rounded-2xl px-5 py-3 text-center min-w-[100px]">
                   <span className="text-[10px] font-black text-emerald-600 block uppercase tracking-wider">Kelas</span>
                   <span className="text-base font-extrabold text-emerald-800">{siswaDetail.kelas}</span>

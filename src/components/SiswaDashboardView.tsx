@@ -63,17 +63,23 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
     setScanStatusMsg("Memeriksa jam presensi, lokasi GPS, dan perangkat HP...");
 
     try {
-      // 1. Time Window Check (06.30 - 06.45 WIB)
+      // 1. Dynamic Time Window Check (from Admin Config)
       const now = new Date();
       const hours = now.getHours();
       const minutes = now.getMinutes();
       const timeInMinutes = hours * 60 + minutes;
 
-      const startTime = 6 * 60 + 30; // 06.30
-      const endTime = 6 * 60 + 45;   // 06.45
+      const scanStartStr = localStorage.getItem("19points_scan_start") || "06:30";
+      const scanEndStr = localStorage.getItem("19points_scan_end") || "06:45";
+
+      const [startH, startM] = scanStartStr.split(":").map(Number);
+      const [endH, endM] = scanEndStr.split(":").map(Number);
+
+      const startTime = (startH || 6) * 60 + (startM || 30);
+      const endTime = (endH || 6) * 60 + (endM || 45);
 
       if (timeInMinutes < startTime || timeInMinutes > endTime) {
-        throw new Error(`⛔ DI LUAR WAKTU PRESENSI: Scan presensi kelas mandiri hanya aktif pada pukul 06.30 - 06.45 WIB. Jika Anda terlambat, silakan melapor ke Guru Piket.`);
+        throw new Error(`⛔ DI LUAR WAKTU PRESENSI: Scan presensi kelas mandiri hanya aktif pada pukul ${scanStartStr} - ${scanEndStr} WIB. Jika Anda terlambat, silakan melapor ke Guru Piket.`);
       }
 
       // 2. Device Binding Check (Anti-Titip Absen)

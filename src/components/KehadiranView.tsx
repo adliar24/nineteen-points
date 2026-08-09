@@ -135,12 +135,14 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  // Admin Config points & GPS Location States
+  // Admin Config points, GPS Location & Scan Time Window States
   const [tempPoints, setTempPoints] = useState<Record<string, number>>({});
   const [isSavingConfig, setIsSavingConfig] = useState(false);
   const [gpsLat, setGpsLat] = useState(() => localStorage.getItem("19points_gps_lat") || "-6.914744");
   const [gpsLng, setGpsLng] = useState(() => localStorage.getItem("19points_gps_lng") || "107.609810");
   const [gpsRadius, setGpsRadius] = useState(() => localStorage.getItem("19points_gps_radius") || "150");
+  const [scanStartTime, setScanStartTime] = useState(() => localStorage.getItem("19points_scan_start") || "06:30");
+  const [scanEndTime, setScanEndTime] = useState(() => localStorage.getItem("19points_scan_end") || "06:45");
   const [isSavingGps, setIsSavingGps] = useState(false);
   const [isBulkPrintingQr, setIsBulkPrintingQr] = useState(false);
 
@@ -151,9 +153,11 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
       localStorage.setItem("19points_gps_lat", gpsLat.trim());
       localStorage.setItem("19points_gps_lng", gpsLng.trim());
       localStorage.setItem("19points_gps_radius", gpsRadius.trim());
-      alert(`Berhasil! Koordinat GPS (${gpsLat}, ${gpsLng}) & radius ${gpsRadius}m tersimpan untuk presensi murid.`);
+      localStorage.setItem("19points_scan_start", scanStartTime.trim());
+      localStorage.setItem("19points_scan_end", scanEndTime.trim());
+      alert(`Berhasil! Pengaturan GPS & Jam Presensi Mandiri (${scanStartTime} - ${scanEndTime} WIB) berhasil tersimpan.`);
     } catch (err: any) {
-      alert("Gagal menyimpan lokasi GPS.");
+      alert("Gagal menyimpan lokasi GPS & jam presensi.");
     } finally {
       setIsSavingGps(false);
     }
@@ -1467,6 +1471,29 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
             </div>
 
             <form onSubmit={handleSaveGpsSettings} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-purple-50/50 p-4 border border-purple-100 rounded-2xl">
+                <div>
+                  <label className="text-[11px] font-black text-purple-900 block mb-1">Jam Mulai Scan Mandiri</label>
+                  <input
+                    type="time"
+                    required
+                    value={scanStartTime}
+                    onChange={(e) => setScanStartTime(e.target.value)}
+                    className="w-full border border-purple-200 rounded-xl p-2.5 text-xs font-bold text-purple-950 outline-none bg-white focus:ring-1 focus:ring-purple-500"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-black text-purple-900 block mb-1">Jam Selesai Scan Mandiri</label>
+                  <input
+                    type="time"
+                    required
+                    value={scanEndTime}
+                    onChange={(e) => setScanEndTime(e.target.value)}
+                    className="w-full border border-purple-200 rounded-xl p-2.5 text-xs font-bold text-purple-950 outline-none bg-white focus:ring-1 focus:ring-purple-500"
+                  />
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <label className="text-[11px] font-black text-brand-900 block mb-1">Latitude (Lintang)</label>

@@ -150,6 +150,7 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
       }
 
       // 2. Device Binding Check (Anti-Titip Absen)
+      const todayStr = new Date().toISOString().slice(0, 10);
       let bindingEnabled = localStorage.getItem("19points_device_binding_enabled") !== "false";
       try {
         const { data: remoteConfig } = await supabase.from("pengaturan_sistem").select("*").eq("kunci", "device_binding_enabled").maybeSingle();
@@ -159,7 +160,6 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
       } catch (e) {}
 
       if (bindingEnabled) {
-        const todayStr = new Date().toISOString().slice(0, 10);
         const deviceFp = localStorage.getItem("19points_device_fp") || `fp_${Math.random().toString(36).substring(2, 10)}`;
         localStorage.setItem("19points_device_fp", deviceFp);
 
@@ -227,7 +227,9 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
 
       // 4. Record Attendance to Supabase 'kehadiran'
       setScanStatusMsg("Menyimpan status presensi Tepat Waktu...");
-      localStorage.setItem(deviceBindingKey, siswaDetail?.id || "");
+      if (bindingEnabled) {
+        localStorage.setItem(`19points_binding_${todayStr}`, siswaDetail?.id || "");
+      }
 
       const { error: insErr } = await supabase.from("kehadiran").insert([{
         siswa_id: siswaDetail?.id,

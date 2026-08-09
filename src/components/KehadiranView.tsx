@@ -134,7 +134,9 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  // Admin GPS Location & Bulk QR States
+  // Admin Config points & GPS Location States
+  const [tempPoints, setTempPoints] = useState<Record<string, number>>({});
+  const [isSavingConfig, setIsSavingConfig] = useState(false);
   const [gpsLat, setGpsLat] = useState(() => localStorage.getItem("19points_gps_lat") || "-6.914744");
   const [gpsLng, setGpsLng] = useState(() => localStorage.getItem("19points_gps_lng") || "107.609810");
   const [gpsRadius, setGpsRadius] = useState(() => localStorage.getItem("19points_gps_radius") || "150");

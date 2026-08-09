@@ -55,11 +55,28 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
     }
 
     try {
-      // 1. Authenticate with Supabase Auth
-      const { data, error: authError } = await supabase.auth.signInWithPassword({
+      // 1. Authenticate with Supabase Auth (Try primary resolved email)
+      let authRes = await supabase.auth.signInWithPassword({
         email: loginEmail,
         password,
       });
+
+      // Fallback 1: If primary attempt failed and rawInput was not an @ email, try raw searchKey@sman19.sch.id
+      if (authRes.error && !hasAt) {
+        const fallbackEmail = `${searchKey}@sman19.sch.id`;
+        if (fallbackEmail !== loginEmail) {
+          const secondTry = await supabase.auth.signInWithPassword({
+            email: fallbackEmail,
+            password,
+          });
+          if (!secondTry.error) {
+            authRes = secondTry;
+          }
+        }
+      }
+
+      const data = authRes.data;
+      const authError = authRes.error;
 
       if (authError) {
         setError(authError.message || "Email/Username atau password salah.");

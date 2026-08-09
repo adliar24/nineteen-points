@@ -30,6 +30,7 @@ import {
   Loader2
 } from "lucide-react";
 import { Siswa, UserSession } from "../types";
+import GpsMapPicker from "./GpsMapPicker";
 import {
   getSiswaListLight,
   getAturanKehadiranList,
@@ -1503,6 +1504,17 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
                   />
                 </div>
               </div>
+
+              {/* Interactive OpenStreetMap Pin Picker */}
+              <GpsMapPicker
+                lat={parseFloat(gpsLat) || -6.914744}
+                lng={parseFloat(gpsLng) || 107.609810}
+                radius={parseInt(gpsRadius) || 150}
+                onPositionChange={(newLat, newLng) => {
+                  setGpsLat(String(newLat));
+                  setGpsLng(String(newLng));
+                }}
+              />
 
               <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
                 <button

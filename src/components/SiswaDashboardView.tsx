@@ -167,9 +167,22 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
       const studentLat = position.coords.latitude;
       const studentLng = position.coords.longitude;
 
-      const targetLat = parseFloat(localStorage.getItem("19points_gps_lat") || "-6.914744");
-      const targetLng = parseFloat(localStorage.getItem("19points_gps_lng") || "107.609810");
-      const allowedRadius = parseFloat(localStorage.getItem("19points_gps_radius") || "150");
+      // Fetch remote GPS config from Supabase for cross-device accuracy
+      let targetLat = parseFloat(localStorage.getItem("19points_gps_lat") || "-6.914744");
+      let targetLng = parseFloat(localStorage.getItem("19points_gps_lng") || "107.609810");
+      let allowedRadius = parseFloat(localStorage.getItem("19points_gps_radius") || "150");
+
+      try {
+        const { data: remoteConfig } = await supabase.from("pengaturan_sistem").select("*");
+        if (remoteConfig && remoteConfig.length > 0) {
+          const latItem = remoteConfig.find((r: any) => r.kunci === "gps_lat");
+          const lngItem = remoteConfig.find((r: any) => r.kunci === "gps_lng");
+          const radItem = remoteConfig.find((r: any) => r.kunci === "gps_radius");
+          if (latItem?.nilai) targetLat = parseFloat(latItem.nilai);
+          if (lngItem?.nilai) targetLng = parseFloat(lngItem.nilai);
+          if (radItem?.nilai) allowedRadius = parseFloat(radItem.nilai);
+        }
+      } catch (e) {}
 
       // Haversine formula
       const R = 6371000;
@@ -181,7 +194,7 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
       const distance = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
       if (distance > allowedRadius) {
-        throw new Error(`⛔ DI LUAR AREA SEKOLAH: Lokasi Anda berada ${Math.round(distance)}m dari lokasi sekolah (Radius max: ${allowedRadius}m).`);
+        throw new Error(`⛔ DI LUAR AREA SEKOLAH: Lokasi Anda berada ${Math.round(distance)}m dari titik GPS presensi (${targetLat.toFixed(5)}, ${targetLng.toFixed(5)}) dengan radius max: ${allowedRadius}m.`);
       }
 
       // 4. Record Attendance to Supabase 'kehadiran'

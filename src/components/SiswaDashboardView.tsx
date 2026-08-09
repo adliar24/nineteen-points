@@ -28,6 +28,7 @@ import html2canvas from "html2canvas-pro";
 import SkeletonLoader from "./SkeletonLoader";
 import { toSentenceCase } from "../formatName";
 import { getVisiblePages } from "../pagination";
+import QrScanner from "./scan/QrScanner";
 
 interface SiswaDashboardViewProps {
   userSession: UserSession;
@@ -378,14 +379,23 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
                   <h2 className="text-lg font-black text-white leading-tight break-words">Halo, {toSentenceCase(siswaDetail.nama)}!</h2>
                   <p className="text-[11px] text-purple-100 font-medium">Pantau poin prestasi dan pelanggaranmu.</p>
                 </div>
-                <div className="flex gap-3">
-                  <div className="bg-purple-50/70 border border-purple-100 rounded-2xl px-4 py-2.5 text-center flex-1">
-                    <span className="text-[9px] font-black text-purple-500 block uppercase tracking-wider">Poin Prestasi</span>
-                    <span className="text-lg font-black text-purple-900">+{totalPrestasi}</span>
-                  </div>
-                  <div className="bg-emerald-50/70 border border-emerald-100 rounded-2xl px-4 py-2.5 text-center flex-1">
-                    <span className="text-[9px] font-black text-emerald-600 block uppercase tracking-wider">Kelas</span>
-                    <span className="text-sm font-extrabold text-emerald-800 truncate">{siswaDetail.kelas}</span>
+                <div className="flex flex-col gap-2 pt-1">
+                  <button
+                    onClick={() => setShowStudentScanModal(true)}
+                    className="w-full px-4 py-2.5 bg-amber-400 hover:bg-amber-300 text-amber-950 rounded-full font-black text-xs inline-flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer border border-amber-300"
+                  >
+                    <Camera className="w-4 h-4" />
+                    <span>📷 Scan Presensi Kelas</span>
+                  </button>
+                  <div className="flex gap-2">
+                    <div className="bg-purple-50/70 border border-purple-100 rounded-2xl px-3 py-2 text-center flex-1">
+                      <span className="text-[8.5px] font-black text-purple-500 block uppercase tracking-wider">Poin Prestasi</span>
+                      <span className="text-base font-black text-purple-900">+{totalPrestasi}</span>
+                    </div>
+                    <div className="bg-emerald-50/70 border border-emerald-100 rounded-2xl px-3 py-2 text-center flex-1">
+                      <span className="text-[8.5px] font-black text-emerald-600 block uppercase tracking-wider">Kelas</span>
+                      <span className="text-xs font-extrabold text-emerald-800 truncate">{siswaDetail.kelas}</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -912,6 +922,71 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
           <p className="text-xs text-white/50 font-medium mt-4 select-none">
             Klik di mana saja untuk menutup
           </p>
+        </div>,
+        document.body
+      )}
+
+      {/* STUDENT QR CLASS SCANNER MODAL POPUP */}
+      {showStudentScanModal && createPortal(
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
+          <div className="bg-slate-900 border border-purple-500/30 rounded-3xl p-6 w-full max-w-md text-white shadow-2xl space-y-5 relative">
+            <button
+              onClick={() => {
+                setShowStudentScanModal(false);
+                setScanErrorMsg("");
+                setScanSuccessMsg("");
+              }}
+              className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="text-center space-y-1">
+              <div className="w-12 h-12 rounded-2xl bg-purple-600 text-white flex items-center justify-center mx-auto mb-2 shadow-lg shadow-purple-600/40">
+                <Camera className="w-6 h-6" />
+              </div>
+              <h3 className="text-lg font-black text-white">Scan Presensi Kelas</h3>
+              <p className="text-purple-200/80 text-xs font-medium">
+                Arahkan kamera HP ke Poster QR Code Kelas
+              </p>
+            </div>
+
+            {/* Error Message */}
+            {scanErrorMsg && (
+              <div className="p-4 rounded-2xl bg-rose-500/20 border border-rose-500/40 text-rose-200 text-xs font-bold leading-relaxed space-y-1">
+                <p className="font-extrabold text-rose-300">Gagal Presensi:</p>
+                <p>{scanErrorMsg}</p>
+              </div>
+            )}
+
+            {/* Success Message */}
+            {scanSuccessMsg && (
+              <div className="p-4 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-200 text-xs font-bold text-center space-y-1">
+                <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto" />
+                <p>{scanSuccessMsg}</p>
+              </div>
+            )}
+
+            {/* Processing Loading */}
+            {isProcessingScan && (
+              <div className="py-4 text-center space-y-2">
+                <Loader2 className="w-8 h-8 text-purple-400 animate-spin mx-auto" />
+                <p className="text-xs font-bold text-purple-200">{scanStatusMsg}</p>
+              </div>
+            )}
+
+            {/* Scanner Component */}
+            {!isProcessingScan && !scanSuccessMsg && (
+              <div className="rounded-2xl overflow-hidden border border-purple-500/30">
+                <QrScanner
+                  onScan={(data) => {
+                    if (data) handleStudentClassQrScan(data);
+                  }}
+                  onError={(err) => setScanErrorMsg(err)}
+                />
+              </div>
+            )}
+          </div>
         </div>,
         document.body
       )}

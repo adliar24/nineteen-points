@@ -252,6 +252,7 @@ CREATE INDEX IF NOT EXISTS idx_profiles_nis   ON public.profiles(nis);
 
 CREATE INDEX IF NOT EXISTS idx_kehadiran_siswa_id ON public.kehadiran(siswa_id);
 CREATE INDEX IF NOT EXISTS idx_kehadiran_tanggal ON public.kehadiran(tanggal DESC);
+CREATE INDEX IF NOT EXISTS idx_kehadiran_siswa_tanggal ON public.kehadiran(siswa_id, tanggal);
 
 CREATE INDEX IF NOT EXISTS idx_jadwal_guru_user_id ON public.jadwal_guru(user_id);
 CREATE INDEX IF NOT EXISTS idx_jadwal_guru_hari    ON public.jadwal_guru(hari);

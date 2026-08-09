@@ -1,4 +1,4 @@
-const CACHE_NAME = "nineteen-points-v9";
+const CACHE_NAME = "nineteen-points-v10";
 
 self.addEventListener("install", (e) => {
   self.skipWaiting();
@@ -14,9 +14,8 @@ self.addEventListener("activate", (e) => {
           }
         })
       );
-    })
+    }).then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
 self.addEventListener("fetch", (e) => {

@@ -298,12 +298,6 @@ export default function KelolaSiswaView({
             useCORS: true,
             allowTaint: true,
             backgroundColor: "#ffffff",
-            width: 290,
-            height: 458,
-            x: 0,
-            y: 0,
-            scrollX: 0,
-            scrollY: 0,
           });
           const imgData = canvas.toDataURL("image/png");
           const link = document.createElement("a");
@@ -366,12 +360,6 @@ export default function KelolaSiswaView({
             useCORS: true,
             allowTaint: true,
             backgroundColor: "#ffffff",
-            width: 290,
-            height: 458,
-            x: 0,
-            y: 0,
-            scrollX: 0,
-            scrollY: 0,
           });
 
           const imgDataUrl = canvas.toDataURL("image/jpeg", 0.92);
@@ -432,12 +420,6 @@ export default function KelolaSiswaView({
           useCORS: true,
           allowTaint: true,
           backgroundColor: "#ffffff",
-          width: 290,
-          height: 458,
-          x: 0,
-          y: 0,
-          scrollX: 0,
-          scrollY: 0,
         });
 
         const imgDataUrl = canvas.toDataURL("image/jpeg", 0.92);
@@ -943,7 +925,7 @@ export default function KelolaSiswaView({
       />
 
       {/* OFF-SCREEN CARD RENDERERS */}
-      <div className="fixed top-0 left-0 -z-50 pointer-events-none opacity-100 overflow-hidden" style={{ position: "fixed", top: 0, left: 0, zIndex: -9999 }}>
+      <div className="fixed pointer-events-none opacity-100 overflow-hidden" style={{ position: "fixed", top: 0, left: "-9999px", zIndex: 99999 }}>
         {/* Bulk export (selected / all filtered) */}
         {isExporting &&
           (selectedSiswaIds.length > 0 ? selectedSiswaIds : filteredSiswa.map((s) => s.id)).map(

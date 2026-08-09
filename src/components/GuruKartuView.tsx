@@ -31,12 +31,6 @@ export default function GuruKartuView({ userSession }: GuruKartuViewProps) {
           useCORS: true,
           allowTaint: true,
           backgroundColor: "#ffffff",
-          width: 290,
-          height: 458,
-          x: 0,
-          y: 0,
-          scrollX: 0,
-          scrollY: 0,
         });
         const imgData = canvas.toDataURL("image/png");
         const link = document.createElement("a");

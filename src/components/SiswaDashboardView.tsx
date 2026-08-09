@@ -145,12 +145,6 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
           useCORS: true,
           allowTaint: true,
           backgroundColor: "#ffffff",
-          width: 290,
-          height: 458,
-          x: 0,
-          y: 0,
-          scrollX: 0,
-          scrollY: 0,
         });
         const imgData = canvas.toDataURL("image/png");
         const link = document.createElement("a");
@@ -462,7 +456,7 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
             {/* Top Left School Branding */}
             <div className="absolute top-4.5 left-5 flex items-center gap-2 z-10 text-white pointer-events-none">
               <div className="w-7 h-7 rounded-lg bg-white p-1 flex items-center justify-center shadow-sm">
-                <img src="/logo.png" className="w-full h-full object-contain" alt="Logo" />
+                <img src="/logo.png" crossOrigin="anonymous" className="w-full h-full object-contain" alt="Logo" />
               </div>
               <div>
                 <h4 className="text-[8px] font-black tracking-widest text-white uppercase leading-tight">SMAN 19 BANDUNG</h4>

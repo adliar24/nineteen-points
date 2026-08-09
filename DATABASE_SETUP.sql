@@ -46,8 +46,9 @@ SET search_path = public
 AS $$
   SELECT s.nis::text
   FROM public.siswa s
-  WHERE lower(s.username) = lower(regexp_replace(p_login, '[^a-z0-9]', '', 'g'))
-     OR s.nis::text = lower(p_login)
+  WHERE s.nis::text = lower(trim(p_login))
+     OR lower(s.username) = lower(trim(p_login))
+     OR lower(s.username) = lower(regexp_replace(p_login, '[^a-z0-9]', '', 'g'))
   LIMIT 1;
 $$;
 

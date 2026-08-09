@@ -36,13 +36,11 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
     const rawLower = rawInput.toLowerCase();
 
     // Resolusi username: mendukung NIS, username alternatif (dari nama), NIP, atau email penuh.
-    // resolve_login() mengembalikan NIS (prefix email auth) jika input cocok dgn
-    // siswa.username / siswa.nis; selain itu fallback ke input apa adanya.
     const hasAt = rawLower.includes("@");
-    const prefix = hasAt ? rawLower.split("@")[0] : rawLower;
-    const searchKey = prefix.replace(/[^a-z0-9]/g, "");
+    const searchKey = hasAt ? rawLower.split("@")[0].trim() : rawLower.trim();
 
     let loginEmail = hasAt ? rawLower : `${searchKey}@sman19.sch.id`;
+
     if (searchKey) {
       try {
         const { data: resolvedNis, error: resolveError } = await supabase.rpc("resolve_login", {
@@ -52,7 +50,7 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
           loginEmail = `${resolvedNis}@sman19.sch.id`;
         }
       } catch {
-        // fungsi resolve_login belum tersedia di DB — pakai input apa adanya
+        // fungsi resolve_login belum tersedia di DB — pakai fallback standard
       }
     }
 

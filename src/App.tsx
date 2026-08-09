@@ -28,7 +28,8 @@ import {
   Check,
   BookOpen,
   ClipboardList,
-  ListChecks
+  ListChecks,
+  Camera
 } from "lucide-react";
 import { UserSession } from "./types";
 import { getLocalStorage, setLocalStorage } from "./dbStore";
@@ -249,7 +250,7 @@ export default function App() {
   };
 
   const isValidTab = (role: string, tab: string) => {
-    if (role === "siswa") return ["siswa_stats", "siswa_barcode", "siswa_history", "change_password"].includes(tab);
+    if (role === "siswa") return ["siswa_stats", "siswa_scan", "siswa_barcode", "siswa_history", "change_password"].includes(tab);
     if (role === "piket") return ["kehadiran", "input_kehadiran", "change_password", "scan_sholat", "rekap_sholat_kehadiran", "rekap_poin"].includes(tab);
     if (role === "guru") return ["input", "students", "history", "change_password", "guru_sertifikat", "guru_kartu", "scan_sholat", "rekap_sholat_kehadiran", "rekap_poin"].includes(tab);
     if (role === "kepala_sekolah") return ["input_kehadiran", "input", "kehadiran", "students", "history", "change_password", "scan_sholat", "rekap_sholat_kehadiran", "rekap_poin"].includes(tab);
@@ -602,6 +603,7 @@ export default function App() {
   } else if (userSession.role === "siswa") {
     sidebarElements = [
       { type: "item", id: "siswa_stats", label: "Statistik", icon: TrendingUp, description: "Statistik poin Anda" },
+      { type: "item", id: "siswa_scan", label: "Scan Presensi Kelas", icon: Camera, description: "Scan QR kelas mandiri" },
       { type: "item", id: "siswa_barcode", label: "Kartu Pelajar", icon: CreditCard, description: "QR Kartu Pelajar Digital" },
       { type: "item", id: "siswa_history", label: "Riwayat Poin", icon: Calendar, description: "Riwayat perolehan poin" },
       { type: "item", id: "change_password", label: "Tema & Keamanan", icon: Settings, description: "Ubah sandi & tema warna" }

@@ -358,6 +358,55 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
   return (
     <div className="space-y-6 pb-8">
       
+      {/* SCAN PRESENSI KELAS TAB (DEDICATED FULL SCREEN SCANNER VIEW) */}
+      {activeTab === "siswa_scan" && (
+        <div className="max-w-xl mx-auto space-y-6 animate-fade-in py-2">
+          <div className="bg-gradient-to-br from-brand-800 via-brand-700 to-brand-800 rounded-3xl p-6 border border-brand-600 shadow-xl text-white text-center space-y-2">
+            <div className="w-14 h-14 rounded-2xl bg-amber-400 text-amber-950 flex items-center justify-center mx-auto mb-2 shadow-lg shadow-amber-400/30">
+              <Camera className="w-7 h-7" />
+            </div>
+            <h2 className="text-xl font-black text-white">Scan Presensi Kelas Mandiri</h2>
+            <p className="text-purple-100/90 text-xs font-medium max-w-sm mx-auto">
+              Arahkan kamera HP ke Poster QR Code Kelas di papan kelas Anda.
+            </p>
+          </div>
+
+          <div className="bg-white rounded-3xl p-6 border border-brand-100 shadow-xl space-y-4">
+            {scanErrorMsg && (
+              <div className="p-4 rounded-2xl bg-rose-50 border border-rose-100 text-rose-800 text-xs font-bold leading-relaxed space-y-1">
+                <p className="font-extrabold text-rose-900">Gagal Presensi:</p>
+                <p>{scanErrorMsg}</p>
+              </div>
+            )}
+
+            {scanSuccessMsg && (
+              <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-100 text-emerald-800 text-xs font-bold text-center space-y-2">
+                <CheckCircle2 className="w-10 h-10 text-emerald-600 mx-auto" />
+                <p className="text-sm font-black">{scanSuccessMsg}</p>
+              </div>
+            )}
+
+            {isProcessingScan && (
+              <div className="py-8 text-center space-y-3">
+                <Loader2 className="w-10 h-10 text-brand-600 animate-spin mx-auto" />
+                <p className="text-xs font-black text-brand-800 animate-pulse">{scanStatusMsg}</p>
+              </div>
+            )}
+
+            {!isProcessingScan && !scanSuccessMsg && (
+              <div className="rounded-2xl overflow-hidden border border-brand-200">
+                <QrScanner
+                  onScan={(data) => {
+                    if (data) handleStudentClassQrScan(data);
+                  }}
+                  onError={(err) => setScanErrorMsg(err)}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* 1. STATISTIK TAB */}
       {activeTab === "siswa_stats" && (
         <div className="space-y-6 animate-fade-in">

@@ -394,13 +394,17 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
             )}
 
             {!isProcessingScan && !scanSuccessMsg && (
-              <div className="rounded-2xl overflow-hidden border border-brand-200">
-                <QrScanner
-                  onScan={(data) => {
-                    if (data) handleStudentClassQrScan(data);
-                  }}
-                  onError={(err) => setScanErrorMsg(err)}
-                />
+              <div className="text-center space-y-4 py-4">
+                <button
+                  onClick={() => setShowStudentScanModal(true)}
+                  className="brand-gradient text-white px-8 py-4 rounded-2xl font-black text-sm inline-flex items-center gap-3 shadow-lg shadow-brand-500/30 hover:scale-105 transition-all cursor-pointer"
+                >
+                  <Camera className="w-5 h-5" />
+                  <span>Mulai Buka Kamera Scan QR</span>
+                </button>
+                <p className="text-xs text-slate-400 font-medium">
+                  Klik tombol di atas untuk membuka pemindai kamera QR Code Kelas dengan tombol Tutup (X) yang jelas.
+                </p>
               </div>
             )}
           </div>
@@ -967,69 +971,36 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
         document.body
       )}
 
-      {/* STUDENT QR CLASS SCANNER MODAL POPUP */}
-      {showStudentScanModal && createPortal(
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
-          <div className="bg-slate-900 border border-purple-500/30 rounded-3xl p-6 w-full max-w-md text-white shadow-2xl space-y-5 relative">
-            <button
-              onClick={() => {
-                setShowStudentScanModal(false);
-                setScanErrorMsg("");
-                setScanSuccessMsg("");
-              }}
-              className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white cursor-pointer"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            <div className="text-center space-y-1">
-              <div className="w-12 h-12 rounded-2xl bg-purple-600 text-white flex items-center justify-center mx-auto mb-2 shadow-lg shadow-purple-600/40">
-                <Camera className="w-6 h-6" />
-              </div>
-              <h3 className="text-lg font-black text-white">Scan Presensi Kelas</h3>
-              <p className="text-purple-200/80 text-xs font-medium">
-                Arahkan kamera HP ke Poster QR Code Kelas
-              </p>
-            </div>
-
-            {/* Error Message */}
-            {scanErrorMsg && (
-              <div className="p-4 rounded-2xl bg-rose-500/20 border border-rose-500/40 text-rose-200 text-xs font-bold leading-relaxed space-y-1">
-                <p className="font-extrabold text-rose-300">Gagal Presensi:</p>
-                <p>{scanErrorMsg}</p>
-              </div>
-            )}
-
-            {/* Success Message */}
-            {scanSuccessMsg && (
-              <div className="p-4 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-200 text-xs font-bold text-center space-y-1">
-                <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto" />
-                <p>{scanSuccessMsg}</p>
-              </div>
-            )}
-
-            {/* Processing Loading */}
-            {isProcessingScan && (
-              <div className="py-4 text-center space-y-2">
-                <Loader2 className="w-8 h-8 text-purple-400 animate-spin mx-auto" />
-                <p className="text-xs font-bold text-purple-200">{scanStatusMsg}</p>
-              </div>
-            )}
-
-            {/* Scanner Component */}
-            {!isProcessingScan && !scanSuccessMsg && (
-              <div className="rounded-2xl overflow-hidden border border-purple-500/30">
-                <QrScanner
-                  onScan={(data) => {
-                    if (data) handleStudentClassQrScan(data);
-                  }}
-                  onError={(err) => setScanErrorMsg(err)}
-                />
-              </div>
-            )}
-          </div>
-        </div>,
-        document.body
+      {/* STUDENT QR CLASS SCANNER FULL SCREEN CAMERA VIEW WITH RED CLOSE BUTTON */}
+      {showStudentScanModal && (
+        <QrScanner
+          title="Scan Presensi Kelas"
+          subtitle={`Presensi Mandiri (${localStorage.getItem("19points_scan_start") || "06:30"} - ${localStorage.getItem("19points_scan_end") || "06:45"} WIB)`}
+          onClose={() => {
+            setShowStudentScanModal(false);
+            setScanErrorMsg("");
+            setScanSuccessMsg("");
+          }}
+          onScanSuccess={async (data) => {
+            try {
+              await handleStudentClassQrScan(data);
+              setShowStudentScanModal(false);
+              return {
+                type: "success",
+                title: "PRESENSI BERHASIL",
+                message: "Kehadiran Anda telah dicatat tepat waktu."
+              };
+            } catch (err: any) {
+              setScanErrorMsg(err.message || "Gagal presensi");
+              setShowStudentScanModal(false);
+              return {
+                type: "not_found",
+                title: "GAGAL PRESENSI",
+                message: err.message || "Gagal presensi"
+              };
+            }
+          }}
+        />
       )}
 
     </div>

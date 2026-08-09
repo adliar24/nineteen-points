@@ -1721,7 +1721,7 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
                   className="px-5 py-2.5 brand-gradient text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-md cursor-pointer disabled:opacity-50 flex items-center gap-2"
                 >
                   {isSavingGps ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                  <span>Simpan Lokasi GPS</span>
+                  <span>Simpan Pengaturan</span>
                 </button>
               </div>
             </form>

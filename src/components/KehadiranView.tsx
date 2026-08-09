@@ -163,6 +163,9 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
       localStorage.setItem("19points_scan_start", scanStartTime.trim());
       localStorage.setItem("19points_scan_end", scanEndTime.trim());
       
+      // Dispatch custom event to sync active sessions without reload
+      window.dispatchEvent(new Event("storage"));
+      
       setToastMessage(`✨ Pengaturan GPS & Jam Presensi Mandiri (${scanStartTime} - ${scanEndTime} WIB) berhasil disimpan!`);
       setTimeout(() => setToastMessage(null), 4000);
     } catch (err: any) {

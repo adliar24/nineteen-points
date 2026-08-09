@@ -46,12 +46,19 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
   const [historyTab, setHistoryTab] = useState<"poin" | "kehadiran">("poin");
   const historyPerPage = 10;
 
-  // Student QR Class Scan Modal State
-  const [showStudentScanModal, setShowStudentScanModal] = useState(false);
-  const [scanStatusMsg, setScanStatusMsg] = useState("");
-  const [scanErrorMsg, setScanErrorMsg] = useState("");
-  const [scanSuccessMsg, setScanSuccessMsg] = useState("");
-  const [isProcessingScan, setIsProcessingScan] = useState(false);
+  // Dynamic Scan Time Window States
+  const [scanStart, setScanStart] = useState(() => localStorage.getItem("19points_scan_start") || "06:30");
+  const [scanEnd, setScanEnd] = useState(() => localStorage.getItem("19points_scan_end") || "06:45");
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setScanStart(localStorage.getItem("19points_scan_start") || "06:30");
+      setScanEnd(localStorage.getItem("19points_scan_end") || "06:45");
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
 
   const handleStudentClassQrScan = async (scannedData: string) => {
     if (!scannedData.startsWith("CLASS_QR:")) {
@@ -932,7 +939,7 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
       {showStudentScanModal && (
         <QrScanner
           title="Scan Presensi Kelas"
-          subtitle={`Presensi Mandiri (${localStorage.getItem("19points_scan_start") || "06:30"} - ${localStorage.getItem("19points_scan_end") || "06:45"} WIB)`}
+          subtitle={`Presensi Mandiri (${scanStart} - ${scanEnd} WIB)`}
           onClose={() => {
             setShowStudentScanModal(false);
             setScanErrorMsg("");

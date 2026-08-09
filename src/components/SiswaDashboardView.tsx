@@ -436,12 +436,12 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
                   <div className="flex gap-2">
                     <button
                       onClick={() => setShowStudentScanModal(true)}
-                      className="bg-amber-400 hover:bg-amber-300 text-amber-950 px-4 py-2.5 rounded-2xl font-black text-xs inline-flex items-center justify-center gap-1.5 transition-all shadow-md cursor-pointer border border-amber-300 flex-1"
+                      className="bg-amber-400 hover:bg-amber-300 text-amber-950 px-3 py-2 rounded-2xl font-black text-xs inline-flex items-center justify-center gap-1.5 transition-all shadow-md cursor-pointer border border-amber-300 flex-1 min-h-[46px]"
                     >
                       <Camera className="w-4 h-4 shrink-0" />
-                      <span>Scan Presensi</span>
+                      <span>Kehadiran</span>
                     </button>
-                    <div className="bg-emerald-50/70 border border-emerald-100 rounded-2xl px-3 py-2 text-center flex-1">
+                    <div className="bg-emerald-50/70 border border-emerald-100 rounded-2xl px-3 py-2 text-center flex-1 flex flex-col justify-center min-h-[46px]">
                       <span className="text-[8.5px] font-black text-emerald-600 block uppercase tracking-wider">Kelas</span>
                       <span className="text-xs font-extrabold text-emerald-800 truncate">{siswaDetail.kelas}</span>
                     </div>
@@ -472,12 +472,12 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
               <div className="flex gap-4">
                 <button
                   onClick={() => setShowStudentScanModal(true)}
-                  className="bg-amber-400 hover:bg-amber-300 text-amber-950 px-5 py-3 rounded-2xl font-black text-xs inline-flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer border border-amber-300 shrink-0 hover:scale-[1.02] active:scale-[0.98]"
+                  className="bg-amber-400 hover:bg-amber-300 text-amber-950 px-5 py-3 rounded-2xl font-black text-xs inline-flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer border border-amber-300 shrink-0 hover:scale-[1.02] active:scale-[0.98] min-w-[120px] min-h-[54px]"
                 >
                   <Camera className="w-4.5 h-4.5" />
-                  <span>📷 Scan Presensi Kelas</span>
+                  <span>Kehadiran</span>
                 </button>
-                <div className="bg-emerald-50/70 border border-emerald-100 rounded-2xl px-5 py-3 text-center min-w-[100px]">
+                <div className="bg-emerald-50/70 border border-emerald-100 rounded-2xl px-5 py-3 text-center min-w-[120px] min-h-[54px] flex flex-col justify-center">
                   <span className="text-[10px] font-black text-emerald-600 block uppercase tracking-wider">Kelas</span>
                   <span className="text-base font-extrabold text-emerald-800">{siswaDetail.kelas}</span>
                 </div>

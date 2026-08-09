@@ -145,9 +145,16 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
   const [scanEndTime, setScanEndTime] = useState(() => localStorage.getItem("19points_scan_end") || "06:45");
   const [isSavingGps, setIsSavingGps] = useState(false);
   const [isBulkPrintingQr, setIsBulkPrintingQr] = useState(false);
+  const [isConfirmGpsModalOpen, setIsConfirmGpsModalOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  const handleSaveGpsSettings = (e: React.FormEvent) => {
+  const handleOpenGpsConfirmModal = (e: React.FormEvent) => {
     e.preventDefault();
+    setIsConfirmGpsModalOpen(true);
+  };
+
+  const executeSaveGpsSettings = () => {
+    setIsConfirmGpsModalOpen(false);
     setIsSavingGps(true);
     try {
       localStorage.setItem("19points_gps_lat", gpsLat.trim());
@@ -155,7 +162,9 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
       localStorage.setItem("19points_gps_radius", gpsRadius.trim());
       localStorage.setItem("19points_scan_start", scanStartTime.trim());
       localStorage.setItem("19points_scan_end", scanEndTime.trim());
-      alert(`Berhasil! Pengaturan GPS & Jam Presensi Mandiri (${scanStartTime} - ${scanEndTime} WIB) berhasil tersimpan.`);
+      
+      setToastMessage(`✨ Pengaturan GPS & Jam Presensi Mandiri (${scanStartTime} - ${scanEndTime} WIB) berhasil disimpan!`);
+      setTimeout(() => setToastMessage(null), 4000);
     } catch (err: any) {
       alert("Gagal menyimpan lokasi GPS & jam presensi.");
     } finally {
@@ -1470,7 +1479,7 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
               </div>
             </div>
 
-            <form onSubmit={handleSaveGpsSettings} className="space-y-4">
+            <form onSubmit={handleOpenGpsConfirmModal} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-purple-50/50 p-4 border border-purple-100 rounded-2xl">
                 <div>
                   <label className="text-[11px] font-black text-purple-900 block mb-1">Jam Mulai Scan Mandiri</label>
@@ -1867,6 +1876,71 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
               </div>
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+
+      {/* POPUP CONFIRMATION MODAL (YA / TIDAK) FOR GPS & TIME SETTINGS */}
+      <AnimatePresence>
+        {isConfirmGpsModalOpen && (
+          <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-brand-950/60 backdrop-blur-xs"
+              onClick={() => setIsConfirmGpsModalOpen(false)}
+            />
+            
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 8 }}
+              className="bg-white rounded-3xl p-6 w-full max-w-sm border border-brand-100 shadow-2xl relative z-10 text-center space-y-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="w-14 h-14 rounded-2xl bg-purple-100 text-purple-700 flex items-center justify-center mx-auto shadow-md">
+                <MapPin className="w-7 h-7" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-base font-black text-brand-950">Konfirmasi Simpan Pengaturan</h3>
+                <p className="text-xs text-brand-400 font-semibold leading-relaxed">
+                  Apakah Anda yakin ingin menyimpan perubahan koordinat GPS, radius, dan rentang jam presensi mandiri murid ({scanStartTime} - {scanEndTime} WIB)?
+                </p>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsConfirmGpsModalOpen(false)}
+                  className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-black uppercase tracking-wider rounded-xl cursor-pointer transition-all"
+                >
+                  Tidak
+                </button>
+                <button
+                  type="button"
+                  onClick={executeSaveGpsSettings}
+                  className="flex-1 py-3 brand-gradient text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-lg shadow-purple-500/25 cursor-pointer transition-all hover:scale-[1.02]"
+                >
+                  Ya, Simpan
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* BOTTOM RIGHT TOAST NOTIFICATION */}
+      <AnimatePresence>
+        {toastMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.9 }}
+            className="fixed bottom-6 right-6 z-[130] bg-slate-900 text-white px-5 py-3.5 rounded-2xl border border-purple-500/40 shadow-2xl flex items-center gap-3 text-xs font-bold"
+          >
+            <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+            <span>{toastMessage}</span>
+          </motion.div>
         )}
       </AnimatePresence>
 

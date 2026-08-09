@@ -386,6 +386,20 @@ CREATE TRIGGER trg_kehadiran_update
   AFTER UPDATE ON public.kehadiran
   FOR EACH ROW EXECUTE FUNCTION public.sync_kehadiran_to_riwayat_update();
 
+-- 4g. AUTO-SYNC RIWAYAT POIN SAAT KEHADIRAN DIHAPUS (DELETE)
+CREATE OR REPLACE FUNCTION public.sync_kehadiran_to_riwayat_delete()
+RETURNS TRIGGER AS $$
+BEGIN
+  DELETE FROM public.riwayat_poin WHERE kehadiran_id = OLD.id;
+  RETURN OLD;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS trg_kehadiran_delete ON public.kehadiran;
+CREATE TRIGGER trg_kehadiran_delete
+  AFTER DELETE ON public.kehadiran
+  FOR EACH ROW EXECUTE FUNCTION public.sync_kehadiran_to_riwayat_delete();
+
 
 -- =========================================================================
 -- 5. SEED DATA — ATURAN MASTER POIN BAKU SMAN 19 BANDUNG

@@ -141,16 +141,34 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
         throw new Error(`⛔ DI LUAR WAKTU PRESENSI: Scan presensi kelas mandiri hanya aktif pada pukul ${scanStartStr} - ${scanEndStr} WIB. Jika Anda terlambat, silakan melapor ke Guru Piket.`);
       }
 
+      // 1b. Verify scanned QR class matches student's assigned class
+      const scannedClass = scannedData.replace("CLASS_QR:", "").trim().toUpperCase();
+      const studentClass = (siswaDetail?.kelas || "").trim().toUpperCase();
+
+      if (scannedClass !== studentClass) {
+        throw new Error(`⛔ KELAS TIDAK COCOK: QR Code yang Anda scan adalah milik KELAS ${scannedClass}. Anda terdaftar di KELAS ${studentClass}. Harap scan QR Code di kelas Anda sendiri!`);
+      }
+
       // 2. Device Binding Check (Anti-Titip Absen)
-      const todayStr = new Date().toISOString().slice(0, 10);
-      const deviceFp = localStorage.getItem("19points_device_fp") || `fp_${Math.random().toString(36).substring(2, 10)}`;
-      localStorage.setItem("19points_device_fp", deviceFp);
+      let bindingEnabled = localStorage.getItem("19points_device_binding_enabled") !== "false";
+      try {
+        const { data: remoteConfig } = await supabase.from("pengaturan_sistem").select("*").eq("kunci", "device_binding_enabled").maybeSingle();
+        if (remoteConfig?.nilai) {
+          bindingEnabled = remoteConfig.nilai !== "false";
+        }
+      } catch (e) {}
 
-      const deviceBindingKey = `19points_binding_${todayStr}`;
-      const existingBinding = localStorage.getItem(deviceBindingKey);
+      if (bindingEnabled) {
+        const todayStr = new Date().toISOString().slice(0, 10);
+        const deviceFp = localStorage.getItem("19points_device_fp") || `fp_${Math.random().toString(36).substring(2, 10)}`;
+        localStorage.setItem("19points_device_fp", deviceFp);
 
-      if (existingBinding && existingBinding !== siswaDetail?.id) {
-        throw new Error(`⛔ PERANGKAT TERKUNCI: Perangkat HP ini sudah digunakan untuk presensi murid lain hari ini. Titip absen tidak diperbolehkan!`);
+        const deviceBindingKey = `19points_binding_${todayStr}`;
+        const existingBinding = localStorage.getItem(deviceBindingKey);
+
+        if (existingBinding && existingBinding !== siswaDetail?.id) {
+          throw new Error(`⛔ PERANGKAT TERKUNCI: Perangkat HP ini sudah digunakan untuk presensi murid lain hari ini. Titip absen tidak diperbolehkan!`);
+        }
       }
 
       // 3. Geolocation GPS Check

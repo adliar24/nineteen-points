@@ -144,6 +144,7 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
   const [gpsRadius, setGpsRadius] = useState(() => localStorage.getItem("19points_gps_radius") || "150");
   const [scanStartTime, setScanStartTime] = useState(() => localStorage.getItem("19points_scan_start") || "06:30");
   const [scanEndTime, setScanEndTime] = useState(() => localStorage.getItem("19points_scan_end") || "06:45");
+  const [deviceBindingEnabled, setDeviceBindingEnabled] = useState(() => localStorage.getItem("19points_device_binding_enabled") !== "false");
   const [isSavingGps, setIsSavingGps] = useState(false);
   const [isBulkPrintingQr, setIsBulkPrintingQr] = useState(false);
   const [isConfirmGpsModalOpen, setIsConfirmGpsModalOpen] = useState(false);
@@ -163,12 +164,14 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
       const radiusVal = gpsRadius.trim();
       const startVal = scanStartTime.trim();
       const endVal = scanEndTime.trim();
+      const bindingVal = deviceBindingEnabled ? "true" : "false";
 
       localStorage.setItem("19points_gps_lat", latVal);
       localStorage.setItem("19points_gps_lng", lngVal);
       localStorage.setItem("19points_gps_radius", radiusVal);
       localStorage.setItem("19points_scan_start", startVal);
       localStorage.setItem("19points_scan_end", endVal);
+      localStorage.setItem("19points_device_binding_enabled", bindingVal);
       
       // Save to Supabase 'pengaturan_sistem' table for cross-device sync
       const settingsPayload = [
@@ -176,7 +179,8 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
         { kunci: "gps_lng", nilai: lngVal },
         { kunci: "gps_radius", nilai: radiusVal },
         { kunci: "scan_start", nilai: startVal },
-        { kunci: "scan_end", nilai: endVal }
+        { kunci: "scan_end", nilai: endVal },
+        { kunci: "device_binding_enabled", nilai: bindingVal }
       ];
       await supabase.from("pengaturan_sistem").upsert(settingsPayload, { onConflict: "kunci" });
 
@@ -1597,6 +1601,29 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
                     className="w-full border border-purple-200 rounded-xl p-2.5 text-xs font-bold text-purple-950 outline-none bg-white focus:ring-1 focus:ring-purple-500"
                   />
                 </div>
+              </div>
+
+              {/* Device Binding Toggle Card */}
+              <div className="bg-amber-50/70 border border-amber-200/60 rounded-2xl p-4 flex items-center justify-between gap-4">
+                <div>
+                  <h4 className="text-xs font-black text-amber-950">Kunci 1 Akun Perangkat (Anti-Titip Absen)</h4>
+                  <p className="text-[10.5px] text-amber-800 font-medium mt-0.5">
+                    Jika aktif, 1 HP hanya bisa digunakan untuk presensi 1 murid per hari. Matikan (OFF) saat uji coba / testing multi-akun.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setDeviceBindingEnabled(!deviceBindingEnabled)}
+                  className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 ${
+                    deviceBindingEnabled ? "bg-amber-500" : "bg-slate-300"
+                  }`}
+                >
+                  <div
+                    className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform absolute top-0.5 ${
+                      deviceBindingEnabled ? "translate-x-6" : "translate-x-0.5"
+                    }`}
+                  />
+                </button>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

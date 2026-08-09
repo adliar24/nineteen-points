@@ -49,6 +49,8 @@ AS $$
   WHERE s.nis::text = lower(trim(p_login))
      OR lower(s.username) = lower(trim(p_login))
      OR lower(s.username) = lower(regexp_replace(p_login, '[^a-z0-9]', '', 'g'))
+     OR lower(s.nama) = lower(trim(p_login))
+     OR lower(regexp_replace(s.nama, '[^a-z0-9]', '', 'g')) = lower(regexp_replace(p_login, '[^a-z0-9]', '', 'g'))
   LIMIT 1;
 $$;
 

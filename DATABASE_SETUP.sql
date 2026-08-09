@@ -308,7 +308,7 @@ BEGIN
   WHERE id = NEW.siswa_id;
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 DROP TRIGGER IF EXISTS trg_riwayat_poin_insert ON public.riwayat_poin;
 CREATE TRIGGER trg_riwayat_poin_insert
@@ -324,7 +324,7 @@ BEGIN
   WHERE id = OLD.siswa_id;
   RETURN OLD;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 DROP TRIGGER IF EXISTS trg_riwayat_poin_delete ON public.riwayat_poin;
 CREATE TRIGGER trg_riwayat_poin_delete
@@ -340,7 +340,7 @@ BEGIN
   WHERE id = NEW.siswa_id;
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 DROP TRIGGER IF EXISTS trg_riwayat_poin_update ON public.riwayat_poin;
 CREATE TRIGGER trg_riwayat_poin_update
@@ -358,7 +358,7 @@ BEGIN
   VALUES (NEW.siswa_id, NEW.nilai_poin_diberikan, COALESCE(v_label, 'Pencatatan Kehadiran'), NEW.pencatat_email, NEW.id);
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 DROP TRIGGER IF EXISTS trg_kehadiran_insert ON public.kehadiran;
 CREATE TRIGGER trg_kehadiran_insert
@@ -379,7 +379,7 @@ BEGIN
   WHERE kehadiran_id = NEW.id;
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 DROP TRIGGER IF EXISTS trg_kehadiran_update ON public.kehadiran;
 CREATE TRIGGER trg_kehadiran_update

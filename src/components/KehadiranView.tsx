@@ -163,8 +163,14 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
       localStorage.setItem("19points_scan_start", scanStartTime.trim());
       localStorage.setItem("19points_scan_end", scanEndTime.trim());
       
-      // Dispatch custom event to sync active sessions without reload
+      // Dispatch events across same tab & other tabs/devices
       window.dispatchEvent(new Event("storage"));
+      window.dispatchEvent(new CustomEvent("19points_config_updated"));
+      try {
+        const bc = new BroadcastChannel("19points_channel");
+        bc.postMessage({ type: "CONFIG_UPDATED", start: scanStartTime.trim(), end: scanEndTime.trim() });
+        bc.close();
+      } catch (e) {}
       
       setToastMessage(`✨ Pengaturan GPS & Jam Presensi Mandiri (${scanStartTime} - ${scanEndTime} WIB) berhasil disimpan!`);
       setTimeout(() => setToastMessage(null), 4000);

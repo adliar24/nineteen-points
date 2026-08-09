@@ -58,13 +58,29 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
   const [isProcessingScan, setIsProcessingScan] = useState(false);
 
   useEffect(() => {
-    const handleStorageChange = () => {
+    const syncTimeConfig = () => {
       setScanStart(localStorage.getItem("19points_scan_start") || "06:30");
       setScanEnd(localStorage.getItem("19points_scan_end") || "06:45");
     };
 
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
+    window.addEventListener("storage", syncTimeConfig);
+    window.addEventListener("19points_config_updated", syncTimeConfig);
+
+    let bc: BroadcastChannel | null = null;
+    try {
+      bc = new BroadcastChannel("19points_channel");
+      bc.onmessage = (event) => {
+        if (event.data && event.data.type === "CONFIG_UPDATED") {
+          syncTimeConfig();
+        }
+      };
+    } catch (e) {}
+
+    return () => {
+      window.removeEventListener("storage", syncTimeConfig);
+      window.removeEventListener("19points_config_updated", syncTimeConfig);
+      if (bc) bc.close();
+    };
   }, []);
 
   const handleStudentClassQrScan = async (scannedData: string) => {

@@ -525,14 +525,14 @@ CREATE POLICY "master_poin_delete" ON public.master_poin
   USING (public.is_staff());
 
 -- -----------------------------------------------
--- RIWAYAT_POIN (baca semua; tulis hanya staf)
+-- RIWAYAT_POIN (baca semua; tulis staf atau murid via presensi mandiri)
 -- -----------------------------------------------
 CREATE POLICY "riwayat_select" ON public.riwayat_poin
   FOR SELECT TO authenticated USING (true);
 
 CREATE POLICY "riwayat_insert" ON public.riwayat_poin
   FOR INSERT TO authenticated
-  WITH CHECK (public.is_staff());
+  WITH CHECK (true);
 
 CREATE POLICY "riwayat_update" ON public.riwayat_poin
   FOR UPDATE TO authenticated
@@ -559,13 +559,13 @@ CREATE POLICY "aturan_kehadiran_delete" ON public.aturan_kehadiran
   FOR DELETE TO authenticated USING (public.is_staff());
 
 -- -----------------------------------------------
--- KEHADIRAN (baca semua; tulis hanya staf)
+-- KEHADIRAN (baca semua; tulis staf atau murid via presensi mandiri)
 -- -----------------------------------------------
 CREATE POLICY "kehadiran_select" ON public.kehadiran
   FOR SELECT TO authenticated USING (true);
 
 CREATE POLICY "kehadiran_insert" ON public.kehadiran
-  FOR INSERT TO authenticated WITH CHECK (public.is_staff());
+  FOR INSERT TO authenticated WITH CHECK (true);
 
 CREATE POLICY "kehadiran_update" ON public.kehadiran
   FOR UPDATE TO authenticated USING (public.is_staff()) WITH CHECK (public.is_staff());

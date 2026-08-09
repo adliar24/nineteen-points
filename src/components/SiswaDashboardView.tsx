@@ -58,10 +58,33 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
   const [isProcessingScan, setIsProcessingScan] = useState(false);
 
   useEffect(() => {
-    const syncTimeConfig = () => {
-      setScanStart(localStorage.getItem("19points_scan_start") || "06:30");
-      setScanEnd(localStorage.getItem("19points_scan_end") || "06:45");
+    const syncTimeConfig = async () => {
+      // 1. Try local storage
+      let startVal = localStorage.getItem("19points_scan_start") || "06:30";
+      let endVal = localStorage.getItem("19points_scan_end") || "06:45";
+
+      // 2. Fetch from Supabase for cross-device accuracy
+      try {
+        const { data: remoteConfig } = await supabase.from("pengaturan_sistem").select("*");
+        if (remoteConfig && remoteConfig.length > 0) {
+          const sItem = remoteConfig.find((r: any) => r.kunci === "scan_start");
+          const eItem = remoteConfig.find((r: any) => r.kunci === "scan_end");
+          if (sItem?.nilai) {
+            startVal = sItem.nilai;
+            localStorage.setItem("19points_scan_start", sItem.nilai);
+          }
+          if (eItem?.nilai) {
+            endVal = eItem.nilai;
+            localStorage.setItem("19points_scan_end", eItem.nilai);
+          }
+        }
+      } catch (e) {}
+
+      setScanStart(startVal);
+      setScanEnd(endVal);
     };
+
+    syncTimeConfig();
 
     window.addEventListener("storage", syncTimeConfig);
     window.addEventListener("19points_config_updated", syncTimeConfig);

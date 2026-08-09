@@ -23,7 +23,11 @@ import {
   ChevronDown,
   X,
   FileText,
-  User
+  User,
+  MapPin,
+  QrCode,
+  Save,
+  Loader2
 } from "lucide-react";
 import { Siswa, UserSession } from "../types";
 import {
@@ -130,9 +134,125 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  // Admin Config points state
-  const [tempPoints, setTempPoints] = useState<Record<string, number>>({});
-  const [isSavingConfig, setIsSavingConfig] = useState(false);
+  // Admin GPS Location & Bulk QR States
+  const [gpsLat, setGpsLat] = useState(() => localStorage.getItem("19points_gps_lat") || "-6.914744");
+  const [gpsLng, setGpsLng] = useState(() => localStorage.getItem("19points_gps_lng") || "107.609810");
+  const [gpsRadius, setGpsRadius] = useState(() => localStorage.getItem("19points_gps_radius") || "150");
+  const [isSavingGps, setIsSavingGps] = useState(false);
+  const [isBulkPrintingQr, setIsBulkPrintingQr] = useState(false);
+
+  const handleSaveGpsSettings = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSavingGps(true);
+    try {
+      localStorage.setItem("19points_gps_lat", gpsLat.trim());
+      localStorage.setItem("19points_gps_lng", gpsLng.trim());
+      localStorage.setItem("19points_gps_radius", gpsRadius.trim());
+      alert(`Berhasil! Koordinat GPS (${gpsLat}, ${gpsLng}) & radius ${gpsRadius}m tersimpan untuk presensi murid.`);
+    } catch (err: any) {
+      alert("Gagal menyimpan lokasi GPS.");
+    } finally {
+      setIsSavingGps(false);
+    }
+  };
+
+  const handleDetectCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      alert("Browser tidak mendukung Geolocation.");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setGpsLat(pos.coords.latitude.toFixed(6));
+        setGpsLng(pos.coords.longitude.toFixed(6));
+        alert("Koordinat GPS terkini berhasil terdeteksi!");
+      },
+      (err) => alert(`Gagal mengambil lokasi: ${err.message}`),
+      { enableHighAccuracy: true }
+    );
+  };
+
+  const handleBulkPrintClassQr = async () => {
+    setIsBulkPrintingQr(true);
+    try {
+      const classesList = Array.from(new Set(siswaList.map(s => s.kelas).filter(Boolean))).sort();
+      if (classesList.length === 0) {
+        alert("Belum ada kelas terdaftar.");
+        return;
+      }
+
+      const QRCode = (await import("qrcode")).default;
+      const JSZip = (await import("jszip")).default;
+      const zip = new JSZip();
+      const folder = zip.folder("POSTER_QR_KELAS");
+
+      for (const kelasName of classesList) {
+        const canvas = document.createElement("canvas");
+        canvas.width = 600;
+        canvas.height = 800;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) continue;
+
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, 600, 800);
+
+        const grd = ctx.createLinearGradient(0, 0, 600, 0);
+        grd.addColorStop(0, "#4C1D95");
+        grd.addColorStop(1, "#7C3AED");
+        ctx.fillStyle = grd;
+        ctx.fillRect(0, 0, 600, 160);
+
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 34px 'Inter', sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("QR CODE ABSENSI KELAS", 300, 75);
+
+        ctx.font = "500 18px 'Inter', sans-serif";
+        ctx.fillStyle = "#E9D5FF";
+        ctx.fillText("SMAN 19 BANDUNG", 300, 115);
+
+        const qrDataUrl = await QRCode.toDataURL(`CLASS_QR:${kelasName}`, { width: 380, margin: 1 });
+        const qrImg = new Image();
+        qrImg.src = qrDataUrl;
+        await new Promise(r => qrImg.onload = r);
+        ctx.drawImage(qrImg, 110, 220, 380, 380);
+
+        ctx.fillStyle = "#F5F3FF";
+        ctx.fillRect(50, 640, 500, 100);
+        ctx.strokeStyle = "#DDD6FE";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(50, 640, 500, 100);
+
+        ctx.fillStyle = "#4C1D95";
+        ctx.font = "bold 36px 'Inter', sans-serif";
+        ctx.fillText(`KELAS ${kelasName.toUpperCase()}`, 300, 690);
+
+        ctx.fillStyle = "#6B7280";
+        ctx.font = "bold 14px 'Inter', sans-serif";
+        ctx.fillText("Scan via Aplikasi Nineteen Points • Jam 06.30 - 06.45 WIB", 300, 722);
+
+        const blob = await new Promise<Blob | null>(res => canvas.toBlob(res, "image/png"));
+        if (blob && folder) {
+          folder.file(`POSTER_QR_KELAS_${kelasName.replace(/\s+/g, "_")}.png`, blob);
+        }
+      }
+
+      const zipContent = await zip.generateAsync({ type: "blob" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(zipContent);
+      link.download = `SEMUA_POSTER_QR_KELAS_${new Date().toISOString().slice(0, 10)}.zip`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      alert(`Berhasil mengunduh ${classesList.length} poster QR Code kelas dalam file ZIP.`);
+    } catch (err: any) {
+      console.error(err);
+      alert("Terjadi kesalahan saat generate massal QR kelas.");
+    } finally {
+      setIsBulkPrintingQr(false);
+    }
+  };
 
   // Student specific history popup modal
   const [detailedStudent, setDetailedStudent] = useState<Siswa | null>(null);
@@ -1325,48 +1445,154 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
         </div>
       )}
 
-      {/* TAB CONTENT: ADMIN CONFIG POINT SYSTEM */}
+      {/* TAB CONTENT: ADMIN CONFIG POINT SYSTEM & GPS CONFIG */}
       {isAdmin && activeTab === "aturan" && (
-        <div className="max-w-2xl bg-white p-6 rounded-3xl border border-brand-100 shadow-md shadow-brand-900/5 space-y-6">
-          <div>
-            <h3 className="text-sm font-black text-brand-950 uppercase tracking-widest flex items-center gap-2">
-              <Sliders className="w-5 h-5 text-brand-600" />
-              Pengaturan Poin Kehadiran
-            </h3>
-            <p className="text-[10.5px] text-brand-400 font-semibold mt-1">
-              Admin dapat menentukan bobot poin penghargaan atau hukuman untuk kehadiran harian
-            </p>
-          </div>
+        <div className="space-y-6 max-w-3xl">
+          {/* GPS Location & Radius Settings Card */}
+          <div className="bg-white p-6 rounded-3xl border border-brand-100 shadow-md shadow-brand-900/5 space-y-5">
+            <div className="flex items-center gap-3.5 pb-4 border-b border-brand-50">
+              <div className="w-10 h-10 rounded-2xl bg-purple-100 text-purple-700 flex items-center justify-center font-bold">
+                <MapPin className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-black text-brand-950 uppercase tracking-widest">
+                  Pengaturan GPS & Radius Sekolah (Super Admin)
+                </h3>
+                <p className="text-[10.5px] text-brand-400 font-semibold mt-0.5">
+                  Batas radius area sekolah murid diperbolehkan menscan QR Code kelas saat jam presensi mandiri.
+                </p>
+              </div>
+            </div>
 
-          <div className="space-y-4 border-y border-brand-50 py-4">
-            {aturanList.map(rule => (
-              <div key={rule.status} className="flex items-center justify-between gap-4 p-3 bg-brand-50/15 border border-brand-50 rounded-2xl">
+            <form onSubmit={handleSaveGpsSettings} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <h4 className="text-xs font-extrabold text-brand-950 leading-none">{rule.label}</h4>
-                  <span className="text-[9px] font-black uppercase text-slate-400 mt-2 block font-mono">Status: {rule.status}</span>
+                  <label className="text-[11px] font-black text-brand-900 block mb-1">Latitude (Lintang)</label>
+                  <input
+                    type="text"
+                    required
+                    value={gpsLat}
+                    onChange={(e) => setGpsLat(e.target.value)}
+                    className="w-full border border-brand-100 rounded-xl p-2.5 text-xs font-bold text-brand-900 outline-none bg-brand-50/20 focus:bg-white focus:ring-1 focus:ring-brand-500"
+                    placeholder="-6.914744"
+                  />
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-xs font-bold text-slate-500">Bobot Poin:</span>
+                <div>
+                  <label className="text-[11px] font-black text-brand-900 block mb-1">Longitude (Bujur)</label>
+                  <input
+                    type="text"
+                    required
+                    value={gpsLng}
+                    onChange={(e) => setGpsLng(e.target.value)}
+                    className="w-full border border-brand-100 rounded-xl p-2.5 text-xs font-bold text-brand-900 outline-none bg-brand-50/20 focus:bg-white focus:ring-1 focus:ring-brand-500"
+                    placeholder="107.609810"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-black text-brand-900 block mb-1">Radius Max (Meter)</label>
                   <input
                     type="number"
-                    value={tempPoints[rule.status] ?? 0}
-                    onChange={(e) => setTempPoints({ ...tempPoints, [rule.status]: Number(e.target.value) })}
-                    className="w-20 border border-brand-100 rounded-xl p-2.5 text-xs font-black text-brand-900 font-mono text-center outline-none bg-white focus:ring-1 focus:ring-brand-500"
+                    required
+                    min={10}
+                    max={2000}
+                    value={gpsRadius}
+                    onChange={(e) => setGpsRadius(e.target.value)}
+                    className="w-full border border-brand-100 rounded-xl p-2.5 text-xs font-bold text-brand-900 outline-none bg-brand-50/20 focus:bg-white focus:ring-1 focus:ring-brand-500"
+                    placeholder="150"
                   />
-                  <span className="text-[11px] font-bold text-slate-400 font-mono">pts</span>
                 </div>
               </div>
-            ))}
+
+              <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={handleDetectCurrentLocation}
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold text-xs rounded-xl transition-all flex items-center gap-2 cursor-pointer"
+                >
+                  <MapPin className="w-4 h-4 text-purple-600" />
+                  <span>Deteksi Lokasi GPS Saya</span>
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={isSavingGps}
+                  className="px-5 py-2.5 brand-gradient text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-md cursor-pointer disabled:opacity-50 flex items-center gap-2"
+                >
+                  {isSavingGps ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                  <span>Simpan Lokasi GPS</span>
+                </button>
+              </div>
+            </form>
           </div>
 
-          <div className="flex justify-end">
+          {/* Bulk Class QR Print Card */}
+          <div className="bg-white p-6 rounded-3xl border border-brand-100 shadow-md shadow-brand-900/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5">
+              <div className="w-10 h-10 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold">
+                <QrCode className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-black text-brand-950 uppercase tracking-widest">
+                  Cetak Massal QR Code Poster Kelas
+                </h3>
+                <p className="text-[10.5px] text-brand-400 font-semibold mt-0.5">
+                  Unduh sekaligus seluruh poster A4 QR Code Kelas sekolah dalam file ZIP.
+                </p>
+              </div>
+            </div>
+
             <button
-              onClick={handleSaveConfig}
-              disabled={isSavingConfig}
-              className="px-6 py-3.5 brand-gradient text-white text-xs font-black uppercase tracking-wider rounded-2xl shadow-lg shadow-brand-500/25 cursor-pointer disabled:opacity-50 flex items-center gap-2"
+              onClick={handleBulkPrintClassQr}
+              disabled={isBulkPrintingQr}
+              className="px-5 py-3 bg-gradient-to-r from-amber-500 to-orange-600 text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2 shrink-0"
             >
-              {isSavingConfig ? <RefreshCw className="w-4 h-4 animate-spin" /> : "Simpan Aturan Absensi"}
+              {isBulkPrintingQr ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+              <span>Cetak Semua QR Kelas (ZIP)</span>
             </button>
+          </div>
+
+          {/* Attendance Points Rules Card */}
+          <div className="bg-white p-6 rounded-3xl border border-brand-100 shadow-md shadow-brand-900/5 space-y-6">
+            <div>
+              <h3 className="text-sm font-black text-brand-950 uppercase tracking-widest flex items-center gap-2">
+                <Sliders className="w-5 h-5 text-brand-600" />
+                Pengaturan Poin Kehadiran
+              </h3>
+              <p className="text-[10.5px] text-brand-400 font-semibold mt-1">
+                Admin dapat menentukan bobot poin penghargaan atau hukuman untuk kehadiran harian
+              </p>
+            </div>
+
+            <div className="space-y-4 border-y border-brand-50 py-4">
+              {aturanList.map(rule => (
+                <div key={rule.status} className="flex items-center justify-between gap-4 p-3 bg-brand-50/15 border border-brand-50 rounded-2xl">
+                  <div>
+                    <h4 className="text-xs font-extrabold text-brand-950 leading-none">{rule.label}</h4>
+                    <span className="text-[9px] font-black uppercase text-slate-400 mt-2 block font-mono">Status: {rule.status}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs font-bold text-slate-500">Bobot Poin:</span>
+                    <input
+                      type="number"
+                      value={tempPoints[rule.status] ?? 0}
+                      onChange={(e) => setTempPoints({ ...tempPoints, [rule.status]: Number(e.target.value) })}
+                      className="w-20 border border-brand-100 rounded-xl p-2.5 text-xs font-black text-brand-900 font-mono text-center outline-none bg-white focus:ring-1 focus:ring-brand-500"
+                    />
+                    <span className="text-[11px] font-bold text-slate-400 font-mono">pts</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex justify-end">
+              <button
+                onClick={handleSaveConfig}
+                disabled={isSavingConfig}
+                className="px-6 py-3.5 brand-gradient text-white text-xs font-black uppercase tracking-wider rounded-2xl shadow-lg shadow-brand-500/25 cursor-pointer disabled:opacity-50 flex items-center gap-2"
+              >
+                {isSavingConfig ? <RefreshCw className="w-4 h-4 animate-spin" /> : "Simpan Aturan Absensi"}
+              </button>
+            </div>
           </div>
         </div>
       )}

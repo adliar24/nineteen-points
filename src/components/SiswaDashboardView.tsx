@@ -16,7 +16,11 @@ import {
   Check,
   X,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Camera,
+  MapPin,
+  Loader2,
+  CheckCircle2
 } from "lucide-react";
 import { UserSession, RiwayatPoin, Siswa } from "../types";
 import { supabase } from "../supabaseClient";
@@ -40,6 +44,104 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
   const [historyPage, setHistoryPage] = useState(1);
   const [historyTab, setHistoryTab] = useState<"poin" | "kehadiran">("poin");
   const historyPerPage = 10;
+
+  // Student QR Class Scan Modal State
+  const [showStudentScanModal, setShowStudentScanModal] = useState(false);
+  const [scanStatusMsg, setScanStatusMsg] = useState("");
+  const [scanErrorMsg, setScanErrorMsg] = useState("");
+  const [scanSuccessMsg, setScanSuccessMsg] = useState("");
+  const [isProcessingScan, setIsProcessingScan] = useState(false);
+
+  const handleStudentClassQrScan = async (scannedData: string) => {
+    if (!scannedData.startsWith("CLASS_QR:")) {
+      setScanErrorMsg("Format QR Code tidak valid. Harus berupa QR Code Kelas.");
+      return;
+    }
+
+    setIsProcessingScan(true);
+    setScanErrorMsg("");
+    setScanStatusMsg("Memeriksa jam presensi, lokasi GPS, dan perangkat HP...");
+
+    try {
+      // 1. Time Window Check (06.30 - 06.45 WIB)
+      const now = new Date();
+      const hours = now.getHours();
+      const minutes = now.getMinutes();
+      const timeInMinutes = hours * 60 + minutes;
+
+      const startTime = 6 * 60 + 30; // 06.30
+      const endTime = 6 * 60 + 45;   // 06.45
+
+      if (timeInMinutes < startTime || timeInMinutes > endTime) {
+        throw new Error(`⛔ DI LUAR WAKTU PRESENSI: Scan presensi kelas mandiri hanya aktif pada pukul 06.30 - 06.45 WIB. Jika Anda terlambat, silakan melapor ke Guru Piket.`);
+      }
+
+      // 2. Device Binding Check (Anti-Titip Absen)
+      const todayStr = new Date().toISOString().slice(0, 10);
+      const deviceFp = localStorage.getItem("19points_device_fp") || `fp_${Math.random().toString(36).substring(2, 10)}`;
+      localStorage.setItem("19points_device_fp", deviceFp);
+
+      const deviceBindingKey = `19points_binding_${todayStr}`;
+      const existingBinding = localStorage.getItem(deviceBindingKey);
+
+      if (existingBinding && existingBinding !== siswaDetail?.id) {
+        throw new Error(`⛔ PERANGKAT TERKUNCI: Perangkat HP ini sudah digunakan untuk presensi murid lain hari ini. Titip absen tidak diperbolehkan!`);
+      }
+
+      // 3. Geolocation GPS Check
+      setScanStatusMsg("Mengambil lokasi GPS Anda...");
+      const position: GeolocationPosition = await new Promise((resolve, reject) => {
+        if (!navigator.geolocation) return reject(new Error("Browser tidak mendukung lokasi GPS."));
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
+        });
+      });
+
+      const studentLat = position.coords.latitude;
+      const studentLng = position.coords.longitude;
+
+      const targetLat = parseFloat(localStorage.getItem("19points_gps_lat") || "-6.914744");
+      const targetLng = parseFloat(localStorage.getItem("19points_gps_lng") || "107.609810");
+      const allowedRadius = parseFloat(localStorage.getItem("19points_gps_radius") || "150");
+
+      // Haversine formula
+      const R = 6371000;
+      const dLat = (targetLat - studentLat) * (Math.PI / 180);
+      const dLon = (targetLng - studentLng) * (Math.PI / 180);
+      const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(studentLat * (Math.PI / 180)) * Math.cos(targetLat * (Math.PI / 180)) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      const distance = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+      if (distance > allowedRadius) {
+        throw new Error(`⛔ DI LUAR AREA SEKOLAH: Lokasi Anda berada ${Math.round(distance)}m dari lokasi sekolah (Radius max: ${allowedRadius}m).`);
+      }
+
+      // 4. Record Attendance to Supabase 'kehadiran'
+      setScanStatusMsg("Menyimpan status presensi Tepat Waktu...");
+      localStorage.setItem(deviceBindingKey, siswaDetail?.id || "");
+
+      const { error: insErr } = await supabase.from("kehadiran").insert([{
+        siswa_id: siswaDetail?.id,
+        tanggal: todayStr,
+        status: "tepat_waktu",
+        nilai_poin_diberikan: 15,
+        pencatat_email: userSession.email || "Self-QR",
+        created_at: new Date().toISOString()
+      }]);
+
+      if (insErr) throw insErr;
+
+      setScanSuccessMsg(`🎉 Presensi Berhasil! Anda tercatat HADIR (Tepat Waktu) pada pukul ${now.toLocaleTimeString("id-ID")}.`);
+    } catch (err: any) {
+      setScanErrorMsg(err.message || "Gagal memproses presensi.");
+    } finally {
+      setIsProcessingScan(false);
+      setScanStatusMsg("");
+    }
+  };
 
   useEffect(() => {
     setHistoryPage(1);
@@ -298,8 +400,15 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
                     Halo, {toSentenceCase(siswaDetail.nama)}! <Sparkles className="w-5 h-5 text-amber-300 animate-pulse" />
                   </h2>
                   <p className="text-xs text-purple-100 font-medium">
-                    Pantau poin prestasi dan pelanggaranmu di sini.
+                    Pantau poin prestasi, kedisiplinan, dan presensi harian secara real-time.
                   </p>
+                  <button
+                    onClick={() => setShowStudentScanModal(true)}
+                    className="mt-2.5 px-5 py-2.5 bg-amber-400 hover:bg-amber-300 text-amber-950 rounded-full font-black text-xs inline-flex items-center gap-2 transition-all shadow-md cursor-pointer border border-amber-300"
+                  >
+                    <Camera className="w-4 h-4" />
+                    <span>📷 Scan Presensi Kelas (06.30 - 06.45 WIB)</span>
+                  </button>
                 </div>
               </div>
               <div className="flex gap-4">

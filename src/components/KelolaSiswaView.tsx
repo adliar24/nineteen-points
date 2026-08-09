@@ -568,6 +568,76 @@ export default function KelolaSiswaView({
               </span>
             </motion.button>
 
+            {/* Cetak Poster QR Kelas Button */}
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={async () => {
+                const targetKelas = selectedKelas === "Semua" ? "X-A" : selectedKelas;
+                try {
+                  const QRCode = (await import("qrcode")).default;
+                  const canvas = document.createElement("canvas");
+                  canvas.width = 600;
+                  canvas.height = 800;
+                  const ctx = canvas.getContext("2d");
+                  if (!ctx) return;
+
+                  ctx.fillStyle = "#ffffff";
+                  ctx.fillRect(0, 0, 600, 800);
+
+                  const grd = ctx.createLinearGradient(0, 0, 600, 0);
+                  grd.addColorStop(0, "#4C1D95");
+                  grd.addColorStop(1, "#7C3AED");
+                  ctx.fillStyle = grd;
+                  ctx.fillRect(0, 0, 600, 160);
+
+                  ctx.fillStyle = "#ffffff";
+                  ctx.font = "bold 34px 'Inter', sans-serif";
+                  ctx.textAlign = "center";
+                  ctx.fillText("QR CODE ABSENSI KELAS", 300, 75);
+
+                  ctx.font = "500 18px 'Inter', sans-serif";
+                  ctx.fillStyle = "#E9D5FF";
+                  ctx.fillText("SMAN 19 BANDUNG", 300, 115);
+
+                  const qrDataUrl = await QRCode.toDataURL(`CLASS_QR:${targetKelas}`, { width: 380, margin: 1 });
+                  const qrImg = new Image();
+                  qrImg.src = qrDataUrl;
+                  await new Promise(r => qrImg.onload = r);
+                  ctx.drawImage(qrImg, 110, 220, 380, 380);
+
+                  ctx.fillStyle = "#F5F3FF";
+                  ctx.fillRect(50, 640, 500, 100);
+                  ctx.strokeStyle = "#DDD6FE";
+                  ctx.lineWidth = 2;
+                  ctx.strokeRect(50, 640, 500, 100);
+
+                  ctx.fillStyle = "#4C1D95";
+                  ctx.font = "bold 36px 'Inter', sans-serif";
+                  ctx.fillText(`KELAS ${targetKelas.toUpperCase()}`, 300, 690);
+
+                  ctx.fillStyle = "#6B7280";
+                  ctx.font = "bold 14px 'Inter', sans-serif";
+                  ctx.fillText("Scan via Aplikasi Nineteen Points • Jam 06.30 - 06.45 WIB", 300, 722);
+
+                  const dataUrl = canvas.toDataURL("image/png");
+                  const link = document.createElement("a");
+                  link.href = dataUrl;
+                  link.download = `POSTER_QR_KELAS_${targetKelas.replace(/\s+/g, "_")}.png`;
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                  showToast(`Poster QR Code Kelas ${targetKelas} berhasil diunduh.`);
+                } catch (qrErr) {
+                  showToast("Gagal mencetak QR Code kelas.");
+                }
+              }}
+              className="flex items-center justify-center gap-2 p-3 md:px-5 md:py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-2xl text-sm font-black transition-all shadow-md cursor-pointer"
+            >
+              <Printer className="w-4.5 h-4.5" />
+              <span className="hidden md:inline">Cetak QR Kelas ({selectedKelas === "Semua" ? "X-A" : selectedKelas})</span>
+            </motion.button>
+
             {/* Kartu Murid (pilihan / semua) */}
             <motion.button
               whileHover={{ scale: 1.02 }}

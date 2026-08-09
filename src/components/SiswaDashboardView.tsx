@@ -379,21 +379,17 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
                   <h2 className="text-lg font-black text-white leading-tight break-words">Halo, {toSentenceCase(siswaDetail.nama)}!</h2>
                   <p className="text-[11px] text-purple-100 font-medium">Pantau poin prestasi dan pelanggaranmu.</p>
                 </div>
-                <div className="flex flex-col gap-2 pt-1">
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setShowStudentScanModal(true)}
-                      className="bg-amber-400 hover:bg-amber-300 text-amber-950 px-3 py-2 rounded-2xl font-black text-xs inline-flex flex-col items-center justify-center gap-0.5 transition-all shadow-md cursor-pointer border border-amber-300 flex-1 h-14"
-                    >
-                      <span className="text-[8.5px] font-black text-amber-900/80 block uppercase tracking-wider">Scan</span>
-                      <span className="text-xs font-extrabold flex items-center gap-1">
-                        <Camera className="w-3.5 h-3.5" /> Kehadiran
-                      </span>
-                    </button>
-                    <div className="bg-emerald-50/70 border border-emerald-100 rounded-2xl px-3 py-2 text-center flex-1 flex flex-col justify-center h-14">
-                      <span className="text-[8.5px] font-black text-emerald-600 block uppercase tracking-wider">Kelas</span>
-                      <span className="text-xs font-extrabold text-emerald-800 truncate">{siswaDetail.kelas}</span>
-                    </div>
+                <div className="flex gap-2 pt-1">
+                  <button
+                    onClick={() => setShowStudentScanModal(true)}
+                    className="bg-amber-400 hover:bg-amber-300 text-amber-950 px-3 py-2 rounded-2xl font-black text-xs inline-flex flex-col items-center justify-center transition-all shadow-md cursor-pointer border border-amber-300 flex-1 h-14"
+                  >
+                    <Camera className="w-4 h-4 text-amber-950" />
+                    <span className="text-[9px] font-black tracking-tight text-amber-950 leading-none mt-0.5">Kehadiran</span>
+                  </button>
+                  <div className="bg-emerald-50/70 border border-emerald-100 rounded-2xl px-3 py-2 text-center flex-1 flex flex-col justify-center h-14">
+                    <span className="text-[8.5px] font-black text-emerald-600 block uppercase tracking-wider">Kelas</span>
+                    <span className="text-xs font-extrabold text-emerald-800 truncate">{siswaDetail.kelas}</span>
                   </div>
                 </div>
               </div>
@@ -421,14 +417,12 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
               <div className="flex gap-4">
                 <button
                   onClick={() => setShowStudentScanModal(true)}
-                  className="bg-amber-400 hover:bg-amber-300 text-amber-950 px-5 py-3 rounded-2xl font-black text-xs inline-flex flex-col items-center justify-center transition-all shadow-md cursor-pointer border border-amber-300 min-w-[110px] h-14 hover:scale-[1.02] active:scale-[0.98]"
+                  className="bg-amber-400 hover:bg-amber-300 text-amber-950 px-4 py-2.5 rounded-2xl font-black text-xs inline-flex flex-col items-center justify-center transition-all shadow-md cursor-pointer border border-amber-300 min-w-[90px] h-14 hover:scale-[1.02] active:scale-[0.98]"
                 >
-                  <span className="text-[9px] font-black text-amber-900/80 block uppercase tracking-wider">Scan</span>
-                  <span className="text-sm font-extrabold flex items-center gap-1.5">
-                    <Camera className="w-4 h-4" /> Kehadiran
-                  </span>
+                  <Camera className="w-4.5 h-4.5 text-amber-950" />
+                  <span className="text-[9.5px] font-black text-amber-950 leading-none mt-0.5">Kehadiran</span>
                 </button>
-                <div className="bg-emerald-50/70 border border-emerald-100 rounded-2xl px-5 py-3 text-center min-w-[110px] h-14 flex flex-col justify-center">
+                <div className="bg-emerald-50/70 border border-emerald-100 rounded-2xl px-5 py-3 text-center min-w-[90px] h-14 flex flex-col justify-center">
                   <span className="text-[10px] font-black text-emerald-600 block uppercase tracking-wider">Kelas</span>
                   <span className="text-base font-extrabold text-emerald-800">{siswaDetail.kelas}</span>
                 </div>

@@ -358,59 +358,6 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
   return (
     <div className="space-y-6 pb-8">
       
-      {/* SCAN PRESENSI KELAS TAB (DEDICATED FULL SCREEN SCANNER VIEW) */}
-      {activeTab === "siswa_scan" && (
-        <div className="max-w-xl mx-auto space-y-6 animate-fade-in py-2">
-          <div className="bg-gradient-to-br from-brand-800 via-brand-700 to-brand-800 rounded-3xl p-6 border border-brand-600 shadow-xl text-white text-center space-y-2">
-            <div className="w-14 h-14 rounded-2xl bg-amber-400 text-amber-950 flex items-center justify-center mx-auto mb-2 shadow-lg shadow-amber-400/30">
-              <Camera className="w-7 h-7" />
-            </div>
-            <h2 className="text-xl font-black text-white">Scan Presensi Kelas Mandiri</h2>
-            <p className="text-purple-100/90 text-xs font-medium max-w-sm mx-auto">
-              Arahkan kamera HP ke Poster QR Code Kelas di papan kelas Anda.
-            </p>
-          </div>
-
-          <div className="bg-white rounded-3xl p-6 border border-brand-100 shadow-xl space-y-4">
-            {scanErrorMsg && (
-              <div className="p-4 rounded-2xl bg-rose-50 border border-rose-100 text-rose-800 text-xs font-bold leading-relaxed space-y-1">
-                <p className="font-extrabold text-rose-900">Gagal Presensi:</p>
-                <p>{scanErrorMsg}</p>
-              </div>
-            )}
-
-            {scanSuccessMsg && (
-              <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-100 text-emerald-800 text-xs font-bold text-center space-y-2">
-                <CheckCircle2 className="w-10 h-10 text-emerald-600 mx-auto" />
-                <p className="text-sm font-black">{scanSuccessMsg}</p>
-              </div>
-            )}
-
-            {isProcessingScan && (
-              <div className="py-8 text-center space-y-3">
-                <Loader2 className="w-10 h-10 text-brand-600 animate-spin mx-auto" />
-                <p className="text-xs font-black text-brand-800 animate-pulse">{scanStatusMsg}</p>
-              </div>
-            )}
-
-            {!isProcessingScan && !scanSuccessMsg && (
-              <div className="text-center space-y-4 py-4">
-                <button
-                  onClick={() => setShowStudentScanModal(true)}
-                  className="brand-gradient text-white px-8 py-4 rounded-2xl font-black text-sm inline-flex items-center gap-3 shadow-lg shadow-brand-500/30 hover:scale-105 transition-all cursor-pointer"
-                >
-                  <Camera className="w-5 h-5" />
-                  <span>Mulai Buka Kamera Scan QR</span>
-                </button>
-                <p className="text-xs text-slate-400 font-medium">
-                  Klik tombol di atas untuk membuka pemindai kamera QR Code Kelas dengan tombol Tutup (X) yang jelas.
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
       {/* 1. STATISTIK TAB */}
       {activeTab === "siswa_stats" && (
         <div className="space-y-6 animate-fade-in">
@@ -436,12 +383,14 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
                   <div className="flex gap-2">
                     <button
                       onClick={() => setShowStudentScanModal(true)}
-                      className="bg-amber-400 hover:bg-amber-300 text-amber-950 px-3 py-2 rounded-2xl font-black text-xs inline-flex items-center justify-center gap-1.5 transition-all shadow-md cursor-pointer border border-amber-300 flex-1 min-h-[46px]"
+                      className="bg-amber-400 hover:bg-amber-300 text-amber-950 px-3 py-2 rounded-2xl font-black text-xs inline-flex flex-col items-center justify-center gap-0.5 transition-all shadow-md cursor-pointer border border-amber-300 flex-1 h-14"
                     >
-                      <Camera className="w-4 h-4 shrink-0" />
-                      <span>Kehadiran</span>
+                      <span className="text-[8.5px] font-black text-amber-900/80 block uppercase tracking-wider">Scan</span>
+                      <span className="text-xs font-extrabold flex items-center gap-1">
+                        <Camera className="w-3.5 h-3.5" /> Kehadiran
+                      </span>
                     </button>
-                    <div className="bg-emerald-50/70 border border-emerald-100 rounded-2xl px-3 py-2 text-center flex-1 flex flex-col justify-center min-h-[46px]">
+                    <div className="bg-emerald-50/70 border border-emerald-100 rounded-2xl px-3 py-2 text-center flex-1 flex flex-col justify-center h-14">
                       <span className="text-[8.5px] font-black text-emerald-600 block uppercase tracking-wider">Kelas</span>
                       <span className="text-xs font-extrabold text-emerald-800 truncate">{siswaDetail.kelas}</span>
                     </div>
@@ -472,12 +421,14 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
               <div className="flex gap-4">
                 <button
                   onClick={() => setShowStudentScanModal(true)}
-                  className="bg-amber-400 hover:bg-amber-300 text-amber-950 px-5 py-3 rounded-2xl font-black text-xs inline-flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer border border-amber-300 shrink-0 hover:scale-[1.02] active:scale-[0.98] min-w-[120px] min-h-[54px]"
+                  className="bg-amber-400 hover:bg-amber-300 text-amber-950 px-5 py-3 rounded-2xl font-black text-xs inline-flex flex-col items-center justify-center transition-all shadow-md cursor-pointer border border-amber-300 min-w-[110px] h-14 hover:scale-[1.02] active:scale-[0.98]"
                 >
-                  <Camera className="w-4.5 h-4.5" />
-                  <span>Kehadiran</span>
+                  <span className="text-[9px] font-black text-amber-900/80 block uppercase tracking-wider">Scan</span>
+                  <span className="text-sm font-extrabold flex items-center gap-1.5">
+                    <Camera className="w-4 h-4" /> Kehadiran
+                  </span>
                 </button>
-                <div className="bg-emerald-50/70 border border-emerald-100 rounded-2xl px-5 py-3 text-center min-w-[120px] min-h-[54px] flex flex-col justify-center">
+                <div className="bg-emerald-50/70 border border-emerald-100 rounded-2xl px-5 py-3 text-center min-w-[110px] h-14 flex flex-col justify-center">
                   <span className="text-[10px] font-black text-emerald-600 block uppercase tracking-wider">Kelas</span>
                   <span className="text-base font-extrabold text-emerald-800">{siswaDetail.kelas}</span>
                 </div>

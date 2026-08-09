@@ -29,7 +29,8 @@ import {
   BookOpen,
   ClipboardList,
   ListChecks,
-  Camera
+  Camera,
+  Home
 } from "lucide-react";
 import { UserSession } from "./types";
 import { getLocalStorage, setLocalStorage } from "./dbStore";
@@ -602,8 +603,7 @@ export default function App() {
     ];
   } else if (userSession.role === "siswa") {
     sidebarElements = [
-      { type: "item", id: "siswa_stats", label: "Statistik", icon: TrendingUp, description: "Statistik poin Anda" },
-      { type: "item", id: "siswa_scan", label: "Scan Presensi Kelas", icon: Camera, description: "Scan QR kelas mandiri" },
+      { type: "item", id: "siswa_stats", label: "Beranda", icon: Home, description: "Statistik & presensi Anda" },
       { type: "item", id: "siswa_barcode", label: "Kartu Pelajar", icon: CreditCard, description: "QR Kartu Pelajar Digital" },
       { type: "item", id: "siswa_history", label: "Riwayat Poin", icon: Calendar, description: "Riwayat perolehan poin" },
       { type: "item", id: "change_password", label: "Tema & Keamanan", icon: Settings, description: "Ubah sandi & tema warna" }

@@ -245,7 +245,7 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
 
         ctx.fillStyle = "#6B7280";
         ctx.font = "bold 14px 'Inter', sans-serif";
-        ctx.fillText("Scan via Aplikasi Nineteen Points • Jam 06.30 - 06.45 WIB", 300, 722);
+        ctx.fillText(`Scan via Aplikasi Nineteen Points • Jam ${scanStartTime} - ${scanEndTime} WIB`, 300, 722);
 
         const blob = await new Promise<Blob | null>(res => canvas.toBlob(res, "image/png"));
         if (blob && folder) {
@@ -518,6 +518,47 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
       refetchKehadiran();
     } catch (err: any) {
       alert("Gagal menghapus absensi: " + err.message);
+    }
+  };
+
+  const handleDeleteStudentAllAttendance = async (studentId: string, studentName: string) => {
+    const confirm = window.confirm(`Apakah Anda yakin ingin MENGHAPUS SELURUH data absensi milik "${studentName}"? Data yang dihapus tidak dapat dikembalikan.`);
+    if (!confirm) return;
+
+    try {
+      const { error } = await supabase.from("kehadiran").delete().eq("siswa_id", studentId);
+      if (error) throw error;
+
+      alert(`Berhasil menghapus seluruh data absensi milik ${studentName}.`);
+      queryClient.invalidateQueries({ queryKey: ["kehadiran"] });
+      queryClient.invalidateQueries({ queryKey: ["siswa"] });
+      queryClient.invalidateQueries({ queryKey: ["riwayat"] });
+      if (onRefreshHistory) onRefreshHistory();
+      refetchKehadiran();
+    } catch (err: any) {
+      alert("Gagal menghapus absensi murid: " + err.message);
+    }
+  };
+
+  const handleDeleteAllSelectedDateAttendance = async () => {
+    const confirm = window.confirm(`⚠️ PERINGATAN: Apakah Anda yakin ingin MENGHAPUS SEMUA data absensi seluruh murid pada tanggal ${selectedDate}? Action ini berguna untuk mereset data uji coba.`);
+    if (!confirm) return;
+
+    setIsSubmitting(true);
+    try {
+      const { error } = await supabase.from("kehadiran").delete().eq("tanggal", selectedDate);
+      if (error) throw error;
+
+      alert(`Berhasil mereset/menghapus semua data absensi tanggal ${selectedDate}!`);
+      queryClient.invalidateQueries({ queryKey: ["kehadiran"] });
+      queryClient.invalidateQueries({ queryKey: ["siswa"] });
+      queryClient.invalidateQueries({ queryKey: ["riwayat"] });
+      if (onRefreshHistory) onRefreshHistory();
+      refetchKehadiran();
+    } catch (err: any) {
+      alert("Gagal menghapus data absensi: " + err.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -1305,25 +1346,40 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
             )}
 
             {/* Date Range Info Banner */}
-            <div className="bg-brand-50/40 border border-brand-100/50 rounded-2xl p-4 flex items-center gap-3">
-              <Calendar className="w-5 h-5 text-brand-600" />
-              <div className="text-xs font-semibold text-brand-800">
-                {filterType === "hari_ini" && (
-                  <span>Menampilkan data absensi hari ini: <strong>{dateRange.start}</strong></span>
-                )}
-                {filterType === "minggu_ini" && (
-                  <span>Menampilkan data absensi minggu ini: <strong>{dateRange.start}</strong> s/d <strong>{dateRange.end}</strong></span>
-                )}
-                {filterType === "bulan_ini" && (
-                  <span>Menampilkan data absensi bulan ini: <strong>{dateRange.start}</strong> s/d <strong>{dateRange.end}</strong></span>
-                )}
-                {filterType === "kustom" && (
-                  <span>Menampilkan data absensi periode kustom: <strong>{dateRange.start}</strong> s/d <strong>{dateRange.end}</strong></span>
-                )}
-                {filterType === "semua" && (
-                  <span>Menampilkan <strong>Semua Riwayat Absensi</strong> yang tercatat di database.</span>
-                )}
+            <div className="bg-brand-50/40 border border-brand-100/50 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <Calendar className="w-5 h-5 text-brand-600 shrink-0" />
+                <div className="text-xs font-semibold text-brand-800">
+                  {filterType === "hari_ini" && (
+                    <span>Menampilkan data absensi hari ini: <strong>{dateRange.start}</strong></span>
+                  )}
+                  {filterType === "minggu_ini" && (
+                    <span>Menampilkan data absensi minggu ini: <strong>{dateRange.start}</strong> s/d <strong>{dateRange.end}</strong></span>
+                  )}
+                  {filterType === "bulan_ini" && (
+                    <span>Menampilkan data absensi bulan ini: <strong>{dateRange.start}</strong> s/d <strong>{dateRange.end}</strong></span>
+                  )}
+                  {filterType === "kustom" && (
+                    <span>Menampilkan data absensi periode kustom: <strong>{dateRange.start}</strong> s/d <strong>{dateRange.end}</strong></span>
+                  )}
+                  {filterType === "semua" && (
+                    <span>Menampilkan <strong>Semua Riwayat Absensi</strong> yang tercatat di database.</span>
+                  )}
+                </div>
               </div>
+
+              {(isAdmin || userSession.role === "piket") && (
+                <button
+                  type="button"
+                  onClick={handleDeleteAllSelectedDateAttendance}
+                  disabled={isSubmitting}
+                  className="px-3.5 py-2 bg-rose-50 border border-rose-200 hover:bg-rose-100 text-rose-700 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
+                  title="Hapus / Reset semua data absensi tanggal ini"
+                >
+                  <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                  <span>Reset / Hapus Absensi Tanggal Ini</span>
+                </button>
+              )}
             </div>
 
             {/* Sub-Filters: Search name & class filter */}
@@ -1434,13 +1490,25 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
                         </td>
 
                         <td className="py-3.5 px-5 text-right">
-                          <button
-                            type="button"
-                            onClick={(e) => { e.stopPropagation(); setDetailedStudent(row.siswa); }}
-                            className="px-3.5 py-1.5 bg-brand-50 border border-brand-100 hover:bg-brand-100 hover:text-brand-800 text-brand-600 rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors cursor-pointer"
-                          >
-                            Riwayat
-                          </button>
+                          <div className="inline-flex gap-1.5 justify-end items-center">
+                            <button
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); setDetailedStudent(row.siswa); }}
+                              className="px-3 py-1.5 bg-brand-50 border border-brand-100 hover:bg-brand-100 hover:text-brand-800 text-brand-600 rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors cursor-pointer"
+                            >
+                              Riwayat
+                            </button>
+                            {(isAdmin || userSession.role === "piket") && (row.hadir > 0 || row.terlambat > 0 || row.sakit > 0 || row.izin > 0 || row.alfa > 0) && (
+                              <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); handleDeleteStudentAllAttendance(row.siswa.id, row.siswa.nama); }}
+                                className="p-1.5 border border-rose-100 bg-rose-50/50 hover:bg-rose-100 text-rose-600 rounded-xl transition-all cursor-pointer"
+                                title={`Hapus seluruh absensi milik ${row.siswa.nama}`}
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))}

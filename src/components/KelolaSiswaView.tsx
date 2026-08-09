@@ -616,9 +616,12 @@ export default function KelolaSiswaView({
                   ctx.font = "bold 36px 'Inter', sans-serif";
                   ctx.fillText(`KELAS ${targetKelas.toUpperCase()}`, 300, 690);
 
+                  const scanStartStr = localStorage.getItem("19points_scan_start") || "06:30";
+                  const scanEndStr = localStorage.getItem("19points_scan_end") || "06:45";
+
                   ctx.fillStyle = "#6B7280";
                   ctx.font = "bold 14px 'Inter', sans-serif";
-                  ctx.fillText("Scan via Aplikasi Nineteen Points • Jam 06.30 - 06.45 WIB", 300, 722);
+                  ctx.fillText(`Scan via Aplikasi Nineteen Points • Jam ${scanStartStr} - ${scanEndStr} WIB`, 300, 722);
 
                   const dataUrl = canvas.toDataURL("image/png");
                   const link = document.createElement("a");

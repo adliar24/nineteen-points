@@ -73,11 +73,16 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
       const scanStartStr = localStorage.getItem("19points_scan_start") || "06:30";
       const scanEndStr = localStorage.getItem("19points_scan_end") || "06:45";
 
-      const [startH, startM] = scanStartStr.split(":").map(Number);
-      const [endH, endM] = scanEndStr.split(":").map(Number);
+      const [startHRaw, startMRaw] = scanStartStr.split(":").map(Number);
+      const [endHRaw, endMRaw] = scanEndStr.split(":").map(Number);
 
-      const startTime = (startH || 6) * 60 + (startM || 30);
-      const endTime = (endH || 6) * 60 + (endM || 45);
+      const startH = isNaN(startHRaw) ? 6 : startHRaw;
+      const startM = isNaN(startMRaw) ? 30 : startMRaw;
+      const endH = isNaN(endHRaw) ? 6 : endHRaw;
+      const endM = isNaN(endMRaw) ? 45 : endMRaw;
+
+      const startTime = startH * 60 + startM;
+      const endTime = endH * 60 + endM;
 
       if (timeInMinutes < startTime || timeInMinutes > endTime) {
         throw new Error(`⛔ DI LUAR WAKTU PRESENSI: Scan presensi kelas mandiri hanya aktif pada pukul ${scanStartStr} - ${scanEndStr} WIB. Jika Anda terlambat, silakan melapor ke Guru Piket.`);

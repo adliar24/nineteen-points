@@ -67,8 +67,8 @@ export async function loadModels(): Promise<boolean> {
 
   modelLoadingPromise = (async () => {
     const candidatePaths = [
-      'https://cdn.jsdelivr.net/gh/cddh/face-api.js@master/weights',
       'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights',
+      'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights',
       '/models'
     ];
 

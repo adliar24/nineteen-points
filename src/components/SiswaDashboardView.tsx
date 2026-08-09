@@ -50,6 +50,13 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
   const [scanStart, setScanStart] = useState(() => localStorage.getItem("19points_scan_start") || "06:30");
   const [scanEnd, setScanEnd] = useState(() => localStorage.getItem("19points_scan_end") || "06:45");
 
+  // Student QR Class Scan Modal State
+  const [showStudentScanModal, setShowStudentScanModal] = useState(false);
+  const [scanStatusMsg, setScanStatusMsg] = useState("");
+  const [scanErrorMsg, setScanErrorMsg] = useState("");
+  const [scanSuccessMsg, setScanSuccessMsg] = useState("");
+  const [isProcessingScan, setIsProcessingScan] = useState(false);
+
   useEffect(() => {
     const handleStorageChange = () => {
       setScanStart(localStorage.getItem("19points_scan_start") || "06:30");

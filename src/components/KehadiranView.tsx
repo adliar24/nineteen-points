@@ -1441,7 +1441,6 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
               )}
             </div>
           </div>
-
         </div>
       )}
 

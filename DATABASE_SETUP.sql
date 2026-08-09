@@ -228,6 +228,13 @@ CREATE TABLE IF NOT EXISTS public.sertifikat_config (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
+-- 2l. PENGATURAN SISTEM (JAM SCAN PRESENSI MANDIRI & KOORDINAT GPS)
+CREATE TABLE IF NOT EXISTS public.pengaturan_sistem (
+  kunci      TEXT PRIMARY KEY,
+  nilai      TEXT NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
 
 -- =========================================================================
 -- 3. INDEXES (PERFORMA)
@@ -410,6 +417,15 @@ INSERT INTO public.aturan_kehadiran (status, label, nilai_poin) VALUES
 ON CONFLICT (status) DO UPDATE
 SET label = EXCLUDED.label, nilai_poin = EXCLUDED.nilai_poin;
 
+-- Seed data pengaturan sistem default (jam presensi & lokasi GPS)
+INSERT INTO public.pengaturan_sistem (kunci, nilai) VALUES
+('scan_start', '06:30'),
+('scan_end',   '06:45'),
+('gps_lat',    '-6.914744'),
+('gps_lng',    '107.609810'),
+('gps_radius', '150')
+ON CONFLICT (kunci) DO NOTHING;
+
 
 -- =========================================================================
 -- 6. ROW LEVEL SECURITY (RLS) — POLICY LONGGAR
@@ -429,6 +445,7 @@ ALTER TABLE public.kehadiran_guru   ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.kegiatan_guru    ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.poin_akses_guru  ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.sertifikat_config ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.pengaturan_sistem ENABLE ROW LEVEL SECURITY;
 
 -- Hapus semua policies lama agar bisa dijalankan ulang tanpa duplikat
 DO $$
@@ -443,7 +460,7 @@ BEGIN
         'profiles', 'siswa', 'master_poin', 'riwayat_poin',
         'aturan_kehadiran', 'kehadiran', 'jadwal_guru',
         'kehadiran_guru', 'kegiatan_guru', 'poin_akses_guru',
-        'sertifikat_config'
+        'sertifikat_config', 'pengaturan_sistem'
       )
   LOOP
     EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I', pol.policyname, pol.tablename);
@@ -629,6 +646,21 @@ CREATE POLICY "sertifikat_config_update" ON public.sertifikat_config
   FOR UPDATE TO authenticated USING (public.is_staff()) WITH CHECK (public.is_staff());
 
 CREATE POLICY "sertifikat_config_delete" ON public.sertifikat_config
+  FOR DELETE TO authenticated USING (public.is_staff());
+
+-- -----------------------------------------------
+-- PENGATURAN_SISTEM (baca semua; tulis hanya staf)
+-- -----------------------------------------------
+CREATE POLICY "pengaturan_sistem_select" ON public.pengaturan_sistem
+  FOR SELECT TO authenticated USING (true);
+
+CREATE POLICY "pengaturan_sistem_insert" ON public.pengaturan_sistem
+  FOR INSERT TO authenticated WITH CHECK (public.is_staff());
+
+CREATE POLICY "pengaturan_sistem_update" ON public.pengaturan_sistem
+  FOR UPDATE TO authenticated USING (public.is_staff()) WITH CHECK (public.is_staff());
+
+CREATE POLICY "pengaturan_sistem_delete" ON public.pengaturan_sistem
   FOR DELETE TO authenticated USING (public.is_staff());
 
 

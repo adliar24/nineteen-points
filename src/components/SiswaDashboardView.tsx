@@ -139,11 +139,18 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
         created_at: new Date().toISOString()
       }]);
 
-      if (insErr) throw insErr;
+      if (insErr) {
+        // If unique constraint triggers (already scanned today)
+        if (insErr.code === "23505" || insErr.message.includes("unique")) {
+          throw new Error("⚠️ SUDAH PRESENSI: Anda sudah melakukan presensi kelas hari ini.");
+        }
+        throw insErr;
+      }
 
       setScanSuccessMsg(`🎉 Presensi Berhasil! Anda tercatat HADIR (Tepat Waktu) pada pukul ${now.toLocaleTimeString("id-ID")}.`);
     } catch (err: any) {
       setScanErrorMsg(err.message || "Gagal memproses presensi.");
+      throw err;
     } finally {
       setIsProcessingScan(false);
       setScanStatusMsg("");
@@ -929,19 +936,24 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
           onScanSuccess={async (data) => {
             try {
               await handleStudentClassQrScan(data);
-              setShowStudentScanModal(false);
+              setTimeout(() => {
+                setShowStudentScanModal(false);
+              }, 2500);
               return {
                 type: "success",
                 title: "PRESENSI BERHASIL",
-                message: "Kehadiran Anda telah dicatat tepat waktu."
+                message: `Berhasil! ${siswaDetail?.nama} tercatat HADIR.`
               };
             } catch (err: any) {
-              setScanErrorMsg(err.message || "Gagal presensi");
-              setShowStudentScanModal(false);
+              const errorMsg = err.message || "Gagal memproses presensi.";
+              setScanErrorMsg(errorMsg);
+              setTimeout(() => {
+                setShowStudentScanModal(false);
+              }, 3000);
               return {
                 type: "not_found",
                 title: "GAGAL PRESENSI",
-                message: err.message || "Gagal presensi"
+                message: errorMsg
               };
             }
           }}

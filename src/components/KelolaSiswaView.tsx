@@ -99,11 +99,16 @@ export default function KelolaSiswaView({
         ]);
         setSiswaList(siswa);
         setPoinMap(pm);
-        syncFaceEmbeddingsFromSupabase(siswa);
+        try {
+          syncFaceEmbeddingsFromSupabase(siswa);
+        } catch (faceErr) {
+          console.warn("Non-critical face embeddings sync warning:", faceErr);
+        }
       } catch (err) {
         console.error("Gagal memuat siswa:", err);
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     }
     load();
   }, []);

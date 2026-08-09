@@ -186,8 +186,8 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
             .from("siswa")
             .select("*")
             .eq("nis", username)
-            .maybeSingle();
-          if (dataByUsername) siswaData = dataByUsername;
+            .limit(1);
+          if (dataByUsername && dataByUsername.length > 0) siswaData = dataByUsername[0];
         }
 
         // 2. Priority 2: Match by userSession.nis if different from username
@@ -196,8 +196,8 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
             .from("siswa")
             .select("*")
             .eq("nis", userSession.nis)
-            .maybeSingle();
-          if (dataByNis) siswaData = dataByNis;
+            .limit(1);
+          if (dataByNis && dataByNis.length > 0) siswaData = dataByNis[0];
         }
 
         // 3. Priority 3: Fallback match by exact fullName
@@ -206,8 +206,8 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
             .from("siswa")
             .select("*")
             .ilike("nama", userSession.fullName.trim())
-            .maybeSingle();
-          if (dataByName) siswaData = dataByName;
+            .limit(1);
+          if (dataByName && dataByName.length > 0) siswaData = dataByName[0];
         }
 
         setSiswaDetail(siswaData);

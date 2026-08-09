@@ -151,6 +151,40 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
   const [isConfirmGpsModalOpen, setIsConfirmGpsModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  useEffect(() => {
+    const fetchAdminSettings = async () => {
+      try {
+        const { data: remoteConfig } = await supabase.from("pengaturan_sistem").select("*");
+        if (remoteConfig && remoteConfig.length > 0) {
+          const latItem = remoteConfig.find((r: any) => r.kunci === "gps_lat");
+          const lngItem = remoteConfig.find((r: any) => r.kunci === "gps_lng");
+          const radItem = remoteConfig.find((r: any) => r.kunci === "gps_radius");
+          const sItem = remoteConfig.find((r: any) => r.kunci === "scan_start");
+          const eItem = remoteConfig.find((r: any) => r.kunci === "scan_end");
+          const bindItem = remoteConfig.find((r: any) => r.kunci === "device_binding_enabled");
+          const gpsItem = remoteConfig.find((r: any) => r.kunci === "gps_enabled");
+
+          if (latItem?.nilai) { setGpsLat(latItem.nilai); localStorage.setItem("19points_gps_lat", latItem.nilai); }
+          if (lngItem?.nilai) { setGpsLng(lngItem.nilai); localStorage.setItem("19points_gps_lng", lngItem.nilai); }
+          if (radItem?.nilai) { setGpsRadius(radItem.nilai); localStorage.setItem("19points_gps_radius", radItem.nilai); }
+          if (sItem?.nilai) { setScanStartTime(sItem.nilai); localStorage.setItem("19points_scan_start", sItem.nilai); }
+          if (eItem?.nilai) { setScanEndTime(eItem.nilai); localStorage.setItem("19points_scan_end", eItem.nilai); }
+          if (bindItem?.nilai) {
+            const isBind = bindItem.nilai !== "false";
+            setDeviceBindingEnabled(isBind);
+            localStorage.setItem("19points_device_binding_enabled", bindItem.nilai);
+          }
+          if (gpsItem?.nilai) {
+            const isGps = gpsItem.nilai !== "false";
+            setGpsEnabled(isGps);
+            localStorage.setItem("19points_gps_enabled", gpsItem.nilai);
+          }
+        }
+      } catch (e) {}
+    };
+    fetchAdminSettings();
+  }, []);
+
   const handleOpenGpsConfirmModal = (e: React.FormEvent) => {
     e.preventDefault();
     setIsConfirmGpsModalOpen(true);

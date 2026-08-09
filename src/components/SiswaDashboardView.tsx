@@ -171,48 +171,58 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
         }
       }
 
-      // 3. Geolocation GPS Check
-      setScanStatusMsg("Mengambil lokasi GPS Anda...");
-      const position: GeolocationPosition = await new Promise((resolve, reject) => {
-        if (!navigator.geolocation) return reject(new Error("Browser tidak mendukung lokasi GPS."));
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 0
-        });
-      });
-
-      const studentLat = position.coords.latitude;
-      const studentLng = position.coords.longitude;
-
-      // Fetch remote GPS config from Supabase for cross-device accuracy
-      let targetLat = parseFloat(localStorage.getItem("19points_gps_lat") || "-6.914744");
-      let targetLng = parseFloat(localStorage.getItem("19points_gps_lng") || "107.609810");
-      let allowedRadius = parseFloat(localStorage.getItem("19points_gps_radius") || "150");
-
+      // 3. Geolocation GPS Check (Only if GPS protection is enabled in Admin)
+      let gpsEnabled = localStorage.getItem("19points_gps_enabled") !== "false";
       try {
-        const { data: remoteConfig } = await supabase.from("pengaturan_sistem").select("*");
-        if (remoteConfig && remoteConfig.length > 0) {
-          const latItem = remoteConfig.find((r: any) => r.kunci === "gps_lat");
-          const lngItem = remoteConfig.find((r: any) => r.kunci === "gps_lng");
-          const radItem = remoteConfig.find((r: any) => r.kunci === "gps_radius");
-          if (latItem?.nilai) targetLat = parseFloat(latItem.nilai);
-          if (lngItem?.nilai) targetLng = parseFloat(lngItem.nilai);
-          if (radItem?.nilai) allowedRadius = parseFloat(radItem.nilai);
+        const { data: remoteConfig } = await supabase.from("pengaturan_sistem").select("*").eq("kunci", "gps_enabled").maybeSingle();
+        if (remoteConfig?.nilai) {
+          gpsEnabled = remoteConfig.nilai !== "false";
         }
       } catch (e) {}
 
-      // Haversine formula
-      const R = 6371000;
-      const dLat = (targetLat - studentLat) * (Math.PI / 180);
-      const dLon = (targetLng - studentLng) * (Math.PI / 180);
-      const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos(studentLat * (Math.PI / 180)) * Math.cos(targetLat * (Math.PI / 180)) *
-                Math.sin(dLon / 2) * Math.sin(dLon / 2);
-      const distance = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      if (gpsEnabled) {
+        setScanStatusMsg("Mengambil lokasi GPS Anda...");
+        const position: GeolocationPosition = await new Promise((resolve, reject) => {
+          if (!navigator.geolocation) return reject(new Error("Browser tidak mendukung lokasi GPS."));
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+          });
+        });
 
-      if (distance > allowedRadius) {
-        throw new Error(`⛔ DI LUAR AREA SEKOLAH: Lokasi Anda berada ${Math.round(distance)}m dari titik GPS presensi (${targetLat.toFixed(5)}, ${targetLng.toFixed(5)}) dengan radius max: ${allowedRadius}m.`);
+        const studentLat = position.coords.latitude;
+        const studentLng = position.coords.longitude;
+
+        // Fetch remote GPS config from Supabase for cross-device accuracy
+        let targetLat = parseFloat(localStorage.getItem("19points_gps_lat") || "-6.914744");
+        let targetLng = parseFloat(localStorage.getItem("19points_gps_lng") || "107.609810");
+        let allowedRadius = parseFloat(localStorage.getItem("19points_gps_radius") || "150");
+
+        try {
+          const { data: remoteConfig } = await supabase.from("pengaturan_sistem").select("*");
+          if (remoteConfig && remoteConfig.length > 0) {
+            const latItem = remoteConfig.find((r: any) => r.kunci === "gps_lat");
+            const lngItem = remoteConfig.find((r: any) => r.kunci === "gps_lng");
+            const radItem = remoteConfig.find((r: any) => r.kunci === "gps_radius");
+            if (latItem?.nilai) targetLat = parseFloat(latItem.nilai);
+            if (lngItem?.nilai) targetLng = parseFloat(lngItem.nilai);
+            if (radItem?.nilai) allowedRadius = parseFloat(radItem.nilai);
+          }
+        } catch (e) {}
+
+        // Haversine formula
+        const R = 6371000;
+        const dLat = (targetLat - studentLat) * (Math.PI / 180);
+        const dLon = (targetLng - studentLng) * (Math.PI / 180);
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                  Math.cos(studentLat * (Math.PI / 180)) * Math.cos(targetLat * (Math.PI / 180)) *
+                  Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const distance = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        if (distance > allowedRadius) {
+          throw new Error(`⛔ DI LUAR AREA SEKOLAH: Lokasi Anda berada ${Math.round(distance)}m dari titik GPS presensi (${targetLat.toFixed(5)}, ${targetLng.toFixed(5)}) dengan radius max: ${allowedRadius}m.`);
+        }
       }
 
       // 4. Record Attendance to Supabase 'kehadiran'

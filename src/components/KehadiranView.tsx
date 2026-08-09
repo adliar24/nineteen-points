@@ -145,6 +145,7 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
   const [scanStartTime, setScanStartTime] = useState(() => localStorage.getItem("19points_scan_start") || "06:30");
   const [scanEndTime, setScanEndTime] = useState(() => localStorage.getItem("19points_scan_end") || "06:45");
   const [deviceBindingEnabled, setDeviceBindingEnabled] = useState(() => localStorage.getItem("19points_device_binding_enabled") !== "false");
+  const [gpsEnabled, setGpsEnabled] = useState(() => localStorage.getItem("19points_gps_enabled") !== "false");
   const [isSavingGps, setIsSavingGps] = useState(false);
   const [isBulkPrintingQr, setIsBulkPrintingQr] = useState(false);
   const [isConfirmGpsModalOpen, setIsConfirmGpsModalOpen] = useState(false);
@@ -165,6 +166,7 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
       const startVal = scanStartTime.trim();
       const endVal = scanEndTime.trim();
       const bindingVal = deviceBindingEnabled ? "true" : "false";
+      const gpsVal = gpsEnabled ? "true" : "false";
 
       localStorage.setItem("19points_gps_lat", latVal);
       localStorage.setItem("19points_gps_lng", lngVal);
@@ -172,6 +174,7 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
       localStorage.setItem("19points_scan_start", startVal);
       localStorage.setItem("19points_scan_end", endVal);
       localStorage.setItem("19points_device_binding_enabled", bindingVal);
+      localStorage.setItem("19points_gps_enabled", gpsVal);
       
       // Save to Supabase 'pengaturan_sistem' table for cross-device sync
       const settingsPayload = [
@@ -180,7 +183,8 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
         { kunci: "gps_radius", nilai: radiusVal },
         { kunci: "scan_start", nilai: startVal },
         { kunci: "scan_end", nilai: endVal },
-        { kunci: "device_binding_enabled", nilai: bindingVal }
+        { kunci: "device_binding_enabled", nilai: bindingVal },
+        { kunci: "gps_enabled", nilai: gpsVal }
       ];
       await supabase.from("pengaturan_sistem").upsert(settingsPayload, { onConflict: "kunci" });
 
@@ -1603,27 +1607,53 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
                 </div>
               </div>
 
-              {/* Device Binding Toggle Card */}
-              <div className="bg-amber-50/70 border border-amber-200/60 rounded-2xl p-4 flex items-center justify-between gap-4">
-                <div>
-                  <h4 className="text-xs font-black text-amber-950">Kunci 1 Akun Perangkat (Anti-Titip Absen)</h4>
-                  <p className="text-[10.5px] text-amber-800 font-medium mt-0.5">
-                    Jika aktif, 1 HP hanya bisa digunakan untuk presensi 1 murid per hari. Matikan (OFF) saat uji coba / testing multi-akun.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setDeviceBindingEnabled(!deviceBindingEnabled)}
-                  className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 ${
-                    deviceBindingEnabled ? "bg-amber-500" : "bg-slate-300"
-                  }`}
-                >
-                  <div
-                    className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform absolute top-0.5 ${
-                      deviceBindingEnabled ? "translate-x-6" : "translate-x-0.5"
+              {/* Toggles Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {/* GPS Radius Protection Toggle Card */}
+                <div className="bg-purple-50/70 border border-purple-200/60 rounded-2xl p-4 flex items-center justify-between gap-4">
+                  <div>
+                    <h4 className="text-xs font-black text-purple-950">Proteksi Radius GPS Sekolah</h4>
+                    <p className="text-[10.5px] text-purple-800 font-medium mt-0.5">
+                      Jika aktif (ON), murid wajib berada di radius lokasi sekolah saat scan. Matikan (OFF) saat uji coba di mana saja.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setGpsEnabled(!gpsEnabled)}
+                    className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 ${
+                      gpsEnabled ? "bg-purple-600" : "bg-slate-300"
                     }`}
-                  />
-                </button>
+                  >
+                    <div
+                      className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform absolute top-0.5 ${
+                        gpsEnabled ? "translate-x-6" : "translate-x-0.5"
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                {/* Device Binding Toggle Card */}
+                <div className="bg-amber-50/70 border border-amber-200/60 rounded-2xl p-4 flex items-center justify-between gap-4">
+                  <div>
+                    <h4 className="text-xs font-black text-amber-950">Kunci 1 Perangkat HP (Anti-Titip Absen)</h4>
+                    <p className="text-[10.5px] text-amber-800 font-medium mt-0.5">
+                      Jika aktif (ON), 1 HP hanya bisa untuk 1 murid per hari. Matikan (OFF) saat testing multi-akun di 1 HP.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setDeviceBindingEnabled(!deviceBindingEnabled)}
+                    className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 ${
+                      deviceBindingEnabled ? "bg-amber-500" : "bg-slate-300"
+                    }`}
+                  >
+                    <div
+                      className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform absolute top-0.5 ${
+                        deviceBindingEnabled ? "translate-x-6" : "translate-x-0.5"
+                      }`}
+                    />
+                  </button>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

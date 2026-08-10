@@ -55,28 +55,26 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
     }
 
     try {
-      // 1. Authenticate with Supabase Auth (Try primary resolved email)
-      let authRes = await supabase.auth.signInWithPassword({
-        email: loginEmail,
-        password,
-      });
+      // 1. Authenticate with Supabase Auth using multi-candidate fallback
+      const candidateEmails = Array.from(
+        new Set([
+          loginEmail,
+          `${searchKey}@sman19.sch.id`,
+          hasAt ? rawLower : `${rawLower}@sman19.sch.id`,
+        ])
+      );
 
-      // Fallback 1: If primary attempt failed and rawInput was not an @ email, try raw searchKey@sman19.sch.id
-      if (authRes.error && !hasAt) {
-        const fallbackEmail = `${searchKey}@sman19.sch.id`;
-        if (fallbackEmail !== loginEmail) {
-          const secondTry = await supabase.auth.signInWithPassword({
-            email: fallbackEmail,
-            password,
-          });
-          if (!secondTry.error) {
-            authRes = secondTry;
-          }
-        }
+      let authRes: any = null;
+      for (const candEmail of candidateEmails) {
+        authRes = await supabase.auth.signInWithPassword({
+          email: candEmail,
+          password,
+        });
+        if (!authRes.error) break;
       }
 
-      const data = authRes.data;
-      const authError = authRes.error;
+      const data = authRes?.data;
+      const authError = authRes?.error;
 
       if (authError) {
         setError(authError.message || "Email/Username atau password salah.");
@@ -99,12 +97,32 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
 
           // For students, ensure fullName, NIS, and foto_url match the student's row in 'siswa' table
           if (profile.role === "siswa") {
-            const username = profile.email.split("@")[0];
-            const { data: siswaData } = await supabase
+            const emailPrefix = profile.email ? profile.email.split("@")[0] : "";
+            
+            // Search in 'siswa' table by NIS, profile.nis, or username
+            let { data: siswaData } = await supabase
               .from("siswa")
               .select("*")
-              .eq("nis", username)
+              .eq("nis", emailPrefix)
               .maybeSingle();
+
+            if (!siswaData && profile.nis) {
+              const { data: sByProfileNis } = await supabase
+                .from("siswa")
+                .select("*")
+                .eq("nis", profile.nis)
+                .maybeSingle();
+              siswaData = sByProfileNis;
+            }
+
+            if (!siswaData && emailPrefix) {
+              const { data: sByUsername } = await supabase
+                .from("siswa")
+                .select("*")
+                .eq("username", emailPrefix)
+                .maybeSingle();
+              siswaData = sByUsername;
+            }
 
             if (siswaData) {
               fullName = siswaData.nama;
@@ -146,12 +164,21 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
             let nis = profileByEmail.nis || undefined;
 
             if (profileByEmail.role === "siswa") {
-              const username = profileByEmail.email.split("@")[0];
-              const { data: siswaData } = await supabase
+              const emailPrefix = profileByEmail.email ? profileByEmail.email.split("@")[0] : "";
+              let { data: siswaData } = await supabase
                 .from("siswa")
                 .select("*")
-                .eq("nis", username)
+                .eq("nis", emailPrefix)
                 .maybeSingle();
+
+              if (!siswaData && profileByEmail.nis) {
+                const { data: sByNis } = await supabase
+                  .from("siswa")
+                  .select("*")
+                  .eq("nis", profileByEmail.nis)
+                  .maybeSingle();
+                siswaData = sByNis;
+              }
 
               if (siswaData) {
                 fullName = siswaData.nama;

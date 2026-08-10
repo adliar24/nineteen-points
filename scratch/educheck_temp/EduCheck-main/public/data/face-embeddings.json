@@ -1,0 +1,12 @@
+[
+  {
+    "id": "STUDENT_ID_1",
+    "name": "Nama Siswa 1",
+    "face_embedding": "0.123,0.456,0.789,..."
+  },
+  {
+    "id": "STUDENT_ID_2",
+    "name": "Nama Siswa 2",
+    "face_embedding": "0.111,0.222,0.333,..."
+  }
+]

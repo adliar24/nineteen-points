@@ -1,0 +1,7 @@
+{
+  "name": "EduCheck – Absensi Digital Siswa",
+  "description": "Aplikasi absensi digital siswa offline-first untuk guru SD/SMP/SMA/SMK.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

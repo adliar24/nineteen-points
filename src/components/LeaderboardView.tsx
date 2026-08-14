@@ -633,20 +633,20 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.25 }}
-              className="fixed inset-0 bg-brand-950/75 backdrop-blur-md"
+              className="fixed inset-0 bg-brand-950/70 backdrop-blur-md"
               onClick={() => setShowcaseStudent(null)}
             />
 
             {/* Showcase Card */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.8, y: 30, rotateY: 15 }}
+              initial={{ opacity: 0, scale: 0.8, y: 30, rotateY: 12 }}
               animate={{ opacity: 1, scale: 1, y: 0, rotateY: 0 }}
               exit={{ opacity: 0, scale: 0.85, y: 20 }}
               transition={{ type: "spring", stiffness: 350, damping: 25 }}
-              className="relative w-full max-w-sm sm:max-w-md z-10"
+              className="relative w-full max-w-sm sm:max-w-md z-10 my-auto"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Outer Glow & Shimmer Frame */}
+              {/* Outer Frame */}
               <div
                 className={`relative rounded-[36px] p-1.5 shadow-2xl overflow-hidden ${
                   showcaseStudent.rank === 1
@@ -656,41 +656,75 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                     : showcaseStudent.rank === 3
                     ? "holo-gradient-bronze bronze-aura-glow"
                     : showcaseStudent.rank <= 10
-                    ? "bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 shadow-indigo-500/20"
-                    : "bg-gradient-to-br from-brand-600 via-brand-700 to-brand-900"
+                    ? "bg-gradient-to-tr from-purple-400 via-fuchsia-400 to-indigo-400 shadow-purple-500/30"
+                    : "bg-gradient-to-b from-slate-200 via-slate-100 to-slate-200 border border-slate-200"
                 }`}
               >
                 {/* Inner Card Body */}
-                <div className="bg-gradient-to-b from-[#16122d] via-[#100c24] to-[#0a0718] rounded-[32px] p-6 sm:p-8 text-white relative overflow-hidden text-center space-y-6">
-                  {/* Decorative background light beams */}
-                  <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-72 h-72 bg-gradient-to-b from-amber-400/20 to-transparent rounded-full blur-3xl pointer-events-none" />
-                  <div className="absolute bottom-0 right-0 w-48 h-48 bg-accent-500/15 rounded-full blur-2xl pointer-events-none" />
+                <div
+                  className={`rounded-[32px] p-6 sm:p-8 relative overflow-hidden text-center space-y-6 shadow-inner ${
+                    showcaseStudent.rank === 1
+                      ? "bg-gradient-to-b from-[#fffbeb] via-[#fef3c7] to-[#fde68a] text-amber-950 border border-amber-300"
+                      : showcaseStudent.rank === 2
+                      ? "bg-gradient-to-b from-[#f8fafc] via-[#f1f5f9] to-[#e2e8f0] text-slate-900 border border-slate-300"
+                      : showcaseStudent.rank === 3
+                      ? "bg-gradient-to-b from-[#fff7ed] via-[#ffedd5] to-[#fed7aa] text-amber-950 border border-amber-400/50"
+                      : showcaseStudent.rank <= 10
+                      ? "bg-gradient-to-b from-[#faf5ff] via-[#f3e8ff] to-[#e9d5ff] text-purple-950 border border-purple-200"
+                      : "bg-gradient-to-b from-white via-white to-slate-50 text-slate-900 border border-slate-100"
+                  }`}
+                >
+                  {/* Decorative background aura lights */}
+                  <div
+                    className={`absolute -top-24 left-1/2 -translate-x-1/2 w-72 h-72 rounded-full blur-3xl pointer-events-none ${
+                      showcaseStudent.rank === 1
+                        ? "bg-amber-400/30"
+                        : showcaseStudent.rank === 2
+                        ? "bg-slate-300/40"
+                        : showcaseStudent.rank === 3
+                        ? "bg-amber-600/25"
+                        : showcaseStudent.rank <= 10
+                        ? "bg-purple-400/25"
+                        : "bg-slate-200/30"
+                    }`}
+                  />
 
                   {/* Close Button */}
                   <button
                     onClick={() => setShowcaseStudent(null)}
-                    className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 active:scale-95 text-white/80 hover:text-white rounded-full transition-all cursor-pointer z-20"
+                    className={`absolute top-4 right-4 p-2 rounded-full transition-all cursor-pointer z-20 ${
+                      showcaseStudent.rank === 1
+                        ? "text-amber-800 hover:text-amber-950 hover:bg-amber-200/70 bg-amber-100/90"
+                        : showcaseStudent.rank === 2
+                        ? "text-slate-600 hover:text-slate-900 hover:bg-slate-200/70 bg-slate-100"
+                        : showcaseStudent.rank === 3
+                        ? "text-amber-900 hover:text-amber-950 hover:bg-amber-200/70 bg-amber-100"
+                        : showcaseStudent.rank <= 10
+                        ? "text-purple-700 hover:text-purple-950 hover:bg-purple-200/70 bg-purple-100"
+                        : "text-slate-500 hover:text-slate-800 hover:bg-slate-100 bg-slate-50"
+                    }`}
                   >
                     <X className="w-5 h-5" />
                   </button>
 
-                  {/* Top Tier Title Banner */}
-                  <div className="relative pt-2">
+                  {/* Top Tier Honor Banner */}
+                  <div className="relative pt-1">
                     <motion.div
                       initial={{ scale: 0.8, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
                       transition={{ delay: 0.1 }}
-                      className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest shadow-lg"
+                      className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest shadow-md text-white"
                       style={{
                         background:
                           showcaseStudent.rank === 1
                             ? "linear-gradient(135deg, #f59e0b, #d97706)"
                             : showcaseStudent.rank === 2
-                            ? "linear-gradient(135deg, #94a3b8, #64748b)"
+                            ? "linear-gradient(135deg, #64748b, #475569)"
                             : showcaseStudent.rank === 3
                             ? "linear-gradient(135deg, #b45309, #78350f)"
-                            : "linear-gradient(135deg, #6d28d9, #4c1d95)",
-                        color: showcaseStudent.rank === 1 ? "#fff" : "#fff",
+                            : showcaseStudent.rank <= 10
+                            ? "linear-gradient(135deg, #9333ea, #7c3aed)"
+                            : "linear-gradient(135deg, #475569, #334155)",
                       }}
                     >
                       {showcaseStudent.rank === 1 ? (
@@ -706,30 +740,37 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                         <>
                           <span>🥉 BRONZE STAR</span>
                         </>
+                      ) : showcaseStudent.rank <= 10 ? (
+                        <>
+                          <Award className="w-4 h-4" />
+                          <span>TOP 10 • ELITE TIER</span>
+                        </>
                       ) : (
                         <>
                           <Award className="w-4 h-4" />
-                          <span>TOP {showcaseStudent.rank <= 10 ? "10 ELITE" : "CONTENDER"}</span>
+                          <span>SISWA BERPRESTASI</span>
                         </>
                       )}
                     </motion.div>
                   </div>
 
                   {/* Center Showcase: Large Photo with Trophy / Medal Halo */}
-                  <div className="relative flex justify-center items-center py-2">
-                    {/* Floating Halo Animation */}
+                  <div className="relative flex justify-center items-center py-3">
+                    {/* Floating Frame */}
                     <div
                       className={`relative rounded-3xl p-1.5 shadow-2xl transition-all ${
                         showcaseStudent.rank === 1
-                          ? "bg-gradient-to-tr from-amber-400 via-yellow-200 to-amber-500 gold-aura-glow ring-4 ring-amber-400/40"
+                          ? "bg-gradient-to-tr from-amber-400 via-yellow-200 to-amber-500 gold-aura-glow ring-4 ring-amber-400/50"
                           : showcaseStudent.rank === 2
-                          ? "bg-gradient-to-tr from-slate-200 via-slate-100 to-slate-400 silver-aura-glow ring-4 ring-slate-300/40"
+                          ? "bg-gradient-to-tr from-slate-300 via-slate-100 to-slate-400 silver-aura-glow ring-4 ring-slate-300/60"
                           : showcaseStudent.rank === 3
-                          ? "bg-gradient-to-tr from-amber-700 via-amber-500 to-amber-800 bronze-aura-glow ring-4 ring-amber-600/40"
-                          : "bg-gradient-to-tr from-brand-500 to-accent-500 ring-4 ring-brand-500/30"
+                          ? "bg-gradient-to-tr from-amber-700 via-amber-500 to-amber-800 bronze-aura-glow ring-4 ring-amber-600/50"
+                          : showcaseStudent.rank <= 10
+                          ? "bg-gradient-to-tr from-purple-400 to-fuchsia-400 ring-4 ring-purple-300/50 shadow-purple-500/20"
+                          : "bg-slate-100 ring-4 ring-slate-200 shadow-md"
                       }`}
                     >
-                      <div className="w-36 h-48 sm:w-44 sm:h-56 rounded-2xl overflow-hidden bg-slate-900 flex items-center justify-center">
+                      <div className="w-40 h-52 sm:w-48 sm:h-60 rounded-2xl overflow-hidden bg-slate-900 flex items-center justify-center shadow-inner">
                         {showcaseStudent.foto_url ? (
                           <img
                             src={showcaseStudent.foto_url}
@@ -737,24 +778,38 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center font-black text-4xl text-white/50 bg-gradient-to-tr from-brand-900 to-brand-800">
-                            {showcaseStudent.nama.slice(0, 2).toUpperCase()}
+                          <div
+                            className={`w-full h-full flex items-center justify-center font-black text-5xl uppercase ${
+                              showcaseStudent.rank === 1
+                                ? "bg-amber-200 text-amber-900"
+                                : showcaseStudent.rank === 2
+                                ? "bg-slate-300 text-slate-800"
+                                : showcaseStudent.rank === 3
+                                ? "bg-amber-200 text-amber-950"
+                                : showcaseStudent.rank <= 10
+                                ? "bg-purple-200 text-purple-900"
+                                : "bg-slate-100 text-slate-700"
+                            }`}
+                          >
+                            {showcaseStudent.nama.slice(0, 2)}
                           </div>
                         )}
                       </div>
 
                       {/* Giant Floating Rank Badge on Bottom Corner */}
                       <div
-                        className="absolute -bottom-4 -right-4 w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex flex-col items-center justify-center font-black shadow-2xl border-2 border-white/30 transform rotate-3"
+                        className="absolute -bottom-4 -right-4 w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex flex-col items-center justify-center font-black shadow-2xl border-2 border-white text-white transform rotate-3"
                         style={{
                           background:
                             showcaseStudent.rank === 1
                               ? "linear-gradient(135deg, #fbbf24, #d97706)"
                               : showcaseStudent.rank === 2
-                              ? "linear-gradient(135deg, #cbd5e1, #64748b)"
+                              ? "linear-gradient(135deg, #94a3b8, #475569)"
                               : showcaseStudent.rank === 3
                               ? "linear-gradient(135deg, #d97706, #92400e)"
-                              : "linear-gradient(135deg, #8b5cf6, #5b21b6)",
+                              : showcaseStudent.rank <= 10
+                              ? "linear-gradient(135deg, #a855f7, #6b21a8)"
+                              : "linear-gradient(135deg, #64748b, #334155)",
                         }}
                       >
                         <span className="text-[10px] uppercase tracking-tighter opacity-80 leading-none">RANK</span>
@@ -764,52 +819,57 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                   </div>
 
                   {/* Student Identity */}
-                  <div className="space-y-2">
-                    <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                  <div className="space-y-2 pt-2">
+                    <h3
+                      className={`text-xl sm:text-2xl font-black tracking-tight ${
+                        showcaseStudent.rank === 1
+                          ? "text-amber-950"
+                          : showcaseStudent.rank === 2
+                          ? "text-slate-900"
+                          : showcaseStudent.rank === 3
+                          ? "text-amber-950"
+                          : showcaseStudent.rank <= 10
+                          ? "text-purple-950"
+                          : "text-slate-900"
+                      }`}
+                    >
                       {toSentenceCase(showcaseStudent.nama)}
                     </h3>
-                    <div className="flex items-center justify-center gap-2 text-xs font-bold text-brand-200">
-                      <span className="px-3 py-1 rounded-xl bg-white/10 border border-white/15">
+
+                    <div className="flex items-center justify-center gap-2 text-xs font-bold">
+                      <span
+                        className={`px-3.5 py-1.5 rounded-xl border ${
+                          showcaseStudent.rank === 1
+                            ? "bg-amber-200/60 border-amber-300 text-amber-900"
+                            : showcaseStudent.rank === 2
+                            ? "bg-slate-200/70 border-slate-300 text-slate-800"
+                            : showcaseStudent.rank === 3
+                            ? "bg-amber-200/60 border-amber-300 text-amber-950"
+                            : showcaseStudent.rank <= 10
+                            ? "bg-purple-200/60 border-purple-300 text-purple-900"
+                            : "bg-slate-100 border-slate-200 text-slate-700"
+                        }`}
+                      >
                         Kelas {showcaseStudent.kelas}
                       </span>
                       {showcaseStudent.nis && (
-                        <span className="px-3 py-1 rounded-xl bg-white/10 border border-white/15">
+                        <span
+                          className={`px-3.5 py-1.5 rounded-xl border ${
+                            showcaseStudent.rank === 1
+                              ? "bg-amber-200/60 border-amber-300 text-amber-900"
+                              : showcaseStudent.rank === 2
+                              ? "bg-slate-200/70 border-slate-300 text-slate-800"
+                              : showcaseStudent.rank === 3
+                              ? "bg-amber-200/60 border-amber-300 text-amber-950"
+                              : showcaseStudent.rank <= 10
+                              ? "bg-purple-200/60 border-purple-300 text-purple-900"
+                              : "bg-slate-100 border-slate-200 text-slate-700"
+                          }`}
+                        >
                           NIS: {showcaseStudent.nis}
                         </span>
                       )}
                     </div>
-                  </div>
-
-                  {/* Score Highlights Pill Card */}
-                  <div className="grid grid-cols-2 gap-3 pt-2">
-                    <div className="bg-white/10 rounded-2xl p-3 border border-white/15 text-center">
-                      <p className="text-[10px] text-amber-300 font-bold uppercase tracking-wider mb-0.5">
-                        Poin Prestasi
-                      </p>
-                      <p className="text-lg sm:text-xl font-black text-amber-300">
-                        +{showcaseStudent.positif}
-                      </p>
-                    </div>
-
-                    <div className="bg-white/10 rounded-2xl p-3 border border-white/15 text-center">
-                      <p className="text-[10px] text-rose-300 font-bold uppercase tracking-wider mb-0.5">
-                        Poin Sanksi
-                      </p>
-                      <p className="text-lg sm:text-xl font-black text-rose-300">
-                        -{showcaseStudent.negatif}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Total Net Score Banner */}
-                  <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-400/20 via-amber-300/30 to-amber-400/20 border border-amber-400/50 flex items-center justify-between px-5">
-                    <span className="text-xs font-bold text-amber-200 uppercase tracking-wider flex items-center gap-1.5">
-                      <Sparkles className="w-4 h-4 text-amber-300" />
-                      Total Poin Bersih
-                    </span>
-                    <span className="text-lg font-black text-amber-300">
-                      {showcaseStudent.net} pts
-                    </span>
                   </div>
                 </div>
               </div>

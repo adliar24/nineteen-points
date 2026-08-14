@@ -2,8 +2,10 @@ import React from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { X, Printer } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { Siswa } from "../types";
 import { toSentenceCase } from "../formatName";
+import { getSiswaSeparatePoinMap } from "../dbStore";
 
 interface StudentDetailPopupProps {
   isOpen: boolean;
@@ -18,6 +20,14 @@ export default function StudentDetailPopup({
   student,
   onDownloadCard,
 }: StudentDetailPopupProps) {
+  const { data: poinMap = {} } = useQuery({
+    queryKey: ["siswaPoinMap"],
+    queryFn: getSiswaSeparatePoinMap,
+    enabled: !!student,
+  });
+
+  const split = (student && poinMap[student.id]) || { positif: 0, negatif: 0 };
+
   return createPortal(
     <AnimatePresence>
       {isOpen && student && (
@@ -61,7 +71,7 @@ export default function StudentDetailPopup({
               <h3 className="text-base font-extrabold text-brand-950">
                 {toSentenceCase(student.nama)}
               </h3>
-              <div className="mt-2 space-y-1 text-xs font-semibold text-brand-600">
+              <div className="mt-2 space-y-1.5 text-xs font-semibold text-brand-600">
                 <p>
                   <span className="font-black text-brand-400 uppercase">NIS:</span> {student.nis}
                 </p>
@@ -69,22 +79,14 @@ export default function StudentDetailPopup({
                   <span className="font-black text-brand-400 uppercase">Kelas:</span>{" "}
                   {student.kelas}
                 </p>
-                <p>
-                  <span className="font-black text-brand-400 uppercase">Skor:</span>{" "}
-                  <span
-                    className={
-                      student.total_poin >= 100
-                        ? "text-emerald-600"
-                        : student.total_poin > 0
-                        ? "text-amber-500"
-                        : student.total_poin === 0
-                        ? "text-slate-400"
-                        : "text-rose-500"
-                    }
-                  >
-                    {student.total_poin} pts
+                <div className="flex items-center justify-center gap-2 pt-1">
+                  <span className="px-2.5 py-1 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 font-mono font-black text-xs">
+                    Poin (+): +{split.positif}
                   </span>
-                </p>
+                  <span className="px-2.5 py-1 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 font-mono font-black text-xs">
+                    Poin (-): -{split.negatif}
+                  </span>
+                </div>
               </div>
             </div>
 

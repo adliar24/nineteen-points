@@ -64,19 +64,31 @@ export default function StatsView() {
     .filter(r => r.nilai_diberikan < 0)
     .reduce((sum, r) => sum + Math.abs(r.nilai_diberikan), 0), [riwayatList]);
 
-  // 2. Top 5 Students by Achievement
-  const topAchievers = useMemo(() => [...siswaList]
-    .sort((a, b) => b.total_poin - a.total_poin)
-    .slice(0, 5), [siswaList]);
+  // Aggregate positive & negative points per student from riwayatList
+  const studentPoinSummary = useMemo(() => {
+    const map: Record<string, { positif: number; negatif: number }> = {};
+    riwayatList.forEach((r) => {
+      if (!map[r.siswa_id]) map[r.siswa_id] = { positif: 0, negatif: 0 };
+      if (r.nilai_diberikan > 0) map[r.siswa_id].positif += r.nilai_diberikan;
+      else if (r.nilai_diberikan < 0) map[r.siswa_id].negatif += Math.abs(r.nilai_diberikan);
+    });
+    return map;
+  }, [riwayatList]);
 
-  // 3. Class Chart Data (Top 5 by average points)
+  // 2. Top 5 Students by Positive Points (Achievement)
+  const topAchievers = useMemo(() => [...siswaList]
+    .map(s => ({ ...s, positif: studentPoinSummary[s.id]?.positif || 0 }))
+    .sort((a, b) => b.positif - a.positif)
+    .slice(0, 5), [siswaList, studentPoinSummary]);
+
+  // 3. Class Chart Data (Top 5 by average positive points)
   const classChartData = useMemo(() => {
     const classGroups: { [key: string]: { total: number; count: number } } = {};
     siswaList.forEach(s => {
       if (!classGroups[s.kelas]) {
         classGroups[s.kelas] = { total: 0, count: 0 };
       }
-      classGroups[s.kelas].total += s.total_poin;
+      classGroups[s.kelas].total += (studentPoinSummary[s.id]?.positif || 0);
       classGroups[s.kelas].count += 1;
     });
     return Object.keys(classGroups)
@@ -87,18 +99,16 @@ export default function StatsView() {
       }))
       .sort((a, b) => b["Rata-rata Poin"] - a["Rata-rata Poin"])
       .slice(0, 5);
-  }, [siswaList]);
+  }, [siswaList, studentPoinSummary]);
 
-  // 3. Student Chart Data (Top 5 by total points)
-  const studentChartData = useMemo(() => [...siswaList]
-    .sort((a, b) => b.total_poin - a.total_poin)
-    .slice(0, 5)
+  // 3. Student Chart Data (Top 5 by positive points)
+  const studentChartData = useMemo(() => [...topAchievers]
     .map(s => ({
       name: s.nama.length > 15 ? s.nama.slice(0, 15) + "..." : s.nama,
       fullName: s.nama,
-      "Total Poin": s.total_poin,
+      "Total Poin": s.positif,
       Kelas: s.kelas
-    })), [siswaList]);
+    })), [topAchievers]);
 
   // 4. Day Chart Data (Average points per day of week)
   const dayChartData = useMemo(() => {
@@ -372,7 +382,7 @@ export default function StatsView() {
                     </div>
                   </div>
                   <span className="font-mono font-black text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-xl border border-emerald-100 text-[10px] flex-shrink-0">
-                    {siswa.total_poin} pts
+                    +{siswa.positif} pts
                   </span>
                 </div>
               ))

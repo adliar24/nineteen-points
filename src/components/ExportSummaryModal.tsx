@@ -23,7 +23,8 @@ export default function ExportSummaryModal({ isOpen, onClose }: ExportSummaryMod
         NIS: r.nis,
         Nama: r.nama,
         Kelas: r.kelas,
-        "Total Poin": r.total_poin,
+        "Poin (+)": r.poin_positif,
+        "Poin (-)": r.poin_negatif,
       }));
 
       excelRows.push({});
@@ -35,6 +36,7 @@ export default function ExportSummaryModal({ isOpen, onClose }: ExportSummaryMod
         { wch: 12 },
         { wch: 25 },
         { wch: 15 },
+        { wch: 12 },
         { wch: 12 },
       ];
 

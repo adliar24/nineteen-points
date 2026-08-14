@@ -14,8 +14,8 @@ import PaginationFooter from "./PaginationFooter";
 type SortMode = "tertinggi" | "terendah" | "nama";
 
 const SORT_OPTIONS: { key: SortMode; label: string; icon: React.ReactNode }[] = [
-  { key: "tertinggi", label: "Tertinggi", icon: <ArrowDownWideNarrow className="w-3.5 h-3.5" /> },
-  { key: "terendah", label: "Terendah", icon: <ArrowUpWideNarrow className="w-3.5 h-3.5" /> },
+  { key: "tertinggi", label: "Poin (+) Tertinggi", icon: <ArrowDownWideNarrow className="w-3.5 h-3.5" /> },
+  { key: "terendah", label: "Poin (-) Terbanyak", icon: <ArrowUpWideNarrow className="w-3.5 h-3.5" /> },
   { key: "nama", label: "Nama A-Z", icon: <ArrowUpDown className="w-3.5 h-3.5" /> },
 ];
 
@@ -61,14 +61,14 @@ export default function RekapPoinView() {
   const sortedSiswa = useMemo(() => {
     const sorted = [...filteredSiswa];
     if (sortMode === "tertinggi") {
-      sorted.sort((a, b) => b.total_poin - a.total_poin || a.nama.localeCompare(b.nama, "id"));
+      sorted.sort((a, b) => (poinMap[b.id]?.positif || 0) - (poinMap[a.id]?.positif || 0) || a.nama.localeCompare(b.nama, "id"));
     } else if (sortMode === "terendah") {
-      sorted.sort((a, b) => a.total_poin - b.total_poin || a.nama.localeCompare(b.nama, "id"));
+      sorted.sort((a, b) => (poinMap[b.id]?.negatif || 0) - (poinMap[a.id]?.negatif || 0) || a.nama.localeCompare(b.nama, "id"));
     } else {
       sorted.sort((a, b) => a.nama.localeCompare(b.nama, "id"));
     }
     return sorted;
-  }, [filteredSiswa, sortMode]);
+  }, [filteredSiswa, sortMode, poinMap]);
 
   const totalPages = Math.ceil(sortedSiswa.length / itemsPerPage);
   const paginatedSiswa = sortedSiswa.slice(
@@ -100,7 +100,7 @@ export default function RekapPoinView() {
       <div>
         <h2 className="text-xl font-extrabold text-brand-950 tracking-tight">Rekapitulasi Poin Murid</h2>
         <p className="text-xs text-brand-500 font-semibold mt-1">
-          Rekap poin seluruh murid, urutkan berdasarkan poin tertinggi/terendah serta filter nama & kelas.
+          Rekapitulasi poin positif dan poin negatif seluruh murid terpisah secara transparan.
         </p>
       </div>
 
@@ -160,9 +160,8 @@ export default function RekapPoinView() {
                 <th className="px-4 py-3.5">Murid</th>
                 <th className="px-4 py-3.5">NIS</th>
                 <th className="px-4 py-3.5">Kelas</th>
-                <th className="px-4 py-3.5 text-center">Poin (+)</th>
-                <th className="px-4 py-3.5 text-center">Poin (-)</th>
-                <th className="px-4 py-3.5 text-right">Total Poin</th>
+                <th className="px-4 py-3.5 text-center">Poin Positif (+)</th>
+                <th className="px-4 py-3.5 text-center">Poin Negatif (-)</th>
               </tr>
             </thead>
             <tbody>
@@ -204,23 +203,14 @@ export default function RekapPoinView() {
                           {siswa.kelas}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-center font-mono font-black text-emerald-600 text-sm">
-                        +{split.positif}
+                      <td className="px-4 py-3 text-center">
+                        <span className="inline-flex px-3 py-1.5 rounded-xl border border-emerald-200 bg-emerald-50 font-mono font-black text-emerald-700 text-sm">
+                          +{split.positif}
+                        </span>
                       </td>
-                      <td className="px-4 py-3 text-center font-mono font-black text-rose-600 text-sm">
-                        -{split.negatif}
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <span
-                          className={`inline-flex px-3 py-1.5 rounded-xl border font-mono font-black text-sm ${
-                            siswa.total_poin > 0
-                              ? "bg-emerald-50 text-emerald-700 border-emerald-100"
-                              : siswa.total_poin < 0
-                              ? "bg-rose-50 text-rose-700 border-rose-100"
-                              : "bg-slate-50 text-slate-600 border-slate-100"
-                          }`}
-                        >
-                          {siswa.total_poin}
+                      <td className="px-4 py-3 text-center">
+                        <span className="inline-flex px-3 py-1.5 rounded-xl border border-rose-200 bg-rose-50 font-mono font-black text-rose-700 text-sm">
+                          -{split.negatif}
                         </span>
                       </td>
                     </tr>
@@ -228,7 +218,7 @@ export default function RekapPoinView() {
                 })
               ) : (
                 <tr>
-                  <td colSpan={7} className="px-4 py-16 text-center">
+                  <td colSpan={6} className="px-4 py-16 text-center">
                     <div className="flex flex-col items-center gap-2">
                       <Search className="w-6 h-6 text-brand-200" />
                       <p className="text-sm font-bold text-brand-400">Tidak ada murid yang cocok dengan filter.</p>

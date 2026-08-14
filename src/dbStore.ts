@@ -431,27 +431,37 @@ export const akhiriAktivitas = async (): Promise<void> => {
 // --- EXPORT / IMPORT SUMMARY ---
 
 export interface SummaryRow {
+  id?: string;
   nis: string;
   nama: string;
   kelas: string;
-  total_poin: number;
+  poin_positif?: number;
+  poin_negatif?: number;
+  total_poin?: number;
 }
 
 export const exportSummaryData = async (): Promise<SummaryRow[]> => {
   const data = await fetchAllPages<any>((from, to) =>
     supabaseAdminAuth
       .from("siswa")
-      .select("nis, nama, kelas, total_poin")
+      .select("id, nis, nama, kelas")
       .order("nama", { ascending: true })
       .range(from, to)
   );
 
-  return (data || []).map((row: any) => ({
-    nis: row.nis || "-",
-    nama: row.nama || "-",
-    kelas: row.kelas || "-",
-    total_poin: row.total_poin ?? 0,
-  }));
+  const poinMap = await getSiswaSeparatePoinMap();
+
+  return (data || []).map((row: any) => {
+    const split = poinMap[row.id] || { positif: 0, negatif: 0 };
+    return {
+      id: row.id,
+      nis: row.nis || "-",
+      nama: row.nama || "-",
+      kelas: row.kelas || "-",
+      poin_positif: split.positif,
+      poin_negatif: split.negatif,
+    };
+  });
 };
 
 export const importSummaryData = async (rows: SummaryRow[]): Promise<{ updated: number; skipped: number }> => {
@@ -474,9 +484,10 @@ export const importSummaryData = async (rows: SummaryRow[]): Promise<{ updated: 
       skipped++;
       return;
     }
+    const valToUpdate = row.total_poin ?? ((row.poin_positif || 0) - (row.poin_negatif || 0));
     const { error } = await supabase
       .from("siswa")
-      .update({ total_poin: row.total_poin })
+      .update({ total_poin: valToUpdate })
       .eq("id", siswaId);
     if (error) {
       console.error(`Error updating siswa ${row.nis}:`, error);

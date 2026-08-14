@@ -449,43 +449,46 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
             return (
               <div
                 key={rule.id}
-                className={`py-3 px-4 flex items-center justify-between gap-3 transition-all animate-fade-in ${
+                className={`py-3 px-3 sm:px-4 flex items-start sm:items-center justify-between gap-2.5 sm:gap-4 transition-all animate-fade-in ${
                   isSelected ? "bg-brand-50/60" : "hover:bg-white"
                 }`}
               >
                 {/* Left: Checkbox + Indicator + Text */}
-                <div className="flex items-center gap-3.5 min-w-0 flex-1">
+                <div className="flex items-start sm:items-center gap-2.5 sm:gap-3.5 min-w-0 flex-1">
                   <input
                     type="checkbox"
                     checked={isSelected}
                     onChange={() => handleSelectOne(rule.id)}
-                    className="w-4 h-4 rounded border-brand-300 text-brand-600 focus:ring-brand-500 cursor-pointer flex-shrink-0"
+                    className="w-4 h-4 rounded border-brand-300 text-brand-600 focus:ring-brand-500 cursor-pointer flex-shrink-0 mt-0.5 sm:mt-0"
                   />
                   <div
-                    className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
+                    className={`w-2.5 h-2.5 rounded-full flex-shrink-0 mt-1 sm:mt-0 ${
                       isPositive
                         ? "bg-emerald-500 shadow-sm shadow-emerald-500/30"
                         : "bg-rose-500 shadow-sm shadow-rose-500/30"
                     }`}
                   />
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-brand-950 truncate leading-tight">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs sm:text-sm font-bold text-brand-950 break-words leading-snug">
                       {rule.nama_poin}
                     </p>
-                    <div className="flex items-center gap-2 mt-1">
+                    <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-1">
                       <span
-                        className={`text-xs font-bold uppercase tracking-wide ${
-                          isPositive ? "text-emerald-600" : "text-rose-600"
+                        className={`text-[10px] sm:text-xs font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-md ${
+                          isPositive 
+                            ? "text-emerald-700 bg-emerald-50 border border-emerald-200/60" 
+                            : "text-rose-700 bg-rose-50 border border-rose-200/60"
                         }`}
                       >
-                        {isPositive ? "Penghargaan Prestasi" : "Pelanggaran Disiplin"}
+                        {isPositive ? "Prestasi" : "Pelanggaran"}
                       </span>
                       {hasSpecialAccess ? (
-                        <span className="text-[10px] font-extrabold text-amber-800 bg-amber-100/90 px-2 py-0.5 rounded-full flex items-center gap-1">
-                          <Users className="w-3 h-3" /> Akses Khusus ({rule.allowed_guru_emails!.length} Guru)
+                        <span className="text-[9.5px] sm:text-[10px] font-extrabold text-amber-800 bg-amber-100/90 border border-amber-200/80 px-2 py-0.5 rounded-full flex items-center gap-1">
+                          <Users className="w-3 h-3 shrink-0" />
+                          <span>Khusus ({rule.allowed_guru_emails!.length} Guru)</span>
                         </span>
                       ) : (
-                        <span className="text-[10px] font-extrabold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+                        <span className="text-[9.5px] sm:text-[10px] font-extrabold text-slate-600 bg-slate-100 border border-slate-200/80 px-2 py-0.5 rounded-full">
                           Semua Guru
                         </span>
                       )}
@@ -494,9 +497,9 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
                 </div>
 
                 {/* Right: Badge + Actions */}
-                <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 self-start sm:self-center mt-0.5 sm:mt-0">
                   <span
-                    className={`font-mono text-sm font-black px-3 py-1 rounded-full border ${
+                    className={`font-mono text-xs sm:text-sm font-black px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full border ${
                       isPositive
                         ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                         : "bg-rose-50 text-rose-700 border-rose-200"
@@ -505,20 +508,22 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
                     {isPositive ? `+${rule.nilai_poin}` : rule.nilai_poin}
                   </span>
 
-                  <button
-                    onClick={() => openEdit(rule)}
-                    className="text-brand-300 hover:text-brand-600 p-1.5 rounded-lg hover:bg-brand-50 transition-all cursor-pointer"
-                    title="Edit Aturan"
-                  >
-                    <Pencil className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDeleteRule(rule.id, rule.nama_poin)}
-                    className="text-rose-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition-all cursor-pointer"
-                    title="Hapus Aturan"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  <div className="flex items-center">
+                    <button
+                      onClick={() => openEdit(rule)}
+                      className="text-brand-400 hover:text-brand-700 p-1 sm:p-1.5 rounded-lg hover:bg-brand-50 transition-all cursor-pointer"
+                      title="Edit Aturan"
+                    >
+                      <Pencil className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteRule(rule.id, rule.nama_poin)}
+                      className="text-rose-400 hover:text-rose-600 p-1 sm:p-1.5 rounded-lg hover:bg-rose-50 transition-all cursor-pointer"
+                      title="Hapus Aturan"
+                    >
+                      <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
             );

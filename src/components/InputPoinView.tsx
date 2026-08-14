@@ -624,11 +624,11 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
                                   }`}
                                 >
                                   <div className="min-w-0 flex-1">
-                                    <div className="flex items-center gap-1.5">
+                                    <div className="flex flex-wrap items-center gap-1.5">
                                       <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
                                         isPositive ? "bg-emerald-500" : "bg-rose-500"
                                       }`} />
-                                      <p className={`text-xs font-bold truncate leading-tight ${
+                                      <p className={`text-xs font-bold break-words leading-tight ${
                                         isSelected ? "text-brand-900" : "text-brand-950"
                                       }`}>
                                         {p.nama_poin}

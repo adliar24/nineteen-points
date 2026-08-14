@@ -1842,7 +1842,7 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.12 }}
-              className="fixed inset-0 bg-brand-950/60 backdrop-blur-xs"
+              className="fixed inset-0 bg-black/75"
               onClick={() => setDetailedStudent(null)}
             />
             
@@ -1977,7 +1977,7 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
               exit={{ opacity: 0 }}
               transition={{ duration: 0.12 }}
               onClick={() => setEditingRecord(null)}
-              className="fixed inset-0 bg-brand-950/60 backdrop-blur-xs"
+              className="fixed inset-0 bg-black/75"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
@@ -2073,8 +2073,8 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-brand-950/60 backdrop-blur-xs"
+              transition={{ duration: 0.12 }}
+              className="fixed inset-0 bg-black/75"
               onClick={() => setIsConfirmGpsModalOpen(false)}
             />
             

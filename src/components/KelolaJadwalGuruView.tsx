@@ -255,7 +255,7 @@ export default function KelolaJadwalGuruView() {
       {/* Add Schedule Modal */}
       <AnimatePresence>
         {isAddModalOpen && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-brand-950/60 backdrop-blur-xs">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/75">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -374,7 +374,7 @@ export default function KelolaJadwalGuruView() {
       {/* Delete Confirmation Modal */}
       <AnimatePresence>
         {deleteTarget && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-brand-950/60 backdrop-blur-xs">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/75">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}

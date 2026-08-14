@@ -1186,7 +1186,7 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
       {/* PREVIEW SERTIFIKAT MODAL */}
       <AnimatePresence>
         {previewKegiatan && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-brand-950/70 backdrop-blur-xs">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/75">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}

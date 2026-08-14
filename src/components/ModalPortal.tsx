@@ -40,7 +40,7 @@ export default function ModalPortal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.12, ease: "easeOut" }}
-            className="fixed inset-0 bg-brand-950/60 backdrop-blur-xs"
+            className="fixed inset-0 bg-black/75"
             onClick={onClose}
           />
           <motion.div

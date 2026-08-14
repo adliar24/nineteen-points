@@ -307,9 +307,9 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
         </div>
       </div>
 
-      {/* Decorative Blur Orbs */}
-      <div className="absolute top-0 right-0 w-[45rem] h-[45rem] bg-gradient-to-br from-brand-500/20 to-accent-500/15 rounded-full filter blur-3xl translate-x-1/3 -translate-y-1/3 pointer-events-none z-0"></div>
-      <div className="absolute bottom-0 left-0 w-[45rem] h-[45rem] bg-gradient-to-tr from-accent-500/15 to-brand-600/20 rounded-full filter blur-3xl -translate-x-1/3 translate-y-1/3 pointer-events-none z-0"></div>
+      {/* Decorative Gradient Glows (GPU Shader Free) */}
+      <div className="absolute top-0 right-0 w-[45rem] h-[45rem] bg-[radial-gradient(circle,rgba(99,102,241,0.12)_0%,transparent_70%)] translate-x-1/3 -translate-y-1/3 pointer-events-none z-0"></div>
+      <div className="absolute bottom-0 left-0 w-[45rem] h-[45rem] bg-[radial-gradient(circle,rgba(236,72,153,0.1)_0%,transparent_70%)] -translate-x-1/3 translate-y-1/3 pointer-events-none z-0"></div>
 
       {/* ===== LAYER 1: Header Logo & Title (Raised 100px) ===== */}
       <motion.header
@@ -342,7 +342,7 @@ export default function LoginView({ onLoginSuccess }: LoginViewProps) {
           transition={{ delay: 0.2, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           className="max-w-md w-full"
         >
-          <div className="bg-white/95 backdrop-blur-md p-6 sm:p-8 rounded-2xl sm:rounded-3xl shadow-2xl shadow-brand-900/10 border border-brand-100">
+          <div className="bg-white p-6 sm:p-8 rounded-2xl sm:rounded-3xl shadow-2xl shadow-brand-900/10 border border-brand-100">
             <form className="space-y-4 sm:space-y-5" onSubmit={handleLogin} autoComplete="off">
               {error && (
                 <motion.div 

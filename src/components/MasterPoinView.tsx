@@ -506,7 +506,7 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
 
       {/* ─── Modal: Tambah Aturan ─── */}
       {isAdding && (
-        <div className="fixed inset-0 bg-brand-950/65 backdrop-blur-xs flex items-center justify-center z-50 p-4 overflow-y-auto">
+        <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-50 p-4 overflow-y-auto">
           <motion.div
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -665,7 +665,7 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
       {/* ─── Modal: Bulk Edit Hak Akses Guru ─── */}
       <AnimatePresence>
         {isBulkAccessModalOpen && (
-          <div className="fixed inset-0 bg-brand-950/65 backdrop-blur-xs flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-50 p-4 overflow-y-auto">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -796,7 +796,7 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
       {/* ─── Modal: Edit Aturan ─── */}
       <AnimatePresence>
         {editingRule && (
-          <div className="fixed inset-0 bg-brand-950/65 backdrop-blur-xs flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-50 p-4 overflow-y-auto">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}

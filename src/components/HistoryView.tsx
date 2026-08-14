@@ -360,8 +360,8 @@ export default function HistoryView({ onRefreshTrigger, refreshCount, userSessio
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="fixed inset-0 z-50 flex items-center justify-center bg-brand-950/60 backdrop-blur-xs p-4"
+              transition={{ duration: 0.18 }}
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4"
               onClick={() => setEditTarget(null)}
             >
               <motion.div

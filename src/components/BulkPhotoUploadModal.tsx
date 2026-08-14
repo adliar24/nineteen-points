@@ -291,7 +291,7 @@ export default function BulkPhotoUploadModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-brand-950/65 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-50 p-4">
       <div className="fixed inset-0" onClick={handleClose} />
       <div className="bg-white rounded-3xl p-6 w-full max-w-4xl max-h-[85vh] border border-brand-100 shadow-2xl flex flex-col relative z-10">
         {/* Header */}

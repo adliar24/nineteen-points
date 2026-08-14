@@ -131,7 +131,7 @@ export default function FaceEnrollModal({ siswa, onClose, onSuccess }: FaceEnrol
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-brand-950/70 backdrop-blur-md p-4 animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 animate-fade-in">
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -141,7 +141,7 @@ export default function FaceEnrollModal({ siswa, onClose, onSuccess }: FaceEnrol
         {/* Header */}
         <div className="p-5 brand-gradient text-white flex items-center justify-between shadow-md">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-white/20 rounded-2xl backdrop-blur-sm">
+            <div className="p-2 bg-white/20 rounded-2xl">
               <ScanFace className="w-6 h-6 text-white" />
             </div>
             <div>

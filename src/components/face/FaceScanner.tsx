@@ -412,7 +412,7 @@ export default function FaceScanner({
                 onClick={handleSwitchCamera}
                 disabled={isSwitchingCamera}
                 title="Ganti Kamera"
-                className="w-11 h-11 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center text-white border border-white/15 hover:bg-white/20 transition-all disabled:opacity-50"
+                className="w-11 h-11 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-slate-900/90 flex items-center justify-center text-white border border-white/20 hover:bg-slate-800 transition-all disabled:opacity-50"
               >
                 {isSwitchingCamera
                   ? <Loader2 className="w-5 h-5 md:w-6 md:h-6 animate-spin" />
@@ -424,7 +424,7 @@ export default function FaceScanner({
               whileTap={{ scale: 0.92 }}
               onClick={onClose}
               title="Tutup Scanner"
-              className="w-11 h-11 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-red-500/80 backdrop-blur-md flex items-center justify-center text-white border border-red-400/30 hover:bg-red-600 transition-all shadow-lg shadow-red-900/40"
+              className="w-11 h-11 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-red-600 flex items-center justify-center text-white border border-red-400/40 hover:bg-red-700 transition-all shadow-lg shadow-red-950/40"
             >
               <X className="w-5 h-5 md:w-6 md:h-6" />
             </motion.button>
@@ -582,7 +582,7 @@ export default function FaceScanner({
               animate={{ y: 0, opacity: 1, scale: 1 }}
               exit={{ y: 30, opacity: 0, scale: 0.95 }}
               transition={{ type: 'spring', damping: 22, stiffness: 280 }}
-              className={`w-full max-w-md mx-auto rounded-2xl md:rounded-3xl p-5 md:p-6 border shadow-2xl backdrop-blur-xl text-white ${getFeedbackStyle(feedback.type)}`}
+              className={`w-full max-w-md mx-auto rounded-2xl md:rounded-3xl p-5 md:p-6 border shadow-2xl text-white ${getFeedbackStyle(feedback.type)}`}
             >
               <div className="flex items-center gap-4">
                 {(feedback.type === 'success' || feedback.type === 'unmatched') && feedback.fotoUrl ? (

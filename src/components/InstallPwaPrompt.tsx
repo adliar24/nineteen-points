@@ -123,7 +123,7 @@ export default function InstallPwaPrompt() {
             transition={{ type: "spring", stiffness: 350, damping: 25 }}
             className="fixed bottom-4 left-4 right-4 md:left-auto md:right-6 md:max-w-md z-[9999] pointer-events-auto"
           >
-            <div className="relative overflow-hidden rounded-2xl bg-white/95 backdrop-blur-md p-4 sm:p-5 shadow-2xl border border-brand-200/80 shadow-brand-900/15">
+            <div className="relative overflow-hidden rounded-2xl bg-white p-4 sm:p-5 shadow-2xl border border-brand-200/80 shadow-brand-900/15">
               {/* Top Accent Gradient Bar */}
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-brand-600 via-accent-500 to-brand-500" />
 
@@ -185,7 +185,7 @@ export default function InstallPwaPrompt() {
       {/* iOS Installation Guide Modal */}
       <AnimatePresence>
         {showIosGuide && (
-          <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/80">
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}

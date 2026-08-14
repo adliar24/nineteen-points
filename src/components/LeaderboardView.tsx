@@ -591,7 +591,7 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
             exit={{ opacity: 0, y: 50 }}
             className="fixed bottom-4 left-4 right-4 md:left-auto md:right-8 md:max-w-md z-40"
           >
-            <div className="bg-gradient-to-r from-brand-900 via-brand-800 to-accent-600 text-white p-4 rounded-3xl shadow-2xl border border-brand-500/40 backdrop-blur-md flex items-center justify-between gap-4">
+            <div className="bg-gradient-to-r from-brand-900 via-brand-800 to-accent-600 text-white p-4 rounded-3xl shadow-2xl border border-brand-500/40 flex items-center justify-between gap-4">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-10 h-10 rounded-2xl bg-amber-400 text-brand-950 flex items-center justify-center font-black text-sm shrink-0 shadow-md">
                   #{currentStudentRank.rank}

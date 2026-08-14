@@ -959,7 +959,7 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
       {/* Lightbox / Zoom Modal */}
       {isZoomed && createPortal(
         <div 
-          className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black/95 backdrop-blur-xs p-4 animate-fade-in cursor-zoom-out"
+          className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black/95 p-4 animate-fade-in cursor-zoom-out"
           onClick={() => setIsZoomed(false)}
         >
           {/* Close button at top right */}

@@ -627,7 +627,7 @@ export default function App() {
     >
       
       {/* Header — fixed layer, always pinned at top */}
-      <header className={`fixed top-0 left-0 md:left-68 right-0 h-20 z-[60] bg-gradient-to-r from-brand-800 via-brand-700 to-brand-800 md:!bg-none md:bg-[#faf9ff] text-white md:text-[#1e1b4b] shadow-xl shadow-brand-900/15 md:shadow-none md:border-b md:border-brand-100/50 transition-all duration-300 ${(mobileMenuOpen || isAnyModalOpen) ? "backdrop-blur-xl bg-brand-800/80 md:bg-[#faf9ff]/80" : ""}`}>
+      <header className="fixed top-0 left-0 md:left-68 right-0 h-20 z-[60] bg-gradient-to-r from-brand-800 via-brand-700 to-brand-800 md:!bg-none md:bg-[#faf9ff] text-white md:text-[#1e1b4b] shadow-xl shadow-brand-900/15 md:shadow-none md:border-b md:border-brand-100/50 transition-all duration-300">
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent pointer-events-none md:hidden" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-3 relative z-10">
           
@@ -865,8 +865,8 @@ export default function App() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.25 }}
-                className="fixed inset-0 bg-brand-950/60 backdrop-blur-xs"
+                transition={{ duration: 0.18 }}
+                className="fixed inset-0 bg-black/75"
                 onClick={() => setMobileMenuOpen(false)}
               />
 
@@ -1165,8 +1165,8 @@ export default function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-brand-950/60 backdrop-blur-sm"
+            transition={{ duration: 0.18 }}
+            className="fixed inset-0 bg-black/75"
             onClick={() => setShowProfilePopup(false)}
           />
           <motion.div

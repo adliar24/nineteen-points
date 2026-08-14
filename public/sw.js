@@ -1,4 +1,10 @@
-const CACHE_NAME = "nineteen-points-v11";
+const CACHE_NAME = "nineteen-points-v12";
+
+self.addEventListener("message", (e) => {
+  if (e.data && e.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
+});
 
 self.addEventListener("install", (e) => {
   self.skipWaiting();

@@ -30,7 +30,8 @@ import {
   ClipboardList,
   ListChecks,
   Camera,
-  Home
+  Home,
+  Trophy
 } from "lucide-react";
 import { UserSession } from "./types";
 import { getLocalStorage, setLocalStorage } from "./dbStore";
@@ -139,6 +140,7 @@ const THEMES = [
 // View Imports — Lazy Loaded for code splitting
 const LoginView = lazy(() => import("./components/LoginView"));
 const StatsView = lazy(() => import("./components/StatsView"));
+const LeaderboardView = lazy(() => import("./components/LeaderboardView"));
 const InputPoinView = lazy(() => import("./components/InputPoinView"));
 const KehadiranView = lazy(() => import("./components/KehadiranView"));
 const InputKehadiranView = lazy(() => import("./components/InputKehadiranView"));
@@ -251,12 +253,12 @@ export default function App() {
   };
 
   const isValidTab = (role: string, tab: string) => {
-    if (role === "siswa") return ["siswa_stats", "siswa_scan", "siswa_barcode", "siswa_history", "change_password"].includes(tab);
-    if (role === "piket") return ["kehadiran", "input_kehadiran", "change_password", "scan_sholat", "rekap_sholat_kehadiran", "rekap_poin"].includes(tab);
-    if (role === "guru") return ["input", "students", "history", "change_password", "guru_sertifikat", "guru_kartu", "scan_sholat", "rekap_sholat_kehadiran", "rekap_poin"].includes(tab);
-    if (role === "kepala_sekolah") return ["input_kehadiran", "input", "kehadiran", "students", "history", "change_password", "scan_sholat", "rekap_sholat_kehadiran", "rekap_poin"].includes(tab);
-    if (role === "tata_usaha") return ["input", "scan_sholat", "rekap_sholat_kehadiran", "guru_sertifikat", "change_password", "rekap_poin"].includes(tab);
-    return ["stats", "input_kehadiran", "input", "kehadiran", "students", "history", "rules", "users", "change_password", "kelola_sertifikat_guru", "scan_sholat", "rekap_sholat_kehadiran", "rekap_poin"].includes(tab);
+    if (role === "siswa") return ["siswa_stats", "leaderboard", "siswa_scan", "siswa_barcode", "siswa_history", "change_password"].includes(tab);
+    if (role === "piket") return ["leaderboard", "kehadiran", "input_kehadiran", "change_password", "scan_sholat", "rekap_sholat_kehadiran", "rekap_poin"].includes(tab);
+    if (role === "guru") return ["leaderboard", "input", "students", "history", "change_password", "guru_sertifikat", "guru_kartu", "scan_sholat", "rekap_sholat_kehadiran", "rekap_poin"].includes(tab);
+    if (role === "kepala_sekolah") return ["leaderboard", "input_kehadiran", "input", "kehadiran", "students", "history", "change_password", "scan_sholat", "rekap_sholat_kehadiran", "rekap_poin"].includes(tab);
+    if (role === "tata_usaha") return ["leaderboard", "input", "scan_sholat", "rekap_sholat_kehadiran", "guru_sertifikat", "change_password", "rekap_poin"].includes(tab);
+    return ["stats", "leaderboard", "input_kehadiran", "input", "kehadiran", "students", "history", "rules", "users", "change_password", "kelola_sertifikat_guru", "scan_sholat", "rekap_sholat_kehadiran", "rekap_poin"].includes(tab);
   };
 
   const [activeTab, setActiveTab] = useState<string>(() => {
@@ -501,6 +503,7 @@ export default function App() {
 
   if (userSession.role === "piket") {
     sidebarElements = [
+      { type: "item", id: "leaderboard", label: "Papan Peringkat", icon: Trophy, description: "Hall of fame & prestasi murid" },
       { type: "item", id: "input_kehadiran", label: "Input Kehadiran", icon: ClipboardCheck, description: "Scan QR & input absen harian" },
       { type: "item", id: "kehadiran", label: "Kehadiran Murid", icon: Users, description: "Rekap absensi & poin murid" },
       { type: "item", id: "rekap_poin", label: "Rekap Poin", icon: ListChecks, description: "Rekapitulasi poin murid" },
@@ -510,6 +513,7 @@ export default function App() {
     ];
   } else if (userSession.role === "guru") {
     sidebarElements = [
+      { type: "item", id: "leaderboard", label: "Papan Peringkat", icon: Trophy, description: "Hall of fame & prestasi murid" },
       // Sembunyikan sementara: Kehadiran Saya
       // { type: "item", id: "guru_kehadiran", label: "Kehadiran Saya", icon: Calendar, description: "Absen masuk & pulang" },
       { type: "item", id: "guru_sertifikat", label: "Sertifikat Kegiatan", icon: Award, description: "Unduh sertifikat pelatihan" },
@@ -526,6 +530,7 @@ export default function App() {
     ];
   } else if (userSession.role === "tata_usaha") {
     sidebarElements = [
+      { type: "item", id: "leaderboard", label: "Papan Peringkat", icon: Trophy, description: "Hall of fame & prestasi murid" },
       { type: "item", id: "input", label: "Input Poin", icon: ClipboardCheck, description: "Catat via QR atau pencarian" },
       { type: "item", id: "rekap_poin", label: "Rekap Poin", icon: ListChecks, description: "Rekapitulasi poin murid" },
       { type: "item", id: "scan_sholat", label: "Input Keagamaan", icon: BookOpen, description: "Scan QR sholat murid" },
@@ -535,6 +540,7 @@ export default function App() {
     ];
   } else if (userSession.role === "kepala_sekolah") {
     sidebarElements = [
+      { type: "item", id: "leaderboard", label: "Papan Peringkat", icon: Trophy, description: "Hall of fame & prestasi murid" },
       {
         type: "group",
         id: "input_data",
@@ -560,6 +566,7 @@ export default function App() {
   } else if (userSession.role === "super_admin") {
     sidebarElements = [
       { type: "item", id: "stats", label: "Statistik Poin", icon: TrendingUp, description: "Ikhtisar & analisis grafik" },
+      { type: "item", id: "leaderboard", label: "Papan Peringkat", icon: Trophy, description: "Hall of fame & prestasi murid" },
       {
         type: "group",
         id: "input_data",
@@ -604,6 +611,7 @@ export default function App() {
   } else if (userSession.role === "siswa") {
     sidebarElements = [
       { type: "item", id: "siswa_stats", label: "Beranda", icon: Home, description: "Statistik & presensi Anda" },
+      { type: "item", id: "leaderboard", label: "Papan Peringkat", icon: Trophy, description: "Klasemen Hall of Fame murid" },
       { type: "item", id: "siswa_barcode", label: "Kartu Pelajar", icon: CreditCard, description: "QR Kartu Pelajar Digital" },
       { type: "item", id: "siswa_history", label: "Riwayat Poin", icon: Calendar, description: "Riwayat perolehan poin" },
       { type: "item", id: "change_password", label: "Tema & Keamanan", icon: Settings, description: "Ubah sandi & tema warna" }
@@ -1010,6 +1018,10 @@ export default function App() {
             >
               {activeTab === "stats" && (
                 <StatsView />
+              )}
+
+              {activeTab === "leaderboard" && (
+                <LeaderboardView userSession={userSession} />
               )}
 
               {activeTab === "input" && (

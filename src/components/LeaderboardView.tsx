@@ -503,9 +503,9 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                           #{siswa.rank}
                         </div>
 
-                        {/* Avatar */}
+                        {/* Avatar (Portrait 3:4) */}
                         <div
-                          className={`w-10 h-10 rounded-xl overflow-hidden shrink-0 border ${
+                          className={`w-11 h-14 rounded-xl aspect-[3/4] overflow-hidden shrink-0 border ${
                             isTop10
                               ? "border-purple-200 bg-purple-100"
                               : "border-brand-100 bg-brand-50"

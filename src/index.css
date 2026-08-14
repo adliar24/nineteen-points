@@ -330,18 +330,24 @@ body {
   transform: translateZ(0);
 }
 
-@keyframes holographicBeam {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
+/* ===== Low-End Device Performance & GPU Optimization ===== */
+* {
+  -webkit-tap-highlight-color: transparent;
 }
 
+/* GPU-composited hardware acceleration for smooth 60fps scrolling & transforms */
+.transform-gpu {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Optimize image rendering on low-end devices */
+img {
+  content-visibility: auto;
+}
+
+/* Optimize holographic gradients without heavy background-position repaint */
 .holo-gradient-gold {
   background: linear-gradient(
     135deg,
@@ -351,8 +357,7 @@ body {
     #ffc371 75%,
     #fef9d7 100%
   );
-  background-size: 200% 200%;
-  animation: holographicBeam 6s ease infinite;
+  transform: translateZ(0);
 }
 
 .holo-gradient-silver {
@@ -364,8 +369,7 @@ body {
     #cbd5e1 75%,
     #ffffff 100%
   );
-  background-size: 200% 200%;
-  animation: holographicBeam 6s ease infinite;
+  transform: translateZ(0);
 }
 
 .holo-gradient-bronze {
@@ -377,8 +381,19 @@ body {
     #92400e 75%,
     #fef3c7 100%
   );
-  background-size: 200% 200%;
-  animation: holographicBeam 6s ease infinite;
+  transform: translateZ(0);
+}
+
+/* Respect user's low power / reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 

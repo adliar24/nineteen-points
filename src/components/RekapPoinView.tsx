@@ -6,10 +6,14 @@ import {
   ArrowUpWideNarrow,
   ArrowUpDown,
   ListChecks,
+  History,
+  Eye,
 } from "lucide-react";
 import { getSiswaList, getSiswaSeparatePoinMap } from "../dbStore";
 import { toSentenceCase } from "../formatName";
+import { Siswa } from "../types";
 import PaginationFooter from "./PaginationFooter";
+import StudentHistoryModal from "./StudentHistoryModal";
 
 type SortMode = "tertinggi" | "terendah" | "nama";
 
@@ -24,6 +28,7 @@ export default function RekapPoinView() {
   const [selectedKelas, setSelectedKelas] = useState("Semua");
   const [sortMode, setSortMode] = useState<SortMode>("tertinggi");
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedSiswaForHistory, setSelectedSiswaForHistory] = useState<Siswa | null>(null);
   const itemsPerPage = 20;
 
   const { data: siswaList = [], isLoading: loadingSiswa } = useQuery({
@@ -100,7 +105,7 @@ export default function RekapPoinView() {
       <div>
         <h2 className="text-xl font-extrabold text-brand-950 tracking-tight">Rekapitulasi Poin Murid</h2>
         <p className="text-xs text-brand-500 font-semibold mt-1">
-          Rekapitulasi poin positif dan poin negatif seluruh murid terpisah secara transparan.
+          Rekapitulasi poin positif dan poin negatif seluruh murid terpisah. Klik nama murid atau tombol Riwayat untuk melihat audit log per individu.
         </p>
       </div>
 
@@ -162,6 +167,7 @@ export default function RekapPoinView() {
                 <th className="px-4 py-3.5">Kelas</th>
                 <th className="px-4 py-3.5 text-center">Poin Positif (+)</th>
                 <th className="px-4 py-3.5 text-center">Poin Negatif (-)</th>
+                <th className="px-4 py-3.5 text-center">Riwayat</th>
               </tr>
             </thead>
             <tbody>
@@ -172,7 +178,8 @@ export default function RekapPoinView() {
                   return (
                     <tr
                       key={siswa.id}
-                      className="border-b border-brand-50 last:border-0 hover:bg-brand-50/30 transition-colors"
+                      className="border-b border-brand-50 last:border-0 hover:bg-brand-50/40 transition-colors cursor-pointer group"
+                      onClick={() => setSelectedSiswaForHistory(siswa)}
                     >
                       <td className="px-4 py-3">
                         <span className={`w-7 h-7 rounded-xl flex items-center justify-center font-black text-[10px] border ${medalClass(rank)}`}>
@@ -192,7 +199,7 @@ export default function RekapPoinView() {
                               {siswa.nama.slice(0, 2)}
                             </div>
                           )}
-                          <span className="font-extrabold text-xs text-brand-950 leading-tight truncate">
+                          <span className="font-extrabold text-xs text-brand-950 leading-tight truncate group-hover:text-brand-600 transition-colors">
                             {toSentenceCase(siswa.nama)}
                           </span>
                         </div>
@@ -213,12 +220,21 @@ export default function RekapPoinView() {
                           -{split.negatif}
                         </span>
                       </td>
+                      <td className="px-4 py-3 text-center" onClick={(e) => e.stopPropagation()}>
+                        <button
+                          onClick={() => setSelectedSiswaForHistory(siswa)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-brand-50 hover:bg-brand-100 text-brand-700 font-extrabold text-xs border border-brand-200 transition-all cursor-pointer shadow-xs hover:scale-105"
+                        >
+                          <History className="w-3.5 h-3.5 text-brand-600" />
+                          Detail
+                        </button>
+                      </td>
                     </tr>
                   );
                 })
               ) : (
                 <tr>
-                  <td colSpan={6} className="px-4 py-16 text-center">
+                  <td colSpan={7} className="px-4 py-16 text-center">
                     <div className="flex flex-col items-center gap-2">
                       <Search className="w-6 h-6 text-brand-200" />
                       <p className="text-sm font-bold text-brand-400">Tidak ada murid yang cocok dengan filter.</p>
@@ -238,6 +254,14 @@ export default function RekapPoinView() {
           itemLabel="murid"
         />
       </div>
+
+      {/* Modal Detail Riwayat Poin Individu */}
+      <StudentHistoryModal
+        isOpen={!!selectedSiswaForHistory}
+        onClose={() => setSelectedSiswaForHistory(null)}
+        siswa={selectedSiswaForHistory}
+        poinSummary={selectedSiswaForHistory ? poinMap[selectedSiswaForHistory.id] : undefined}
+      />
     </div>
   );
 }

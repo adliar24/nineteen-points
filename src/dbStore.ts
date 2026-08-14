@@ -1113,6 +1113,7 @@ export interface RekapGabunganRow {
   siswa_nis: string;
   siswa_nama: string;
   siswa_kelas: string;
+  foto_url?: string | null;
   kehadiran: Record<string, string>;
   sholat: Record<string, string>;
   sholatDhuha: Record<string, string>;
@@ -1122,7 +1123,7 @@ export interface RekapGabunganRow {
 export const getRekapGabungan = async (startDate: string, endDate: string): Promise<RekapGabunganRow[]> => {
   const { data: siswaList, error: sErr } = await supabase
     .from("siswa")
-    .select("id, nis, nama, kelas")
+    .select("id, nis, nama, kelas, foto_url")
     .order("nama", { ascending: true });
   if (sErr || !siswaList) return [];
 
@@ -1168,11 +1169,26 @@ export const getRekapGabungan = async (startDate: string, endDate: string): Prom
     siswa_nis: s.nis,
     siswa_nama: s.nama,
     siswa_kelas: s.kelas,
+    foto_url: s.foto_url,
     kehadiran: kehadiranMap[s.id] || {},
     sholat: sholatMap[s.id] || {},
     sholatDhuha: sholatDhuhaMap[s.id] || {},
     sholatJumat: sholatJumatMap[s.id] || {},
   }));
+};
+
+export const getRiwayatSiswa = async (siswaId: string): Promise<RiwayatPoin[]> => {
+  const { data, error } = await supabase
+    .from("riwayat_poin")
+    .select("id, siswa_id, nama_poin, nilai_diberikan, guru_email, created_at, semester")
+    .eq("siswa_id", siswaId)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching riwayat for siswa:", error);
+    return [];
+  }
+  return data || [];
 };
 
 // =========================================================================

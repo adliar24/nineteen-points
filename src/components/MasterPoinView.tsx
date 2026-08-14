@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2, X, Search, Pencil, CheckSquare, ShieldCheck, Users } from "lucide-react";
 import { MasterPoin } from "../types";
 import { getMasterPoinList } from "../dbStore";
@@ -11,6 +12,7 @@ interface MasterPoinViewProps {
 }
 
 export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps) {
+  const queryClient = useQueryClient();
   const [poinList, setPoinList] = useState<MasterPoin[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -19,7 +21,8 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
   useEffect(() => {
     async function load() {
       setIsLoading(true);
-      setPoinList(await getMasterPoinList());
+      const data = await getMasterPoinList();
+      setPoinList(data);
 
       // Fetch teacher profiles for teacher assignment
       const { data: tData } = await supabase
@@ -32,7 +35,25 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
       setIsLoading(false);
     }
     load();
-  }, []);
+
+    // Supabase Realtime Auto-Sync for master_poin changes across clients
+    const channel = supabase
+      .channel("master_poin_realtime_changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "master_poin" },
+        async () => {
+          const fresh = await getMasterPoinList();
+          setPoinList(fresh);
+          queryClient.invalidateQueries({ queryKey: ["masterPoin"] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   const [filterType, setFilterType] = useState<"Semua" | "Positif" | "Negatif">("Semua");
   const [searchQuery, setSearchQuery] = useState("");
@@ -116,6 +137,7 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
 
       const updated = await getMasterPoinList();
       setPoinList(updated);
+      await queryClient.invalidateQueries({ queryKey: ["masterPoin"] });
       onRefreshTrigger();
 
       setNewName("");
@@ -143,6 +165,7 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
       const updated = await getMasterPoinList();
       setPoinList(updated);
       setSelectedIds((prev) => prev.filter((sid) => sid !== id));
+      await queryClient.invalidateQueries({ queryKey: ["masterPoin"] });
       onRefreshTrigger();
       showToast(`Aturan "${name}" berhasil dihapus.`, "success");
     } catch (err: any) {
@@ -163,6 +186,7 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
       setPoinList(updated);
       const count = selectedIds.length;
       setSelectedIds([]);
+      await queryClient.invalidateQueries({ queryKey: ["masterPoin"] });
       onRefreshTrigger();
       showToast(`${count} aturan berhasil dihapus.`, "success");
     } catch (err: any) {
@@ -186,6 +210,7 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
 
       const updated = await getMasterPoinList();
       setPoinList(updated);
+      await queryClient.invalidateQueries({ queryKey: ["masterPoin"] });
       onRefreshTrigger();
       const count = selectedIds.length;
       setSelectedIds([]);
@@ -249,6 +274,7 @@ export default function MasterPoinView({ onRefreshTrigger }: MasterPoinViewProps
 
       const updated = await getMasterPoinList();
       setPoinList(updated);
+      await queryClient.invalidateQueries({ queryKey: ["masterPoin"] });
       onRefreshTrigger();
       setEditingRule(null);
       showToast(`Aturan "${editName.trim()}" berhasil diperbarui!`, "success");

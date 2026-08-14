@@ -137,7 +137,9 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
         lower.includes("hadir") || 
         lower.includes("absen") || 
         lower.includes("upacara") || 
-        lower.includes("apel");
+        lower.includes("apel") ||
+        lower.includes("kegiatan") ||
+        lower.includes("sekolah");
       if (!isPiketAllowed) return false;
     }
 
@@ -611,8 +613,13 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
                               );
                             })
                           ) : (
-                            <div className="py-8 text-center text-[11px] font-bold text-brand-400">
-                              Tidak ada aturan poin yang cocok.
+                            <div className="py-8 text-center text-[11px] font-bold text-brand-400 space-y-1 px-4">
+                              <p>Tidak ada aturan poin yang cocok.</p>
+                              {ruleFilterType !== "Semua" && (
+                                <p className="text-[10px] text-brand-500 font-semibold">
+                                  Sedang difilter di tab <strong>{ruleFilterType === "Positif" ? "Prestasi (+)" : "Sanksi (-)"}</strong>. Coba beralih ke tab <strong>"Semua"</strong>.
+                                </p>
+                              )}
                             </div>
                           )}
                         </div>

@@ -138,15 +138,13 @@ export const saveSiswaList = async (siswa: Siswa[]): Promise<void> => {
 };
 
 export const getMasterPoinList = async (): Promise<MasterPoin[]> => {
-  const { data, error } = await supabase
-    .from("master_poin")
-    .select("*")
-    .order("nilai_poin", { ascending: false });
-  if (error) {
-    console.error("Error fetching master points from Supabase:", error);
-    return [];
-  }
-  return data || [];
+  return fetchAllPages<MasterPoin>((from, to) =>
+    supabase
+      .from("master_poin")
+      .select("*")
+      .order("nilai_poin", { ascending: false })
+      .range(from, to)
+  );
 };
 
 export const saveMasterPoinList = async (poin: MasterPoin[]): Promise<void> => {

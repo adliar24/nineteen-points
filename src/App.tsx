@@ -141,6 +141,7 @@ const THEMES = [
 const LoginView = lazy(() => import("./components/LoginView"));
 const StatsView = lazy(() => import("./components/StatsView"));
 const LeaderboardView = lazy(() => import("./components/LeaderboardView"));
+const PeringkatkuView = lazy(() => import("./components/PeringkatkuView"));
 const InputPoinView = lazy(() => import("./components/InputPoinView"));
 const KehadiranView = lazy(() => import("./components/KehadiranView"));
 const InputKehadiranView = lazy(() => import("./components/InputKehadiranView"));
@@ -253,7 +254,7 @@ export default function App() {
   };
 
   const isValidTab = (role: string, tab: string) => {
-    if (role === "siswa") return ["siswa_stats", "leaderboard", "siswa_scan", "siswa_barcode", "siswa_history", "change_password"].includes(tab);
+    if (role === "siswa") return ["siswa_stats", "leaderboard", "peringkatku", "siswa_scan", "siswa_barcode", "siswa_history", "change_password"].includes(tab);
     if (role === "piket") return ["leaderboard", "kehadiran", "input_kehadiran", "change_password", "scan_sholat", "rekap_sholat_kehadiran", "rekap_poin"].includes(tab);
     if (role === "guru") return ["leaderboard", "input", "students", "history", "change_password", "guru_sertifikat", "guru_kartu", "scan_sholat", "rekap_sholat_kehadiran", "rekap_poin"].includes(tab);
     if (role === "kepala_sekolah") return ["leaderboard", "input_kehadiran", "input", "kehadiran", "students", "history", "change_password", "scan_sholat", "rekap_sholat_kehadiran", "rekap_poin"].includes(tab);
@@ -612,6 +613,7 @@ export default function App() {
     sidebarElements = [
       { type: "item", id: "siswa_stats", label: "Beranda", icon: Home, description: "Statistik & presensi Anda" },
       { type: "item", id: "leaderboard", label: "Papan Peringkat", icon: Trophy, description: "Klasemen Hall of Fame murid" },
+      { type: "item", id: "peringkatku", label: "Peringkatku", icon: Award, description: "Kartu prestise & posisi Anda" },
       { type: "item", id: "siswa_barcode", label: "Kartu Pelajar", icon: CreditCard, description: "QR Kartu Pelajar Digital" },
       { type: "item", id: "siswa_history", label: "Riwayat Poin", icon: Calendar, description: "Riwayat perolehan poin" },
       { type: "item", id: "change_password", label: "Tema & Keamanan", icon: Settings, description: "Ubah sandi & tema warna" }
@@ -1022,6 +1024,10 @@ export default function App() {
 
               {activeTab === "leaderboard" && (
                 <LeaderboardView userSession={userSession} />
+              )}
+
+              {activeTab === "peringkatku" && userSession.role === "siswa" && (
+                <PeringkatkuView userSession={userSession} />
               )}
 
               {activeTab === "input" && (

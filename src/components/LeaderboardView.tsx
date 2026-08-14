@@ -175,7 +175,11 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
   const top3 = rankedStudents[2] || null;
   const rank4Onwards = rankedStudents.slice(3);
 
+  const isStudentRole = userSession?.role === "siswa";
+
   const openStudentShowcase = (siswa: RankedSiswa) => {
+    // Di akun siswa, klik list siswa tidak memunculkan modal kartu (gunakan tab khusus Peringkatku)
+    if (isStudentRole) return;
     setShowcaseStudent(siswa);
   };
 
@@ -206,7 +210,9 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
               <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
             </h1>
             <p className="text-[11px] sm:text-xs text-brand-400 font-medium truncate">
-              Klasemen prestasi poin tertinggi. Klik siswa untuk kartu prestise.
+              {isStudentRole
+                ? "Klasemen perolehan poin prestasi murid di Nineteen Space."
+                : "Klasemen prestasi poin tertinggi. Klik siswa untuk kartu prestise."}
             </p>
           </div>
         </div>
@@ -275,24 +281,24 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
       ) : (
         <div className="space-y-7">
           {/* Top 3 Podium Container */}
-          <div className="relative pt-4 pb-2 px-2 sm:px-6">
+          <div className="relative pt-4 pb-2 px-1 sm:px-6">
             <div className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-6 items-end max-w-3xl mx-auto">
               {/* ===== JUARA 2 (PERAK / SILVER - KIRI) ===== */}
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.15 }}
-                className="flex flex-col items-center cursor-pointer group"
+                className={`flex flex-col items-center group ${isStudentRole ? "cursor-default" : "cursor-pointer"}`}
                 onClick={() => top2 && openStudentShowcase(top2)}
               >
                 {top2 ? (
                   <>
                     {/* Avatar & Medal */}
-                    <div className="relative mb-3 flex flex-col items-center">
+                    <div className="relative mb-2 sm:mb-3 flex flex-col items-center">
                       <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-100 border-2 border-slate-300 text-slate-700 flex items-center justify-center font-black text-xs sm:text-sm shadow-md mb-1">
                         🥈
                       </div>
-                      <div className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-2xl sm:rounded-3xl p-1 bg-gradient-to-tr from-slate-300 via-slate-100 to-slate-400 silver-aura-glow shadow-lg transition-transform group-hover:scale-105">
+                      <div className={`relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-2xl sm:rounded-3xl p-1 bg-gradient-to-tr from-slate-300 via-slate-100 to-slate-400 silver-aura-glow shadow-lg transition-transform ${!isStudentRole ? "group-hover:scale-105" : ""}`}>
                         {top2.foto_url ? (
                           <img
                             src={top2.foto_url}
@@ -307,9 +313,9 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                       </div>
                     </div>
 
-                    {/* Student Info */}
-                    <div className="text-center px-1 max-w-[110px] sm:max-w-[160px] space-y-0.5">
-                      <h4 className="font-extrabold text-xs sm:text-sm text-brand-950 truncate group-hover:text-brand-600 transition-colors">
+                    {/* Student Info (Full text display on mobile without clipping) */}
+                    <div className="text-center px-1 w-full max-w-[110px] sm:max-w-[160px] space-y-0.5">
+                      <h4 className="font-extrabold text-[11px] sm:text-xs md:text-sm text-brand-950 break-words line-clamp-2 leading-tight group-hover:text-brand-600 transition-colors">
                         {toSentenceCase(top2.nama)}
                       </h4>
                       <p className="text-[10px] sm:text-xs font-bold text-slate-500">
@@ -338,13 +344,13 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                 initial={{ opacity: 0, y: 40 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.05 }}
-                className="flex flex-col items-center cursor-pointer group z-10"
+                className={`flex flex-col items-center group z-10 ${isStudentRole ? "cursor-default" : "cursor-pointer"}`}
                 onClick={() => top1 && openStudentShowcase(top1)}
               >
                 {top1 ? (
                   <>
                     {/* Animated Floating Crown & Sparkles */}
-                    <div className="relative mb-3 flex flex-col items-center">
+                    <div className="relative mb-2 sm:mb-3 flex flex-col items-center">
                       <div className="animate-float-gentle flex flex-col items-center">
                         <Crown className="w-7 h-7 sm:w-9 sm:h-9 text-amber-400 drop-shadow-[0_4px_8px_rgba(245,158,11,0.5)] fill-amber-300" />
                         <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-amber-100 border-2 border-amber-400 text-amber-900 flex items-center justify-center font-black text-xs sm:text-sm shadow-lg -mt-1 z-10">
@@ -353,7 +359,7 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                       </div>
 
                       {/* Golden Glowing Frame with Shimmer */}
-                      <div className="relative w-20 h-20 sm:w-26 sm:h-26 md:w-32 md:h-32 rounded-2xl sm:rounded-3xl p-1 bg-gradient-to-tr from-amber-400 via-yellow-200 to-amber-500 gold-aura-glow animate-gold-shimmer shadow-2xl transition-transform group-hover:scale-105">
+                      <div className={`relative w-20 h-20 sm:w-26 sm:h-26 md:w-32 md:h-32 rounded-2xl sm:rounded-3xl p-1 bg-gradient-to-tr from-amber-400 via-yellow-200 to-amber-500 gold-aura-glow animate-gold-shimmer shadow-2xl transition-transform ${!isStudentRole ? "group-hover:scale-105" : ""}`}>
                         {top1.foto_url ? (
                           <img
                             src={top1.foto_url}
@@ -369,8 +375,8 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                     </div>
 
                     {/* Student Info */}
-                    <div className="text-center px-1 max-w-[120px] sm:max-w-[180px] space-y-0.5">
-                      <h4 className="font-black text-xs sm:text-base text-brand-950 truncate group-hover:text-amber-600 transition-colors">
+                    <div className="text-center px-1 w-full max-w-[120px] sm:max-w-[180px] space-y-0.5">
+                      <h4 className="font-black text-xs sm:text-sm md:text-base text-brand-950 break-words line-clamp-2 leading-tight group-hover:text-amber-600 transition-colors">
                         {toSentenceCase(top1.nama)}
                       </h4>
                       <p className="text-[10px] sm:text-xs font-extrabold text-amber-700">
@@ -399,17 +405,17 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.25 }}
-                className="flex flex-col items-center cursor-pointer group"
+                className={`flex flex-col items-center group ${isStudentRole ? "cursor-default" : "cursor-pointer"}`}
                 onClick={() => top3 && openStudentShowcase(top3)}
               >
                 {top3 ? (
                   <>
                     {/* Avatar & Medal */}
-                    <div className="relative mb-3 flex flex-col items-center">
+                    <div className="relative mb-2 sm:mb-3 flex flex-col items-center">
                       <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-amber-50 border-2 border-amber-600/60 text-amber-900 flex items-center justify-center font-black text-xs sm:text-sm shadow-md mb-1">
                         🥉
                       </div>
-                      <div className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-2xl sm:rounded-3xl p-1 bg-gradient-to-tr from-amber-700 via-amber-500 to-amber-800 bronze-aura-glow shadow-lg transition-transform group-hover:scale-105">
+                      <div className={`relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-2xl sm:rounded-3xl p-1 bg-gradient-to-tr from-amber-700 via-amber-500 to-amber-800 bronze-aura-glow shadow-lg transition-transform ${!isStudentRole ? "group-hover:scale-105" : ""}`}>
                         {top3.foto_url ? (
                           <img
                             src={top3.foto_url}
@@ -425,8 +431,8 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                     </div>
 
                     {/* Student Info */}
-                    <div className="text-center px-1 max-w-[110px] sm:max-w-[160px] space-y-0.5">
-                      <h4 className="font-extrabold text-xs sm:text-sm text-brand-950 truncate group-hover:text-amber-800 transition-colors">
+                    <div className="text-center px-1 w-full max-w-[110px] sm:max-w-[160px] space-y-0.5">
+                      <h4 className="font-extrabold text-[11px] sm:text-xs md:text-sm text-brand-950 break-words line-clamp-2 leading-tight group-hover:text-amber-800 transition-colors">
                         {toSentenceCase(top3.nama)}
                       </h4>
                       <p className="text-[10px] sm:text-xs font-bold text-amber-800/80">
@@ -473,13 +479,15 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                         else studentCardRefs.current.delete(siswa.id);
                       }}
                       onClick={() => openStudentShowcase(siswa)}
-                      className={`group p-3.5 sm:p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 shadow-xs hover:shadow-md hover:-translate-y-0.5 ${
+                      className={`group p-3.5 sm:p-4 rounded-2xl border transition-all flex items-center justify-between gap-3 shadow-xs ${
+                        isStudentRole ? "cursor-default" : "cursor-pointer hover:shadow-md hover:-translate-y-0.5"
+                      } ${
                         isTop10
                           ? "bg-purple-50/90 border-purple-200 hover:border-purple-400 shadow-purple-500/5"
                           : "bg-white border-slate-100 hover:border-brand-200"
                       }`}
                     >
-                      <div className="flex items-center gap-3.5 min-w-0">
+                      <div className="flex items-center gap-3 sm:gap-3.5 min-w-0 flex-1">
                         {/* Rank Badge */}
                         <div
                           className={`w-8 h-8 rounded-xl flex items-center justify-center font-black text-xs shrink-0 ${
@@ -516,10 +524,10 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                           )}
                         </div>
 
-                        {/* Name & Class */}
-                        <div className="min-w-0">
+                        {/* Name & Class (No cut-off, wraps properly) */}
+                        <div className="min-w-0 flex-1">
                           <h4
-                            className={`font-extrabold text-xs sm:text-sm truncate transition-colors ${
+                            className={`font-extrabold text-xs sm:text-sm break-words line-clamp-2 leading-snug transition-colors ${
                               isTop10
                                 ? "text-purple-950 group-hover:text-purple-700"
                                 : "text-brand-950 group-hover:text-brand-600"
@@ -528,7 +536,7 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                             {toSentenceCase(siswa.nama)}
                           </h4>
                           <div
-                            className={`flex items-center gap-2 text-[11px] font-medium ${
+                            className={`flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] font-medium ${
                               isTop10 ? "text-purple-700/80" : "text-brand-400"
                             }`}
                           >
@@ -539,9 +547,9 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                       </div>
 
                       {/* Points & Arrow */}
-                      <div className="flex items-center gap-2 shrink-0">
+                      <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                         <div
-                          className={`px-3 py-1 rounded-xl text-xs font-black flex items-center gap-1 ${
+                          className={`px-2.5 sm:px-3 py-1 rounded-xl text-xs font-black flex items-center gap-1 ${
                             isTop10
                               ? "bg-purple-100 text-purple-900 border border-purple-300"
                               : "bg-amber-50 text-amber-800 border border-amber-200"
@@ -550,13 +558,15 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                           <TrendingUp className="w-3 h-3" />
                           {siswa.score}
                         </div>
-                        <ChevronRight
-                          className={`w-4 h-4 transition-all ${
-                            isTop10
-                              ? "text-purple-300 group-hover:text-purple-600 group-hover:translate-x-0.5"
-                              : "text-slate-300 group-hover:text-brand-500 group-hover:translate-x-0.5"
-                          }`}
-                        />
+                        {!isStudentRole && (
+                          <ChevronRight
+                            className={`w-4 h-4 transition-all ${
+                              isTop10
+                                ? "text-purple-300 group-hover:text-purple-600 group-hover:translate-x-0.5"
+                                : "text-slate-300 group-hover:text-brand-500 group-hover:translate-x-0.5"
+                            }`}
+                          />
+                        )}
                       </div>
                     </div>
                   );

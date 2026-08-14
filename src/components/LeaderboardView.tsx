@@ -18,10 +18,11 @@ import {
   Sparkle
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { getSiswaListLight, getRiwayatList } from "../dbStore";
+import { getSiswaListLight, getSiswaSeparatePoinMap } from "../dbStore";
 import { Siswa, UserSession } from "../types";
 import { toSentenceCase } from "../formatName";
 import SkeletonLoader from "./SkeletonLoader";
+import PaginationFooter from "./PaginationFooter";
 
 interface LeaderboardViewProps {
   userSession?: UserSession | null;
@@ -57,40 +58,23 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
   });
 
   const {
-    data: riwayatList = [],
-    isLoading: loadingRiwayat,
-    refetch: refetchRiwayat,
-    isRefetching: refetchingRiwayat
+    data: studentPoinMap = {},
+    isLoading: loadingPoin,
+    refetch: refetchPoin,
+    isRefetching: refetchingPoin
   } = useQuery({
-    queryKey: ["riwayat"],
-    queryFn: getRiwayatList,
+    queryKey: ["siswaPoinMap"],
+    queryFn: getSiswaSeparatePoinMap,
     staleTime: 2 * 60_000,
   });
 
-  const isLoading = loadingSiswa || loadingRiwayat;
-  const isRefreshing = refetchingSiswa || refetchingRiwayat;
+  const isLoading = loadingSiswa || loadingPoin;
+  const isRefreshing = refetchingSiswa || refetchingPoin;
 
   const handleRefresh = () => {
     refetchSiswa();
-    refetchRiwayat();
+    refetchPoin();
   };
-
-  // Aggregate positive points per student
-  const studentPoinMap = useMemo(() => {
-    const map: Record<string, { positif: number; negatif: number; net: number }> = {};
-    riwayatList.forEach((r) => {
-      if (!map[r.siswa_id]) {
-        map[r.siswa_id] = { positif: 0, negatif: 0, net: 0 };
-      }
-      if (r.nilai_diberikan > 0) {
-        map[r.siswa_id].positif += r.nilai_diberikan;
-      } else if (r.nilai_diberikan < 0) {
-        map[r.siswa_id].negatif += Math.abs(r.nilai_diberikan);
-      }
-      map[r.siswa_id].net += r.nilai_diberikan;
-    });
-    return map;
-  }, [riwayatList]);
 
   // Unique list of classes for dropdown
   const listKelas = useMemo(() => {
@@ -104,13 +88,15 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
   // Ranked students (sorted by positive achievement points descending)
   const rankedStudents: RankedSiswa[] = useMemo(() => {
     const list = siswaList.map((siswa) => {
-      const stats = studentPoinMap[siswa.id] || { positif: 0, negatif: 0, net: 0 };
+      const stats = studentPoinMap[siswa.id] || { positif: 0, negatif: 0 };
+      const positif = stats.positif || 0;
+      const negatif = stats.negatif || 0;
       return {
         ...siswa,
-        score: stats.positif,
-        positif: stats.positif,
-        negatif: stats.negatif,
-        net: stats.net,
+        score: positif,
+        positif: positif,
+        negatif: negatif,
+        net: positif - negatif,
         rank: 0,
       };
     });
@@ -175,6 +161,18 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
   const top2 = rankedStudents[1] || null;
   const top3 = rankedStudents[2] || null;
   const rank4Onwards = rankedStudents.slice(3);
+
+  // Pagination for Rank 4+ list (drastically reduces DOM elements and eliminates lag)
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedKelas, searchQuery]);
+
+  const paginatedRank4Onwards = useMemo(() => {
+    return rank4Onwards.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  }, [rank4Onwards, currentPage, itemsPerPage]);
 
   const isStudentRole = userSession?.role === "siswa";
 
@@ -287,10 +285,7 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
           <div className="relative pt-4 pb-2 px-1 sm:px-6">
             <div className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-6 items-end max-w-3xl mx-auto">
               {/* ===== JUARA 2 (PERAK / SILVER - KIRI) ===== */}
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.15 }}
+              <div
                 className={`flex flex-col items-center group ${isStudentRole ? "cursor-default" : "cursor-pointer"}`}
                 onClick={() => top2 && openStudentShowcase(top2)}
               >
@@ -341,21 +336,18 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                     Kosong
                   </div>
                 )}
-              </motion.div>
+              </div>
 
               {/* ===== JUARA 1 (EMAS / GOLD - TENGAH) ===== */}
-              <motion.div
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.05 }}
+              <div
                 className={`flex flex-col items-center group z-10 ${isStudentRole ? "cursor-default" : "cursor-pointer"}`}
                 onClick={() => top1 && openStudentShowcase(top1)}
               >
                 {top1 ? (
                   <>
-                    {/* Animated Floating Crown & Sparkles */}
+                    {/* Crown & Rank Badge */}
                     <div className="relative mb-2 sm:mb-3 flex flex-col items-center">
-                      <div className="animate-float-gentle flex flex-col items-center">
+                      <div className="flex flex-col items-center">
                         <Crown className="w-7 h-7 sm:w-9 sm:h-9 text-amber-500 fill-amber-300" />
                         <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-amber-100 border-2 border-amber-400 text-amber-900 flex items-center justify-center font-black text-xs sm:text-sm -mt-1 z-10">
                           🥇
@@ -402,13 +394,10 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                     Kosong
                   </div>
                 )}
-              </motion.div>
+              </div>
 
               {/* ===== JUARA 3 (PERUNGGU / BRONZE - KANAN) ===== */}
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.25 }}
+              <div
                 className={`flex flex-col items-center group ${isStudentRole ? "cursor-default" : "cursor-pointer"}`}
                 onClick={() => top3 && openStudentShowcase(top3)}
               >
@@ -459,7 +448,7 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                     Kosong
                   </div>
                 )}
-              </motion.div>
+              </div>
             </div>
           </div>
 
@@ -474,7 +463,7 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {rank4Onwards.map((siswa) => {
+                {paginatedRank4Onwards.map((siswa) => {
                   const isTop10 = siswa.rank <= 10;
                   return (
                     <div
@@ -576,6 +565,17 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                     </div>
                   );
                 })}
+              </div>
+
+              {/* Pagination for Rank 4+ */}
+              <div className="bg-white rounded-2xl border border-brand-100 overflow-hidden shadow-xs mt-3">
+                <PaginationFooter
+                  totalItems={rank4Onwards.length}
+                  itemsPerPage={itemsPerPage}
+                  currentPage={currentPage}
+                  setCurrentPage={setCurrentPage}
+                  itemLabel="siswa"
+                />
               </div>
             </div>
           )}

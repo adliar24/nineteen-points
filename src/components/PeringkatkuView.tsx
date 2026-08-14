@@ -12,7 +12,7 @@ import {
   Sparkle
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { getSiswaListLight, getRiwayatList } from "../dbStore";
+import { getSiswaListLight, getSiswaSeparatePoinMap } from "../dbStore";
 import { UserSession, Siswa } from "../types";
 import { toSentenceCase } from "../formatName";
 import SkeletonLoader from "./SkeletonLoader";
@@ -37,41 +37,26 @@ export default function PeringkatkuView({ userSession }: PeringkatkuViewProps) {
     staleTime: 2 * 60_000,
   });
 
-  const { data: riwayatList = [], isLoading: loadingRiwayat } = useQuery({
-    queryKey: ["riwayat"],
-    queryFn: getRiwayatList,
+  const { data: studentPoinMap = {}, isLoading: loadingPoin } = useQuery({
+    queryKey: ["siswaPoinMap"],
+    queryFn: getSiswaSeparatePoinMap,
     staleTime: 2 * 60_000,
   });
 
-  const isLoading = loadingSiswa || loadingRiwayat;
-
-  // Aggregate positive points per student
-  const studentPoinMap = useMemo(() => {
-    const map: Record<string, { positif: number; negatif: number; net: number }> = {};
-    riwayatList.forEach((r) => {
-      if (!map[r.siswa_id]) {
-        map[r.siswa_id] = { positif: 0, negatif: 0, net: 0 };
-      }
-      if (r.nilai_diberikan > 0) {
-        map[r.siswa_id].positif += r.nilai_diberikan;
-      } else if (r.nilai_diberikan < 0) {
-        map[r.siswa_id].negatif += Math.abs(r.nilai_diberikan);
-      }
-      map[r.siswa_id].net += r.nilai_diberikan;
-    });
-    return map;
-  }, [riwayatList]);
+  const isLoading = loadingSiswa || loadingPoin;
 
   // Ranked students by highest positive points
   const rankedStudents: RankedSiswa[] = useMemo(() => {
     const list = siswaList.map((siswa) => {
-      const stats = studentPoinMap[siswa.id] || { positif: 0, negatif: 0, net: 0 };
+      const stats = studentPoinMap[siswa.id] || { positif: 0, negatif: 0 };
+      const positif = stats.positif || 0;
+      const negatif = stats.negatif || 0;
       return {
         ...siswa,
-        score: stats.positif,
-        positif: stats.positif,
-        negatif: stats.negatif,
-        net: stats.net,
+        score: positif,
+        positif: positif,
+        negatif: negatif,
+        net: positif - negatif,
         rank: 0,
       };
     });

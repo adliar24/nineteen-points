@@ -8,10 +8,7 @@ import {
   Search,
   Users,
   TrendingUp,
-  Flame,
-  Star,
   ChevronRight,
-  ShieldCheck,
   RotateCcw,
   ArrowUpRight,
   X,
@@ -28,8 +25,6 @@ interface LeaderboardViewProps {
   userSession?: UserSession | null;
 }
 
-type RankCategory = "prestasi" | "disiplin";
-
 interface RankedSiswa extends Siswa {
   score: number;
   positif: number;
@@ -39,7 +34,6 @@ interface RankedSiswa extends Siswa {
 }
 
 export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
-  const [category, setCategory] = useState<RankCategory>("prestasi");
   const [selectedKelas, setSelectedKelas] = useState<string>("semua");
   const [searchQuery, setSearchQuery] = useState<string>("");
   
@@ -79,7 +73,7 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
     refetchRiwayat();
   };
 
-  // Aggregate positive and negative points per student
+  // Aggregate positive points per student
   const studentPoinMap = useMemo(() => {
     const map: Record<string, { positif: number; negatif: number; net: number }> = {};
     riwayatList.forEach((r) => {
@@ -105,14 +99,13 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
     return Array.from(set).sort();
   }, [siswaList]);
 
-  // Ranked students based on category, filter, and search
+  // Ranked students (sorted by positive achievement points descending)
   const rankedStudents: RankedSiswa[] = useMemo(() => {
     const list = siswaList.map((siswa) => {
       const stats = studentPoinMap[siswa.id] || { positif: 0, negatif: 0, net: 0 };
-      const score = category === "prestasi" ? stats.positif : stats.negatif;
       return {
         ...siswa,
-        score,
+        score: stats.positif,
         positif: stats.positif,
         negatif: stats.negatif,
         net: stats.net,
@@ -137,7 +130,7 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
       );
     }
 
-    // Sort descending by target score
+    // Sort descending by highest positive points
     filtered.sort((a, b) => {
       if (b.score !== a.score) return b.score - a.score;
       return a.nama.localeCompare(b.nama);
@@ -148,7 +141,7 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
       ...s,
       rank: index + 1,
     }));
-  }, [siswaList, studentPoinMap, category, selectedKelas, searchQuery]);
+  }, [siswaList, studentPoinMap, selectedKelas, searchQuery]);
 
   // Logged-in user's student position (if student)
   const currentStudentRank = useMemo(() => {
@@ -186,74 +179,29 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
   };
 
   return (
-    <div className="space-y-6 pb-20 animate-fade-in font-sans">
-      {/* ===== Header & Banner ===== */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-900 via-brand-800 to-accent-600 text-white p-6 sm:p-8 shadow-xl border border-brand-700/50">
-        <div className="absolute -top-16 -right-16 w-64 h-64 rounded-full bg-amber-400/10 blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-20 -left-20 w-64 h-64 rounded-full bg-accent-500/20 blur-3xl pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-amber-300 text-xs font-bold uppercase tracking-wider">
-              <Trophy className="w-3.5 h-3.5 text-amber-300 animate-bounce" />
-              Papan Peringkat Prestasi
-            </div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white flex items-center gap-3">
-              Hall of Fame Siswa
-              <Sparkles className="w-6 h-6 text-amber-300 animate-pulse hidden sm:inline-block" />
+    <div className="space-y-5 pb-20 animate-fade-in font-sans">
+      {/* ===== Compact & Space-Efficient Header ===== */}
+      <div className="bg-white rounded-3xl p-4 sm:p-5 border border-brand-100/90 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+        {/* Title & Badge */}
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center shrink-0 shadow-xs">
+            <Trophy className="w-5 h-5 sm:w-6 sm:h-6" />
+          </div>
+          <div className="min-w-0">
+            <h1 className="text-base sm:text-lg font-black text-brand-950 tracking-tight flex items-center gap-1.5 truncate">
+              <span>Papan Peringkat Siswa</span>
+              <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
             </h1>
-            <p className="text-xs sm:text-sm text-brand-100/90 max-w-xl leading-relaxed">
-              Klasemen kehormatan siswa terbaik dengan animasi badge podium emas, perak, dan perunggu. Klik siswa untuk melihat kartu prestise besar.
+            <p className="text-[11px] sm:text-xs text-brand-400 font-medium truncate">
+              Klasemen prestasi poin tertinggi. Klik siswa untuk kartu prestise.
             </p>
           </div>
-
-          {/* Refresh Button */}
-          <div className="self-start md:self-center">
-            <button
-              onClick={handleRefresh}
-              disabled={isRefreshing}
-              className="flex items-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/20 active:scale-95 text-white rounded-2xl border border-white/20 transition-all cursor-pointer shadow-sm text-xs font-bold"
-              title="Perbarui Data"
-            >
-              <RotateCcw className={`w-4 h-4 ${isRefreshing ? "animate-spin text-amber-300" : ""}`} />
-              <span>Segarkan</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* ===== Filters & Controls Bar ===== */}
-      <div className="bg-white rounded-3xl p-4 sm:p-5 border border-brand-100/80 shadow-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
-        {/* Category Toggle (Prestasi vs Disiplin) */}
-        <div className="flex items-center bg-brand-50/80 p-1 rounded-2xl border border-brand-100 max-w-fit">
-          <button
-            onClick={() => setCategory("prestasi")}
-            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-              category === "prestasi"
-                ? "bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-sm"
-                : "text-brand-700 hover:text-brand-950 hover:bg-brand-100/50"
-            }`}
-          >
-            <Star className="w-3.5 h-3.5" />
-            Poin Prestasi (Tertinggi)
-          </button>
-          <button
-            onClick={() => setCategory("disiplin")}
-            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-              category === "disiplin"
-                ? "bg-gradient-to-r from-rose-500 to-rose-600 text-white shadow-sm"
-                : "text-brand-700 hover:text-brand-950 hover:bg-brand-100/50"
-            }`}
-          >
-            <Flame className="w-3.5 h-3.5" />
-            Catatan Disiplin
-          </button>
         </div>
 
-        {/* Filter Kelas & Search */}
-        <div className="flex flex-wrap sm:flex-nowrap items-center gap-3">
+        {/* Controls: Filter Kelas, Search, Refresh */}
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5">
           {/* Kelas Dropdown */}
-          <div className="relative min-w-[140px] flex-1 sm:flex-initial">
+          <div className="relative min-w-[130px] flex-1 sm:flex-initial">
             <select
               value={selectedKelas}
               onChange={(e) => setSelectedKelas(e.target.value)}
@@ -269,16 +217,26 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
           </div>
 
           {/* Search Bar */}
-          <div className="relative flex-1 min-w-[180px]">
-            <Search className="w-4 h-4 text-brand-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <div className="relative flex-1 min-w-[170px]">
+            <Search className="w-4 h-4 text-brand-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Cari siswa atau NIS..."
-              className="w-full pl-9 pr-3.5 py-2 bg-brand-50/60 border border-brand-100 rounded-2xl text-xs text-brand-900 placeholder:text-brand-300 font-medium focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all"
+              placeholder="Cari siswa / NIS..."
+              className="w-full pl-8.5 pr-3 py-2 bg-brand-50/60 border border-brand-100 rounded-2xl text-xs text-brand-900 placeholder:text-brand-300 font-medium focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all"
             />
           </div>
+
+          {/* Refresh Button */}
+          <button
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="p-2 bg-brand-50 hover:bg-brand-100 active:scale-95 text-brand-700 rounded-2xl border border-brand-200 transition-all cursor-pointer shadow-xs flex items-center justify-center shrink-0"
+            title="Segarkan Data"
+          >
+            <RotateCcw className={`w-4 h-4 ${isRefreshing ? "animate-spin text-brand-600" : ""}`} />
+          </button>
         </div>
       </div>
 
@@ -297,14 +255,14 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
             <p className="text-xs text-brand-400 max-w-sm mx-auto mt-1">
               {searchQuery || selectedKelas !== "semua"
                 ? "Coba ubah kata kunci pencarian atau filter kelas yang dipilih."
-                : "Belum ada catatan poin untuk kategori ini."}
+                : "Belum ada catatan perolehan poin prestasi."}
             </p>
           </div>
         </div>
       ) : (
-        <div className="space-y-8">
+        <div className="space-y-7">
           {/* Top 3 Podium Container */}
-          <div className="relative pt-6 pb-2 px-2 sm:px-6">
+          <div className="relative pt-4 pb-2 px-2 sm:px-6">
             <div className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-6 items-end max-w-3xl mx-auto">
               {/* ===== JUARA 2 (PERAK / SILVER - KIRI) ===== */}
               <motion.div
@@ -350,10 +308,9 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                       </div>
                     </div>
 
-                    {/* Podium Pillar */}
-                    <div className="w-full mt-3 h-28 sm:h-36 md:h-44 rounded-t-2xl sm:rounded-t-3xl bg-gradient-to-b from-slate-200 via-slate-300 to-slate-400 border-t-2 border-slate-100 shadow-md flex flex-col items-center justify-start pt-3 sm:pt-4 group-hover:brightness-105 transition-all">
-                      <span className="font-black text-2xl sm:text-4xl text-slate-600/80 drop-shadow-sm">2</span>
-                      <span className="text-[9px] sm:text-[11px] font-bold text-slate-600 uppercase tracking-wider">Perak</span>
+                    {/* Podium Pillar (Hanya Angka 2) */}
+                    <div className="w-full mt-3 h-28 sm:h-36 md:h-44 rounded-t-2xl sm:rounded-t-3xl bg-gradient-to-b from-slate-200 via-slate-300 to-slate-400 border-t-2 border-slate-100 shadow-md flex items-center justify-center group-hover:brightness-105 transition-all">
+                      <span className="font-black text-3xl sm:text-5xl text-slate-600/80 drop-shadow-sm">2</span>
                     </div>
                   </>
                 ) : (
@@ -400,9 +357,6 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
 
                     {/* Student Info */}
                     <div className="text-center px-1 max-w-[120px] sm:max-w-[180px] space-y-0.5">
-                      <span className="inline-block px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-extrabold text-[9px] sm:text-[10px] tracking-wide uppercase shadow-xs">
-                        👑 Juara 1 (MVP)
-                      </span>
                       <h4 className="font-black text-xs sm:text-base text-brand-950 truncate group-hover:text-amber-600 transition-colors">
                         {toSentenceCase(top1.nama)}
                       </h4>
@@ -415,10 +369,9 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                       </div>
                     </div>
 
-                    {/* Champion Podium Pillar */}
-                    <div className="w-full mt-3 h-36 sm:h-48 md:h-56 rounded-t-2xl sm:rounded-t-3xl bg-gradient-to-b from-amber-300 via-amber-400 to-amber-500 border-t-2 border-yellow-200 shadow-xl flex flex-col items-center justify-start pt-3 sm:pt-4 group-hover:brightness-105 transition-all">
-                      <span className="font-black text-3xl sm:text-5xl text-amber-900/70 drop-shadow-md">1</span>
-                      <span className="text-[10px] sm:text-xs font-black text-amber-900 uppercase tracking-widest">Juara Utama</span>
+                    {/* Champion Podium Pillar (Hanya Angka 1) */}
+                    <div className="w-full mt-3 h-36 sm:h-48 md:h-56 rounded-t-2xl sm:rounded-t-3xl bg-gradient-to-b from-amber-300 via-amber-400 to-amber-500 border-t-2 border-yellow-200 shadow-xl flex items-center justify-center group-hover:brightness-105 transition-all">
+                      <span className="font-black text-4xl sm:text-6xl text-amber-900/70 drop-shadow-md">1</span>
                     </div>
                   </>
                 ) : (
@@ -472,10 +425,9 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                       </div>
                     </div>
 
-                    {/* Podium Pillar */}
-                    <div className="w-full mt-3 h-20 sm:h-28 md:h-36 rounded-t-2xl sm:rounded-t-3xl bg-gradient-to-b from-amber-600 via-amber-700 to-amber-800 border-t-2 border-amber-400 shadow-md flex flex-col items-center justify-start pt-3 sm:pt-4 group-hover:brightness-105 transition-all">
-                      <span className="font-black text-2xl sm:text-4xl text-amber-200/80 drop-shadow-sm">3</span>
-                      <span className="text-[9px] sm:text-[11px] font-bold text-amber-200 uppercase tracking-wider">Perunggu</span>
+                    {/* Podium Pillar (Hanya Angka 3) */}
+                    <div className="w-full mt-3 h-20 sm:h-28 md:h-36 rounded-t-2xl sm:rounded-t-3xl bg-gradient-to-b from-amber-600 via-amber-700 to-amber-800 border-t-2 border-amber-400 shadow-md flex items-center justify-center group-hover:brightness-105 transition-all">
+                      <span className="font-black text-3xl sm:text-5xl text-amber-200/80 drop-shadow-sm">3</span>
                     </div>
                   </>
                 ) : (
@@ -489,9 +441,9 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
 
           {/* Rank 4+ List Section */}
           {rank4Onwards.length > 0 && (
-            <div className="space-y-3 pt-4">
+            <div className="space-y-3 pt-2">
               <div className="flex items-center justify-between px-2">
-                <h3 className="text-sm font-black text-brand-900 uppercase tracking-wider flex items-center gap-2">
+                <h3 className="text-xs sm:text-sm font-black text-brand-900 uppercase tracking-wider flex items-center gap-2">
                   <Medal className="w-4 h-4 text-brand-500" />
                   Peringkat 4 Seterusnya ({rank4Onwards.length} Siswa)
                 </h3>
@@ -508,10 +460,10 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                         else studentCardRefs.current.delete(siswa.id);
                       }}
                       onClick={() => openStudentShowcase(siswa)}
-                      className={`group p-3.5 sm:p-4 rounded-2xl bg-white border transition-all cursor-pointer flex items-center justify-between gap-3 shadow-xs hover:shadow-md hover:-translate-y-0.5 ${
+                      className={`group p-3.5 sm:p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 shadow-xs hover:shadow-md hover:-translate-y-0.5 ${
                         isTop10
-                          ? "border-brand-200/80 hover:border-brand-400 bg-gradient-to-r from-white via-white to-brand-50/40"
-                          : "border-slate-100 hover:border-brand-200"
+                          ? "bg-purple-50/90 border-purple-200 hover:border-purple-400 shadow-purple-500/5"
+                          : "bg-white border-slate-100 hover:border-brand-200"
                       }`}
                     >
                       <div className="flex items-center gap-3.5 min-w-0">
@@ -519,15 +471,21 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                         <div
                           className={`w-8 h-8 rounded-xl flex items-center justify-center font-black text-xs shrink-0 ${
                             isTop10
-                              ? "bg-brand-100 text-brand-700 border border-brand-200"
-                              : "bg-slate-100 text-slate-600"
+                              ? "bg-purple-200/80 text-purple-900 border border-purple-300 font-extrabold"
+                              : "bg-slate-100 text-slate-600 font-bold"
                           }`}
                         >
                           #{siswa.rank}
                         </div>
 
                         {/* Avatar */}
-                        <div className="w-10 h-10 rounded-xl bg-brand-50 border border-brand-100 overflow-hidden shrink-0">
+                        <div
+                          className={`w-10 h-10 rounded-xl overflow-hidden shrink-0 border ${
+                            isTop10
+                              ? "border-purple-200 bg-purple-100"
+                              : "border-brand-100 bg-brand-50"
+                          }`}
+                        >
                           {siswa.foto_url ? (
                             <img
                               src={siswa.foto_url}
@@ -535,7 +493,11 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                               className="w-full h-full object-cover"
                             />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center font-bold text-brand-700 text-xs">
+                            <div
+                              className={`w-full h-full flex items-center justify-center font-bold text-xs ${
+                                isTop10 ? "text-purple-700" : "text-brand-700"
+                              }`}
+                            >
                               {siswa.nama.slice(0, 2).toUpperCase()}
                             </div>
                           )}
@@ -543,10 +505,20 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
 
                         {/* Name & Class */}
                         <div className="min-w-0">
-                          <h4 className="font-extrabold text-xs sm:text-sm text-brand-950 truncate group-hover:text-brand-600 transition-colors">
+                          <h4
+                            className={`font-extrabold text-xs sm:text-sm truncate transition-colors ${
+                              isTop10
+                                ? "text-purple-950 group-hover:text-purple-700"
+                                : "text-brand-950 group-hover:text-brand-600"
+                            }`}
+                          >
                             {toSentenceCase(siswa.nama)}
                           </h4>
-                          <div className="flex items-center gap-2 text-[11px] text-brand-400 font-medium">
+                          <div
+                            className={`flex items-center gap-2 text-[11px] font-medium ${
+                              isTop10 ? "text-purple-700/80" : "text-brand-400"
+                            }`}
+                          >
                             <span>Kelas {siswa.kelas}</span>
                             {siswa.nis && <span>• NIS: {siswa.nis}</span>}
                           </div>
@@ -557,15 +529,21 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                       <div className="flex items-center gap-2 shrink-0">
                         <div
                           className={`px-3 py-1 rounded-xl text-xs font-black flex items-center gap-1 ${
-                            category === "prestasi"
-                              ? "bg-amber-50 text-amber-800 border border-amber-200"
-                              : "bg-rose-50 text-rose-700 border border-rose-200"
+                            isTop10
+                              ? "bg-purple-100 text-purple-900 border border-purple-300"
+                              : "bg-amber-50 text-amber-800 border border-amber-200"
                           }`}
                         >
                           <TrendingUp className="w-3 h-3" />
                           {siswa.score}
                         </div>
-                        <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-brand-500 group-hover:translate-x-0.5 transition-all" />
+                        <ChevronRight
+                          className={`w-4 h-4 transition-all ${
+                            isTop10
+                              ? "text-purple-300 group-hover:text-purple-600 group-hover:translate-x-0.5"
+                              : "text-slate-300 group-hover:text-brand-500 group-hover:translate-x-0.5"
+                          }`}
+                        />
                       </div>
                     </div>
                   );
@@ -730,25 +708,25 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                       {showcaseStudent.rank === 1 ? (
                         <>
                           <Crown className="w-4 h-4 fill-amber-200 animate-bounce" />
-                          <span>THE CHAMPION • MVP</span>
+                          <span>GOLD CHAMPION • JUARA 1</span>
                         </>
                       ) : showcaseStudent.rank === 2 ? (
                         <>
-                          <span>🥈 SILVER ELITE</span>
+                          <span>🥈 SILVER MASTER • JUARA 2</span>
                         </>
                       ) : showcaseStudent.rank === 3 ? (
                         <>
-                          <span>🥉 BRONZE STAR</span>
+                          <span>🥉 BRONZE ACHIEVER • JUARA 3</span>
                         </>
                       ) : showcaseStudent.rank <= 10 ? (
                         <>
                           <Award className="w-4 h-4" />
-                          <span>TOP 10 • ELITE TIER</span>
+                          <span>TOP 10 ELITE TIER</span>
                         </>
                       ) : (
                         <>
-                          <Award className="w-4 h-4" />
-                          <span>SISWA BERPRESTASI</span>
+                          <Sparkles className="w-4 h-4" />
+                          <span>STUDENT APPRECIATION</span>
                         </>
                       )}
                     </motion.div>

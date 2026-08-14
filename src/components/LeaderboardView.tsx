@@ -635,23 +635,22 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
           <AnimatePresence>
             {showcaseStudent && (
               <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 overflow-y-auto">
-                {/* Full Backdrop with GPU-Optimized Blur */}
+                {/* Full Backdrop (Zero-Lag Solid Dark Overlay) */}
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="fixed inset-0 bg-brand-950/65 backdrop-blur-md"
-                  style={{ backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }}
+                  transition={{ duration: 0.15 }}
+                  className="fixed inset-0 bg-black/80 cursor-pointer"
                   onClick={() => setShowcaseStudent(null)}
                 />
 
-                {/* Showcase Card */}
+                {/* Showcase Card (Ultra-smooth 60fps GPU Animation) */}
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.92, y: 15 }}
-                  transition={{ type: "spring", stiffness: 420, damping: 28 }}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.18, ease: "easeOut" }}
                   className="relative w-full max-w-sm sm:max-w-md z-10 my-auto transform-gpu"
                   onClick={(e) => e.stopPropagation()}
                 >
@@ -659,13 +658,13 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                   <div
                     className={`relative rounded-[36px] p-1.5 shadow-2xl overflow-hidden ${
                       showcaseStudent.rank === 1
-                        ? "holo-gradient-gold gold-aura-glow animate-gold-shimmer"
+                        ? "holo-gradient-gold border-2 border-amber-400/80"
                         : showcaseStudent.rank === 2
-                        ? "holo-gradient-silver silver-aura-glow"
+                        ? "holo-gradient-silver border-2 border-slate-300"
                         : showcaseStudent.rank === 3
-                        ? "holo-gradient-bronze bronze-aura-glow"
+                        ? "holo-gradient-bronze border-2 border-amber-600"
                         : showcaseStudent.rank <= 10
-                        ? "bg-gradient-to-tr from-purple-400 via-fuchsia-400 to-indigo-400 shadow-purple-500/30"
+                        ? "bg-gradient-to-tr from-purple-400 via-fuchsia-400 to-indigo-400 border-2 border-purple-300"
                         : "bg-gradient-to-b from-slate-200 via-slate-100 to-slate-200 border border-slate-200"
                     }`}
                   >
@@ -683,20 +682,6 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                           : "bg-gradient-to-b from-white via-white to-slate-50 text-slate-900 border border-slate-100"
                       }`}
                     >
-                      {/* Decorative background aura lights */}
-                      <div
-                        className={`absolute -top-24 left-1/2 -translate-x-1/2 w-72 h-72 rounded-full blur-3xl pointer-events-none ${
-                          showcaseStudent.rank === 1
-                            ? "bg-amber-400/30"
-                            : showcaseStudent.rank === 2
-                            ? "bg-slate-300/40"
-                            : showcaseStudent.rank === 3
-                            ? "bg-amber-600/25"
-                            : showcaseStudent.rank <= 10
-                            ? "bg-purple-400/25"
-                            : "bg-slate-200/30"
-                        }`}
-                      />
 
                       {/* Close Button */}
                       <button

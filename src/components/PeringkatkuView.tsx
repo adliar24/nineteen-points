@@ -141,22 +141,22 @@ export default function PeringkatkuView({ userSession }: PeringkatkuViewProps) {
 
       {/* ===== THE LARGE PRESTIGE TROPHY CARD ===== */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.92, y: 15 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ type: "spring", stiffness: 420, damping: 28 }}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.18, ease: "easeOut" }}
         className="relative w-full transform-gpu"
       >
-        {/* Outer Frame Glow */}
+        {/* Outer Frame */}
         <div
           className={`relative rounded-[36px] p-1.5 shadow-2xl overflow-hidden ${
             rank === 1
-              ? "holo-gradient-gold gold-aura-glow animate-gold-shimmer"
+              ? "holo-gradient-gold border-2 border-amber-400/80"
               : rank === 2
-              ? "holo-gradient-silver silver-aura-glow"
+              ? "holo-gradient-silver border-2 border-slate-300"
               : rank === 3
-              ? "holo-gradient-bronze bronze-aura-glow"
+              ? "holo-gradient-bronze border-2 border-amber-600"
               : rank <= 10
-              ? "bg-gradient-to-tr from-purple-400 via-fuchsia-400 to-indigo-400 shadow-purple-500/30"
+              ? "bg-gradient-to-tr from-purple-400 via-fuchsia-400 to-indigo-400 border-2 border-purple-300"
               : "bg-gradient-to-b from-slate-200 via-slate-100 to-slate-200 border border-slate-200"
           }`}
         >
@@ -174,20 +174,6 @@ export default function PeringkatkuView({ userSession }: PeringkatkuViewProps) {
                 : "bg-gradient-to-b from-white via-white to-slate-50 text-slate-900 border border-slate-100"
             }`}
           >
-            {/* Decorative background aura lights */}
-            <div
-              className={`absolute -top-24 left-1/2 -translate-x-1/2 w-72 h-72 rounded-full blur-3xl pointer-events-none ${
-                rank === 1
-                  ? "bg-amber-400/30"
-                  : rank === 2
-                  ? "bg-slate-300/40"
-                  : rank === 3
-                  ? "bg-amber-600/25"
-                  : rank <= 10
-                  ? "bg-purple-400/25"
-                  : "bg-slate-200/30"
-              }`}
-            />
 
             {/* Top Tier Honor Banner */}
             <div className="relative pt-1">

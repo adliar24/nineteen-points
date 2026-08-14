@@ -9,8 +9,20 @@ interface BeforeInstallPromptEvent extends Event {
 
 export default function InstallPwaPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [isStandalone, setIsStandalone] = useState<boolean>(false);
-  const [isDismissed, setIsDismissed] = useState<boolean>(false);
+  const [isStandalone, setIsStandalone] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    const isStandaloneMedia = window.matchMedia("(display-mode: standalone)").matches;
+    const isStandaloneNav = (navigator as any).standalone === true;
+    const isSavedInstalled = localStorage.getItem("nineteen_pwa_installed") === "true";
+    return isStandaloneMedia || isStandaloneNav || isSavedInstalled;
+  });
+  const [isDismissed, setIsDismissed] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return (
+      localStorage.getItem("nineteen_pwa_dismissed") === "true" ||
+      localStorage.getItem("nineteen_pwa_installed") === "true"
+    );
+  });
   const [showIosGuide, setShowIosGuide] = useState<boolean>(false);
   const [isIos, setIsIos] = useState<boolean>(false);
 
@@ -19,11 +31,16 @@ export default function InstallPwaPrompt() {
     const checkStandalone = () => {
       const isStandaloneMedia = window.matchMedia("(display-mode: standalone)").matches;
       const isStandaloneNav = (navigator as any).standalone === true;
-      return isStandaloneMedia || isStandaloneNav;
+      const isSavedInstalled = localStorage.getItem("nineteen_pwa_installed") === "true";
+      return isStandaloneMedia || isStandaloneNav || isSavedInstalled;
     };
 
     if (checkStandalone()) {
       setIsStandalone(true);
+      try {
+        localStorage.setItem("nineteen_pwa_installed", "true");
+        localStorage.setItem("nineteen_pwa_dismissed", "true");
+      } catch {}
       return;
     }
 
@@ -42,6 +59,10 @@ export default function InstallPwaPrompt() {
     const handleAppInstalled = () => {
       setIsStandalone(true);
       setDeferredPrompt(null);
+      try {
+        localStorage.setItem("nineteen_pwa_installed", "true");
+        localStorage.setItem("nineteen_pwa_dismissed", "true");
+      } catch {}
     };
 
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
@@ -53,7 +74,14 @@ export default function InstallPwaPrompt() {
     };
   }, []);
 
-  // If app is already installed in standalone mode or user dismissed prompt in this session, hide banner
+  const handleDismiss = () => {
+    setIsDismissed(true);
+    try {
+      localStorage.setItem("nineteen_pwa_dismissed", "true");
+    } catch {}
+  };
+
+  // If app is already installed in standalone mode or user dismissed prompt, hide banner
   if (isStandalone || isDismissed) {
     return null;
   }
@@ -65,6 +93,10 @@ export default function InstallPwaPrompt() {
         const choiceResult = await deferredPrompt.userChoice;
         if (choiceResult.outcome === "accepted") {
           setIsStandalone(true);
+          try {
+            localStorage.setItem("nineteen_pwa_installed", "true");
+            localStorage.setItem("nineteen_pwa_dismissed", "true");
+          } catch {}
         }
         setDeferredPrompt(null);
       } catch (err) {
@@ -96,7 +128,7 @@ export default function InstallPwaPrompt() {
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-brand-600 via-accent-500 to-brand-500" />
 
               <button
-                onClick={() => setIsDismissed(true)}
+                onClick={handleDismiss}
                 className="absolute top-3 right-3 p-1.5 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
                 title="Tutup notifikasi"
                 aria-label="Close install prompt"
@@ -132,7 +164,7 @@ export default function InstallPwaPrompt() {
               {/* Action Buttons */}
               <div className="mt-3.5 pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
                 <button
-                  onClick={() => setIsDismissed(true)}
+                  onClick={handleDismiss}
                   className="px-3.5 py-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
                 >
                   Nanti Saja

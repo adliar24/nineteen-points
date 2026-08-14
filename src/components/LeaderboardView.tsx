@@ -285,8 +285,11 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
           <div className="relative pt-4 pb-2 px-1 sm:px-6">
             <div className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-6 items-end max-w-3xl mx-auto">
               {/* ===== JUARA 2 (PERAK / SILVER - KIRI) ===== */}
-              <div
-                className={`flex flex-col items-center group ${isStudentRole ? "cursor-default" : "cursor-pointer"}`}
+              <motion.div
+                initial={{ opacity: 0, y: 24, scale: 0.94 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: 0.38, ease: [0.16, 1, 0.3, 1], delay: 0.12 }}
+                className={`flex flex-col items-center group transform-gpu will-change-transform ${isStudentRole ? "cursor-default" : "cursor-pointer"}`}
                 onClick={() => top2 && openStudentShowcase(top2)}
               >
                 {top2 ? (
@@ -336,11 +339,14 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                     Kosong
                   </div>
                 )}
-              </div>
+              </motion.div>
 
               {/* ===== JUARA 1 (EMAS / GOLD - TENGAH) ===== */}
-              <div
-                className={`flex flex-col items-center group z-10 ${isStudentRole ? "cursor-default" : "cursor-pointer"}`}
+              <motion.div
+                initial={{ opacity: 0, y: 24, scale: 0.94 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: 0.38, ease: [0.16, 1, 0.3, 1], delay: 0.05 }}
+                className={`flex flex-col items-center group z-10 transform-gpu will-change-transform ${isStudentRole ? "cursor-default" : "cursor-pointer"}`}
                 onClick={() => top1 && openStudentShowcase(top1)}
               >
                 {top1 ? (
@@ -394,11 +400,14 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                     Kosong
                   </div>
                 )}
-              </div>
+              </motion.div>
 
               {/* ===== JUARA 3 (PERUNGGU / BRONZE - KANAN) ===== */}
-              <div
-                className={`flex flex-col items-center group ${isStudentRole ? "cursor-default" : "cursor-pointer"}`}
+              <motion.div
+                initial={{ opacity: 0, y: 24, scale: 0.94 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: 0.38, ease: [0.16, 1, 0.3, 1], delay: 0.18 }}
+                className={`flex flex-col items-center group transform-gpu will-change-transform ${isStudentRole ? "cursor-default" : "cursor-pointer"}`}
                 onClick={() => top3 && openStudentShowcase(top3)}
               >
                 {top3 ? (
@@ -448,7 +457,7 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                     Kosong
                   </div>
                 )}
-              </div>
+              </motion.div>
             </div>
           </div>
 

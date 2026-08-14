@@ -6,6 +6,7 @@ import {
   Sparkles,
   Award,
   TrendingUp,
+  TrendingDown,
   User,
   ShieldCheck,
   Sparkle
@@ -333,28 +334,40 @@ export default function PeringkatkuView({ userSession }: PeringkatkuViewProps) {
                 >
                   Kelas {myData.kelas}
                 </span>
-                {myData.nis && (
-                  <span
-                    className={`px-3.5 py-1.5 rounded-xl border ${
-                      rank === 1
-                        ? "bg-amber-200/60 border-amber-300 text-amber-900"
-                        : rank === 2
-                        ? "bg-slate-200/70 border-slate-300 text-slate-800"
-                        : rank === 3
-                        ? "bg-amber-200/60 border-amber-300 text-amber-950"
-                        : rank <= 10
-                        ? "bg-purple-200/60 border-purple-300 text-purple-900"
-                        : "bg-slate-100 border-slate-200 text-slate-700"
-                    }`}
-                  >
-                    NIS: {myData.nis}
-                  </span>
-                )}
+                  {myData.nis && (
+                    <span
+                      className={`px-3.5 py-1.5 rounded-xl border ${
+                        rank === 1
+                          ? "bg-amber-200/60 border-amber-300 text-amber-900"
+                          : rank === 2
+                          ? "bg-slate-200/70 border-slate-300 text-slate-800"
+                          : rank === 3
+                          ? "bg-amber-200/60 border-amber-300 text-amber-950"
+                          : rank <= 10
+                          ? "bg-purple-200/60 border-purple-300 text-purple-900"
+                          : "bg-slate-100 border-slate-200 text-slate-700"
+                      }`}
+                    >
+                      NIS: {myData.nis}
+                    </span>
+                  )}
+                </div>
+
+                {/* Poin Positif & Negatif Badges */}
+                <div className="pt-2 grid grid-cols-2 gap-2 max-w-xs mx-auto">
+                  <div className="flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-800 font-black text-xs">
+                    <TrendingUp className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    <span>+{myData.positif} Positif</span>
+                  </div>
+                  <div className="flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-800 font-black text-xs">
+                    <TrendingDown className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                    <span>-{myData.negatif} Negatif</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </motion.div>
+        </motion.div>
     </div>
   );
 }

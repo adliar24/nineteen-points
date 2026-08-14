@@ -9,6 +9,7 @@ import {
   Search,
   Users,
   TrendingUp,
+  TrendingDown,
   ChevronRight,
   RotateCcw,
   ArrowUpRight,
@@ -877,6 +878,18 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                               NIS: {showcaseStudent.nis}
                             </span>
                           )}
+                        </div>
+
+                        {/* Poin Positif & Negatif Badges */}
+                        <div className="pt-2 grid grid-cols-2 gap-2 max-w-xs mx-auto">
+                          <div className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-800 font-black text-xs">
+                            <TrendingUp className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                            <span>+{showcaseStudent.positif} Positif</span>
+                          </div>
+                          <div className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-800 font-black text-xs">
+                            <TrendingDown className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                            <span>-{showcaseStudent.negatif} Negatif</span>
+                          </div>
                         </div>
                       </div>
                     </div>

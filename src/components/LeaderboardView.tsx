@@ -295,10 +295,10 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                   <>
                     {/* Avatar & Medal */}
                     <div className="relative mb-2 sm:mb-3 flex flex-col items-center">
-                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-100 border-2 border-slate-300 text-slate-700 flex items-center justify-center font-black text-xs sm:text-sm shadow-md mb-1">
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-100 border-2 border-slate-300 text-slate-700 flex items-center justify-center font-black text-xs sm:text-sm mb-1">
                         🥈
                       </div>
-                      <div className={`relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-2xl sm:rounded-3xl p-1 bg-gradient-to-tr from-slate-300 via-slate-100 to-slate-400 silver-aura-glow shadow-lg transition-transform ${!isStudentRole ? "group-hover:scale-105" : ""}`}>
+                      <div className={`relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-2xl sm:rounded-3xl p-1 bg-gradient-to-tr from-slate-300 via-slate-100 to-slate-400 border border-slate-300 transition-transform ${!isStudentRole ? "group-hover:scale-105" : ""}`}>
                         {top2.foto_url ? (
                           <img
                             src={top2.foto_url}
@@ -328,8 +328,8 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                     </div>
 
                     {/* Podium Pillar (Hanya Angka 2) */}
-                    <div className="w-full mt-3 h-28 sm:h-36 md:h-44 rounded-t-2xl sm:rounded-t-3xl bg-gradient-to-b from-slate-200 via-slate-300 to-slate-400 border-t-2 border-slate-100 shadow-md flex items-center justify-center group-hover:brightness-105 transition-all">
-                      <span className="font-black text-3xl sm:text-5xl text-slate-600/80 drop-shadow-sm">2</span>
+                    <div className="w-full mt-3 h-28 sm:h-36 md:h-44 rounded-t-2xl sm:rounded-t-3xl bg-gradient-to-b from-slate-200 via-slate-300 to-slate-400 border-t-2 border-slate-100 flex items-center justify-center group-hover:brightness-105 transition-all">
+                      <span className="font-black text-3xl sm:text-5xl text-slate-600/80">2</span>
                     </div>
                   </>
                 ) : (
@@ -352,14 +352,14 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                     {/* Animated Floating Crown & Sparkles */}
                     <div className="relative mb-2 sm:mb-3 flex flex-col items-center">
                       <div className="animate-float-gentle flex flex-col items-center">
-                        <Crown className="w-7 h-7 sm:w-9 sm:h-9 text-amber-400 drop-shadow-[0_4px_8px_rgba(245,158,11,0.5)] fill-amber-300" />
-                        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-amber-100 border-2 border-amber-400 text-amber-900 flex items-center justify-center font-black text-xs sm:text-sm shadow-lg -mt-1 z-10">
+                        <Crown className="w-7 h-7 sm:w-9 sm:h-9 text-amber-500 fill-amber-300" />
+                        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-amber-100 border-2 border-amber-400 text-amber-900 flex items-center justify-center font-black text-xs sm:text-sm -mt-1 z-10">
                           🥇
                         </div>
                       </div>
 
-                      {/* Golden Glowing Frame with Shimmer */}
-                      <div className={`relative w-20 h-20 sm:w-26 sm:h-26 md:w-32 md:h-32 rounded-2xl sm:rounded-3xl p-1 bg-gradient-to-tr from-amber-400 via-yellow-200 to-amber-500 gold-aura-glow animate-gold-shimmer shadow-2xl transition-transform ${!isStudentRole ? "group-hover:scale-105" : ""}`}>
+                      {/* Golden Frame */}
+                      <div className={`relative w-20 h-20 sm:w-26 sm:h-26 md:w-32 md:h-32 rounded-2xl sm:rounded-3xl p-1 bg-gradient-to-tr from-amber-400 via-yellow-200 to-amber-500 border border-amber-300 transition-transform ${!isStudentRole ? "group-hover:scale-105" : ""}`}>
                         {top1.foto_url ? (
                           <img
                             src={top1.foto_url}
@@ -382,15 +382,15 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                       <p className="text-[10px] sm:text-xs font-extrabold text-amber-700">
                         Kelas {top1.kelas}
                       </p>
-                      <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 text-white font-black text-[11px] sm:text-sm shadow-md">
+                      <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 text-white font-black text-[11px] sm:text-sm">
                         <Sparkles className="w-3.5 h-3.5" />
                         {top1.score} pts
                       </div>
                     </div>
 
                     {/* Champion Podium Pillar (Hanya Angka 1) */}
-                    <div className="w-full mt-3 h-36 sm:h-48 md:h-56 rounded-t-2xl sm:rounded-t-3xl bg-gradient-to-b from-amber-300 via-amber-400 to-amber-500 border-t-2 border-yellow-200 shadow-xl flex items-center justify-center group-hover:brightness-105 transition-all">
-                      <span className="font-black text-4xl sm:text-6xl text-amber-900/70 drop-shadow-md">1</span>
+                    <div className="w-full mt-3 h-36 sm:h-48 md:h-56 rounded-t-2xl sm:rounded-t-3xl bg-gradient-to-b from-amber-300 via-amber-400 to-amber-500 border-t-2 border-yellow-200 flex items-center justify-center group-hover:brightness-105 transition-all">
+                      <span className="font-black text-4xl sm:text-6xl text-amber-900/70">1</span>
                     </div>
                   </>
                 ) : (
@@ -412,10 +412,10 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                   <>
                     {/* Avatar & Medal */}
                     <div className="relative mb-2 sm:mb-3 flex flex-col items-center">
-                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-amber-50 border-2 border-amber-600/60 text-amber-900 flex items-center justify-center font-black text-xs sm:text-sm shadow-md mb-1">
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-amber-50 border-2 border-amber-600/60 text-amber-900 flex items-center justify-center font-black text-xs sm:text-sm mb-1">
                         🥉
                       </div>
-                      <div className={`relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-2xl sm:rounded-3xl p-1 bg-gradient-to-tr from-amber-700 via-amber-500 to-amber-800 bronze-aura-glow shadow-lg transition-transform ${!isStudentRole ? "group-hover:scale-105" : ""}`}>
+                      <div className={`relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-2xl sm:rounded-3xl p-1 bg-gradient-to-tr from-amber-700 via-amber-500 to-amber-800 border border-amber-600/40 transition-transform ${!isStudentRole ? "group-hover:scale-105" : ""}`}>
                         {top3.foto_url ? (
                           <img
                             src={top3.foto_url}
@@ -445,8 +445,8 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                     </div>
 
                     {/* Podium Pillar (Hanya Angka 3) */}
-                    <div className="w-full mt-3 h-20 sm:h-28 md:h-36 rounded-t-2xl sm:rounded-t-3xl bg-gradient-to-b from-amber-600 via-amber-700 to-amber-800 border-t-2 border-amber-400 shadow-md flex items-center justify-center group-hover:brightness-105 transition-all">
-                      <span className="font-black text-3xl sm:text-5xl text-amber-200/80 drop-shadow-sm">3</span>
+                    <div className="w-full mt-3 h-20 sm:h-28 md:h-36 rounded-t-2xl sm:rounded-t-3xl bg-gradient-to-b from-amber-600 via-amber-700 to-amber-800 border-t-2 border-amber-400 flex items-center justify-center group-hover:brightness-105 transition-all">
+                      <span className="font-black text-3xl sm:text-5xl text-amber-200/80">3</span>
                     </div>
                   </>
                 ) : (

@@ -251,7 +251,7 @@ export default function PeringkatkuView({ userSession }: PeringkatkuViewProps) {
                     : "bg-slate-100 ring-4 ring-slate-200 shadow-md"
                 }`}
               >
-                <div className="w-44 h-56 sm:w-52 sm:h-64 rounded-2xl overflow-hidden bg-slate-900 flex items-center justify-center shadow-inner">
+                <div className="w-42 h-56 sm:w-51 sm:h-68 aspect-[3/4] rounded-2xl overflow-hidden bg-slate-900 flex items-center justify-center shadow-inner">
                   {myData.foto_url ? (
                     <img
                       src={myData.foto_url}

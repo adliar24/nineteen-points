@@ -291,6 +291,181 @@ export const saveRiwayatList = async (riwayat: RiwayatPoin[]): Promise<void> => 
   }
 };
 
+// --- POINT DUPLICATION & DAILY LIMIT GUARDS ---
+
+export const isSingleDailyPoint = (namaPoin: string): boolean => {
+  const lower = namaPoin.toLowerCase();
+  const singleDailyKeywords = [
+    "kegiatan",
+    "sholat",
+    "dhuha",
+    "jumat",
+    "jum'at",
+    "ibadah",
+    "rambut",
+    "seragam",
+    "atribut",
+    "celana",
+    "tindik",
+    "kuku",
+    "alis",
+    "jedai",
+    "eyelash",
+    "lashlift",
+    "kebersihan",
+    "sepatu",
+    "kaos kaki",
+  ];
+  return singleDailyKeywords.some((kw) => lower.includes(kw));
+};
+
+export const getTodayDateRange = () => {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+  const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+  return {
+    startIso: start.toISOString(),
+    endIso: end.toISOString(),
+  };
+};
+
+export const checkDailyPointConflict = async (
+  siswaId: string,
+  namaPoin: string,
+  guruEmailOrName: string
+): Promise<{ conflict: boolean; reason?: string }> => {
+  const { startIso, endIso } = getTodayDateRange();
+  const { data, error } = await supabase
+    .from("riwayat_poin")
+    .select("id, nama_poin, guru_email, created_at")
+    .eq("siswa_id", siswaId)
+    .gte("created_at", startIso)
+    .lte("created_at", endIso);
+
+  if (error || !data) return { conflict: false };
+
+  const normPoint = namaPoin.toLowerCase().trim();
+  const normGuru = guruEmailOrName.toLowerCase().trim();
+  const isGlobalSingle = isSingleDailyPoint(namaPoin);
+
+  for (const row of data) {
+    const rowPoint = row.nama_poin.toLowerCase().trim();
+    const rowGuru = (row.guru_email || "").toLowerCase().trim();
+
+    if (rowPoint === normPoint) {
+      if (isGlobalSingle) {
+        return {
+          conflict: true,
+          reason: `Murid sudah menerima poin "${row.nama_poin}" hari ini (oleh ${row.guru_email || "petugas lain"}). Aturan ini dibatasi maksimal 1 kali per hari.`,
+        };
+      }
+      if (rowGuru === normGuru) {
+        return {
+          conflict: true,
+          reason: `Anda sudah memberikan poin "${row.nama_poin}" kepada murid ini hari ini.`,
+        };
+      }
+    }
+  }
+
+  return { conflict: false };
+};
+
+export interface BatchAddResult {
+  successStudents: Siswa[];
+  skippedStudents: { siswa: Siswa; reason: string }[];
+}
+
+export const addRiwayatBatchWithValidation = async (
+  students: Siswa[],
+  namaPoin: string,
+  nilaiDiberikan: number,
+  guruEmailOrName: string,
+  semester?: string
+): Promise<BatchAddResult> => {
+  if (students.length === 0) {
+    return { successStudents: [], skippedStudents: [] };
+  }
+
+  const { startIso, endIso } = getTodayDateRange();
+  const studentIds = students.map((s) => s.id);
+
+  // Fetch all riwayat for these students today in 1 query
+  const { data: todayRecords, error } = await supabase
+    .from("riwayat_poin")
+    .select("siswa_id, nama_poin, guru_email")
+    .in("siswa_id", studentIds)
+    .gte("created_at", startIso)
+    .lte("created_at", endIso);
+
+  const existingMap = new Map<string, { nama_poin: string; guru_email: string }[]>();
+  if (!error && todayRecords) {
+    for (const rec of todayRecords) {
+      const list = existingMap.get(rec.siswa_id) || [];
+      list.push(rec);
+      existingMap.set(rec.siswa_id, list);
+    }
+  }
+
+  const normPoint = namaPoin.toLowerCase().trim();
+  const normGuru = guruEmailOrName.toLowerCase().trim();
+  const isGlobalSingle = isSingleDailyPoint(namaPoin);
+
+  const successStudents: Siswa[] = [];
+  const skippedStudents: { siswa: Siswa; reason: string }[] = [];
+  const inserts: Record<string, any>[] = [];
+
+  for (const student of students) {
+    const studentHistoryToday = existingMap.get(student.id) || [];
+    let hasConflict = false;
+    let conflictReason = "";
+
+    for (const rec of studentHistoryToday) {
+      const recPoint = rec.nama_poin.toLowerCase().trim();
+      const recGuru = (rec.guru_email || "").toLowerCase().trim();
+
+      if (recPoint === normPoint) {
+        if (isGlobalSingle) {
+          hasConflict = true;
+          conflictReason = `Sudah menerima poin ini hari ini (oleh ${rec.guru_email || "petugas lain"}).`;
+          break;
+        }
+        if (recGuru === normGuru) {
+          hasConflict = true;
+          conflictReason = `Anda sudah mencatat poin ini hari ini.`;
+          break;
+        }
+      }
+    }
+
+    if (hasConflict) {
+      skippedStudents.push({ siswa: student, reason: conflictReason });
+    } else {
+      successStudents.push(student);
+      const row: Record<string, any> = {
+        siswa_id: student.id,
+        nilai_diberikan: nilaiDiberikan,
+        nama_poin: namaPoin,
+        guru_email: guruEmailOrName,
+      };
+      if (semester) row.semester = semester;
+      inserts.push(row);
+    }
+  }
+
+  if (inserts.length > 0) {
+    const { error: insertErr } = await supabase.from("riwayat_poin").insert(inserts);
+    if (insertErr) {
+      console.error("Error bulk inserting riwayat_poin:", insertErr);
+      throw insertErr;
+    }
+    const updates = successStudents.map((s) => ({ siswaId: s.id, delta: nilaiDiberikan }));
+    updateCachedSiswaPoinBatch(updates);
+  }
+
+  return { successStudents, skippedStudents };
+};
+
 export const addRiwayat = async (
   siswaId: string,
   namaPoin: string,
@@ -298,8 +473,12 @@ export const addRiwayat = async (
   guruEmail: string,
   semester?: string
 ): Promise<void> => {
-  // With PostgreSQL Triggers configured, inserting a row in 'riwayat_poin'
-  // automatically calculates and updates 'total_poin' in 'siswa' table.
+  // Validate daily conflict before adding
+  const check = await checkDailyPointConflict(siswaId, namaPoin, guruEmail);
+  if (check.conflict) {
+    throw new Error(check.reason || "Poin ini tidak dapat diberikan kembali hari ini.");
+  }
+
   const insertData: Record<string, any> = {
     siswa_id: siswaId,
     nilai_diberikan: nilaiDiberikan,

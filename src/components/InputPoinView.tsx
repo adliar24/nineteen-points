@@ -13,7 +13,7 @@ import {
   QrCode
 } from "lucide-react";
 import { Siswa, MasterPoin, UserSession } from "../types";
-import { getSiswaListLight, getMasterPoinList, addRiwayat, updateCachedSiswaPoin, updateCachedSiswaPoinBatch } from "../dbStore";
+import { getSiswaListLight, getMasterPoinList, addRiwayat, addRiwayatBatchWithValidation, isSingleDailyPoint, updateCachedSiswaPoin } from "../dbStore";
 import { toSentenceCase, compareClasses } from "../formatName";
 import FaceScanner from "./face/FaceScanner";
 import QrScanner, { QrScanFeedback } from "./scan/QrScanner";
@@ -60,6 +60,8 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
   const [isCustomPoint, setIsCustomPoint] = useState(false);
   const [customPointType, setCustomPointType] = useState<"positif" | "negatif">("positif");
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleQrScan = async (decodedText: string): Promise<QrScanFeedback> => {
     const trimmed = decodedText.trim();
@@ -186,12 +188,16 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
       value = rule.nilai_poin;
     }
 
+    setErrorMessage(null);
+    setSuccessMessage(null);
+    setIsSubmitting(true);
+
     try {
       if (selectedSiswa) {
-        // Write to DB
+        // Write to DB with validation
         await addRiwayat(selectedSiswa.id, name, value, userSession.fullName);
         setSuccessMessage(
-          `Sukses mencatat poin! ${selectedSiswa.nama} (${selectedSiswa.kelas}) menerima ${
+          `Sukses mencatat poin! ${toSentenceCase(selectedSiswa.nama)} (${selectedSiswa.kelas}) menerima ${
             value > 0 ? `+${value}` : value
           } poin untuk "${name}".`
         );
@@ -199,27 +205,50 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
         setSelectedSiswa(updatedSiswa);
         updateCachedSiswaPoin(selectedSiswa.id, value);
       } else {
-        // Write to DB (batch mode)
-        const updates: { siswaId: string; delta: number }[] = [];
-        for (const student of selectedSiswaBatch) {
-          await addRiwayat(student.id, name, value, userSession.fullName);
-          updates.push({ siswaId: student.id, delta: value });
-        }
-        updateCachedSiswaPoinBatch(updates);
-        setSuccessMessage(
-          `Sukses mencatat poin untuk ${selectedSiswaBatch.length} murid sekaligus untuk "${name}".`
+        // Write to DB (batch mode with intelligent skip for already assigned students)
+        const result = await addRiwayatBatchWithValidation(
+          selectedSiswaBatch,
+          name,
+          value,
+          userSession.fullName
         );
-        setSelectedSiswaBatch([]);
+
+        if (result.successStudents.length > 0 && result.skippedStudents.length === 0) {
+          setSuccessMessage(
+            `Sukses mencatat poin untuk seluruh ${result.successStudents.length} murid sekaligus untuk "${name}".`
+          );
+          setSelectedSiswaBatch([]);
+        } else if (result.successStudents.length > 0 && result.skippedStudents.length > 0) {
+          const skippedNames = result.skippedStudents
+            .map((s) => `${toSentenceCase(s.siswa.nama)} (${s.siswa.kelas})`)
+            .join(", ");
+          setSuccessMessage(
+            `Sukses mencatat poin untuk ${result.successStudents.length} murid. ${result.skippedStudents.length} murid dilewati (sudah tercatat poin ini hari ini: ${skippedNames}).`
+          );
+          setSelectedSiswaBatch([]);
+        } else {
+          // All students skipped
+          const skippedNames = result.skippedStudents
+            .map((s) => `${toSentenceCase(s.siswa.nama)} (${s.siswa.kelas})`)
+            .join(", ");
+          setErrorMessage(
+            `Tidak ada poin yang dicatat. Seluruh ${result.skippedStudents.length} murid yang dipilih sudah menerima poin "${name}" hari ini (${skippedNames}).`
+          );
+        }
       }
 
       onRefreshHistory();
 
-      // Reset input fields
-      setSelectedPoinId("");
-      setCustomPointName("");
-      setIsCustomPoint(false);
+      // Reset input fields on success
+      if (!errorMessage) {
+        setSelectedPoinId("");
+        setCustomPointName("");
+        setIsCustomPoint(false);
+      }
     } catch (err: any) {
-      alert("Gagal mencatat poin: " + err.message);
+      setErrorMessage(err.message || "Gagal mencatat poin.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -227,6 +256,7 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
     setSelectedSiswa(null);
     setSelectedSiswaBatch([]);
     setSuccessMessage(null);
+    setErrorMessage(null);
   };
 
   // Unique classes for manual filter dropdown (sorted by grade and alphabetically)
@@ -515,6 +545,20 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
                     </motion.div>
                   )}
 
+                  {errorMessage && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: -5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="p-4 bg-rose-50 rounded-2xl border border-rose-200 text-xs text-rose-800 flex items-start gap-2.5 shadow-xs"
+                    >
+                      <AlertCircle className="w-5 h-5 text-rose-600 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <strong className="font-bold block">Pencatatan Dibatasi</strong>
+                        <span className="font-medium mt-0.5 block leading-relaxed">{errorMessage}</span>
+                      </div>
+                    </motion.div>
+                  )}
+
                   {!isCustomPoint ? (
                     /* SELECT STANDARD RULE - MODIFIED PER USER REQUEST TO BE HIGHLY COMPACT, SEARCHABLE & CATEGORIZED */
                     <div className="space-y-2.5">
@@ -589,6 +633,11 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
                                       }`}>
                                         {p.nama_poin}
                                       </p>
+                                      {isSingleDailyPoint(p.nama_poin) && (
+                                        <span className="inline-block text-[8px] font-black text-amber-700 bg-amber-50 border border-amber-200/80 px-1.5 py-0.5 rounded-md">
+                                          1x/Hari
+                                        </span>
+                                      )}
                                     </div>
                                     <span className={`inline-block text-[8px] font-black uppercase tracking-wider mt-0.5 ${
                                       isPositive ? "text-emerald-600" : "text-rose-600"

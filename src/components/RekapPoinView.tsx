@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { getSiswaList, getSiswaSeparatePoinMap } from "../dbStore";
 import { toSentenceCase } from "../formatName";
-import { Siswa } from "../types";
+import { Siswa, UserSession } from "../types";
 import PaginationFooter from "./PaginationFooter";
 import StudentHistoryModal from "./StudentHistoryModal";
 
@@ -23,7 +23,11 @@ const SORT_OPTIONS: { key: SortMode; label: string; icon: React.ReactNode }[] = 
   { key: "nama", label: "Nama A-Z", icon: <ArrowUpDown className="w-3.5 h-3.5" /> },
 ];
 
-export default function RekapPoinView() {
+interface RekapPoinViewProps {
+  userSession?: UserSession;
+}
+
+export default function RekapPoinView({ userSession }: RekapPoinViewProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedKelas, setSelectedKelas] = useState("Semua");
   const [sortMode, setSortMode] = useState<SortMode>("tertinggi");
@@ -261,6 +265,7 @@ export default function RekapPoinView() {
         onClose={() => setSelectedSiswaForHistory(null)}
         siswa={selectedSiswaForHistory}
         poinSummary={selectedSiswaForHistory ? poinMap[selectedSiswaForHistory.id] : undefined}
+        userSession={userSession}
       />
     </div>
   );

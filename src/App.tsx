@@ -1113,7 +1113,7 @@ export default function App() {
               )}
 
               {activeTab === "rekap_poin" && ["guru", "super_admin", "kepala_sekolah", "piket", "tata_usaha"].includes(userSession.role) && (
-                <RekapPoinView />
+                <RekapPoinView userSession={userSession} />
               )}
 
               {activeTab === "change_password" && (

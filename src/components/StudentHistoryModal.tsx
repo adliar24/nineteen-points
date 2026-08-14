@@ -1,17 +1,20 @@
 import React, { useState, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Search, History, Calendar, User, Filter, Award, TrendingUp } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { Siswa } from "../types";
-import { getRiwayatSiswa } from "../dbStore";
+import { X, Search, History, Calendar, User, Filter, Award, TrendingUp, Trash2 } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Siswa, RiwayatPoin, UserSession } from "../types";
+import { getRiwayatSiswa, deleteRiwayat, updateCachedSiswaPoin } from "../dbStore";
 import { toSentenceCase } from "../formatName";
+import ConfirmationModal from "./ConfirmationModal";
 
 interface StudentHistoryModalProps {
   isOpen: boolean;
   onClose: () => void;
   siswa: Siswa | null;
   poinSummary?: { positif: number; negatif: number };
+  userSession?: UserSession;
+  isAdmin?: boolean;
 }
 
 export default function StudentHistoryModal({
@@ -19,15 +22,48 @@ export default function StudentHistoryModal({
   onClose,
   siswa,
   poinSummary,
+  userSession,
+  isAdmin: propIsAdmin,
 }: StudentHistoryModalProps) {
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState<"semua" | "positif" | "negatif">("semua");
+
+  // Admin delete states
+  const isAdmin = propIsAdmin ?? (userSession?.role === "super_admin");
+  const [recordToDelete, setRecordToDelete] = useState<RiwayatPoin | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   const { data: riwayatList = [], isLoading } = useQuery({
     queryKey: ["riwayatSiswa", siswa?.id],
     queryFn: () => (siswa ? getRiwayatSiswa(siswa.id) : Promise.resolve([])),
     enabled: !!siswa && isOpen,
   });
+
+  const handleExecuteDelete = async () => {
+    if (!recordToDelete || !siswa) return;
+    setIsDeleting(true);
+    try {
+      await deleteRiwayat(recordToDelete.id);
+      updateCachedSiswaPoin(siswa.id, -recordToDelete.nilai_diberikan);
+
+      await queryClient.invalidateQueries({ queryKey: ["riwayatSiswa", siswa.id] });
+      await queryClient.invalidateQueries({ queryKey: ["siswaPoinMap"] });
+      await queryClient.invalidateQueries({ queryKey: ["siswa"] });
+      await queryClient.invalidateQueries({ queryKey: ["riwayat"] });
+
+      setToast({ message: `Catatan "${recordToDelete.nama_poin}" berhasil dihapus.`, type: "success" });
+      setTimeout(() => setToast(null), 3000);
+      setRecordToDelete(null);
+    } catch (err: any) {
+      console.error("Error deleting point history:", err);
+      setToast({ message: "Gagal menghapus poin: " + (err.message || String(err)), type: "error" });
+      setTimeout(() => setToast(null), 4000);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const computedSummary = useMemo(() => {
     if (poinSummary) return poinSummary;
@@ -254,7 +290,7 @@ export default function StudentHistoryModal({
                         </div>
                       </div>
 
-                      <div className="flex-shrink-0">
+                      <div className="flex items-center gap-2 flex-shrink-0">
                         <span
                           className={`inline-flex items-center justify-center px-3 py-1.5 rounded-xl font-mono font-black text-xs border ${
                             isPositive
@@ -264,6 +300,18 @@ export default function StudentHistoryModal({
                         >
                           {isPositive ? `+${record.nilai_diberikan}` : record.nilai_diberikan}
                         </span>
+
+                        {isAdmin && (
+                          <button
+                            type="button"
+                            onClick={() => setRecordToDelete(record)}
+                            className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all cursor-pointer border border-transparent hover:border-rose-100"
+                            title="Hapus Catatan Poin (Khusus Admin)"
+                            aria-label="Hapus catatan poin"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
                       </div>
                     </div>
                   );
@@ -283,6 +331,40 @@ export default function StudentHistoryModal({
             </button>
           </div>
         </motion.div>
+
+        {/* Confirmation Modal Delete Point Record */}
+        <ConfirmationModal
+          isOpen={!!recordToDelete}
+          onClose={() => setRecordToDelete(null)}
+          onConfirm={handleExecuteDelete}
+          title="Hapus Catatan Poin Murid"
+          message={
+            recordToDelete
+              ? `Apakah Anda yakin ingin menghapus catatan "${recordToDelete.nama_poin}" (${recordToDelete.nilai_diberikan > 0 ? "+" : ""}${recordToDelete.nilai_diberikan} pts) untuk ${toSentenceCase(siswa.nama)}? Total poin murid akan diperbarui otomatis.`
+              : ""
+          }
+          confirmText={isDeleting ? "Menghapus..." : "Ya, Hapus Poin"}
+          cancelText="Batal"
+          type="danger"
+        />
+
+        {/* Toast Notification */}
+        <AnimatePresence>
+          {toast && (
+            <motion.div
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10, scale: 0.95 }}
+              className={`fixed bottom-6 right-6 z-[60] px-5 py-3.5 rounded-2xl shadow-2xl flex items-center font-extrabold text-sm text-white border ${
+                toast.type === "error"
+                  ? "bg-rose-600 border-rose-700 shadow-rose-900/30"
+                  : "bg-emerald-600 border-emerald-700 shadow-emerald-900/30"
+              }`}
+            >
+              <span>{toast.message}</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </AnimatePresence>,
     document.body

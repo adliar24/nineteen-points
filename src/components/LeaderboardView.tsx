@@ -634,24 +634,24 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
           <AnimatePresence>
             {showcaseStudent && (
               <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 overflow-y-auto">
-                {/* Full Backdrop with Heavy Background Blur */}
+                {/* Full Backdrop with GPU-Optimized Blur */}
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  transition={{ duration: 0.25 }}
-                  className="fixed inset-0 bg-brand-950/65 backdrop-blur-xl"
-                  style={{ backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)" }}
+                  transition={{ duration: 0.2 }}
+                  className="fixed inset-0 bg-brand-950/65 backdrop-blur-md"
+                  style={{ backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }}
                   onClick={() => setShowcaseStudent(null)}
                 />
 
                 {/* Showcase Card */}
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.8, y: 30, rotateY: 12 }}
-                  animate={{ opacity: 1, scale: 1, y: 0, rotateY: 0 }}
-                  exit={{ opacity: 0, scale: 0.85, y: 20 }}
-                  transition={{ type: "spring", stiffness: 350, damping: 25 }}
-                  className="relative w-full max-w-sm sm:max-w-md z-10 my-auto"
+                  initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.92, y: 15 }}
+                  transition={{ type: "spring", stiffness: 420, damping: 28 }}
+                  className="relative w-full max-w-sm sm:max-w-md z-10 my-auto transform-gpu"
                   onClick={(e) => e.stopPropagation()}
                 >
                   {/* Outer Frame */}

@@ -236,64 +236,62 @@ body {
   }
 }
 
-/* ===== Leaderboard Prestige & Gold Shimmer Animations ===== */
+/* ===== Leaderboard Prestige & Gold Shimmer Animations (GPU Optimized) ===== */
 @keyframes goldShimmerSweep {
   0% {
-    transform: translateX(-150%) skewX(-25deg);
+    transform: translate3d(-150%, 0, 0) skewX(-20deg);
   }
   40%, 100% {
-    transform: translateX(250%) skewX(-25deg);
+    transform: translate3d(250%, 0, 0) skewX(-20deg);
   }
 }
 
 @keyframes goldAuraPulse {
   0%, 100% {
-    box-shadow: 0 0 25px rgba(234, 179, 8, 0.35), 0 0 50px rgba(245, 158, 11, 0.15);
+    box-shadow: 0 0 16px rgba(245, 158, 11, 0.3);
   }
   50% {
-    box-shadow: 0 0 40px rgba(234, 179, 8, 0.55), 0 0 80px rgba(245, 158, 11, 0.3);
+    box-shadow: 0 0 28px rgba(245, 158, 11, 0.5);
   }
 }
 
 @keyframes silverAuraPulse {
   0%, 100% {
-    box-shadow: 0 0 20px rgba(148, 163, 184, 0.3), 0 0 40px rgba(203, 213, 225, 0.15);
+    box-shadow: 0 0 14px rgba(148, 163, 184, 0.25);
   }
   50% {
-    box-shadow: 0 0 30px rgba(148, 163, 184, 0.45), 0 0 60px rgba(203, 213, 225, 0.25);
+    box-shadow: 0 0 24px rgba(148, 163, 184, 0.4);
   }
 }
 
 @keyframes bronzeAuraPulse {
   0%, 100% {
-    box-shadow: 0 0 20px rgba(217, 119, 6, 0.25), 0 0 40px rgba(180, 83, 9, 0.12);
+    box-shadow: 0 0 14px rgba(217, 119, 6, 0.25);
   }
   50% {
-    box-shadow: 0 0 30px rgba(217, 119, 6, 0.4), 0 0 60px rgba(180, 83, 9, 0.2);
+    box-shadow: 0 0 24px rgba(217, 119, 6, 0.4);
   }
 }
 
 @keyframes floatGentle {
   0%, 100% {
-    transform: translateY(0px) rotate(0deg);
+    transform: translate3d(0, 0, 0);
   }
   50% {
-    transform: translateY(-6px) rotate(2deg);
+    transform: translate3d(0, -5px, 0);
   }
 }
 
-@keyframes rotateBorderGlow {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+.animate-float-gentle {
+  animation: floatGentle 2.8s ease-in-out infinite;
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 .animate-gold-shimmer {
   position: relative;
   overflow: hidden;
+  transform: translateZ(0);
 }
 
 .animate-gold-shimmer::after {
@@ -306,29 +304,30 @@ body {
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(255, 255, 255, 0.1) 20%,
-    rgba(255, 255, 255, 0.6) 50%,
-    rgba(255, 255, 255, 0.1) 80%,
+    rgba(255, 255, 255, 0.1) 25%,
+    rgba(255, 255, 255, 0.5) 50%,
+    rgba(255, 255, 255, 0.1) 75%,
     transparent 100%
   );
-  animation: goldShimmerSweep 3.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation: goldShimmerSweep 4s cubic-bezier(0.25, 1, 0.5, 1) infinite;
+  will-change: transform;
   pointer-events: none;
+  transform: translateZ(0);
 }
 
 .gold-aura-glow {
   animation: goldAuraPulse 3s ease-in-out infinite;
+  transform: translateZ(0);
 }
 
 .silver-aura-glow {
-  animation: silverAuraPulse 3.5s ease-in-out infinite;
+  animation: silverAuraPulse 3s ease-in-out infinite;
+  transform: translateZ(0);
 }
 
 .bronze-aura-glow {
-  animation: bronzeAuraPulse 3.5s ease-in-out infinite;
-}
-
-.animate-float-gentle {
-  animation: floatGentle 3s ease-in-out infinite;
+  animation: bronzeAuraPulse 3s ease-in-out infinite;
+  transform: translateZ(0);
 }
 
 @keyframes holographicBeam {

@@ -140,10 +140,10 @@ export default function PeringkatkuView({ userSession }: PeringkatkuViewProps) {
 
       {/* ===== THE LARGE PRESTIGE TROPHY CARD ===== */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+        initial={{ opacity: 0, scale: 0.92, y: 15 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ type: "spring", stiffness: 300, damping: 24 }}
-        className="relative w-full"
+        transition={{ type: "spring", stiffness: 420, damping: 28 }}
+        className="relative w-full transform-gpu"
       >
         {/* Outer Frame Glow */}
         <div

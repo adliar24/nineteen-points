@@ -4,10 +4,8 @@ import {
   Trophy,
   Crown,
   Medal,
-  Award,
   Sparkles,
   Search,
-  Filter,
   Users,
   TrendingUp,
   Flame,
@@ -15,38 +13,42 @@ import {
   ChevronRight,
   ShieldCheck,
   RotateCcw,
-  Layers,
-  ListOrdered,
-  Eye,
-  ArrowUpRight
+  ArrowUpRight,
+  X,
+  Award,
+  Sparkle
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getSiswaListLight, getRiwayatList } from "../dbStore";
 import { Siswa, UserSession } from "../types";
 import { toSentenceCase } from "../formatName";
 import SkeletonLoader from "./SkeletonLoader";
-import StudentHistoryModal from "./StudentHistoryModal";
 
 interface LeaderboardViewProps {
   userSession?: UserSession | null;
 }
 
-type ViewMode = "podium" | "list";
 type RankCategory = "prestasi" | "disiplin";
 
+interface RankedSiswa extends Siswa {
+  score: number;
+  positif: number;
+  negatif: number;
+  net: number;
+  rank: number;
+}
+
 export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
-  const [viewMode, setViewMode] = useState<ViewMode>("podium");
   const [category, setCategory] = useState<RankCategory>("prestasi");
   const [selectedKelas, setSelectedKelas] = useState<string>("semua");
   const [searchQuery, setSearchQuery] = useState<string>("");
   
-  // Modal state for student history breakdown
-  const [selectedStudent, setSelectedStudent] = useState<Siswa | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  // Selected student for the Large Prestige Showcase Card Modal
+  const [showcaseStudent, setShowcaseStudent] = useState<RankedSiswa | null>(null);
 
   const studentCardRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
-  // Data fetching via TanStack Query
+  // Data fetching via TanStack Query (Read-only)
   const {
     data: siswaList = [],
     isLoading: loadingSiswa,
@@ -104,7 +106,7 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
   }, [siswaList]);
 
   // Ranked students based on category, filter, and search
-  const rankedStudents = useMemo(() => {
+  const rankedStudents: RankedSiswa[] = useMemo(() => {
     const list = siswaList.map((siswa) => {
       const stats = studentPoinMap[siswa.id] || { positif: 0, negatif: 0, net: 0 };
       const score = category === "prestasi" ? stats.positif : stats.negatif;
@@ -114,6 +116,7 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
         positif: stats.positif,
         negatif: stats.negatif,
         net: stats.net,
+        rank: 0,
       };
     });
 
@@ -140,20 +143,24 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
       return a.nama.localeCompare(b.nama);
     });
 
-    return filtered;
+    // Assign 1-based ranks
+    return filtered.map((s, index) => ({
+      ...s,
+      rank: index + 1,
+    }));
   }, [siswaList, studentPoinMap, category, selectedKelas, searchQuery]);
 
   // Logged-in user's student position (if student)
   const currentStudentRank = useMemo(() => {
     if (!userSession || userSession.role !== "siswa") return null;
     const userNis = userSession.nis || userSession.email.split("@")[0];
-    const index = rankedStudents.findIndex(
+    const found = rankedStudents.find(
       (s) => s.nis === userNis || s.id === userSession.id || s.nama.toLowerCase() === userSession.fullName.toLowerCase()
     );
-    if (index === -1) return null;
+    if (!found) return null;
     return {
-      rank: index + 1,
-      student: rankedStudents[index],
+      rank: found.rank,
+      student: found,
     };
   }, [userSession, rankedStudents]);
 
@@ -174,9 +181,8 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
   const top3 = rankedStudents[2] || null;
   const rank4Onwards = rankedStudents.slice(3);
 
-  const openStudentDetail = (siswa: Siswa) => {
-    setSelectedStudent(siswa);
-    setIsModalOpen(true);
+  const openStudentShowcase = (siswa: RankedSiswa) => {
+    setShowcaseStudent(siswa);
   };
 
   return (
@@ -190,53 +196,27 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-amber-300 text-xs font-bold uppercase tracking-wider">
               <Trophy className="w-3.5 h-3.5 text-amber-300 animate-bounce" />
-              Papan Peringkat Terkini
+              Papan Peringkat Prestasi
             </div>
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white flex items-center gap-3">
               Hall of Fame Siswa
               <Sparkles className="w-6 h-6 text-amber-300 animate-pulse hidden sm:inline-block" />
             </h1>
             <p className="text-xs sm:text-sm text-brand-100/90 max-w-xl leading-relaxed">
-              Pantau posisi dan prestasi terbaik siswa dengan animasi badge kehormatan emas, perak, dan perunggu.
+              Klasemen kehormatan siswa terbaik dengan animasi badge podium emas, perak, dan perunggu. Klik siswa untuk melihat kartu prestise besar.
             </p>
           </div>
 
-          {/* View Mode Switcher & Refresh */}
-          <div className="flex items-center gap-2.5 self-start md:self-center">
-            <div className="bg-white/10 backdrop-blur-md p-1 rounded-2xl border border-white/20 flex items-center shadow-inner">
-              <button
-                onClick={() => setViewMode("podium")}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  viewMode === "podium"
-                    ? "bg-white text-brand-950 shadow-md scale-[1.02]"
-                    : "text-white/80 hover:text-white hover:bg-white/10"
-                }`}
-                title="Tampilan Podium Top 3"
-              >
-                <Layers className="w-4 h-4 text-amber-500" />
-                <span className="hidden sm:inline">Mode</span> Podium
-              </button>
-              <button
-                onClick={() => setViewMode("list")}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  viewMode === "list"
-                    ? "bg-white text-brand-950 shadow-md scale-[1.02]"
-                    : "text-white/80 hover:text-white hover:bg-white/10"
-                }`}
-                title="Tampilan Seluruh List Kartu"
-              >
-                <ListOrdered className="w-4 h-4 text-brand-600" />
-                <span className="hidden sm:inline">Mode</span> List Lengkap
-              </button>
-            </div>
-
+          {/* Refresh Button */}
+          <div className="self-start md:self-center">
             <button
               onClick={handleRefresh}
               disabled={isRefreshing}
-              className="p-2.5 bg-white/10 hover:bg-white/20 active:scale-95 text-white rounded-2xl border border-white/20 transition-all cursor-pointer shadow-sm flex items-center justify-center"
+              className="flex items-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/20 active:scale-95 text-white rounded-2xl border border-white/20 transition-all cursor-pointer shadow-sm text-xs font-bold"
               title="Perbarui Data"
             >
               <RotateCcw className={`w-4 h-4 ${isRefreshing ? "animate-spin text-amber-300" : ""}`} />
+              <span>Segarkan</span>
             </button>
           </div>
         </div>
@@ -302,7 +282,7 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
         </div>
       </div>
 
-      {/* ===== Content Section ===== */}
+      {/* ===== Content Section: PODIUM + RANK 4+ LIST ===== */}
       {isLoading ? (
         <div className="space-y-4 py-4">
           <SkeletonLoader type="list" count={6} />
@@ -321,10 +301,7 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
             </p>
           </div>
         </div>
-      ) : viewMode === "podium" ? (
-        /* ============================================================== */
-        /* ====================== MODE PODIUM =========================== */
-        /* ============================================================== */
+      ) : (
         <div className="space-y-8">
           {/* Top 3 Podium Container */}
           <div className="relative pt-6 pb-2 px-2 sm:px-6">
@@ -335,7 +312,7 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.15 }}
                 className="flex flex-col items-center cursor-pointer group"
-                onClick={() => top2 && openStudentDetail(top2)}
+                onClick={() => top2 && openStudentShowcase(top2)}
               >
                 {top2 ? (
                   <>
@@ -374,7 +351,7 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                     </div>
 
                     {/* Podium Pillar */}
-                    <div className="w-full mt-3 h-28 sm:h-36 md:h-44 rounded-t-2xl sm:rounded-t-3xl bg-gradient-to-b from-slate-200 via-slate-300 to-slate-400 border-t-2 border-slate-100 shadow-md flex flex-col items-center justify-start pt-3 sm:pt-4">
+                    <div className="w-full mt-3 h-28 sm:h-36 md:h-44 rounded-t-2xl sm:rounded-t-3xl bg-gradient-to-b from-slate-200 via-slate-300 to-slate-400 border-t-2 border-slate-100 shadow-md flex flex-col items-center justify-start pt-3 sm:pt-4 group-hover:brightness-105 transition-all">
                       <span className="font-black text-2xl sm:text-4xl text-slate-600/80 drop-shadow-sm">2</span>
                       <span className="text-[9px] sm:text-[11px] font-bold text-slate-600 uppercase tracking-wider">Perak</span>
                     </div>
@@ -392,7 +369,7 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.05 }}
                 className="flex flex-col items-center cursor-pointer group z-10"
-                onClick={() => top1 && openStudentDetail(top1)}
+                onClick={() => top1 && openStudentShowcase(top1)}
               >
                 {top1 ? (
                   <>
@@ -439,7 +416,7 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                     </div>
 
                     {/* Champion Podium Pillar */}
-                    <div className="w-full mt-3 h-36 sm:h-48 md:h-56 rounded-t-2xl sm:rounded-t-3xl bg-gradient-to-b from-amber-300 via-amber-400 to-amber-500 border-t-2 border-yellow-200 shadow-xl flex flex-col items-center justify-start pt-3 sm:pt-4">
+                    <div className="w-full mt-3 h-36 sm:h-48 md:h-56 rounded-t-2xl sm:rounded-t-3xl bg-gradient-to-b from-amber-300 via-amber-400 to-amber-500 border-t-2 border-yellow-200 shadow-xl flex flex-col items-center justify-start pt-3 sm:pt-4 group-hover:brightness-105 transition-all">
                       <span className="font-black text-3xl sm:text-5xl text-amber-900/70 drop-shadow-md">1</span>
                       <span className="text-[10px] sm:text-xs font-black text-amber-900 uppercase tracking-widest">Juara Utama</span>
                     </div>
@@ -457,7 +434,7 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.25 }}
                 className="flex flex-col items-center cursor-pointer group"
-                onClick={() => top3 && openStudentDetail(top3)}
+                onClick={() => top3 && openStudentShowcase(top3)}
               >
                 {top3 ? (
                   <>
@@ -496,7 +473,7 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                     </div>
 
                     {/* Podium Pillar */}
-                    <div className="w-full mt-3 h-20 sm:h-28 md:h-36 rounded-t-2xl sm:rounded-t-3xl bg-gradient-to-b from-amber-600 via-amber-700 to-amber-800 border-t-2 border-amber-400 shadow-md flex flex-col items-center justify-start pt-3 sm:pt-4">
+                    <div className="w-full mt-3 h-20 sm:h-28 md:h-36 rounded-t-2xl sm:rounded-t-3xl bg-gradient-to-b from-amber-600 via-amber-700 to-amber-800 border-t-2 border-amber-400 shadow-md flex flex-col items-center justify-start pt-3 sm:pt-4 group-hover:brightness-105 transition-all">
                       <span className="font-black text-2xl sm:text-4xl text-amber-200/80 drop-shadow-sm">3</span>
                       <span className="text-[9px] sm:text-[11px] font-bold text-amber-200 uppercase tracking-wider">Perunggu</span>
                     </div>
@@ -521,9 +498,8 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {rank4Onwards.map((siswa, idx) => {
-                  const rank = idx + 4;
-                  const isTop10 = rank <= 10;
+                {rank4Onwards.map((siswa) => {
+                  const isTop10 = siswa.rank <= 10;
                   return (
                     <div
                       key={siswa.id}
@@ -531,7 +507,7 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                         if (el) studentCardRefs.current.set(siswa.id, el);
                         else studentCardRefs.current.delete(siswa.id);
                       }}
-                      onClick={() => openStudentDetail(siswa)}
+                      onClick={() => openStudentShowcase(siswa)}
                       className={`group p-3.5 sm:p-4 rounded-2xl bg-white border transition-all cursor-pointer flex items-center justify-between gap-3 shadow-xs hover:shadow-md hover:-translate-y-0.5 ${
                         isTop10
                           ? "border-brand-200/80 hover:border-brand-400 bg-gradient-to-r from-white via-white to-brand-50/40"
@@ -547,7 +523,7 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                               : "bg-slate-100 text-slate-600"
                           }`}
                         >
-                          #{rank}
+                          #{siswa.rank}
                         </div>
 
                         {/* Avatar */}
@@ -598,165 +574,6 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
             </div>
           )}
         </div>
-      ) : (
-        /* ============================================================== */
-        /* ================= MODE LIST LENGKAP / PRESTIGE =============== */
-        /* ============================================================== */
-        <div className="space-y-3">
-          {rankedStudents.map((siswa, idx) => {
-            const rank = idx + 1;
-            const isRank1 = rank === 1;
-            const isRank2 = rank === 2;
-            const isRank3 = rank === 3;
-            const isTop10 = rank <= 10;
-
-            return (
-              <motion.div
-                key={siswa.id}
-                ref={(el) => {
-                  if (el) studentCardRefs.current.set(siswa.id, el);
-                  else studentCardRefs.current.delete(siswa.id);
-                }}
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: Math.min(idx * 0.03, 0.5) }}
-                onClick={() => openStudentDetail(siswa)}
-                className={`group relative p-4 sm:p-5 rounded-3xl transition-all cursor-pointer flex items-center justify-between gap-4 shadow-sm hover:shadow-lg hover:-translate-y-0.5 ${
-                  isRank1
-                    ? "bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-300 text-brand-950 border-2 border-amber-300 animate-gold-shimmer gold-aura-glow"
-                    : isRank2
-                    ? "bg-gradient-to-r from-slate-200 via-slate-100 to-slate-300 text-slate-900 border-2 border-slate-300 silver-aura-glow"
-                    : isRank3
-                    ? "bg-gradient-to-r from-amber-100 via-amber-50 to-amber-200 text-amber-950 border-2 border-amber-400/70 bronze-aura-glow"
-                    : isTop10
-                    ? "bg-white border border-brand-200/90 hover:border-brand-400"
-                    : "bg-white border border-slate-100 hover:border-brand-200"
-                }`}
-              >
-                {/* Left side: Rank Badge & Student Details */}
-                <div className="flex items-center gap-3.5 sm:gap-5 min-w-0">
-                  {/* Rank Badge */}
-                  <div
-                    className={`w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center font-black text-sm sm:text-base shrink-0 shadow-xs ${
-                      isRank1
-                        ? "bg-amber-900 text-amber-300 border border-amber-400"
-                        : isRank2
-                        ? "bg-slate-700 text-slate-100 border border-slate-400"
-                        : isRank3
-                        ? "bg-amber-800 text-amber-100 border border-amber-600"
-                        : isTop10
-                        ? "bg-brand-50 text-brand-700 border border-brand-200"
-                        : "bg-slate-100 text-slate-600"
-                    }`}
-                  >
-                    {isRank1 ? "🥇" : isRank2 ? "🥈" : isRank3 ? "🥉" : `#${rank}`}
-                  </div>
-
-                  {/* Photo */}
-                  <div
-                    className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl overflow-hidden shrink-0 border-2 shadow-xs ${
-                      isRank1
-                        ? "border-amber-300 ring-2 ring-amber-400/50"
-                        : isRank2
-                        ? "border-slate-300 ring-2 ring-slate-400/30"
-                        : isRank3
-                        ? "border-amber-500/50"
-                        : "border-brand-100 bg-brand-50"
-                    }`}
-                  >
-                    {siswa.foto_url ? (
-                      <img
-                        src={siswa.foto_url}
-                        alt={siswa.nama}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div
-                        className={`w-full h-full flex items-center justify-center font-black text-sm ${
-                          isRank1
-                            ? "bg-amber-200 text-amber-900"
-                            : isRank2
-                            ? "bg-slate-300 text-slate-800"
-                            : isRank3
-                            ? "bg-amber-200 text-amber-950"
-                            : "bg-brand-50 text-brand-700"
-                        }`}
-                      >
-                        {siswa.nama.slice(0, 2).toUpperCase()}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Name & Class */}
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h4
-                        className={`font-black text-sm sm:text-base truncate transition-colors ${
-                          isRank1
-                            ? "text-amber-950 group-hover:text-amber-900"
-                            : isRank2
-                            ? "text-slate-900"
-                            : isRank3
-                            ? "text-amber-950"
-                            : "text-brand-950 group-hover:text-brand-600"
-                        }`}
-                      >
-                        {toSentenceCase(siswa.nama)}
-                      </h4>
-                      {isRank1 && (
-                        <Crown className="w-4 h-4 text-amber-900 fill-amber-400 animate-bounce shrink-0" />
-                      )}
-                    </div>
-                    <div
-                      className={`flex items-center gap-2 text-xs font-semibold ${
-                        isRank1
-                          ? "text-amber-900/80"
-                          : isRank2
-                          ? "text-slate-600"
-                          : isRank3
-                          ? "text-amber-900/70"
-                          : "text-brand-400"
-                      }`}
-                    >
-                      <span>Kelas {siswa.kelas}</span>
-                      {siswa.nis && <span>• NIS: {siswa.nis}</span>}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Right side: Score & Inspection Icon */}
-                <div className="flex items-center gap-3 shrink-0">
-                  <div
-                    className={`px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-2xl font-black text-xs sm:text-sm flex items-center gap-1.5 shadow-xs ${
-                      isRank1
-                        ? "bg-amber-900 text-amber-300 border border-amber-400"
-                        : isRank2
-                        ? "bg-slate-800 text-slate-100"
-                        : isRank3
-                        ? "bg-amber-900 text-amber-200"
-                        : category === "prestasi"
-                        ? "bg-amber-50 text-amber-800 border border-amber-200"
-                        : "bg-rose-50 text-rose-700 border border-rose-200"
-                    }`}
-                  >
-                    <Star className={`w-3.5 h-3.5 ${isRank1 ? "fill-amber-300" : ""}`} />
-                    <span>{siswa.score} pts</span>
-                  </div>
-
-                  <div
-                    className={`p-2 rounded-xl transition-colors ${
-                      isRank1
-                        ? "bg-amber-600/20 text-amber-950"
-                        : "bg-brand-50/70 text-brand-400 group-hover:text-brand-600 group-hover:bg-brand-100"
-                    }`}
-                  >
-                    <Eye className="w-4 h-4" />
-                  </div>
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
       )}
 
       {/* ===== Sticky "Peringkat Kamu" Bar (Khusus Siswa) ===== */}
@@ -783,27 +600,223 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                 </div>
               </div>
 
-              <button
-                onClick={() => scrollToMyCard(currentStudentRank.student.id)}
-                className="px-3.5 py-2 bg-white text-brand-950 hover:bg-amber-300 rounded-2xl text-xs font-bold transition-all cursor-pointer shrink-0 flex items-center gap-1.5 shadow-sm active:scale-95"
-              >
-                <span>Lihat</span>
-                <ArrowUpRight className="w-3.5 h-3.5" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => openStudentShowcase(currentStudentRank.student)}
+                  className="px-3 py-2 bg-amber-400 text-amber-950 hover:bg-amber-300 rounded-2xl text-xs font-black transition-all cursor-pointer shrink-0 flex items-center gap-1 shadow-sm active:scale-95"
+                >
+                  <span>Kartu</span>
+                  <Sparkles className="w-3 h-3" />
+                </button>
+                <button
+                  onClick={() => scrollToMyCard(currentStudentRank.student.id)}
+                  className="px-3 py-2 bg-white/20 hover:bg-white/30 text-white rounded-2xl text-xs font-bold transition-all cursor-pointer shrink-0 flex items-center gap-1 shadow-sm active:scale-95"
+                >
+                  <span>Scroll</span>
+                  <ArrowUpRight className="w-3 h-3" />
+                </button>
+              </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* ===== Student Point History Modal ===== */}
-      <StudentHistoryModal
-        isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-          setSelectedStudent(null);
-        }}
-        siswa={selectedStudent}
-      />
+      {/* ========================================================================= */}
+      {/* ===== LARGE PRESTIGE TROPHY CARD MODAL (SHOWCASE POPUP DENGAN ANIMASI) ===== */}
+      {/* ========================================================================= */}
+      <AnimatePresence>
+        {showcaseStudent && (
+          <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 overflow-y-auto">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              className="fixed inset-0 bg-brand-950/75 backdrop-blur-md"
+              onClick={() => setShowcaseStudent(null)}
+            />
+
+            {/* Showcase Card */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8, y: 30, rotateY: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0, rotateY: 0 }}
+              exit={{ opacity: 0, scale: 0.85, y: 20 }}
+              transition={{ type: "spring", stiffness: 350, damping: 25 }}
+              className="relative w-full max-w-sm sm:max-w-md z-10"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Outer Glow & Shimmer Frame */}
+              <div
+                className={`relative rounded-[36px] p-1.5 shadow-2xl overflow-hidden ${
+                  showcaseStudent.rank === 1
+                    ? "holo-gradient-gold gold-aura-glow animate-gold-shimmer"
+                    : showcaseStudent.rank === 2
+                    ? "holo-gradient-silver silver-aura-glow"
+                    : showcaseStudent.rank === 3
+                    ? "holo-gradient-bronze bronze-aura-glow"
+                    : showcaseStudent.rank <= 10
+                    ? "bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 shadow-indigo-500/20"
+                    : "bg-gradient-to-br from-brand-600 via-brand-700 to-brand-900"
+                }`}
+              >
+                {/* Inner Card Body */}
+                <div className="bg-gradient-to-b from-[#16122d] via-[#100c24] to-[#0a0718] rounded-[32px] p-6 sm:p-8 text-white relative overflow-hidden text-center space-y-6">
+                  {/* Decorative background light beams */}
+                  <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-72 h-72 bg-gradient-to-b from-amber-400/20 to-transparent rounded-full blur-3xl pointer-events-none" />
+                  <div className="absolute bottom-0 right-0 w-48 h-48 bg-accent-500/15 rounded-full blur-2xl pointer-events-none" />
+
+                  {/* Close Button */}
+                  <button
+                    onClick={() => setShowcaseStudent(null)}
+                    className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 active:scale-95 text-white/80 hover:text-white rounded-full transition-all cursor-pointer z-20"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+
+                  {/* Top Tier Title Banner */}
+                  <div className="relative pt-2">
+                    <motion.div
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ delay: 0.1 }}
+                      className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest shadow-lg"
+                      style={{
+                        background:
+                          showcaseStudent.rank === 1
+                            ? "linear-gradient(135deg, #f59e0b, #d97706)"
+                            : showcaseStudent.rank === 2
+                            ? "linear-gradient(135deg, #94a3b8, #64748b)"
+                            : showcaseStudent.rank === 3
+                            ? "linear-gradient(135deg, #b45309, #78350f)"
+                            : "linear-gradient(135deg, #6d28d9, #4c1d95)",
+                        color: showcaseStudent.rank === 1 ? "#fff" : "#fff",
+                      }}
+                    >
+                      {showcaseStudent.rank === 1 ? (
+                        <>
+                          <Crown className="w-4 h-4 fill-amber-200 animate-bounce" />
+                          <span>THE CHAMPION • MVP</span>
+                        </>
+                      ) : showcaseStudent.rank === 2 ? (
+                        <>
+                          <span>🥈 SILVER ELITE</span>
+                        </>
+                      ) : showcaseStudent.rank === 3 ? (
+                        <>
+                          <span>🥉 BRONZE STAR</span>
+                        </>
+                      ) : (
+                        <>
+                          <Award className="w-4 h-4" />
+                          <span>TOP {showcaseStudent.rank <= 10 ? "10 ELITE" : "CONTENDER"}</span>
+                        </>
+                      )}
+                    </motion.div>
+                  </div>
+
+                  {/* Center Showcase: Large Photo with Trophy / Medal Halo */}
+                  <div className="relative flex justify-center items-center py-2">
+                    {/* Floating Halo Animation */}
+                    <div
+                      className={`relative rounded-3xl p-1.5 shadow-2xl transition-all ${
+                        showcaseStudent.rank === 1
+                          ? "bg-gradient-to-tr from-amber-400 via-yellow-200 to-amber-500 gold-aura-glow ring-4 ring-amber-400/40"
+                          : showcaseStudent.rank === 2
+                          ? "bg-gradient-to-tr from-slate-200 via-slate-100 to-slate-400 silver-aura-glow ring-4 ring-slate-300/40"
+                          : showcaseStudent.rank === 3
+                          ? "bg-gradient-to-tr from-amber-700 via-amber-500 to-amber-800 bronze-aura-glow ring-4 ring-amber-600/40"
+                          : "bg-gradient-to-tr from-brand-500 to-accent-500 ring-4 ring-brand-500/30"
+                      }`}
+                    >
+                      <div className="w-36 h-48 sm:w-44 sm:h-56 rounded-2xl overflow-hidden bg-slate-900 flex items-center justify-center">
+                        {showcaseStudent.foto_url ? (
+                          <img
+                            src={showcaseStudent.foto_url}
+                            alt={showcaseStudent.nama}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center font-black text-4xl text-white/50 bg-gradient-to-tr from-brand-900 to-brand-800">
+                            {showcaseStudent.nama.slice(0, 2).toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Giant Floating Rank Badge on Bottom Corner */}
+                      <div
+                        className="absolute -bottom-4 -right-4 w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex flex-col items-center justify-center font-black shadow-2xl border-2 border-white/30 transform rotate-3"
+                        style={{
+                          background:
+                            showcaseStudent.rank === 1
+                              ? "linear-gradient(135deg, #fbbf24, #d97706)"
+                              : showcaseStudent.rank === 2
+                              ? "linear-gradient(135deg, #cbd5e1, #64748b)"
+                              : showcaseStudent.rank === 3
+                              ? "linear-gradient(135deg, #d97706, #92400e)"
+                              : "linear-gradient(135deg, #8b5cf6, #5b21b6)",
+                        }}
+                      >
+                        <span className="text-[10px] uppercase tracking-tighter opacity-80 leading-none">RANK</span>
+                        <span className="text-xl sm:text-2xl leading-none">#{showcaseStudent.rank}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Student Identity */}
+                  <div className="space-y-2">
+                    <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                      {toSentenceCase(showcaseStudent.nama)}
+                    </h3>
+                    <div className="flex items-center justify-center gap-2 text-xs font-bold text-brand-200">
+                      <span className="px-3 py-1 rounded-xl bg-white/10 border border-white/15">
+                        Kelas {showcaseStudent.kelas}
+                      </span>
+                      {showcaseStudent.nis && (
+                        <span className="px-3 py-1 rounded-xl bg-white/10 border border-white/15">
+                          NIS: {showcaseStudent.nis}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Score Highlights Pill Card */}
+                  <div className="grid grid-cols-2 gap-3 pt-2">
+                    <div className="bg-white/10 rounded-2xl p-3 border border-white/15 text-center">
+                      <p className="text-[10px] text-amber-300 font-bold uppercase tracking-wider mb-0.5">
+                        Poin Prestasi
+                      </p>
+                      <p className="text-lg sm:text-xl font-black text-amber-300">
+                        +{showcaseStudent.positif}
+                      </p>
+                    </div>
+
+                    <div className="bg-white/10 rounded-2xl p-3 border border-white/15 text-center">
+                      <p className="text-[10px] text-rose-300 font-bold uppercase tracking-wider mb-0.5">
+                        Poin Sanksi
+                      </p>
+                      <p className="text-lg sm:text-xl font-black text-rose-300">
+                        -{showcaseStudent.negatif}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Total Net Score Banner */}
+                  <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-400/20 via-amber-300/30 to-amber-400/20 border border-amber-400/50 flex items-center justify-between px-5">
+                    <span className="text-xs font-bold text-amber-200 uppercase tracking-wider flex items-center gap-1.5">
+                      <Sparkles className="w-4 h-4 text-amber-300" />
+                      Total Poin Bersih
+                    </span>
+                    <span className="text-lg font-black text-amber-300">
+                      {showcaseStudent.net} pts
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

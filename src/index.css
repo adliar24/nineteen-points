@@ -331,4 +331,56 @@ body {
   animation: floatGentle 3s ease-in-out infinite;
 }
 
+@keyframes holographicBeam {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.holo-gradient-gold {
+  background: linear-gradient(
+    135deg,
+    #ffe259 0%,
+    #ffa751 25%,
+    #ffe259 50%,
+    #ffc371 75%,
+    #fef9d7 100%
+  );
+  background-size: 200% 200%;
+  animation: holographicBeam 6s ease infinite;
+}
+
+.holo-gradient-silver {
+  background: linear-gradient(
+    135deg,
+    #e0e7ee 0%,
+    #94a3b8 25%,
+    #f1f5f9 50%,
+    #cbd5e1 75%,
+    #ffffff 100%
+  );
+  background-size: 200% 200%;
+  animation: holographicBeam 6s ease infinite;
+}
+
+.holo-gradient-bronze {
+  background: linear-gradient(
+    135deg,
+    #f97316 0%,
+    #b45309 25%,
+    #fde68a 50%,
+    #92400e 75%,
+    #fef3c7 100%
+  );
+  background-size: 200% 200%;
+  animation: holographicBeam 6s ease infinite;
+}
+
+
 

@@ -988,60 +988,85 @@ export const getTeacherProfiles = async (): Promise<any[]> => {
  * Fetch all certifiable profiles: guru, tata_usaha, and murid (siswa role)
  */
 export const getAllCertifiableProfiles = async (): Promise<any[]> => {
-  const PAGE_SIZE = 1000;
-  let from = 0;
-  let allData: any[] = [];
-
-  while (true) {
-    const { data, error } = await supabase
+  // 1. Fetch all profiles using fetchAllPages
+  const allProfiles = await fetchAllPages<any>((from, to) =>
+    supabase
       .from("profiles")
       .select("id, email, nama, role, nis")
-      .in("role", ["guru", "tata_usaha", "murid", "siswa"])
-      .order("nama")
-      .range(from, from + PAGE_SIZE - 1);
+      .in("role", ["guru", "tata_usaha", "murid", "siswa", "student", "piket", "kepala_sekolah", "super_admin"])
+      .order("nama", { ascending: true })
+      .range(from, to)
+  );
 
-    if (error) {
-      console.error("Error fetching certifiable profiles:", error);
-      break;
-    }
-
-    if (data) {
-      allData = allData.concat(data);
-      if (data.length < PAGE_SIZE) break;
-      from += PAGE_SIZE;
-    } else {
-      break;
-    }
-  }
-
-  // Map student class (kelas) from siswa table
+  // 2. Fetch all students from siswa table with fetchAllPages (complete list, no 1000-row limit)
+  let allSiswa: any[] = [];
   try {
-    const { data: siswaList } = await supabase
-      .from("siswa")
-      .select("nis, nama, kelas");
-
-    if (siswaList && siswaList.length > 0) {
-      const siswaMapByNis = new Map<string, string>();
-      const siswaMapByName = new Map<string, string>();
-      siswaList.forEach((s: any) => {
-        if (s.nis) siswaMapByNis.set(s.nis.trim(), s.kelas);
-        if (s.nama) siswaMapByName.set(s.nama.trim().toLowerCase(), s.kelas);
-      });
-
-      allData = allData.map(p => {
-        const nis = p.nis ? p.nis.trim() : (p.email ? p.email.split("@")[0].trim() : "");
-        const matchedClass = siswaMapByNis.get(nis) || siswaMapByName.get((p.nama || "").trim().toLowerCase()) || null;
-        return {
-          ...p,
-          kelas: matchedClass
-        };
-      });
-    }
-  } catch (err) {
-    console.warn("Could not map siswa kelas:", err);
+    allSiswa = await fetchAllPages<{ id: string; nis: string; nama: string; kelas: string }>((from, to) =>
+      supabase
+        .from("siswa")
+        .select("id, nis, nama, kelas")
+        .order("nama", { ascending: true })
+        .range(from, to)
+    );
+  } catch (sErr) {
+    console.error("Error fetching siswa list in getAllCertifiableProfiles:", sErr);
   }
 
-  return allData;
+  const siswaMapById = new Map<string, any>();
+  const siswaMapByNis = new Map<string, any>();
+  const siswaMapByCleanNis = new Map<string, any>();
+  const siswaMapByName = new Map<string, any>();
+  const siswaMapByCleanName = new Map<string, any>();
+
+  allSiswa.forEach((s) => {
+    if (s.id) siswaMapById.set(s.id, s);
+    if (s.nis) {
+      const rawNis = String(s.nis).trim();
+      const cleanNis = rawNis.replace(/\D/g, "");
+      siswaMapByNis.set(rawNis, s);
+      siswaMapByNis.set(rawNis.toLowerCase(), s);
+      if (cleanNis) siswaMapByCleanNis.set(cleanNis, s);
+    }
+    if (s.nama) {
+      const rawName = s.nama.trim().toLowerCase();
+      const cleanName = rawName.replace(/[^a-z0-9]/g, "");
+      siswaMapByName.set(rawName, s);
+      if (cleanName) siswaMapByCleanName.set(cleanName, s);
+    }
+  });
+
+  const resultProfiles: any[] = [];
+  const processedProfileIds = new Set<string>();
+
+  for (const p of allProfiles) {
+    if (processedProfileIds.has(p.id)) continue;
+    processedProfileIds.add(p.id);
+
+    const emailPrefix = p.email ? p.email.split("@")[0].trim() : "";
+    const rawNis = p.nis ? String(p.nis).trim() : emailPrefix;
+    const cleanNis = rawNis ? rawNis.replace(/\D/g, "") : "";
+    const rawName = (p.nama || "").trim().toLowerCase();
+    const cleanName = rawName.replace(/[^a-z0-9]/g, "");
+
+    const matchedSiswa =
+      siswaMapById.get(p.id) ||
+      (rawNis ? siswaMapByNis.get(rawNis) : null) ||
+      (cleanNis ? siswaMapByCleanNis.get(cleanNis) : null) ||
+      (rawName ? siswaMapByName.get(rawName) : null) ||
+      (cleanName ? siswaMapByCleanName.get(cleanName) : null);
+
+    const isStudentRole = p.role === "siswa" || p.role === "murid" || p.role === "student" || !!matchedSiswa;
+
+    resultProfiles.push({
+      ...p,
+      role: isStudentRole && !["guru", "tata_usaha", "super_admin", "kepala_sekolah"].includes(p.role) ? "murid" : p.role,
+      nis: matchedSiswa?.nis || (rawNis && !isNaN(Number(rawNis)) ? rawNis : null),
+      kelas: matchedSiswa?.kelas || p.kelas || null,
+      nama: matchedSiswa?.nama || p.nama || "Tanpa Nama"
+    });
+  }
+
+  return resultProfiles;
 };
 
 export const getKehadiranGuruAll = async (dateStr: string): Promise<any[]> => {

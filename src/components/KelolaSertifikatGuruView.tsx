@@ -614,7 +614,7 @@ durasi_jam: null,
           } else if (selectedElement === "namaGuru" && pos.namaGuru) {
             targetX = (pos.namaGuru.xPercent / 100) * canvas.width;
             targetY = (pos.namaGuru.yPercent / 100) * canvas.height;
-            label = "Nama Guru / Penerima";
+            label = "Nama Penerima";
             h = (pos.namaGuru.fontSize || 40) * 1.6;
             w = 900;
           } else if (selectedElement === "deskripsi" && pos.deskripsi) {
@@ -1271,7 +1271,7 @@ durasi_jam: null,
       templateImg.crossOrigin = "anonymous";
       templateImg.src = config.templateUrl || "/sertifikat_template.png";
 
-      const fileName = `SERTIFIKAT_${kegiatan.nama_kegiatan.toUpperCase().replace(/\s+/g, "_")}_${toSentenceCase(kegiatan.user_nama || "Guru SMAN 19").replace(/\s+/g, "_")}`;
+      const fileName = `SERTIFIKAT_${kegiatan.nama_kegiatan.toUpperCase().replace(/\s+/g, "_")}_${toSentenceCase(kegiatan.user_nama || "Penerima SMAN 19").replace(/\s+/g, "_")}`;
 
       await document.fonts.ready;
       await templateImg.decode();
@@ -1290,7 +1290,7 @@ durasi_jam: null,
       canvas.height = templateImg.naturalHeight || 1414;
 
       const hasJp = config.hasJpPage && (config.materiJpRows?.length > 0 || (kegiatan.materi_jp && kegiatan.materi_jp.length > 0));
-      const nameText = kegiatan.user_nama || "Guru SMAN 19";
+      const nameText = kegiatan.user_nama || "Penerima SMAN 19";
 
       if (pageOption === "back" && hasJp) {
         const ctx2 = canvas.getContext("2d");
@@ -1378,7 +1378,7 @@ durasi_jam: null,
         const ctx = canvas.getContext("2d");
         if (!ctx) continue;
 
-        const nameText = item.user_nama || "Guru SMAN 19";
+        const nameText = item.user_nama || "Penerima SMAN 19";
         const safeName = toSentenceCase(nameText).replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_");
         const hasJp = config.hasJpPage && (config.materiJpRows?.length > 0 || (item.materi_jp && item.materi_jp.length > 0));
 
@@ -1490,7 +1490,7 @@ durasi_jam: null,
         const ctx = canvas.getContext("2d");
         if (!ctx) continue;
 
-        const nameText = item.user_nama || "Guru SMAN 19";
+        const nameText = item.user_nama || "Penerima SMAN 19";
         const hasJp = config.hasJpPage && (config.materiJpRows?.length > 0 || (item.materi_jp && item.materi_jp.length > 0));
 
         if (pageOption === "back" && hasJp) {
@@ -1531,7 +1531,7 @@ durasi_jam: null,
 
       if (pdf) {
         const safeFolder = folderName.replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_");
-        triggerPdfDownload(pdf, `Sertifikat_${safeFolder}_Semua_Guru.pdf`);
+        triggerPdfDownload(pdf, `Sertifikat_${safeFolder}_Semua_Penerima.pdf`);
       }
     } catch (err: any) {
       alert("Gagal mengunduh PDF gabungan: " + err.message);
@@ -1550,7 +1550,7 @@ durasi_jam: null,
             Kelola & Desainer Sertifikat
           </h2>
           <p className="text-xs text-brand-500 font-semibold mt-1">
-            Terbitkan sertifikat kegiatan & prestasi untuk guru maupun murid, serta atur tata letak template sertifikat secara dinamis.
+            Terbitkan sertifikat kegiatan, prestasi & pelatihan resmi, serta atur tata letak template sertifikat secara dinamis.
           </p>
         </div>
 
@@ -1600,7 +1600,7 @@ durasi_jam: null,
                 <>
                   <h4 className="text-sm font-extrabold text-brand-950">Menyiapkan Berkas ZIP</h4>
                   <p className="text-xs text-slate-500 font-semibold leading-relaxed">
-                    Sedang memproses dan merender sertifikat untuk seluruh guru penerima kegiatan ini...
+                    Sedang memproses dan merender sertifikat untuk seluruh penerima kegiatan ini...
                   </p>
                 </>
               )}
@@ -1611,7 +1611,7 @@ durasi_jam: null,
                 />
               </div>
               <span className="text-[10px] font-black text-brand-600 block bg-brand-50 py-1.5 px-3 rounded-xl w-fit mx-auto">
-                PROSES: {pdfProgress?.current || zipProgress?.current} / {pdfProgress?.total || zipProgress?.total} GURU
+                PROSES: {pdfProgress?.current || zipProgress?.current} / {pdfProgress?.total || zipProgress?.total} PENERIMA
               </span>
             </motion.div>
           </div>
@@ -1643,7 +1643,7 @@ durasi_jam: null,
                 type="text"
                 placeholder={
                   selectedActivityFolder 
-                    ? "Cari nama atau email guru penerima..." 
+                    ? "Cari nama, NIS, atau email penerima..." 
                     : "Cari berdasarkan nama kegiatan..."
                 }
                 value={searchQuery}
@@ -1762,7 +1762,7 @@ durasi_jam: null,
                               </div>
                             </div>
                             <span className="text-[10px] font-black uppercase bg-brand-50 text-brand-700 border border-brand-200 px-2.5 py-1 rounded-xl">
-                              {folder.items.length} Guru
+                              {folder.items.length} Penerima
                             </span>
                           </div>
 
@@ -1894,7 +1894,7 @@ durasi_jam: null,
                   <span className="text-[10px] font-black text-brand-500 uppercase tracking-widest block">Folder Kegiatan</span>
                   <h3 className="text-base font-extrabold text-brand-950 leading-snug mt-1">{selectedActivityFolder}</h3>
                   <p className="text-[10.5px] text-slate-500 font-bold mt-1">
-                    Total: {folderItems.length} Guru penerima
+                    Total: {folderItems.length} Penerima sertifikat
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
@@ -1955,7 +1955,7 @@ durasi_jam: null,
                     <thead className="bg-brand-50/60 border-b border-brand-100 text-[10px] font-black uppercase text-brand-400 tracking-wider">
                       <tr>
                         <th className="py-4 px-6">No.</th>
-                        <th className="py-4 px-6">Guru / Penerima</th>
+                        <th className="py-4 px-6">Nama Penerima</th>
                         <th className="py-4 px-6">Nomor Sertifikat</th>
                         <th className="py-4 px-6">Peran</th>
                         <th className="py-4 px-6 text-right">Aksi</th>
@@ -3020,7 +3020,7 @@ durasi_jam: null,
                   <option value="sertifikatTitlePos">Teks Judul "SERTIFIKAT"</option>
                   <option value="logoFrontPos">Logo Halaman Depan</option>
                   {config.hasJpPage && <option value="logoBackPos">Logo Halaman Belakang (JP)</option>}
-                  <option value="namaGuru">Nama Guru / Peserta</option>
+                  <option value="namaGuru">Nama Penerima (Peserta / Siswa / Guru)</option>
                   <option value="prefixNama">Label "Diberikan kepada:"</option>
                   <option value="noSertifikat">Nomor Surat Sertifikat</option>
                   <option value="deskripsi">Deskripsi & Peran Kegiatan</option>
@@ -4225,7 +4225,7 @@ durasi_jam: null,
 
             <div className="space-y-1">
               <label className="text-[10px] font-black text-brand-400 uppercase tracking-widest block">
-                Peran Guru *
+                Peran / Status Keikutsertaan *
               </label>
               <select
                 value={peran}
@@ -4233,6 +4233,9 @@ durasi_jam: null,
                 className="w-full p-3 bg-brand-50/40 rounded-2xl border border-brand-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 text-brand-950"
               >
                 <option value="Peserta">Peserta</option>
+                <option value="Juara 1">Juara 1</option>
+                <option value="Juara 2">Juara 2</option>
+                <option value="Juara 3">Juara 3</option>
                 <option value="Narasumber">Narasumber / Pemateri</option>
                 <option value="Panitia">Panitia</option>
                 <option value="Moderator">Moderator</option>
@@ -4244,7 +4247,7 @@ durasi_jam: null,
           {peran === "Lainnya" && (
             <input
               type="text"
-              placeholder="Ketik peran..."
+              placeholder="Ketik peran (misal: Juara Harapan 1 / Relawan)..."
               value={customPeran}
               onChange={(e) => setCustomPeran(e.target.value)}
               className="w-full p-3 bg-brand-50/40 rounded-2xl border border-brand-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 text-brand-950"
@@ -4299,7 +4302,7 @@ durasi_jam: null,
               disabled={addMutation.isPending || selectedTeacherIds.length === 0}
               className="px-5 py-2.5 rounded-2xl brand-gradient text-white font-bold text-xs shadow-md transition-all cursor-pointer border-0 flex items-center gap-2 disabled:opacity-50"
             >
-              {addMutation.isPending ? <RefreshCw className="w-4 h-4 animate-spin" /> : `Simpan & Terbitkan (${selectedTeacherIds.length} Guru)`}
+              {addMutation.isPending ? <RefreshCw className="w-4 h-4 animate-spin" /> : `Simpan & Terbitkan (${selectedTeacherIds.length} Penerima)`}
             </button>
           </div>
         </form>

@@ -1046,11 +1046,8 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
     k.peran.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const isStudent = userSession.role === "siswa";
-  const headerTitle = isStudent ? "Sertifikat Murid" : "Sertifikat Kegiatan";
-  const headerSubtitle = isStudent
-    ? "Lihat dan unduh sertifikat prestasi, kegiatan, atau pelatihan resmi Anda."
-    : "Lihat riwayat keikutsertaan kegiatan sekolah dan unduh sertifikat resmi Anda.";
+  const headerTitle = "Sertifikat Saya";
+  const headerSubtitle = "Lihat riwayat kegiatan & prestasi Anda, serta unduh sertifikat resmi berformat PDF.";
 
   return (
     <div className="space-y-6 pb-12 animate-fade-in font-sans">

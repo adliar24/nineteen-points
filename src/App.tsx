@@ -517,7 +517,7 @@ export default function App() {
       { type: "item", id: "leaderboard", label: "Papan Peringkat", icon: Trophy, description: "Hall of fame & prestasi murid" },
       // Sembunyikan sementara: Kehadiran Saya
       // { type: "item", id: "guru_kehadiran", label: "Kehadiran Saya", icon: Calendar, description: "Absen masuk & pulang" },
-      { type: "item", id: "guru_sertifikat", label: "Sertifikat Kegiatan", icon: Award, description: "Unduh sertifikat pelatihan" },
+      { type: "item", id: "guru_sertifikat", label: "Sertifikat", icon: Award, description: "Unduh sertifikat resmi" },
       // Sembunyikan sementara: Jadwal Mengajar
       // { type: "item", id: "guru_jadwal", label: "Jadwal Mengajar", icon: Calendar, description: "Jadwal mengajar Anda" },
       { type: "item", id: "guru_kartu", label: "Kartu Guru", icon: CreditCard, description: "QR Kartu Guru Digital" },
@@ -536,7 +536,7 @@ export default function App() {
       { type: "item", id: "rekap_poin", label: "Rekap Poin", icon: ListChecks, description: "Rekapitulasi poin murid" },
       { type: "item", id: "scan_sholat", label: "Input Keagamaan", icon: BookOpen, description: "Scan QR sholat murid" },
       { type: "item", id: "rekap_sholat_kehadiran", label: "Rekap Sholat", icon: ClipboardList, description: "Rekap sholat berjamaah murid" },
-      { type: "item", id: "guru_sertifikat", label: "Sertifikat Kegiatan", icon: Award, description: "Unduh sertifikat pelatihan" },
+      { type: "item", id: "guru_sertifikat", label: "Sertifikat", icon: Award, description: "Unduh sertifikat resmi" },
       { type: "item", id: "change_password", label: "Tema & Keamanan", icon: Settings, description: "Ubah sandi & tema warna" }
     ];
   } else if (userSession.role === "kepala_sekolah") {

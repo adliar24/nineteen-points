@@ -594,7 +594,7 @@ export default function App() {
           { id: "students", label: "Kelola Murid", icon: Users, description: "Database & kartu pelajar" },
           // Sembunyikan sementara: Jadwal Guru
           // { id: "kelola_jadwal_guru", label: "Jadwal Guru", icon: Calendar, description: "Manajemen jadwal mengajar guru" },
-          { id: "kelola_sertifikat_guru", label: "Sertifikat Guru", icon: Award, description: "Kelola kegiatan & sertifikat" },
+          { id: "kelola_sertifikat_guru", label: "Sertifikat", icon: Award, description: "Kelola kegiatan & sertifikat" },
           { id: "rules", label: "Pengaturan Poin", icon: Settings, description: "Atur sanksi & prestasi" }
         ]
       },

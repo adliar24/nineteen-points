@@ -995,7 +995,7 @@ export const getAllCertifiableProfiles = async (): Promise<any[]> => {
   while (true) {
     const { data, error } = await supabase
       .from("profiles")
-      .select("id, email, nama, role")
+      .select("id, email, nama, role, nis")
       .in("role", ["guru", "tata_usaha", "murid", "siswa"])
       .order("nama")
       .range(from, from + PAGE_SIZE - 1);
@@ -1012,6 +1012,33 @@ export const getAllCertifiableProfiles = async (): Promise<any[]> => {
     } else {
       break;
     }
+  }
+
+  // Map student class (kelas) from siswa table
+  try {
+    const { data: siswaList } = await supabase
+      .from("siswa")
+      .select("nis, nama, kelas");
+
+    if (siswaList && siswaList.length > 0) {
+      const siswaMapByNis = new Map<string, string>();
+      const siswaMapByName = new Map<string, string>();
+      siswaList.forEach((s: any) => {
+        if (s.nis) siswaMapByNis.set(s.nis.trim(), s.kelas);
+        if (s.nama) siswaMapByName.set(s.nama.trim().toLowerCase(), s.kelas);
+      });
+
+      allData = allData.map(p => {
+        const nis = p.nis ? p.nis.trim() : (p.email ? p.email.split("@")[0].trim() : "");
+        const matchedClass = siswaMapByNis.get(nis) || siswaMapByName.get((p.nama || "").trim().toLowerCase()) || null;
+        return {
+          ...p,
+          kelas: matchedClass
+        };
+      });
+    }
+  } catch (err) {
+    console.warn("Could not map siswa kelas:", err);
   }
 
   return allData;

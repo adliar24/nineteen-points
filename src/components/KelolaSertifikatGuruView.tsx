@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "motion/react";
 import { parseDateSafe } from "../parseDateSafe";
-import { Award, Plus, Trash2, Search, X, Check, RefreshCw, Layout, Upload, Save, RotateCcw, Move, Edit3, Image as ImageIcon, Users, CheckSquare, Square, FileText, AlignLeft, Folder, FolderOpen, ArrowLeft, Download } from "lucide-react";
+import { Award, Plus, Trash2, Search, X, Check, RefreshCw, Layout, Upload, Save, RotateCcw, Move, Edit3, Image as ImageIcon, Users, CheckSquare, Square, FileText, AlignLeft, Folder, FolderOpen, ArrowLeft, Download, Filter, GraduationCap } from "lucide-react";
 import { getAllKegiatanGuru, getTeacherProfiles, getAllCertifiableProfiles, addKegiatanGuruBulk, deleteKegiatanGuru, deleteKegiatanGuruBulk, deleteAllKegiatanGuru } from "../dbStore";
 import ModalPortal from "./ModalPortal";
-import { toSentenceCase } from "../formatName";
+import { toSentenceCase, compareClasses } from "../formatName";
 import { getSertifikatConfigAsync, saveSertifikatConfigAsync, resetSertifikatConfigAsync, SertifikatLayoutConfig, DEFAULT_SERTIFIKAT_CONFIG, getSertifikatPresetsAsync, saveSertifikatPresetAsync, deleteSertifikatPresetAsync } from "../sertifikatConfig";
 import { drawCertificateOnCanvas, drawJpTablePageOnCanvas } from "./GuruSertifikatView";
 import { KegiatanGuru } from "../types";
@@ -64,6 +64,7 @@ export default function KelolaSertifikatGuruView() {
   const [selectedTeacherIds, setSelectedTeacherIds] = useState<string[]>([]);
   const [teacherSearchQuery, setTeacherSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<"semua" | "guru" | "tata_usaha" | "murid" | "siswa">("semua");
+  const [selectedClassFilter, setSelectedClassFilter] = useState<string>("semua");
   const [namaKegiatan, setNamaKegiatan] = useState("");
   const [tanggalKegiatan, setTanggalKegiatan] = useState(() => new Date().toISOString().slice(0, 10));
   const [peran, setPeran] = useState("Peserta");
@@ -341,17 +342,35 @@ export default function KelolaSertifikatGuruView() {
     }
   };
 
-  // Filter by role then by search
+  // Unique classes from teachers/students list
+  const availableClasses = useMemo(() => {
+    const classSet = new Set<string>();
+    teachers.forEach((t) => {
+      if (t.kelas) classSet.add(t.kelas);
+    });
+    return Array.from(classSet).sort(compareClasses);
+  }, [teachers]);
+
+  // Filter by role then by class then by search
   const filteredByRole = roleFilter === "semua"
     ? teachers
     : roleFilter === "murid"
     ? teachers.filter((t) => t.role === "murid" || t.role === "siswa")
     : teachers.filter((t) => t.role === roleFilter);
 
-  const filteredTeachersInModal = filteredByRole.filter(t =>
-    t.nama.toLowerCase().includes(teacherSearchQuery.toLowerCase()) ||
-    t.email.toLowerCase().includes(teacherSearchQuery.toLowerCase())
-  );
+  const filteredByClass = selectedClassFilter === "semua"
+    ? filteredByRole
+    : filteredByRole.filter((t) => t.kelas === selectedClassFilter);
+
+  const filteredTeachersInModal = filteredByClass.filter(t => {
+    const q = teacherSearchQuery.toLowerCase().trim();
+    if (!q) return true;
+    const matchName = (t.nama || "").toLowerCase().includes(q);
+    const matchEmail = (t.email || "").toLowerCase().includes(q);
+    const matchNis = (t.nis || "").toLowerCase().includes(q);
+    const matchKelas = (t.kelas || "").toLowerCase().includes(q);
+    return matchName || matchEmail || matchNis || matchKelas;
+  });
 
   const isAllSelected = filteredTeachersInModal.length > 0 && filteredTeachersInModal.every(t => selectedTeacherIds.includes(t.id));
 
@@ -371,6 +390,23 @@ export default function KelolaSertifikatGuruView() {
     setSelectedTeacherIds(prev => 
       prev.includes(id) ? prev.filter(tId => tId !== id) : [...prev, id]
     );
+  };
+
+  // Toggle selection for all students belonging to a specific class
+  const handleToggleClassSelection = (className: string) => {
+    const studentsInClass = teachers.filter(
+      (t) => (t.role === "murid" || t.role === "siswa") && t.kelas === className
+    );
+    if (studentsInClass.length === 0) return;
+    const studentIds = studentsInClass.map((s) => s.id);
+    const allSelected = studentIds.every((id) => selectedTeacherIds.includes(id));
+
+    if (allSelected) {
+      const toRemove = new Set(studentIds);
+      setSelectedTeacherIds((prev) => prev.filter((id) => !toRemove.has(id)));
+    } else {
+      setSelectedTeacherIds((prev) => Array.from(new Set([...prev, ...studentIds])));
+    }
   };
 
   // Render Canvas for Designer Preview
@@ -1495,7 +1531,7 @@ durasi_jam: null,
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h2 className="text-xl font-extrabold text-brand-950 tracking-tight">
-            Kelola & Desainer Sertifikat Guru & Murid
+            Kelola & Desainer Sertifikat
           </h2>
           <p className="text-xs text-brand-500 font-semibold mt-1">
             Terbitkan sertifikat kegiatan & prestasi untuk guru maupun murid, serta atur tata letak template sertifikat secara dinamis.
@@ -3815,7 +3851,7 @@ durasi_jam: null,
       <ModalPortal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
-        title="Terbitkan Sertifikat Guru"
+        title="Terbitkan Sertifikat"
         icon={Award}
         maxWidth="max-w-lg"
       >
@@ -3823,7 +3859,7 @@ durasi_jam: null,
           onSubmit={(e) => {
             e.preventDefault();
             if (selectedTeacherIds.length === 0) {
-              alert("Pilihlah minimal 1 guru penerima sertifikat!");
+              alert("Pilihlah minimal 1 penerima sertifikat!");
               return;
             }
             if (!namaKegiatan) {
@@ -3840,8 +3876,8 @@ durasi_jam: null,
             </div>
           )}
 
-          {/* Pilih Guru (Multi-Select & Pilih Semua) */}
-          <div className="space-y-2 bg-brand-50/50 p-4 rounded-2xl border border-brand-100">
+          {/* Pilih Penerima (Multi-Select, Filter Kelas & Pilih Semua) */}
+          <div className="space-y-2.5 bg-brand-50/50 p-4 rounded-2xl border border-brand-100">
             <div className="flex justify-between items-center">
               <label className="text-[11px] font-black text-brand-950 uppercase tracking-wider flex items-center gap-1.5">
                 <Users className="w-4 h-4 text-brand-600" />
@@ -3864,13 +3900,12 @@ durasi_jam: null,
                   key={key}
                   type="button"
                   onClick={() => {
-                    // For murid, we filter on both "murid" and "siswa" role values
                     setRoleFilter(key === "murid" ? "murid" : key as any);
                     setTeacherSearchQuery("");
                   }}
                   className={`px-2.5 py-1 rounded-xl text-[10px] font-black border transition-all cursor-pointer ${
                     (key === "murid" ? (roleFilter === "murid" || roleFilter === "siswa") : roleFilter === key)
-                      ? "bg-brand-600 text-white border-brand-600"
+                      ? "bg-brand-600 text-white border-brand-600 shadow-xs"
                       : "bg-white text-slate-600 border-slate-200 hover:border-brand-400"
                   }`}
                 >
@@ -3879,8 +3914,67 @@ durasi_jam: null,
               ))}
             </div>
 
+            {/* Filter & Pilih Kelas (Khusus Murid / Semua) */}
+            {(roleFilter === "murid" || roleFilter === "semua") && availableClasses.length > 0 && (
+              <div className="space-y-2 pt-2 border-t border-brand-200/60">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[10px] font-black text-brand-900 uppercase tracking-wider flex items-center gap-1">
+                    <GraduationCap className="w-3.5 h-3.5 text-brand-600" />
+                    Filter / Pilih Cepat Per Kelas:
+                  </span>
+                  <select
+                    value={selectedClassFilter}
+                    onChange={(e) => setSelectedClassFilter(e.target.value)}
+                    className="text-[10px] font-bold bg-white border border-brand-200 rounded-lg px-2 py-1 text-brand-900 focus:outline-none focus:ring-1 focus:ring-brand-500 cursor-pointer"
+                  >
+                    <option value="semua">Tampilkan Semua Kelas</option>
+                    {availableClasses.map((c) => (
+                      <option key={c} value={c}>Hanya Kelas {c}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Quick Class Selection Chips */}
+                <div className="flex flex-wrap gap-1 max-h-24 overflow-y-auto p-1.5 bg-white/80 rounded-xl border border-brand-100">
+                  {availableClasses.map((c) => {
+                    const studentsInClass = teachers.filter((t) => (t.role === "murid" || t.role === "siswa") && t.kelas === c);
+                    const totalInClass = studentsInClass.length;
+                    const selectedInClass = studentsInClass.filter((t) => selectedTeacherIds.includes(t.id)).length;
+                    const isAllClassSelected = totalInClass > 0 && selectedInClass === totalInClass;
+                    const isPartial = selectedInClass > 0 && !isAllClassSelected;
+
+                    return (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => handleToggleClassSelection(c)}
+                        className={`px-2 py-1 rounded-lg text-[9.5px] font-black transition-all cursor-pointer border flex items-center gap-1 ${
+                          isAllClassSelected
+                            ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
+                            : isPartial
+                            ? "bg-amber-100 text-amber-900 border-amber-300"
+                            : "bg-white text-slate-600 border-slate-200 hover:border-brand-300 hover:bg-brand-50/50"
+                        }`}
+                        title={`Klik untuk memilih/membatalkan semua ${totalInClass} murid di Kelas ${c}`}
+                      >
+                        {isAllClassSelected ? (
+                          <Check className="w-3 h-3" />
+                        ) : (
+                          <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                        )}
+                        <span>Kelas {c}</span>
+                        <span className={`text-[8.5px] px-1 rounded font-bold ${isAllClassSelected ? "bg-emerald-700 text-white" : "bg-slate-100 text-slate-600"}`}>
+                          {selectedInClass}/{totalInClass}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Header Checkbox: Pilih Semua (dari filter aktif) */}
-            <div className="flex items-center justify-between pt-1 pb-2 border-b border-brand-200/60">
+            <div className="flex items-center justify-between pt-1 pb-1 border-b border-brand-200/60">
               <button
                 type="button"
                 onClick={() => handleSelectAllTeachers(!isAllSelected)}
@@ -3900,7 +3994,7 @@ durasi_jam: null,
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-3.5 h-3.5" />
               <input
                 type="text"
-                placeholder="Cari nama atau email..."
+                placeholder="Cari nama, NIS, kelas, atau email..."
                 value={teacherSearchQuery}
                 onChange={(e) => setTeacherSearchQuery(e.target.value)}
                 className="w-full pl-8 pr-3 py-1.5 bg-white rounded-xl border border-brand-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-brand-500"
@@ -3927,16 +4021,21 @@ durasi_jam: null,
                         isChecked ? "bg-white shadow-xs border border-brand-200 text-brand-950" : "hover:bg-brand-100/50 text-slate-600"
                       }`}
                     >
-                      <div className="flex items-center gap-2 overflow-hidden">
+                      <div className="flex items-center gap-2 overflow-hidden min-w-0">
                         <input
                           type="checkbox"
                           checked={isChecked}
                           onChange={() => handleToggleTeacher(t.id)}
-                          className="w-4 h-4 accent-brand-600 rounded cursor-pointer"
+                          className="w-4 h-4 accent-brand-600 rounded cursor-pointer shrink-0"
                         />
-                        <div className="truncate">
+                        <div className="truncate min-w-0">
                           <span className="font-bold text-slate-900 block truncate">{toSentenceCase(t.nama)}</span>
-                          <span className="text-[10px] text-slate-400 block truncate">{t.email}</span>
+                          <div className="flex items-center gap-1.5 text-[9.5px] text-slate-400 truncate">
+                            {t.nis && <span className="font-mono font-bold text-slate-500">NIS {t.nis}</span>}
+                            {t.nis && t.kelas && <span>&bull;</span>}
+                            {t.kelas && <span className="font-extrabold text-indigo-700 bg-indigo-50 px-1 rounded border border-indigo-100">Kelas {t.kelas}</span>}
+                            {!t.nis && !t.kelas && <span>{t.email}</span>}
+                          </div>
                         </div>
                       </div>
                       <span className={`text-[9px] font-black px-2 py-0.5 rounded-lg border shrink-0 ml-2 ${roleBg}`}>

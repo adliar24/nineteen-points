@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "motion/react";
 import { parseDateSafe } from "../parseDateSafe";
-import { Award, Plus, Trash2, Search, X, Check, RefreshCw, Layout, Upload, Save, RotateCcw, Move, Edit3, Image as ImageIcon, Users, CheckSquare, Square, FileText, AlignLeft, Folder, FolderOpen, ArrowLeft, Download, Filter, GraduationCap } from "lucide-react";
+import { Award, Plus, Trash2, Search, X, Check, RefreshCw, Layout, Upload, Save, RotateCcw, Move, Edit3, Image as ImageIcon, Users, CheckSquare, Square, FileText, AlignLeft, Folder, FolderOpen, ArrowLeft, Download, Filter, GraduationCap, Sparkles, Eye, EyeOff } from "lucide-react";
 import { getAllKegiatanGuru, getTeacherProfiles, getAllCertifiableProfiles, addKegiatanGuruBulk, deleteKegiatanGuru, deleteKegiatanGuruBulk, deleteAllKegiatanGuru } from "../dbStore";
 import ModalPortal from "./ModalPortal";
 import { toSentenceCase, compareClasses } from "../formatName";
@@ -85,6 +85,17 @@ export default function KelolaSertifikatGuruView() {
 
   const getClosestElement = (xPercent: number, yPercent: number, page: 1 | 2): string | null => {
     const pos = config.positions;
+    if (config.onlyShowName && page === 1) {
+      const elemPos = pos.namaGuru;
+      if (elemPos && typeof elemPos.xPercent === "number" && typeof elemPos.yPercent === "number") {
+        const dx = elemPos.xPercent - xPercent;
+        const dy = elemPos.yPercent - yPercent;
+        const dist = Math.hypot(dx, dy);
+        if (dist < 20) return "namaGuru";
+      }
+      return null;
+    }
+
     let minDistance = Infinity;
     let closestKey: string | null = null;
 
@@ -2056,6 +2067,133 @@ durasi_jam: null,
 
             {sidebarTab === "konten" && (
               <div className="space-y-6 animate-fade-in">
+                {/* 0. MODE TEMPLATE GAMBAR LENGKAP & VISIBILITAS ELEMEN */}
+                <div className="bg-gradient-to-br from-indigo-50/90 via-purple-50/70 to-brand-50/80 p-5 rounded-3xl border border-indigo-200/80 shadow-xl shadow-indigo-950/5 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-9 h-9 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-md shadow-indigo-600/30">
+                        <Sparkles className="w-4.5 h-4.5 text-amber-300" />
+                      </div>
+                      <div>
+                        <h3 className="text-xs font-black uppercase tracking-wider text-indigo-950">
+                          Mode Template Lengkap
+                        </h3>
+                        <p className="text-[10.5px] text-indigo-700 font-semibold">
+                          Opsi untuk gambar template yang sudah memiliki teks & TTD lengkap.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Toggle Utama: Hanya Tampilkan Nama */}
+                  <div className={`p-4 rounded-2xl border transition-all flex items-center justify-between gap-3 ${
+                    config.onlyShowName
+                      ? "bg-indigo-600 text-white border-indigo-700 shadow-md shadow-indigo-600/20"
+                      : "bg-white text-slate-800 border-indigo-100 shadow-xs"
+                  }`}>
+                    <div className="space-y-0.5">
+                      <span className="text-xs font-black block flex items-center gap-1.5">
+                        {config.onlyShowName ? <Eye className="w-3.5 h-3.5 text-amber-300" /> : <EyeOff className="w-3.5 h-3.5 text-slate-400" />}
+                        Hanya Cetak Nama Penerima
+                      </span>
+                      <span className={`text-[10px] font-medium block leading-snug ${config.onlyShowName ? "text-indigo-100" : "text-slate-500"}`}>
+                        Sembunyikan semua teks judul, nomor, pengantar, deskripsi, tanggal, logo & TTD bawaan.
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setConfig(prev => ({ ...prev, onlyShowName: !prev.onlyShowName }))}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer shrink-0 ${
+                        config.onlyShowName ? "bg-amber-400" : "bg-slate-300"
+                      }`}
+                    >
+                      <span className={`inline-block h-4.5 w-4.5 transform rounded-full bg-white transition-transform shadow ${
+                        config.onlyShowName ? "translate-x-6" : "translate-x-1"
+                      }`} />
+                    </button>
+                  </div>
+
+                  {/* Rincian Visibilitas Satuan Elemen (Ketika bukan mode OnlyName) */}
+                  {!config.onlyShowName && (
+                    <div className="pt-2 border-t border-indigo-200/50 space-y-2">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-indigo-900 block">
+                        Atur Visibilitas Satuan Elemen Halaman Depan:
+                      </span>
+                      <div className="grid grid-cols-2 gap-2">
+                        <label className="flex items-center gap-2 p-2 bg-white/80 rounded-xl border border-indigo-100 text-[11px] font-bold text-slate-700 cursor-pointer hover:bg-white transition-all">
+                          <input
+                            type="checkbox"
+                            checked={config.showLogoFront !== false}
+                            onChange={(e) => setConfig(prev => ({ ...prev, showLogoFront: e.target.checked }))}
+                            className="w-3.5 h-3.5 accent-indigo-600 rounded cursor-pointer"
+                          />
+                          <span>Logo Depan</span>
+                        </label>
+
+                        <label className="flex items-center gap-2 p-2 bg-white/80 rounded-xl border border-indigo-100 text-[11px] font-bold text-slate-700 cursor-pointer hover:bg-white transition-all">
+                          <input
+                            type="checkbox"
+                            checked={config.showSertifikatText !== false}
+                            onChange={(e) => setConfig(prev => ({ ...prev, showSertifikatText: e.target.checked }))}
+                            className="w-3.5 h-3.5 accent-indigo-600 rounded cursor-pointer"
+                          />
+                          <span>Teks "SERTIFIKAT"</span>
+                        </label>
+
+                        <label className="flex items-center gap-2 p-2 bg-white/80 rounded-xl border border-indigo-100 text-[11px] font-bold text-slate-700 cursor-pointer hover:bg-white transition-all">
+                          <input
+                            type="checkbox"
+                            checked={config.showNoSertifikat !== false}
+                            onChange={(e) => setConfig(prev => ({ ...prev, showNoSertifikat: e.target.checked }))}
+                            className="w-3.5 h-3.5 accent-indigo-600 rounded cursor-pointer"
+                          />
+                          <span>Nomor Sertifikat</span>
+                        </label>
+
+                        <label className="flex items-center gap-2 p-2 bg-white/80 rounded-xl border border-indigo-100 text-[11px] font-bold text-slate-700 cursor-pointer hover:bg-white transition-all">
+                          <input
+                            type="checkbox"
+                            checked={config.showPrefixNama !== false}
+                            onChange={(e) => setConfig(prev => ({ ...prev, showPrefixNama: e.target.checked }))}
+                            className="w-3.5 h-3.5 accent-indigo-600 rounded cursor-pointer"
+                          />
+                          <span>Teks "Diberikan kpd"</span>
+                        </label>
+
+                        <label className="flex items-center gap-2 p-2 bg-white/80 rounded-xl border border-indigo-100 text-[11px] font-bold text-slate-700 cursor-pointer hover:bg-white transition-all">
+                          <input
+                            type="checkbox"
+                            checked={config.showDeskripsi !== false}
+                            onChange={(e) => setConfig(prev => ({ ...prev, showDeskripsi: e.target.checked }))}
+                            className="w-3.5 h-3.5 accent-indigo-600 rounded cursor-pointer"
+                          />
+                          <span>Deskripsi Kegiatan</span>
+                        </label>
+
+                        <label className="flex items-center gap-2 p-2 bg-white/80 rounded-xl border border-indigo-100 text-[11px] font-bold text-slate-700 cursor-pointer hover:bg-white transition-all">
+                          <input
+                            type="checkbox"
+                            checked={config.showTanggalKegiatan !== false}
+                            onChange={(e) => setConfig(prev => ({ ...prev, showTanggalKegiatan: e.target.checked }))}
+                            className="w-3.5 h-3.5 accent-indigo-600 rounded cursor-pointer"
+                          />
+                          <span>Tempat & Tanggal</span>
+                        </label>
+
+                        <label className="col-span-2 flex items-center gap-2 p-2 bg-white/80 rounded-xl border border-indigo-100 text-[11px] font-bold text-slate-700 cursor-pointer hover:bg-white transition-all">
+                          <input
+                            type="checkbox"
+                            checked={config.showTtdGroup !== false}
+                            onChange={(e) => setConfig(prev => ({ ...prev, showTtdGroup: e.target.checked }))}
+                            className="w-3.5 h-3.5 accent-indigo-600 rounded cursor-pointer"
+                          />
+                          <span>Grup Tanda Tangan & Pejabat</span>
+                        </label>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 {/* 1. KUSTOMISASI DESKRIPSI SERTIFIKAT (MENDUKUNG **BOLD**) */}
                 <div className="bg-white p-5 rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 space-y-3">
               <h3 className="text-xs font-black uppercase tracking-wider text-brand-900 flex items-center gap-2">

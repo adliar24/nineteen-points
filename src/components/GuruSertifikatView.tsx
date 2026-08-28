@@ -102,13 +102,13 @@ export function drawCertificateOnCanvas(
     ctx.drawImage(img, imgX, imgY, imgW, imgH);
   };
 
-  // Draw Logo Front if provided
-  if (logoFrontImg && pos.logoFrontPos) {
+  // Draw Logo Front if provided & enabled
+  if (!config.onlyShowName && config.showLogoFront !== false && logoFrontImg && pos.logoFrontPos) {
     drawLogoImg(logoFrontImg, pos.logoFrontPos);
   }
 
   // Draw Title Teks SERTIFIKAT if enabled
-  if (config.showSertifikatText !== false && pos.sertifikatTitlePos) {
+  if (!config.onlyShowName && config.showSertifikatText !== false && pos.sertifikatTitlePos) {
     const certTitleText = config.sertifikatText || "SERTIFIKAT";
     drawStyledText(certTitleText, pos.sertifikatTitlePos);
   }
@@ -126,17 +126,21 @@ export function drawCertificateOnCanvas(
   };
 
   // 2. No Sertifikat
-  const noCertText = kegiatan.no_sertifikat ? `No: ${kegiatan.no_sertifikat}` : "";
-  drawStyledText(noCertText, pos.noSertifikat);
+  if (!config.onlyShowName && config.showNoSertifikat !== false && pos.noSertifikat) {
+    const noCertText = kegiatan.no_sertifikat ? `No: ${kegiatan.no_sertifikat}` : "";
+    drawStyledText(noCertText, pos.noSertifikat);
 
-  // Draw Title Underline if configured (Below No Sertifikat / Title)
-  if (config.showJudulLine) {
-    const lineW = config.judulLineWidth !== undefined ? config.judulLineWidth : 980;
-    drawAutoLine(50, pos.noSertifikat.yPercent + 2.5, lineW, 4, pos.noSertifikat.color || "#284478");
+    // Draw Title Underline if configured (Below No Sertifikat / Title)
+    if (config.showJudulLine) {
+      const lineW = config.judulLineWidth !== undefined ? config.judulLineWidth : 980;
+      drawAutoLine(50, pos.noSertifikat.yPercent + 2.5, lineW, 4, pos.noSertifikat.color || "#284478");
+    }
   }
 
   // 3. Prefix Nama ("Diberikan kepada:" / "We proudly present to:")
-  drawStyledText("Diberikan kepada:", pos.prefixNama);
+  if (!config.onlyShowName && config.showPrefixNama !== false && pos.prefixNama) {
+    drawStyledText("Diberikan kepada:", pos.prefixNama);
+  }
 
   // 4. Nama Guru / Peserta (Always Sentence Case)
   const formattedName = toSentenceCase(nameText);
@@ -149,83 +153,85 @@ export function drawCertificateOnCanvas(
   }
 
   // 5. Deskripsi Kegiatan (Formatted Template & Bold Support)
-  let rawDesc = config.deskripsiTemplate || 'Atas partisipasi aktifnya sebagai **{peran}** dalam kegiatan **"{nama_kegiatan}"** yang diselenggarakan oleh **{penyelenggara}**.';
-  rawDesc = rawDesc
-    .replace(/\{peran\}/gi, kegiatan.peran)
-    .replace(/\{nama_kegiatan\}/gi, kegiatan.nama_kegiatan || "")
-    .replace(/\{kegiatan\}/gi, kegiatan.nama_kegiatan || "")
-    .replace(/\{penyelenggara\}/gi, kegiatan.penyelenggara || "SMAN 19 Bandung")
-    .replace(/\{nama\}/gi, formattedName)
-    .replace(/\{no_sertifikat\}/gi, kegiatan.no_sertifikat || "");
+  if (!config.onlyShowName && config.showDeskripsi !== false && pos.deskripsi) {
+    let rawDesc = config.deskripsiTemplate || 'Atas partisipasi aktifnya sebagai **{peran}** dalam kegiatan **"{nama_kegiatan}"** yang diselenggarakan oleh **{penyelenggara}**.';
+    rawDesc = rawDesc
+      .replace(/\{peran\}/gi, kegiatan.peran)
+      .replace(/\{nama_kegiatan\}/gi, kegiatan.nama_kegiatan || "")
+      .replace(/\{kegiatan\}/gi, kegiatan.nama_kegiatan || "")
+      .replace(/\{penyelenggara\}/gi, kegiatan.penyelenggara || "SMAN 19 Bandung")
+      .replace(/\{nama\}/gi, formattedName)
+      .replace(/\{no_sertifikat\}/gi, kegiatan.no_sertifikat || "");
 
-  const parsedWords = parseMarkdownBoldWords(rawDesc);
+    const parsedWords = parseMarkdownBoldWords(rawDesc);
 
-  const descX = (pos.deskripsi.xPercent / 100) * canvasWidth;
-  const descY = (pos.deskripsi.yPercent / 100) * canvasHeight;
-  const fontSize = pos.deskripsi.fontSize || 24;
-  const baseFontWeight = pos.deskripsi.fontWeight || "normal";
-  const baseFontStyle = pos.deskripsi.fontStyle || "normal";
-  ctx.fillStyle = pos.deskripsi.color || "#334155";
-  ctx.textBaseline = "middle";
+    const descX = (pos.deskripsi.xPercent / 100) * canvasWidth;
+    const descY = (pos.deskripsi.yPercent / 100) * canvasHeight;
+    const fontSize = pos.deskripsi.fontSize || 24;
+    const baseFontWeight = pos.deskripsi.fontWeight || "normal";
+    const baseFontStyle = pos.deskripsi.fontStyle || "normal";
+    ctx.fillStyle = pos.deskripsi.color || "#334155";
+    ctx.textBaseline = "middle";
 
-  const maxWidth = canvasWidth * 0.75;
-  const wordSpacingMultiplier = pos.deskripsi.wordSpacingMultiplier || 1.0;
-  const spaceWidth = ctx.measureText(" ").width * wordSpacingMultiplier;
+    const maxWidth = canvasWidth * 0.75;
+    const wordSpacingMultiplier = pos.deskripsi.wordSpacingMultiplier || 1.0;
+    const spaceWidth = ctx.measureText(" ").width * wordSpacingMultiplier;
 
-  // Build wrapped lines of words
-  interface LineWord {
-    text: string;
-    isBold: boolean;
-    width: number;
-  }
-
-  const lines: LineWord[][] = [];
-  let currentLine: LineWord[] = [];
-  let currentLineWidth = 0;
-
-  for (const w of parsedWords) {
-    ctx.font = `${baseFontStyle} ${w.isBold ? "bold" : baseFontWeight} ${fontSize}px sans-serif`;
-    const wWidth = ctx.measureText(w.text).width;
-    const addSpace = w.hasSpace ? spaceWidth : 0;
-
-    if (currentLineWidth + wWidth + addSpace > maxWidth && currentLine.length > 0) {
-      lines.push(currentLine);
-      currentLine = [{ text: w.text, isBold: w.isBold, width: wWidth }];
-      currentLineWidth = wWidth + (w.hasSpace ? spaceWidth : 0);
-    } else {
-      currentLine.push({ text: w.text, isBold: w.isBold, width: wWidth });
-      currentLineWidth += wWidth + addSpace;
+    // Build wrapped lines of words
+    interface LineWord {
+      text: string;
+      isBold: boolean;
+      width: number;
     }
-  }
-  if (currentLine.length > 0) {
-    lines.push(currentLine);
-  }
 
-  const lineHeightMultiplier = pos.deskripsi.lineHeightMultiplier || 1.45;
-  const lineHeight = fontSize * lineHeightMultiplier;
-  const startY = descY - ((lines.length - 1) * lineHeight) / 2;
+    const lines: LineWord[][] = [];
+    let currentLine: LineWord[] = [];
+    let currentLineWidth = 0;
 
-  lines.forEach((lineWords, lineIdx) => {
-    const lineY = startY + lineIdx * lineHeight;
+    for (const w of parsedWords) {
+      ctx.font = `${baseFontStyle} ${w.isBold ? "bold" : baseFontWeight} ${fontSize}px sans-serif`;
+      const wWidth = ctx.measureText(w.text).width;
+      const addSpace = w.hasSpace ? spaceWidth : 0;
 
-    // Calculate total width of line
-    let totalW = 0;
-    lineWords.forEach((wordObj, i) => {
-      totalW += wordObj.width;
-      if (i < lineWords.length - 1) totalW += spaceWidth;
+      if (currentLineWidth + wWidth + addSpace > maxWidth && currentLine.length > 0) {
+        lines.push(currentLine);
+        currentLine = [{ text: w.text, isBold: w.isBold, width: wWidth }];
+        currentLineWidth = wWidth + (w.hasSpace ? spaceWidth : 0);
+      } else {
+        currentLine.push({ text: w.text, isBold: w.isBold, width: wWidth });
+        currentLineWidth += wWidth + addSpace;
+      }
+    }
+    if (currentLine.length > 0) {
+      lines.push(currentLine);
+    }
+
+    const lineHeightMultiplier = pos.deskripsi.lineHeightMultiplier || 1.45;
+    const lineHeight = fontSize * lineHeightMultiplier;
+    const startY = descY - ((lines.length - 1) * lineHeight) / 2;
+
+    lines.forEach((lineWords, lineIdx) => {
+      const lineY = startY + lineIdx * lineHeight;
+
+      // Calculate total width of line
+      let totalW = 0;
+      lineWords.forEach((wordObj, i) => {
+        totalW += wordObj.width;
+        if (i < lineWords.length - 1) totalW += spaceWidth;
+      });
+
+      let drawX = descX - totalW / 2;
+      if (pos.deskripsi.align === "left") drawX = descX;
+      if (pos.deskripsi.align === "right") drawX = descX - totalW;
+
+      lineWords.forEach((wordObj, i) => {
+        ctx.font = `${baseFontStyle} ${wordObj.isBold ? "bold" : baseFontWeight} ${fontSize}px sans-serif`;
+        ctx.textAlign = "left";
+        ctx.fillText(wordObj.text, drawX, lineY);
+        drawX += wordObj.width + (i < lineWords.length - 1 ? spaceWidth : 0);
+      });
     });
-
-    let drawX = descX - totalW / 2;
-    if (pos.deskripsi.align === "left") drawX = descX;
-    if (pos.deskripsi.align === "right") drawX = descX - totalW;
-
-    lineWords.forEach((wordObj, i) => {
-      ctx.font = `${baseFontStyle} ${wordObj.isBold ? "bold" : baseFontWeight} ${fontSize}px sans-serif`;
-      ctx.textAlign = "left";
-      ctx.fillText(wordObj.text, drawX, lineY);
-      drawX += wordObj.width + (i < lineWords.length - 1 ? spaceWidth : 0);
-    });
-  });
+  }
 
   // 6. TTD Signatures (Support 1, 2, or 3 Signatures)
   const jumlahTtd = config.jumlahTtd || 2;
@@ -271,91 +277,93 @@ export function drawCertificateOnCanvas(
     }
   };
 
-  if (jumlahTtd === 1) {
-    // Single TTD (Center / Configured)
-    drawTtdGroup(
-      config.ttd1Nama,
-      config.ttd1Jabatan,
-      config.ttd1SubText1,
-      config.ttd1SubText2,
-      pos.ttd1NamaPos,
-      pos.ttd1JabatanPos,
-      pos.ttd1SubText1Pos,
-      pos.ttd1SubText2Pos,
-      pos.ttd1ImagePos,
-      ttd1Img
-    );
-  } else if (jumlahTtd === 2) {
-    // 2 TTD (Kiri & Kanan)
-    drawTtdGroup(
-      config.ttd1Nama,
-      config.ttd1Jabatan,
-      config.ttd1SubText1,
-      config.ttd1SubText2,
-      pos.ttd1NamaPos,
-      pos.ttd1JabatanPos,
-      pos.ttd1SubText1Pos,
-      pos.ttd1SubText2Pos,
-      pos.ttd1ImagePos,
-      ttd1Img
-    );
+  if (!config.onlyShowName && config.showTtdGroup !== false) {
+    if (jumlahTtd === 1) {
+      // Single TTD (Center / Configured)
+      drawTtdGroup(
+        config.ttd1Nama,
+        config.ttd1Jabatan,
+        config.ttd1SubText1,
+        config.ttd1SubText2,
+        pos.ttd1NamaPos,
+        pos.ttd1JabatanPos,
+        pos.ttd1SubText1Pos,
+        pos.ttd1SubText2Pos,
+        pos.ttd1ImagePos,
+        ttd1Img
+      );
+    } else if (jumlahTtd === 2) {
+      // 2 TTD (Kiri & Kanan)
+      drawTtdGroup(
+        config.ttd1Nama,
+        config.ttd1Jabatan,
+        config.ttd1SubText1,
+        config.ttd1SubText2,
+        pos.ttd1NamaPos,
+        pos.ttd1JabatanPos,
+        pos.ttd1SubText1Pos,
+        pos.ttd1SubText2Pos,
+        pos.ttd1ImagePos,
+        ttd1Img
+      );
 
-    drawTtdGroup(
-      config.ttd2Nama,
-      config.ttd2Jabatan,
-      config.ttd2SubText1,
-      config.ttd2SubText2,
-      pos.ttd2NamaPos,
-      pos.ttd2JabatanPos,
-      pos.ttd2SubText1Pos,
-      pos.ttd2SubText2Pos,
-      pos.ttd2ImagePos,
-      ttd2Img
-    );
-  } else if (jumlahTtd === 3) {
-    // 3 TTD (Kiri, Tengah, Kanan)
-    drawTtdGroup(
-      config.ttd1Nama,
-      config.ttd1Jabatan,
-      config.ttd1SubText1,
-      config.ttd1SubText2,
-      pos.ttd1NamaPos,
-      pos.ttd1JabatanPos,
-      pos.ttd1SubText1Pos,
-      pos.ttd1SubText2Pos,
-      pos.ttd1ImagePos,
-      ttd1Img
-    );
+      drawTtdGroup(
+        config.ttd2Nama,
+        config.ttd2Jabatan,
+        config.ttd2SubText1,
+        config.ttd2SubText2,
+        pos.ttd2NamaPos,
+        pos.ttd2JabatanPos,
+        pos.ttd2SubText1Pos,
+        pos.ttd2SubText2Pos,
+        pos.ttd2ImagePos,
+        ttd2Img
+      );
+    } else if (jumlahTtd === 3) {
+      // 3 TTD (Kiri, Tengah, Kanan)
+      drawTtdGroup(
+        config.ttd1Nama,
+        config.ttd1Jabatan,
+        config.ttd1SubText1,
+        config.ttd1SubText2,
+        pos.ttd1NamaPos,
+        pos.ttd1JabatanPos,
+        pos.ttd1SubText1Pos,
+        pos.ttd1SubText2Pos,
+        pos.ttd1ImagePos,
+        ttd1Img
+      );
 
-    drawTtdGroup(
-      config.ttd3Nama,
-      config.ttd3Jabatan,
-      config.ttd3SubText1,
-      config.ttd3SubText2,
-      pos.ttd3NamaPos,
-      pos.ttd3JabatanPos,
-      pos.ttd3SubText1Pos,
-      pos.ttd3SubText2Pos,
-      pos.ttd3ImagePos,
-      ttd3Img
-    );
+      drawTtdGroup(
+        config.ttd3Nama,
+        config.ttd3Jabatan,
+        config.ttd3SubText1,
+        config.ttd3SubText2,
+        pos.ttd3NamaPos,
+        pos.ttd3JabatanPos,
+        pos.ttd3SubText1Pos,
+        pos.ttd3SubText2Pos,
+        pos.ttd3ImagePos,
+        ttd3Img
+      );
 
-    drawTtdGroup(
-      config.ttd2Nama,
-      config.ttd2Jabatan,
-      config.ttd2SubText1,
-      config.ttd2SubText2,
-      pos.ttd2NamaPos,
-      pos.ttd2JabatanPos,
-      pos.ttd2SubText1Pos,
-      pos.ttd2SubText2Pos,
-      pos.ttd2ImagePos,
-      ttd2Img
-    );
+      drawTtdGroup(
+        config.ttd2Nama,
+        config.ttd2Jabatan,
+        config.ttd2SubText1,
+        config.ttd2SubText2,
+        pos.ttd2NamaPos,
+        pos.ttd2JabatanPos,
+        pos.ttd2SubText1Pos,
+        pos.ttd2SubText2Pos,
+        pos.ttd2ImagePos,
+        ttd2Img
+      );
+    }
   }
 
   // 7. Tempat & Tanggal Halaman Depan
-  if (pos.tanggalKegiatan) {
+  if (!config.onlyShowName && config.showTanggalKegiatan !== false && pos.tanggalKegiatan) {
     const rawDate = kegiatan.tanggal_kegiatan;
     const formattedDate = parseDateSafe(rawDate).toLocaleDateString("id-ID", {
       day: "numeric",

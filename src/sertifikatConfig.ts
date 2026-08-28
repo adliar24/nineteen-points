@@ -26,6 +26,15 @@ export interface SertifikatLayoutConfig {
   logoBackImage: string | null;  // Back logo (base64)
   sertifikatText: string;        // Text "SERTIFIKAT"
   showSertifikatText: boolean;   // Draw the text or not
+
+  // Mode Template Lengkap / Visibilitas Elemen
+  onlyShowName?: boolean;        // Mode Cepat: Sembunyikan semua teks/logo/TTD lain, hanya cetak Nama Penerima
+  showLogoFront?: boolean;       // Tampilkan logo depan atau tidak (default: true)
+  showNoSertifikat?: boolean;    // Tampilkan nomor sertifikat atau tidak (default: true)
+  showPrefixNama?: boolean;      // Tampilkan "Diberikan kepada:" atau tidak (default: true)
+  showDeskripsi?: boolean;       // Tampilkan paragraf deskripsi atau tidak (default: true)
+  showTanggalKegiatan?: boolean; // Tampilkan tempat & tanggal depan atau tidak (default: true)
+  showTtdGroup?: boolean;        // Tampilkan grup TTD depan atau tidak (default: true)
   
   // Jumlah TTD Depan (1, 2, atau 3)
   jumlahTtd: 1 | 2 | 3;
@@ -157,6 +166,14 @@ export const DEFAULT_SERTIFIKAT_CONFIG: SertifikatLayoutConfig = {
   logoBackImage: null,
   sertifikatText: "SERTIFIKAT",
   showSertifikatText: true,
+  
+  onlyShowName: false,
+  showLogoFront: true,
+  showNoSertifikat: true,
+  showPrefixNama: true,
+  showDeskripsi: true,
+  showTanggalKegiatan: true,
+  showTtdGroup: true,
   
   jumlahTtd: 2,
   jumlahTtdBelakang: 1,

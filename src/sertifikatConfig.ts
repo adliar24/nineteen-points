@@ -531,7 +531,31 @@ export function getSertifikatConfig(): SertifikatLayoutConfig {
 export async function getSertifikatConfigAsync(): Promise<SertifikatLayoutConfig> {
   if (cachedConfig) return cachedConfig;
 
-  // 1. Coba ambil dari Supabase terlebih dahulu
+  let localConfig: SertifikatLayoutConfig | null = null;
+
+  // 1. Baca dari IndexedDB terlebih dahulu (cepat & lengkap dengan aset gambar)
+  try {
+    const db = await openDB();
+    const tx = db.transaction(STORE_NAME, "readonly");
+    const store = tx.objectStore(STORE_NAME);
+    const req = store.get(CONFIG_STORAGE_KEY);
+    localConfig = await new Promise<SertifikatLayoutConfig | null>((resolve) => {
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => resolve(null);
+    });
+  } catch (e) {
+    console.warn("Gagal membaca IndexedDB:", e);
+  }
+
+  // Fallback ke localStorage jika IndexedDB kosong
+  if (!localConfig) {
+    try {
+      const stored = localStorage.getItem(CONFIG_STORAGE_KEY);
+      if (stored) localConfig = JSON.parse(stored);
+    } catch (e) {}
+  }
+
+  // 2. Coba sinkronisasi dari Supabase
   try {
     const { data, error } = await supabase
       .from("sertifikat_config")
@@ -539,60 +563,49 @@ export async function getSertifikatConfigAsync(): Promise<SertifikatLayoutConfig
       .eq("id", "default")
       .maybeSingle();
 
-    if (data && data.config) {
+    if (!error && data && data.config) {
       cachedConfig = {
         ...DEFAULT_SERTIFIKAT_CONFIG,
+        ...(localConfig || {}),
         ...data.config,
+        // Jika di Supabase tidak ada gambar (misal template url) tapi di lokal ada, pertahankan gambar lokal
+        templateUrl: data.config.templateUrl || (localConfig && localConfig.templateUrl) || null,
+        templateJpUrl: data.config.templateJpUrl || (localConfig && localConfig.templateJpUrl) || null,
+        logoFrontImage: data.config.logoFrontImage || (localConfig && localConfig.logoFrontImage) || null,
+        logoBackImage: data.config.logoBackImage || (localConfig && localConfig.logoBackImage) || null,
+        ttd1Image: data.config.ttd1Image || (localConfig && localConfig.ttd1Image) || null,
+        ttd2Image: data.config.ttd2Image || (localConfig && localConfig.ttd2Image) || null,
+        ttd3Image: data.config.ttd3Image || (localConfig && localConfig.ttd3Image) || null,
+        ttdBack1Image: data.config.ttdBack1Image || (localConfig && localConfig.ttdBack1Image) || null,
+        ttdBack2Image: data.config.ttdBack2Image || (localConfig && localConfig.ttdBack2Image) || null,
+        ttdBack3Image: data.config.ttdBack3Image || (localConfig && localConfig.ttdBack3Image) || null,
         positions: {
           ...DEFAULT_SERTIFIKAT_CONFIG.positions,
+          ...(localConfig?.positions || {}),
           ...(data.config.positions || {})
         }
       };
 
-      // Simpan salinan ke lokal untuk cadangan/offline
-      try {
-        localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(cachedConfig));
-        const db = await openDB();
-        const tx = db.transaction(STORE_NAME, "readwrite");
-        const store = tx.objectStore(STORE_NAME);
-        store.put(cachedConfig, CONFIG_STORAGE_KEY);
-      } catch (localErr) {
-        console.warn("Gagal menyimpan cadangan lokal:", localErr);
-      }
-
       return cachedConfig;
     }
   } catch (e) {
-    console.error("Gagal memuat konfigurasi dari Supabase, beralih ke lokal:", e);
+    console.warn("Gagal memuat konfigurasi dari Supabase, menggunakan lokal:", e);
   }
 
-  // 2. Fallback ke IndexedDB lokal jika Supabase gagal/belum ada datanya
-  try {
-    const db = await openDB();
-    const tx = db.transaction(STORE_NAME, "readonly");
-    const store = tx.objectStore(STORE_NAME);
-    const req = store.get(CONFIG_STORAGE_KEY);
-    return new Promise((resolve) => {
-      req.onsuccess = () => {
-        if (req.result) {
-          cachedConfig = {
-            ...DEFAULT_SERTIFIKAT_CONFIG,
-            ...req.result,
-            positions: {
-              ...DEFAULT_SERTIFIKAT_CONFIG.positions,
-              ...(req.result.positions || {})
-            }
-          };
-          resolve(cachedConfig);
-        } else {
-          resolve(getSertifikatConfig());
-        }
-      };
-      req.onerror = () => resolve(getSertifikatConfig());
-    });
-  } catch (e) {
-    return getSertifikatConfig();
+  if (localConfig) {
+    cachedConfig = {
+      ...DEFAULT_SERTIFIKAT_CONFIG,
+      ...localConfig,
+      positions: {
+        ...DEFAULT_SERTIFIKAT_CONFIG.positions,
+        ...(localConfig.positions || {})
+      }
+    };
+    return cachedConfig;
   }
+
+  cachedConfig = DEFAULT_SERTIFIKAT_CONFIG;
+  return cachedConfig;
 }
 
 export async function saveSertifikatConfigAsync(config: SertifikatLayoutConfig): Promise<void> {
@@ -697,30 +710,13 @@ export function resetSertifikatConfig(): SertifikatLayoutConfig {
 }
 
 export async function getSertifikatPresetsAsync(): Promise<{ id: string; config: SertifikatLayoutConfig }[]> {
-  try {
-    const { data, error } = await supabase
-      .from("sertifikat_config")
-      .select("id, config")
-      .like("id", "preset_%")
-      .order("id", { ascending: true });
+  const presetMap = new Map<string, { id: string; config: SertifikatLayoutConfig }>();
 
-    if (error) throw error;
-    if (data) {
-      return data.map(item => ({
-        id: item.id,
-        config: item.config as SertifikatLayoutConfig
-      }));
-    }
-  } catch (e) {
-    console.error("Gagal mengambil preset dari Supabase, coba IndexedDB:", e);
-  }
-
-  // Fallback to IndexedDB
+  // 1. Ambil dari IndexedDB (lokal cepat)
   try {
     const db = await openDB();
     const tx = db.transaction(STORE_NAME, "readonly");
     const store = tx.objectStore(STORE_NAME);
-    const presets: { id: string; config: SertifikatLayoutConfig }[] = [];
     for (let i = 1; i <= 10; i++) {
       const key = `preset_${i}`;
       const req = store.get(key);
@@ -729,37 +725,63 @@ export async function getSertifikatPresetsAsync(): Promise<{ id: string; config:
         req.onerror = () => resolve(null);
       });
       if (val) {
-        presets.push({ id: key, config: val });
+        presetMap.set(key, { id: key, config: val });
       }
     }
-    return presets;
   } catch (err) {
-    console.error("Gagal mengambil preset dari IndexedDB:", err);
-    return [];
+    console.warn("Gagal membaca preset dari IndexedDB:", err);
   }
+
+  // 2. Ambil dari Supabase dan merge
+  try {
+    const { data, error } = await supabase
+      .from("sertifikat_config")
+      .select("id, config")
+      .like("id", "preset_%")
+      .order("id", { ascending: true });
+
+    if (!error && data && data.length > 0) {
+      data.forEach((item: any) => {
+        if (item.config) {
+          presetMap.set(item.id, {
+            id: item.id,
+            config: item.config as SertifikatLayoutConfig
+          });
+        }
+      });
+    }
+  } catch (e) {
+    console.warn("Gagal mengambil preset dari Supabase:", e);
+  }
+
+  // 3. Ambil juga dari localStorage cadangan
+  for (let i = 1; i <= 10; i++) {
+    const key = `preset_${i}`;
+    if (!presetMap.has(key)) {
+      try {
+        const stored = localStorage.getItem(`nineteen_points_sertifikat_${key}`);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          presetMap.set(key, { id: key, config: parsed });
+        }
+      } catch (e) {}
+    }
+  }
+
+  return Array.from(presetMap.values()).sort((a, b) => {
+    const numA = parseInt(a.id.replace("preset_", ""), 10) || 0;
+    const numB = parseInt(b.id.replace("preset_", ""), 10) || 0;
+    return numA - numB;
+  });
 }
 
 export async function saveSertifikatPresetAsync(presetId: string, config: SertifikatLayoutConfig, name: string): Promise<void> {
-  const presetConfig = {
+  const presetConfig: SertifikatLayoutConfig = {
     ...config,
     templateName: name
   };
 
-  // 1. Simpan ke Supabase
-  try {
-    const { error } = await supabase
-      .from("sertifikat_config")
-      .upsert({
-        id: presetId,
-        config: presetConfig,
-        updated_at: new Date().toISOString()
-      });
-    if (error) console.error("Gagal menyimpan preset ke Supabase:", error);
-  } catch (e) {
-    console.error("Gagal menyimpan preset ke Supabase:", e);
-  }
-
-  // 2. Simpan ke IndexedDB
+  // 1. Simpan ke IndexedDB (paling cepat & andal untuk gambar besar)
   try {
     const db = await openDB();
     const tx = db.transaction(STORE_NAME, "readwrite");
@@ -768,21 +790,34 @@ export async function saveSertifikatPresetAsync(presetId: string, config: Sertif
   } catch (e) {
     console.error("Gagal menyimpan preset ke IndexedDB:", e);
   }
-}
 
-export async function deleteSertifikatPresetAsync(presetId: string): Promise<void> {
-  // 1. Hapus di Supabase
+  // 2. Simpan ke localStorage cadangan
+  try {
+    localStorage.setItem(`nineteen_points_sertifikat_${presetId}`, JSON.stringify(presetConfig));
+  } catch (e) {
+    try {
+      const light = { ...presetConfig, templateUrl: null, templateJpUrl: null };
+      localStorage.setItem(`nineteen_points_sertifikat_${presetId}`, JSON.stringify(light));
+    } catch (ignore) {}
+  }
+
+  // 3. Simpan ke Supabase
   try {
     const { error } = await supabase
       .from("sertifikat_config")
-      .delete()
-      .eq("id", presetId);
-    if (error) console.error("Gagal menghapus preset dari Supabase:", error);
+      .upsert({
+        id: presetId,
+        config: presetConfig,
+        updated_at: new Date().toISOString()
+      });
+    if (error) console.warn("Gagal menyimpan preset ke Supabase:", error);
   } catch (e) {
-    console.error("Gagal menghapus preset dari Supabase:", e);
+    console.warn("Gagal menyimpan preset ke Supabase:", e);
   }
+}
 
-  // 2. Hapus di IndexedDB
+export async function deleteSertifikatPresetAsync(presetId: string): Promise<void> {
+  // 1. Hapus dari IndexedDB
   try {
     const db = await openDB();
     const tx = db.transaction(STORE_NAME, "readwrite");
@@ -790,5 +825,21 @@ export async function deleteSertifikatPresetAsync(presetId: string): Promise<voi
     store.delete(presetId);
   } catch (e) {
     console.error("Gagal menghapus preset dari IndexedDB:", e);
+  }
+
+  // 2. Hapus dari localStorage
+  try {
+    localStorage.removeItem(`nineteen_points_sertifikat_${presetId}`);
+  } catch (e) {}
+
+  // 3. Hapus dari Supabase
+  try {
+    const { error } = await supabase
+      .from("sertifikat_config")
+      .delete()
+      .eq("id", presetId);
+    if (error) console.warn("Gagal menghapus preset dari Supabase:", error);
+  } catch (e) {
+    console.warn("Gagal menghapus preset dari Supabase:", e);
   }
 }

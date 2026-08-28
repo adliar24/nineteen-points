@@ -37,8 +37,9 @@ function optimizeImageDataUrl(file: File, maxWidth = 2000): Promise<string> {
         }
 
         ctx.drawImage(img, 0, 0, width, height);
-        const isPng = file.type === "image/png";
-        const dataUrl = canvas.toDataURL(isPng ? "image/png" : "image/jpeg", 0.92);
+        // For TTD and Logo assets, preserve PNG transparency. For templates/backgrounds, use JPEG 0.90 to keep payload under 300KB
+        const isTransparentAsset = maxWidth < 1000 && file.type === "image/png";
+        const dataUrl = canvas.toDataURL(isTransparentAsset ? "image/png" : "image/jpeg", 0.90);
         resolve(dataUrl);
       };
       img.onerror = () => reject(new Error("Gagal membaca gambar"));
@@ -164,6 +165,7 @@ export default function KelolaSertifikatGuruView() {
   const [presetNameInput, setPresetNameInput] = useState("");
   const [successToast, setSuccessToast] = useState("");
   const [selectedFolders, setSelectedFolders] = useState<string[]>([]);
+  const [isConfigLoaded, setIsConfigLoaded] = useState(false);
 
   const loadPresets = () => {
     getSertifikatPresetsAsync().then(res => setPresets(res));
@@ -171,7 +173,10 @@ export default function KelolaSertifikatGuruView() {
 
   // Load config & presets on mount
   useEffect(() => {
-    getSertifikatConfigAsync().then(cfg => setConfig(cfg));
+    getSertifikatConfigAsync().then(cfg => {
+      setConfig(cfg);
+      setIsConfigLoaded(true);
+    });
     loadPresets();
   }, []);
 
@@ -228,15 +233,11 @@ export default function KelolaSertifikatGuruView() {
     });
   };
 
-  // Auto-save configuration changes automatically to IndexedDB & localStorage
-  const isInitialMount = useRef(true);
+  // Auto-save configuration changes automatically to IndexedDB, localStorage & Supabase
   useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
-    }
+    if (!isConfigLoaded) return;
     saveSertifikatConfigAsync(config);
-  }, [config]);
+  }, [config, isConfigLoaded]);
 
   // Queries
   const { data: kegiatanList = [], isLoading: loadingKegiatan, refetch: refetchKegiatan } = useQuery({
@@ -1165,8 +1166,12 @@ durasi_jam: null,
   // Save Designer Config
   const handleSaveConfig = async () => {
     await saveSertifikatConfigAsync(config);
+    setSuccessToast("Desain template & posisi sertifikat berhasil disimpan!");
     setSuccessMsg("Konfigurasi desain template & posisi sertifikat berhasil disimpan!");
-    setTimeout(() => setSuccessMsg(null), 4000);
+    setTimeout(() => {
+      setSuccessMsg(null);
+      setSuccessToast("");
+    }, 3500);
   };
 
   // Reset Designer Config
@@ -3863,10 +3868,10 @@ durasi_jam: null,
                             <>
                               <button
                                 type="button"
-                                onClick={() => {
+                                onClick={async () => {
                                   setConfig(preset.config);
-                                  saveSertifikatConfigAsync(preset.config);
-                                  setSuccessToast("Berhasil menerapkan template!");
+                                  await saveSertifikatConfigAsync(preset.config);
+                                  setSuccessToast(`Berhasil menerapkan template "${preset.config.templateName || `Slot ${index + 1}`}"!`);
                                   setTimeout(() => setSuccessToast(""), 3000);
                                 }}
                                 className="px-2.5 py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-[10px] font-black uppercase cursor-pointer transition-all flex items-center gap-1 shadow-sm border-0"
@@ -4311,15 +4316,18 @@ durasi_jam: null,
         <form
           onSubmit={async (e) => {
             e.preventDefault();
-            if (!presetNameInput.trim()) {
+            const trimmedName = presetNameInput.trim();
+            if (!trimmedName) {
               alert("Isi nama template terlebih dahulu!");
               return;
             }
-            await saveSertifikatPresetAsync(presetSlotToSave, config, presetNameInput);
+            await saveSertifikatPresetAsync(presetSlotToSave, config, trimmedName);
+            await saveSertifikatConfigAsync({ ...config, templateName: trimmedName });
+            setConfig(prev => ({ ...prev, templateName: trimmedName }));
             setPresetModalOpen(false);
             loadPresets();
-            setSuccessToast("Template berhasil disimpan!");
-            setTimeout(() => setSuccessToast(""), 3000);
+            setSuccessToast(`Template "${trimmedName}" berhasil disimpan ke ${presetSlotToSave.replace("preset_", "Slot ")}!`);
+            setTimeout(() => setSuccessToast(""), 3500);
           }}
           className="space-y-4"
         >

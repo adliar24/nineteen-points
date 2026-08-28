@@ -149,12 +149,12 @@ export function drawCertificateOnCanvas(
   }
 
   // 5. Deskripsi Kegiatan (Formatted Template & Bold Support)
-  let rawDesc = config.deskripsiTemplate || 'Atas partisipasi aktifnya sebagai **{peran}** yang diselenggarakan.';
+  let rawDesc = config.deskripsiTemplate || 'Atas partisipasi aktifnya sebagai **{peran}** dalam kegiatan **"{nama_kegiatan}"** yang diselenggarakan oleh **{penyelenggara}**.';
   rawDesc = rawDesc
     .replace(/\{peran\}/gi, kegiatan.peran)
-    .replace(/\{nama_kegiatan\}/gi, "")
-    .replace(/\{kegiatan\}/gi, "")
-    .replace(/\{penyelenggara\}/gi, "")
+    .replace(/\{nama_kegiatan\}/gi, kegiatan.nama_kegiatan || "")
+    .replace(/\{kegiatan\}/gi, kegiatan.nama_kegiatan || "")
+    .replace(/\{penyelenggara\}/gi, kegiatan.penyelenggara || "SMAN 19 Bandung")
     .replace(/\{nama\}/gi, formattedName)
     .replace(/\{no_sertifikat\}/gi, kegiatan.no_sertifikat || "");
 
@@ -1038,16 +1038,22 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
     k.peran.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const isStudent = userSession.role === "siswa";
+  const headerTitle = isStudent ? "Sertifikat Murid" : "Sertifikat Kegiatan";
+  const headerSubtitle = isStudent
+    ? "Lihat dan unduh sertifikat prestasi, kegiatan, atau pelatihan resmi Anda."
+    : "Lihat riwayat keikutsertaan kegiatan sekolah dan unduh sertifikat resmi Anda.";
+
   return (
     <div className="space-y-6 pb-12 animate-fade-in font-sans">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h2 className="text-xl font-extrabold text-brand-950 tracking-tight">
-            Sertifikat Kegiatan
+            {headerTitle}
           </h2>
           <p className="text-xs text-brand-500 font-semibold mt-1">
-            Lihat riwayat keikutsertaan kegiatan sekolah dan unduh sertifikat resmi Anda.
+            {headerSubtitle}
           </p>
         </div>
       </div>

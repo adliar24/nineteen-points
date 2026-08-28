@@ -254,7 +254,7 @@ export default function App() {
   };
 
   const isValidTab = (role: string, tab: string) => {
-    if (role === "siswa") return ["siswa_stats", "leaderboard", "peringkatku", "siswa_scan", "siswa_barcode", "siswa_history", "change_password"].includes(tab);
+    if (role === "siswa") return ["siswa_stats", "leaderboard", "peringkatku", "siswa_scan", "siswa_barcode", "siswa_history", "siswa_sertifikat", "change_password"].includes(tab);
     if (role === "piket") return ["leaderboard", "kehadiran", "input_kehadiran", "change_password", "scan_sholat", "rekap_sholat_kehadiran", "rekap_poin"].includes(tab);
     if (role === "guru") return ["leaderboard", "input", "students", "history", "change_password", "guru_sertifikat", "guru_kartu", "scan_sholat", "rekap_sholat_kehadiran", "rekap_poin"].includes(tab);
     if (role === "kepala_sekolah") return ["leaderboard", "input_kehadiran", "input", "kehadiran", "students", "history", "change_password", "scan_sholat", "rekap_sholat_kehadiran", "rekap_poin"].includes(tab);
@@ -614,6 +614,7 @@ export default function App() {
       { type: "item", id: "siswa_stats", label: "Beranda", icon: Home, description: "Statistik & presensi Anda" },
       { type: "item", id: "leaderboard", label: "Papan Peringkat", icon: Trophy, description: "Klasemen Hall of Fame murid" },
       { type: "item", id: "peringkatku", label: "Peringkatku", icon: Award, description: "Kartu prestise & posisi Anda" },
+      { type: "item", id: "siswa_sertifikat", label: "Sertifikat Saya", icon: Award, description: "Unduh sertifikat resmi Anda" },
       { type: "item", id: "siswa_barcode", label: "Kartu Pelajar", icon: CreditCard, description: "QR Kartu Pelajar Digital" },
       { type: "item", id: "siswa_history", label: "Riwayat Poin", icon: Calendar, description: "Riwayat perolehan poin" },
       { type: "item", id: "change_password", label: "Tema & Keamanan", icon: Settings, description: "Ubah sandi & tema warna" }
@@ -1080,7 +1081,8 @@ export default function App() {
                 <GuruKehadiranView userSession={userSession} />
               )}
 
-              {activeTab === "guru_sertifikat" && ["guru", "tata_usaha"].includes(userSession.role) && (
+              {((activeTab === "guru_sertifikat" && ["guru", "tata_usaha"].includes(userSession.role)) ||
+                (activeTab === "siswa_sertifikat" && userSession.role === "siswa")) && (
                 <GuruSertifikatView userSession={userSession} />
               )}
 
@@ -1125,7 +1127,11 @@ export default function App() {
               )}
 
               {["siswa_stats", "siswa_barcode", "siswa_history"].includes(activeTab) && (
-                <SiswaDashboardView userSession={userSession} activeTab={activeTab} />
+                <SiswaDashboardView
+                  userSession={userSession}
+                  activeTab={activeTab}
+                  onSelectTab={setActiveTab}
+                />
               )}
             </motion.div>
           </AnimatePresence>

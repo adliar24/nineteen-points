@@ -24,7 +24,7 @@ interface RekapSholatKehadiranViewProps {
   userSession: UserSession;
 }
 
-type SholatTab = "dhuha" | "jumat" | "berjamaah" | "semua";
+type SholatTab = "dhuha" | "jumat" | "keputrian" | "berjamaah" | "semua";
 
 export default function RekapSholatKehadiranView({ userSession }: RekapSholatKehadiranViewProps) {
   const today = new Date().toISOString().slice(0, 10);
@@ -76,21 +76,29 @@ export default function RekapSholatKehadiranView({ userSession }: RekapSholatKeh
     currentPage * itemsPerPage
   );
 
-  // Statistics per prayer type in range
+  // Statistics per prayer/keagamaan type in range
   const stats = useMemo(() => {
     let dhuhaCount = 0;
     let jumatCount = 0;
+    let keputrianCount = 0;
     let berjamaahCount = 0;
 
     rekapData.forEach((row) => {
       datesInRange.forEach((d) => {
         if (row.sholatDhuha && row.sholatDhuha[d]) dhuhaCount++;
         if (row.sholatJumat && row.sholatJumat[d]) jumatCount++;
+        if (row.keputrian && row.keputrian[d]) keputrianCount++;
         if (row.sholat && row.sholat[d]) berjamaahCount++;
       });
     });
 
-    return { dhuhaCount, jumatCount, berjamaahCount, total: dhuhaCount + jumatCount + berjamaahCount };
+    return {
+      dhuhaCount,
+      jumatCount,
+      keputrianCount,
+      berjamaahCount,
+      total: dhuhaCount + jumatCount + keputrianCount + berjamaahCount
+    };
   }, [rekapData, datesInRange]);
 
   const handleExportCSV = () => {
@@ -99,10 +107,12 @@ export default function RekapSholatKehadiranView({ userSession }: RekapSholatKeh
       const label = parseDateSafe(d).toLocaleDateString("id-ID", { day: "2-digit", month: "short" });
       if (activeTab === "dhuha") headers.push(`Sholat Dhuha (${label})`);
       else if (activeTab === "jumat") headers.push(`Sholat Jumat (${label})`);
+      else if (activeTab === "keputrian") headers.push(`Keputrian (${label})`);
       else if (activeTab === "berjamaah") headers.push(`Sholat Berjamaah (${label})`);
       else {
         headers.push(`Sholat Dhuha (${label})`);
         headers.push(`Sholat Jumat (${label})`);
+        headers.push(`Keputrian (${label})`);
         headers.push(`Sholat Berjamaah (${label})`);
       }
     });
@@ -112,10 +122,12 @@ export default function RekapSholatKehadiranView({ userSession }: RekapSholatKeh
       datesInRange.forEach((d) => {
         if (activeTab === "dhuha") cells.push(row.sholatDhuha && row.sholatDhuha[d] ? "Ya" : "Tidak");
         else if (activeTab === "jumat") cells.push(row.sholatJumat && row.sholatJumat[d] ? "Ya" : "Tidak");
+        else if (activeTab === "keputrian") cells.push(row.keputrian && row.keputrian[d] ? "Ya" : "Tidak");
         else if (activeTab === "berjamaah") cells.push(row.sholat && row.sholat[d] ? "Ya" : "Tidak");
         else {
           cells.push(row.sholatDhuha && row.sholatDhuha[d] ? "Ya" : "Tidak");
           cells.push(row.sholatJumat && row.sholatJumat[d] ? "Ya" : "Tidak");
+          cells.push(row.keputrian && row.keputrian[d] ? "Ya" : "Tidak");
           cells.push(row.sholat && row.sholat[d] ? "Ya" : "Tidak");
         }
       });
@@ -127,7 +139,7 @@ export default function RekapSholatKehadiranView({ userSession }: RekapSholatKeh
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `rekap-sholat-${activeTab}-${startDate}-${endDate}.csv`;
+    a.download = `rekap-keagamaan-${activeTab}-${startDate}-${endDate}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -152,7 +164,7 @@ export default function RekapSholatKehadiranView({ userSession }: RekapSholatKeh
       </div>
 
       {/* Summary Cards Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
         <div
           onClick={() => setActiveTab("dhuha")}
           className={`p-4 rounded-3xl border transition-all cursor-pointer shadow-xs ${
@@ -186,6 +198,22 @@ export default function RekapSholatKehadiranView({ userSession }: RekapSholatKeh
         </div>
 
         <div
+          onClick={() => setActiveTab("keputrian")}
+          className={`p-4 rounded-3xl border transition-all cursor-pointer shadow-xs ${
+            activeTab === "keputrian"
+              ? "bg-rose-600 text-white border-rose-700 shadow-md scale-[1.02]"
+              : "bg-white text-brand-950 border-brand-100 hover:bg-rose-50/40"
+          }`}
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-black uppercase tracking-wider opacity-80">Keputrian</span>
+            <Sparkles className="w-4 h-4" />
+          </div>
+          <p className="text-2xl font-mono font-black mt-2">{stats.keputrianCount}</p>
+          <p className="text-[10px] opacity-70 mt-0.5">Catatan Hadir</p>
+        </div>
+
+        <div
           onClick={() => setActiveTab("berjamaah")}
           className={`p-4 rounded-3xl border transition-all cursor-pointer shadow-xs ${
             activeTab === "berjamaah"
@@ -203,7 +231,7 @@ export default function RekapSholatKehadiranView({ userSession }: RekapSholatKeh
 
         <div
           onClick={() => setActiveTab("semua")}
-          className={`p-4 rounded-3xl border transition-all cursor-pointer shadow-xs ${
+          className={`p-4 rounded-3xl border transition-all cursor-pointer shadow-xs col-span-2 sm:col-span-1 ${
             activeTab === "semua"
               ? "bg-brand-900 text-white border-brand-950 shadow-md scale-[1.02]"
               : "bg-white text-brand-950 border-brand-100 hover:bg-brand-50"
@@ -286,7 +314,7 @@ export default function RekapSholatKehadiranView({ userSession }: RekapSholatKeh
       </div>
 
       {/* PRAYER TYPE TABS BAR */}
-      <div className="flex bg-slate-100 p-1.5 rounded-2xl border border-slate-200 w-fit max-w-full overflow-x-auto">
+      <div className="flex bg-slate-100 p-1.5 rounded-2xl border border-slate-200 w-fit max-w-full overflow-x-auto gap-1">
         <button
           onClick={() => setActiveTab("dhuha")}
           className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-2 ${
@@ -310,6 +338,17 @@ export default function RekapSholatKehadiranView({ userSession }: RekapSholatKeh
           Sholat Jumat
         </button>
         <button
+          onClick={() => setActiveTab("keputrian")}
+          className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-2 ${
+            activeTab === "keputrian"
+              ? "bg-rose-600 text-white shadow-md"
+              : "text-slate-600 hover:text-slate-900"
+          }`}
+        >
+          <Sparkles className="w-3.5 h-3.5" />
+          Keputrian
+        </button>
+        <button
           onClick={() => setActiveTab("berjamaah")}
           className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-2 ${
             activeTab === "berjamaah"
@@ -329,7 +368,7 @@ export default function RekapSholatKehadiranView({ userSession }: RekapSholatKeh
           }`}
         >
           <Sparkles className="w-3.5 h-3.5" />
-          Semua Sholat (Matrix)
+          Semua (Matrix)
         </button>
       </div>
 
@@ -436,6 +475,21 @@ export default function RekapSholatKehadiranView({ userSession }: RekapSholatKeh
                           );
                         }
 
+                        if (activeTab === "keputrian") {
+                          const isHadir = row.keputrian && row.keputrian[d];
+                          return (
+                            <td key={`${row.siswa_id}-${d}`} className="px-3 py-3 text-center">
+                              {isHadir ? (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-rose-50 text-rose-700 font-extrabold text-xs border border-rose-200">
+                                  <Check className="w-3.5 h-3.5 text-rose-600" /> Hadir
+                                </span>
+                              ) : (
+                                <span className="text-xs text-slate-300 font-bold px-2">-</span>
+                              )}
+                            </td>
+                          );
+                        }
+
                         if (activeTab === "berjamaah") {
                           const isHadir = row.sholat && row.sholat[d];
                           return (
@@ -454,6 +508,7 @@ export default function RekapSholatKehadiranView({ userSession }: RekapSholatKeh
                         // Tab "semua" (Matrix overview)
                         const isDhuha = row.sholatDhuha && row.sholatDhuha[d];
                         const isJumat = row.sholatJumat && row.sholatJumat[d];
+                        const isKeputrian = row.keputrian && row.keputrian[d];
                         const isBj = row.sholat && row.sholat[d];
 
                         return (
@@ -469,12 +524,17 @@ export default function RekapSholatKehadiranView({ userSession }: RekapSholatKeh
                                   <Check className="w-2.5 h-2.5" /> Jumat
                                 </span>
                               )}
+                              {isKeputrian && (
+                                <span className="inline-flex items-center gap-1 text-[10px] font-black text-rose-800 bg-rose-100 px-2 py-0.5 rounded-md border border-rose-200">
+                                  <Check className="w-2.5 h-2.5" /> Keputrian
+                                </span>
+                              )}
                               {isBj && (
                                 <span className="inline-flex items-center gap-1 text-[10px] font-black text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-md border border-emerald-200">
                                   <Check className="w-2.5 h-2.5" /> Berjamaah
                                 </span>
                               )}
-                              {!isDhuha && !isJumat && !isBj && (
+                              {!isDhuha && !isJumat && !isKeputrian && !isBj && (
                                 <span className="text-xs text-slate-300 font-bold">-</span>
                               )}
                             </div>

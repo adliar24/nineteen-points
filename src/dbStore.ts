@@ -1238,6 +1238,9 @@ export const SHOLAT_DHUHA_POIN_VALUE = 2;
 export const SHOLAT_JUMAT_POIN_NAMA = "Sholat Jumat";
 export const SHOLAT_JUMAT_POIN_VALUE = 2;
 
+export const KEPUTRIAN_POIN_NAMA = "Keputrian";
+export const KEPUTRIAN_POIN_VALUE = 2;
+
 export const checkSholatToday = async (siswaId: string, namaPoin: string = SHOLAT_POIN_NAMA): Promise<boolean> => {
   const today = new Date().toISOString().slice(0, 10);
   const { data } = await supabase
@@ -1295,6 +1298,7 @@ export interface RekapGabunganRow {
   sholat: Record<string, string>;
   sholatDhuha: Record<string, string>;
   sholatJumat: Record<string, string>;
+  keputrian: Record<string, string>;
 }
 
 export const getRekapGabungan = async (startDate: string, endDate: string): Promise<RekapGabunganRow[]> => {
@@ -1313,7 +1317,7 @@ export const getRekapGabungan = async (startDate: string, endDate: string): Prom
   const { data: sholatData } = await supabase
     .from("riwayat_poin")
     .select("siswa_id, created_at, nama_poin")
-    .in("nama_poin", [SHOLAT_POIN_NAMA, SHOLAT_DHUHA_POIN_NAMA, SHOLAT_JUMAT_POIN_NAMA])
+    .in("nama_poin", [SHOLAT_POIN_NAMA, SHOLAT_DHUHA_POIN_NAMA, SHOLAT_JUMAT_POIN_NAMA, KEPUTRIAN_POIN_NAMA])
     .gte("created_at", `${startDate}T00:00:00`)
     .lte("created_at", `${endDate}T23:59:59`);
 
@@ -1326,6 +1330,7 @@ export const getRekapGabungan = async (startDate: string, endDate: string): Prom
   const sholatMap: Record<string, Record<string, string>> = {};
   const sholatDhuhaMap: Record<string, Record<string, string>> = {};
   const sholatJumatMap: Record<string, Record<string, string>> = {};
+  const keputrianMap: Record<string, Record<string, string>> = {};
 
   (sholatData || []).forEach((s: any) => {
     const dateStr = s.created_at.slice(0, 10);
@@ -1335,6 +1340,9 @@ export const getRekapGabungan = async (startDate: string, endDate: string): Prom
     } else if (s.nama_poin === SHOLAT_JUMAT_POIN_NAMA) {
       if (!sholatJumatMap[s.siswa_id]) sholatJumatMap[s.siswa_id] = {};
       sholatJumatMap[s.siswa_id][dateStr] = "jumat";
+    } else if (s.nama_poin === KEPUTRIAN_POIN_NAMA) {
+      if (!keputrianMap[s.siswa_id]) keputrianMap[s.siswa_id] = {};
+      keputrianMap[s.siswa_id][dateStr] = "keputrian";
     } else {
       if (!sholatMap[s.siswa_id]) sholatMap[s.siswa_id] = {};
       sholatMap[s.siswa_id][dateStr] = "sholat";
@@ -1351,6 +1359,7 @@ export const getRekapGabungan = async (startDate: string, endDate: string): Prom
     sholat: sholatMap[s.id] || {},
     sholatDhuha: sholatDhuhaMap[s.id] || {},
     sholatJumat: sholatJumatMap[s.id] || {},
+    keputrian: keputrianMap[s.id] || {},
   }));
 };
 

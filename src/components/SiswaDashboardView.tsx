@@ -33,12 +33,14 @@ import QrScanner from "./scan/QrScanner";
 interface SiswaDashboardViewProps {
   userSession: UserSession;
   activeTab: string;
+  onSelectTab?: (tab: string) => void;
 }
 
-export default function SiswaDashboardView({ userSession, activeTab }: SiswaDashboardViewProps) {
+export default function SiswaDashboardView({ userSession, activeTab, onSelectTab }: SiswaDashboardViewProps) {
   const [siswaDetail, setSiswaDetail] = useState<Siswa | null>(null);
   const [riwayat, setRiwayat] = useState<RiwayatPoin[]>([]);
   const [absensi, setAbsensi] = useState<any[]>([]);
+  const [sertifikatCount, setSertifikatCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isZoomed, setIsZoomed] = useState(false);
@@ -353,6 +355,17 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
 
           if (absensiError) throw absensiError;
           setAbsensi(absensiData || []);
+
+          // 2c. Fetch Certificate Count for this student
+          try {
+            const { count: certCount } = await supabase
+              .from("kegiatan_guru")
+              .select("id", { count: "exact", head: true })
+              .eq("user_id", userSession.id);
+            setSertifikatCount(certCount || 0);
+          } catch (cErr) {
+            console.error("Failed to load certificate count:", cErr);
+          }
         }
       } catch (error) {
         console.error("Failed to load student dashboard details:", error);
@@ -362,7 +375,7 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
     }
 
     loadStudentData();
-  }, [userSession.nis, userSession.email, userSession.fullName]);
+  }, [userSession.id, userSession.nis, userSession.email, userSession.fullName]);
 
   const historyTotalPages = Math.ceil((historyTab === "poin" ? riwayat.length : absensi.length) / historyPerPage);
   const paginatedData = historyTab === "poin"
@@ -557,7 +570,7 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
           </div>
 
           {/* Stats Summary row */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
             {/* Positive Points Card */}
             <div className="bg-white rounded-3xl p-6 border border-brand-100 shadow-xl shadow-brand-900/5 flex items-center gap-4">
               <div className="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold flex-shrink-0">
@@ -579,6 +592,21 @@ export default function SiswaDashboardView({ userSession, activeTab }: SiswaDash
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Akumulasi Pelanggaran</span>
                 <span className="text-xl font-black text-rose-600">{totalPelanggaran} Poin</span>
                 <p className="text-[10px] text-slate-400 mt-0.5">Poin minus dari melanggar aturan.</p>
+              </div>
+            </div>
+
+            {/* Student Certificates Card */}
+            <div
+              onClick={() => onSelectTab && onSelectTab("siswa_sertifikat")}
+              className="bg-white rounded-3xl p-6 border border-brand-100 shadow-xl shadow-brand-900/5 flex items-center gap-4 cursor-pointer hover:border-brand-300 hover:scale-[1.02] transition-all group"
+            >
+              <div className="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold flex-shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                <Award className="w-7 h-7" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Sertifikat Saya</span>
+                <span className="text-xl font-black text-indigo-600">{sertifikatCount} Berkas</span>
+                <p className="text-[10px] text-slate-400 mt-0.5 truncate group-hover:text-indigo-600 font-semibold transition-colors">Klik untuk lihat & unduh &rarr;</p>
               </div>
             </div>
           </div>

@@ -1495,10 +1495,10 @@ durasi_jam: null,
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h2 className="text-xl font-extrabold text-brand-950 tracking-tight">
-            Kelola & Desainer Sertifikat Guru
+            Kelola & Desainer Sertifikat Guru & Murid
           </h2>
           <p className="text-xs text-brand-500 font-semibold mt-1">
-            Terbitkan sertifikat kegiatan guru dan atur posisi teks/TTD pada template sertifikat secara dinamis.
+            Terbitkan sertifikat kegiatan & prestasi untuk guru maupun murid, serta atur tata letak template sertifikat secara dinamis.
           </p>
         </div>
 

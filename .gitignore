@@ -9,3 +9,4 @@ coverage/
 # Data export siswa (berisi data pribadi: NIS, nama, face_embedding)
 siswa_rows*.csv
 usulan_username*.csv
+scratch/

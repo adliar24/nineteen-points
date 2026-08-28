@@ -24,7 +24,9 @@ import {
   SHOLAT_DHUHA_POIN_NAMA,
   SHOLAT_DHUHA_POIN_VALUE,
   SHOLAT_JUMAT_POIN_NAMA,
-  SHOLAT_JUMAT_POIN_VALUE
+  SHOLAT_JUMAT_POIN_VALUE,
+  KEPUTRIAN_POIN_NAMA,
+  KEPUTRIAN_POIN_VALUE
 } from "../dbStore";
 import { toSentenceCase, compareClasses } from "../formatName";
 import FaceScanner from "./face/FaceScanner";
@@ -36,7 +38,7 @@ interface SholatScanViewProps {
 }
 
 export default function SholatScanView({ userSession }: SholatScanViewProps) {
-  const [sholatType, setSholatType] = useState<"dhuha" | "jumat" | "berjamaah">("dhuha");
+  const [sholatType, setSholatType] = useState<"dhuha" | "jumat" | "keputrian" | "berjamaah">("dhuha");
   const [manualSelectedClass, setManualSelectedClass] = useState("Semua");
 
   const currentPoinNama =
@@ -44,6 +46,8 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
       ? SHOLAT_DHUHA_POIN_NAMA
       : sholatType === "jumat"
       ? SHOLAT_JUMAT_POIN_NAMA
+      : sholatType === "keputrian"
+      ? KEPUTRIAN_POIN_NAMA
       : SHOLAT_POIN_NAMA;
 
   const currentPoinValue =
@@ -51,6 +55,8 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
       ? SHOLAT_DHUHA_POIN_VALUE
       : sholatType === "jumat"
       ? SHOLAT_JUMAT_POIN_VALUE
+      : sholatType === "keputrian"
+      ? KEPUTRIAN_POIN_VALUE
       : SHOLAT_POIN_VALUE;
 
   const { data: siswaList = [] } = useQuery({
@@ -192,7 +198,13 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
   };
 
   const sholatTypeLabel =
-    sholatType === "dhuha" ? "Sholat Dhuha" : sholatType === "jumat" ? "Sholat Jumat" : "Sholat Berjamaah";
+    sholatType === "dhuha"
+      ? "Sholat Dhuha"
+      : sholatType === "jumat"
+      ? "Sholat Jumat"
+      : sholatType === "keputrian"
+      ? "Keputrian"
+      : "Sholat Berjamaah";
 
   return (
     <div className="space-y-6 pb-12 animate-fade-in font-sans">
@@ -208,7 +220,7 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
         </div>
 
         {/* Tab Selector for Sholat Type */}
-        <div className="flex bg-slate-100 p-1 rounded-2xl border border-slate-200 w-fit shrink-0">
+        <div className="flex flex-wrap bg-slate-100 p-1 rounded-2xl border border-slate-200 w-fit shrink-0 gap-1">
           <button
             onClick={() => setSholatType("dhuha")}
             className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
@@ -228,6 +240,16 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
             }`}
           >
             Sholat Jumat
+          </button>
+          <button
+            onClick={() => setSholatType("keputrian")}
+            className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+              sholatType === "keputrian"
+                ? "bg-white text-rose-700 shadow-md"
+                : "text-slate-500 hover:text-slate-800"
+            }`}
+          >
+            Keputrian
           </button>
           <button
             onClick={() => setSholatType("berjamaah")}
@@ -452,7 +474,7 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
-                    +{SHOLAT_POIN_VALUE}
+                    +{currentPoinValue}
                   </span>
                   <span className="text-[10px] text-brand-400 font-mono">
                     {new Date(row.created_at).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}

@@ -79,13 +79,14 @@ export default function HistoryView({ onRefreshTrigger, refreshCount, userSessio
   };
 
   const handleEdit = (log: RiwayatPoin) => {
+    if (!isAdmin) return;
     setEditTarget(log);
     setEditNamaPoin(log.nama_poin);
     setEditNilai(log.nilai_diberikan);
   };
 
   const executeEdit = async () => {
-    if (!editTarget) return;
+    if (!editTarget || !isAdmin) return;
     try {
       const nilai = Math.abs(editNilai) * (editTarget.nilai_diberikan >= 0 ? 1 : -1);
       await updateRiwayat(editTarget.id, editTarget.siswa_id, editNamaPoin, nilai, editTarget.guru_email, editTarget.semester);
@@ -204,7 +205,7 @@ export default function HistoryView({ onRefreshTrigger, refreshCount, userSessio
               ) : (
                 historyList.map((log) => {
                   const isPositive = log.nilai_diberikan > 0;
-                  const canEditThis = canRevert(log) && isCustomPoint(log.nama_poin);
+                  const canEditThis = isAdmin && isCustomPoint(log.nama_poin);
                   const canRevertThis = canRevert(log);
                   return (
                     <tr key={log.id} className="hover:bg-brand-50/10 transition-colors">

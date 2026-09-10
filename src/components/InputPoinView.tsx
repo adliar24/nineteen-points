@@ -59,6 +59,8 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
   const [customPointValue, setCustomPointValue] = useState(10);
   const [isCustomPoint, setIsCustomPoint] = useState(false);
   const [customPointType, setCustomPointType] = useState<"positif" | "negatif">("positif");
+  const isAdmin = userSession?.role === "super_admin";
+  const isCustomMode = isAdmin && isCustomPoint;
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -170,12 +172,12 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
     let name = "";
     let value = 0;
 
-    if (isCustomPoint && userSession?.role !== "piket") {
-      if (!customPointName) {
+    if (isCustomMode) {
+      if (!customPointName.trim()) {
         alert("Mohon isi deskripsi poin kustom.");
         return;
       }
-      name = customPointName;
+      name = customPointName.trim();
       const absValue = Math.abs(customPointValue) || 0;
       value = customPointType === "positif" ? absValue : -absValue;
     } else {
@@ -519,13 +521,13 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
                       Konfigurasi Poin Karakter
                     </h5>
                     
-                    {/* Mode Toggle: Master vs Custom */}
-                    {userSession?.role !== "piket" && (
+                    {/* Mode Toggle: Master vs Custom (Hanya untuk Admin) */}
+                    {isAdmin && (
                        <button
                          onClick={() => setIsCustomPoint(!isCustomPoint)}
                          className="text-[10px] font-black text-brand-600 hover:text-brand-900 underline tracking-wider cursor-pointer"
                        >
-                         {isCustomPoint ? "Pilih Aturan Baku" : "Gunakan Poin Kustom"}
+                         {isCustomMode ? "Pilih Aturan Baku" : "Gunakan Poin Kustom"}
                        </button>
                      )}
                   </div>
@@ -559,7 +561,7 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
                     </motion.div>
                   )}
 
-                  {!isCustomPoint ? (
+                  {!isCustomMode ? (
                     /* SELECT STANDARD RULE - MODIFIED PER USER REQUEST TO BE HIGHLY COMPACT, SEARCHABLE & CATEGORIZED */
                     <div className="space-y-2.5">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">

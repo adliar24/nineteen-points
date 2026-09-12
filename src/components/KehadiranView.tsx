@@ -38,10 +38,12 @@ import {
   getKehadiranListByPeriod,
   saveKehadiran,
   deleteKehadiran,
+  deleteRiwayat,
   setSisaSiswaSebagaiAlfa,
   AturanKehadiran
 } from "../dbStore";
 import { toSentenceCase } from "../formatName";
+import { formatLocalDate } from "../parseDateSafe";
 import { supabase } from "../supabaseClient";
 import * as XLSX from "xlsx";
 
@@ -67,35 +69,37 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
     queryFn: getAturanKehadiranList,
   });
 
-  // Date filters
-  const [filterType, setFilterType] = useState<"hari_ini" | "minggu_ini" | "bulan_ini" | "semua" | "kustom">("hari_ini");
-  const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().slice(0, 10));
-  const [customStart, setCustomStart] = useState(() => new Date().toISOString().slice(0, 10));
-  const [customEnd, setCustomEnd] = useState(() => new Date().toISOString().slice(0, 10));
+  // Date filters - default to bulan_ini so rekap is immediately visible
+  const [filterType, setFilterType] = useState<"hari_ini" | "minggu_ini" | "bulan_ini" | "semua" | "kustom">("bulan_ini");
+  const [selectedDate, setSelectedDate] = useState(() => formatLocalDate(new Date()));
+  const [customStart, setCustomStart] = useState(() => formatLocalDate(new Date()));
+  const [customEnd, setCustomEnd] = useState(() => formatLocalDate(new Date()));
 
-  // Compute actual date range for query
+  // Compute actual date range for query safely in local Indonesian time
   const dateRange = useMemo(() => {
-    const todayStr = new Date().toISOString().slice(0, 10);
+    const todayStr = formatLocalDate(new Date());
     if (filterType === "hari_ini") {
       return { start: todayStr, end: todayStr };
     } else if (filterType === "minggu_ini") {
-      const today = new Date();
-      const day = today.getDay();
-      const diff = today.getDate() - day + (day === 0 ? -6 : 1);
-      const monday = new Date(today.setDate(diff));
-      const sunday = new Date(monday);
-      sunday.setDate(monday.getDate() + 6);
+      const now = new Date();
+      const day = now.getDay();
+      const diffToMonday = day === 0 ? -6 : 1 - day;
+      const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + diffToMonday);
+      const sunday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + diffToMonday + 6);
       return {
-        start: monday.toISOString().slice(0, 10),
-        end: sunday.toISOString().slice(0, 10)
+        start: formatLocalDate(monday),
+        end: formatLocalDate(sunday)
       };
     } else if (filterType === "bulan_ini") {
       const now = new Date();
       const y = now.getFullYear();
       const m = now.getMonth();
-      const start = new Date(y, m, 1).toISOString().slice(0, 10);
-      const end = new Date(y, m + 1, 0).toISOString().slice(0, 10);
-      return { start, end };
+      const start = new Date(y, m, 1);
+      const end = new Date(y, m + 1, 0);
+      return {
+        start: formatLocalDate(start),
+        end: formatLocalDate(end)
+      };
     } else if (filterType === "kustom") {
       return { start: customStart, end: customEnd };
     } else { // "semua"
@@ -578,7 +582,12 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
     if (!confirm) return;
 
     try {
-      await deleteKehadiran(recordId);
+      const record = rawKehadiranList.find((l: any) => l.id === recordId);
+      if (record?.source === "riwayat_poin") {
+        await deleteRiwayat(recordId);
+      } else {
+        await deleteKehadiran(recordId);
+      }
       queryClient.invalidateQueries({ queryKey: ["kehadiran"] });
       queryClient.invalidateQueries({ queryKey: ["siswa"] });
       queryClient.invalidateQueries({ queryKey: ["riwayat"] });
@@ -687,7 +696,7 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
       const logs = rawKehadiranList.filter(l => l.siswa_id === student.id);
       
       const countHadir = logs.filter(l => l.status === "tepat_waktu").length;
-      const countTelat = logs.filter(l => l.status.startsWith("telat_")).length;
+      const countTelat = logs.filter(l => l.status.startsWith("telat_") || l.status === "terlambat").length;
       const countSakit = logs.filter(l => l.status === "sakit").length;
       const countIzin = logs.filter(l => l.status === "izin").length;
       const countAlfa = logs.filter(l => l.status === "alfa").length;
@@ -1915,7 +1924,7 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
                                   ? "bg-purple-50 border-purple-100 text-purple-700"
                                   : "bg-amber-50 border-amber-100 text-amber-700"
                               }`}>
-                                {rule?.label || log.status}
+                                {log.nama_poin || rule?.label || (log.status.startsWith("telat_") ? `Terlambat ${log.status.replace("telat_", "")} Menit` : log.status)}
                               </span>
                             </td>
                             <td className="py-3 px-3">

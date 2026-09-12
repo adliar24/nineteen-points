@@ -28,6 +28,7 @@ import html2canvas from "html2canvas-pro";
 import SkeletonLoader from "./SkeletonLoader";
 import { toSentenceCase } from "../formatName";
 import { getVisiblePages } from "../pagination";
+import { getWibDateStr } from "../parseDateSafe";
 import QrScanner from "./scan/QrScanner";
 
 interface SiswaDashboardViewProps {
@@ -354,7 +355,34 @@ export default function SiswaDashboardView({ userSession, activeTab, onSelectTab
             .order("tanggal", { ascending: false });
 
           if (absensiError) throw absensiError;
-          setAbsensi(absensiData || []);
+
+          const combinedAbsensi: any[] = [...(absensiData || [])];
+          const existingDates = new Set((absensiData || []).map((a: any) => a.tanggal));
+
+          (riwayatData || []).forEach((r: any) => {
+            const lower = (r.nama_poin || "").toLowerCase();
+            if (lower.includes("telat") || lower.includes("lambat")) {
+              const wibDate = getWibDateStr(r.created_at);
+              if (!existingDates.has(wibDate)) {
+                let status = "telat_5";
+                if (lower.includes("06.40") || r.nilai_diberikan === -10) status = "telat_10";
+                else if (r.nilai_diberikan === -15) status = "telat_15";
+
+                combinedAbsensi.push({
+                  id: r.id,
+                  tanggal: wibDate,
+                  status: status,
+                  nilai_poin_diberikan: r.nilai_diberikan,
+                  pencatat_email: r.guru_email,
+                  created_at: r.created_at,
+                  nama_poin: r.nama_poin
+                });
+              }
+            }
+          });
+
+          combinedAbsensi.sort((a, b) => b.tanggal.localeCompare(a.tanggal));
+          setAbsensi(combinedAbsensi);
 
           // 2c. Fetch Certificate Count for this student
           try {
@@ -491,7 +519,7 @@ export default function SiswaDashboardView({ userSession, activeTab, onSelectTab
   const totalPelanggaran = riwayat.filter(r => r.nilai_diberikan < 0).reduce((acc, r) => acc + r.nilai_diberikan, 0);
 
   const countTepatWaktu = absensi.filter(a => a.status === "tepat_waktu").length;
-  const countTerlambat = absensi.filter(a => a.status.startsWith("telat_")).length;
+  const countTerlambat = absensi.filter(a => a.status.startsWith("telat_") || a.status === "terlambat").length;
   const countAlfa = absensi.filter(a => a.status === "alfa").length;
 
   return (
@@ -879,12 +907,13 @@ export default function SiswaDashboardView({ userSession, activeTab, onSelectTab
               paginatedData.length > 0 ? (
                 (paginatedData as any[]).map((record) => {
                   const isPositive = record.nilai_poin_diberikan >= 0;
-                  const statusLabel = record.status === "tepat_waktu" ? "Hadir Tepat Waktu"
+                  const statusLabel = record.nama_poin || (record.status === "tepat_waktu" ? "Hadir Tepat Waktu"
                     : record.status === "telat_5" ? "Terlambat 5 Menit"
                     : record.status === "telat_10" ? "Terlambat 10 Menit"
                     : record.status === "telat_15" ? "Terlambat 15 Menit"
                     : record.status === "alfa" ? "Alfa / Tanpa Keterangan"
-                    : record.status;
+                    : record.status.startsWith("telat_") ? `Terlambat ${record.status.replace("telat_", "")} Menit`
+                    : record.status);
                   return (
                     <div 
                       key={record.id} 

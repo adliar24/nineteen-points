@@ -20,3 +20,29 @@ export function parseDateSafe(dateStr: string | null | undefined): Date {
   // to force local timezone parsing instead of UTC
   return new Date(dateStr + "T00:00:00");
 }
+
+/**
+ * Format Date object into local 'YYYY-MM-DD' without UTC shift.
+ */
+export function formatLocalDate(d: Date): string {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+/**
+ * Convert UTC timestamp (or ISO string) into Indonesia WIB (UTC+7) 'YYYY-MM-DD'.
+ */
+export function getWibDateStr(isoString: string | null | undefined): string {
+  if (!isoString) return formatLocalDate(new Date());
+  try {
+    const d = new Date(isoString);
+    if (isNaN(d.getTime())) return isoString.slice(0, 10);
+    // Add 7 hours (WIB is UTC+7)
+    const wib = new Date(d.getTime() + 7 * 60 * 60 * 1000);
+    return wib.toISOString().slice(0, 10);
+  } catch {
+    return isoString.slice(0, 10);
+  }
+}

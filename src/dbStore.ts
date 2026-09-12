@@ -1,6 +1,6 @@
 import { Siswa, MasterPoin, RiwayatPoin } from "./types";
 import { supabase, supabaseAdminAuth } from "./supabaseClient";
-import { parseDateSafe } from "./parseDateSafe";
+import { parseDateSafe, getWibDateStr } from "./parseDateSafe";
 import { queryClient } from "./queryClient";
 import * as XLSX from "xlsx";
 
@@ -687,7 +687,8 @@ export interface AturanKehadiran {
 }
 
 export const getKehadiranListByPeriod = async (startDate: string, endDate: string): Promise<any[]> => {
-  const { data, error } = await supabase
+  // 1. Fetch records from 'kehadiran' table
+  let kehadiranQuery = supabase
     .from("kehadiran")
     .select(`
       id,
@@ -697,14 +698,83 @@ export const getKehadiranListByPeriod = async (startDate: string, endDate: strin
       nilai_poin_diberikan,
       pencatat_email,
       created_at
-    `)
-    .gte("tanggal", startDate)
-    .lte("tanggal", endDate);
-  if (error) {
-    console.error("Error fetching attendance by period:", error);
-    return [];
+    `);
+  if (startDate !== "1970-01-01") {
+    kehadiranQuery = kehadiranQuery.gte("tanggal", startDate);
   }
-  return data || [];
+  if (endDate !== "9999-12-31") {
+    kehadiranQuery = kehadiranQuery.lte("tanggal", endDate);
+  }
+
+  const { data: kehadiranData, error: kErr } = await kehadiranQuery;
+  if (kErr) {
+    console.error("Error fetching attendance from kehadiran table:", kErr);
+  }
+
+  // 2. Fetch lateness/terlambat records from 'riwayat_poin' table
+  let riwayatQuery = supabase
+    .from("riwayat_poin")
+    .select(`
+      id,
+      siswa_id,
+      nilai_diberikan,
+      nama_poin,
+      guru_email,
+      created_at,
+      semester
+    `)
+    .or("nama_poin.ilike.%terlambat%,nama_poin.ilike.%telat%");
+
+  // Convert WIB dates to UTC timestamps for timestamptz range query
+  if (startDate !== "1970-01-01") {
+    const startUtc = new Date(`${startDate}T00:00:00+07:00`).toISOString();
+    riwayatQuery = riwayatQuery.gte("created_at", startUtc);
+  }
+  if (endDate !== "9999-12-31") {
+    const endUtc = new Date(`${endDate}T23:59:59+07:00`).toISOString();
+    riwayatQuery = riwayatQuery.lte("created_at", endUtc);
+  }
+
+  const { data: riwayatData, error: rErr } = await riwayatQuery;
+  if (rErr) {
+    console.error("Error fetching late records from riwayat_poin table:", rErr);
+  }
+
+  const combined: any[] = [...(kehadiranData || [])];
+  const existingSet = new Set((kehadiranData || []).map((k: any) => `${k.siswa_id}_${k.tanggal}`));
+
+  (riwayatData || []).forEach((r: any) => {
+    const wibDate = getWibDateStr(r.created_at);
+    if (wibDate >= startDate && wibDate <= endDate) {
+      const key = `${r.siswa_id}_${wibDate}`;
+      let status = "telat_5";
+      const lower = (r.nama_poin || "").toLowerCase();
+      if (lower.includes("06.40") || r.nilai_diberikan === -10) {
+        status = "telat_10";
+      } else if (r.nilai_diberikan === -15) {
+        status = "telat_15";
+      } else if (lower.includes("06.30") || r.nilai_diberikan === -5) {
+        status = "telat_5";
+      }
+
+      // Avoid duplication if the same record is already registered in kehadiran table
+      if (!existingSet.has(key)) {
+        combined.push({
+          id: r.id,
+          siswa_id: r.siswa_id,
+          tanggal: wibDate,
+          status: status,
+          nilai_poin_diberikan: r.nilai_diberikan,
+          pencatat_email: r.guru_email,
+          created_at: r.created_at,
+          nama_poin: r.nama_poin,
+          source: "riwayat_poin"
+        });
+      }
+    }
+  });
+
+  return combined;
 };
 
 export interface KehadiranRow {
@@ -1377,6 +1447,26 @@ export const getRekapGabungan = async (startDate: string, endDate: string): Prom
   (kehadiranData || []).forEach((k: any) => {
     if (!kehadiranMap[k.siswa_id]) kehadiranMap[k.siswa_id] = {};
     kehadiranMap[k.siswa_id][k.tanggal] = k.status;
+  });
+
+  const startUtc = startDate !== "1970-01-01" ? new Date(`${startDate}T00:00:00+07:00`).toISOString() : undefined;
+  const endUtc = endDate !== "9999-12-31" ? new Date(`${endDate}T23:59:59+07:00`).toISOString() : undefined;
+
+  let telatQuery = supabase
+    .from("riwayat_poin")
+    .select("siswa_id, created_at, nama_poin")
+    .or("nama_poin.ilike.%terlambat%,nama_poin.ilike.%telat%");
+  if (startUtc) telatQuery = telatQuery.gte("created_at", startUtc);
+  if (endUtc) telatQuery = telatQuery.lte("created_at", endUtc);
+
+  const { data: telatData } = await telatQuery;
+
+  (telatData || []).forEach((t: any) => {
+    const wDate = getWibDateStr(t.created_at);
+    if (!kehadiranMap[t.siswa_id]) kehadiranMap[t.siswa_id] = {};
+    if (!kehadiranMap[t.siswa_id][wDate]) {
+      kehadiranMap[t.siswa_id][wDate] = "telat";
+    }
   });
 
   const sholatMap: Record<string, Record<string, string>> = {};

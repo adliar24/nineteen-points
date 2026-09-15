@@ -505,7 +505,7 @@ export default function App() {
   if (userSession.role === "piket") {
     sidebarElements = [
       { type: "item", id: "leaderboard", label: "Papan Peringkat", icon: Trophy, description: "Hall of fame & prestasi murid" },
-      { type: "item", id: "input_kehadiran", label: "Input Kehadiran", icon: ClipboardCheck, description: "Scan QR & input absen harian" },
+      { type: "item", id: "input_kehadiran", label: "Scan Kehadiran", icon: ClipboardCheck, description: "Scan QR & absensi harian" },
       { type: "item", id: "kehadiran", label: "Kehadiran Murid", icon: Users, description: "Rekap absensi & poin murid" },
       { type: "item", id: "rekap_poin", label: "Rekap Poin", icon: ListChecks, description: "Rekapitulasi poin murid" },
       { type: "item", id: "scan_sholat", label: "Input Keagamaan", icon: BookOpen, description: "Scan QR sholat murid" },
@@ -548,7 +548,7 @@ export default function App() {
         label: "Input Data",
         icon: ClipboardCheck,
         items: [
-          { id: "input_kehadiran", label: "Input Kehadiran", icon: LogIn, description: "Absensi guru & murid" },
+          { id: "input_kehadiran", label: "Scan Kehadiran", icon: LogIn, description: "Absensi harian murid" },
           { id: "input", label: "Input Poin", icon: Edit3, description: "Pencatatan sanksi & prestasi" },
           { id: "scan_sholat", label: "Input Keagamaan", icon: BookOpen, description: "Scan QR sholat murid" }
         ]
@@ -574,7 +574,7 @@ export default function App() {
         label: "Input Data",
         icon: ClipboardCheck,
         items: [
-          { id: "input_kehadiran", label: "Input Kehadiran", icon: LogIn, description: "Absensi guru & murid" },
+          { id: "input_kehadiran", label: "Scan Kehadiran", icon: LogIn, description: "Absensi harian murid" },
           { id: "input", label: "Input Poin", icon: Edit3, description: "Pencatatan sanksi & prestasi" },
           { id: "scan_sholat", label: "Input Keagamaan", icon: BookOpen, description: "Scan QR sholat murid" }
         ]

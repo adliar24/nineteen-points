@@ -831,7 +831,8 @@ export const getKehadiranListByDate = async (date: string): Promise<KehadiranRow
         foto_url
       )
     `)
-    .eq("tanggal", date);
+    .eq("tanggal", date)
+    .order("created_at", { ascending: false });
   if (error) {
     console.error("Error fetching attendance by date:", error);
     return [];

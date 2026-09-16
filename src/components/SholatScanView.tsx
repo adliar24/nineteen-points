@@ -220,43 +220,43 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
         </div>
 
         {/* Tab Selector for Sholat Type */}
-        <div className="flex flex-wrap bg-slate-100 p-1 rounded-2xl border border-slate-200 w-fit shrink-0 gap-1">
+        <div className="flex flex-wrap bg-white/90 backdrop-blur-md p-1.5 rounded-2xl border border-brand-150 shadow-xs w-fit shrink-0 gap-1.5">
           <button
             onClick={() => setSholatType("dhuha")}
-            className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+            className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
               sholatType === "dhuha"
-                ? "bg-white text-amber-700 shadow-md"
-                : "text-slate-500 hover:text-slate-800"
+                ? "bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-md shadow-amber-500/30 scale-[1.02]"
+                : "text-slate-600 hover:text-amber-700 hover:bg-amber-50/60"
             }`}
           >
             Sholat Dhuha
           </button>
           <button
             onClick={() => setSholatType("jumat")}
-            className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+            className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
               sholatType === "jumat"
-                ? "bg-white text-indigo-700 shadow-md"
-                : "text-slate-500 hover:text-slate-800"
+                ? "bg-gradient-to-r from-indigo-600 to-brand-600 text-white shadow-md shadow-indigo-600/30 scale-[1.02]"
+                : "text-slate-600 hover:text-indigo-700 hover:bg-indigo-50/60"
             }`}
           >
             Sholat Jumat
           </button>
           <button
             onClick={() => setSholatType("keputrian")}
-            className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+            className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
               sholatType === "keputrian"
-                ? "bg-white text-rose-700 shadow-md"
-                : "text-slate-500 hover:text-slate-800"
+                ? "bg-gradient-to-r from-rose-500 to-pink-600 text-white shadow-md shadow-rose-500/30 scale-[1.02]"
+                : "text-slate-600 hover:text-rose-700 hover:bg-rose-50/60"
             }`}
           >
             Keputrian
           </button>
           <button
             onClick={() => setSholatType("berjamaah")}
-            className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+            className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
               sholatType === "berjamaah"
-                ? "bg-white text-emerald-700 shadow-md"
-                : "text-slate-500 hover:text-slate-800"
+                ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-600/30 scale-[1.02]"
+                : "text-slate-600 hover:text-emerald-700 hover:bg-emerald-50/60"
             }`}
           >
             Berjamaah
@@ -290,57 +290,70 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
 
       {/* SCAN MODE */}
       {mode === "scan" && (
-        <div className="max-w-md mx-auto bg-white p-6 rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 space-y-5 text-center">
-          <div className="flex items-center justify-between border-b border-brand-50 pb-3">
+        <div className="relative overflow-hidden max-w-md mx-auto bg-white/95 backdrop-blur-xl p-8 rounded-3xl border border-brand-150 shadow-xl shadow-brand-950/5 space-y-6 text-center card-hover-effect">
+          <div className="absolute -top-16 -right-16 w-36 h-36 bg-emerald-400/15 rounded-full blur-2xl pointer-events-none" />
+          <div className="absolute -bottom-16 -left-16 w-36 h-36 bg-teal-400/15 rounded-full blur-2xl pointer-events-none" />
+
+          <div className="flex items-center justify-between border-b border-brand-100/70 pb-3.5">
             <div className="text-left space-y-0.5">
-              <h4 className="font-extrabold text-sm text-brand-950">Scanner {sholatTypeLabel}</h4>
-              <p className="text-[11px] text-brand-400 font-semibold">{scanType === "qr" ? "Mode Scan QR Kartu" : "Mode Scan Wajah AI"}</p>
+              <h4 className="font-black text-base text-brand-950 tracking-tight">Scanner {sholatTypeLabel}</h4>
+              <p className="text-[11px] text-brand-500 font-semibold">{scanType === "qr" ? "Presensi Kartu QR" : "AI Face Recognition"}</p>
             </div>
-            <div className="text-right">
-              <p className="text-[9px] font-black text-brand-400 uppercase tracking-wider">Hari Ini</p>
-              <p className="text-base font-mono font-black text-emerald-700">{scannedCount}</p>
+            <div className="text-right bg-emerald-50 px-3 py-1 rounded-xl border border-emerald-200/70">
+              <p className="text-[9px] font-black text-emerald-700 uppercase tracking-wider">Tercatat Hari Ini</p>
+              <p className="text-base font-mono font-black text-emerald-800 leading-tight">{scannedCount}</p>
             </div>
           </div>
 
           {scanType === "qr" ? (
-            <div className="space-y-4">
-              <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto border border-emerald-200">
-                <QrCode className="w-7 h-7" />
+            <div className="space-y-5">
+              <div className="relative mx-auto w-20 h-20 bg-gradient-to-br from-emerald-50 to-teal-100/70 text-emerald-600 rounded-3xl flex items-center justify-center border-2 border-emerald-200/90 shadow-xl shadow-emerald-600/15">
+                <QrCode className="w-10 h-10" />
+                <div className="absolute -inset-1.5 rounded-3xl border border-emerald-300/40 animate-pulse pointer-events-none" />
               </div>
               <div className="space-y-1">
-                <h5 className="font-extrabold text-xs text-brand-950">Scan QR Kartu Pelajar</h5>
-                <p className="text-xs text-brand-400 font-semibold max-w-xs mx-auto">
-                  Pindai kartu QR siswa untuk presensi {sholatTypeLabel.toLowerCase()} cepat.
+                <h5 className="font-black text-sm text-brand-950">Scan QR Kartu Pelajar</h5>
+                <p className="text-xs text-brand-500 font-medium max-w-xs mx-auto">
+                  Pindai kartu QR siswa untuk presensi {sholatTypeLabel.toLowerCase()} cepat tanpa henti.
                 </p>
               </div>
               <button
                 onClick={() => setShowQrScanner(true)}
-                className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 active:scale-98 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-emerald-600/20 cursor-pointer border-0 transition-all flex items-center justify-center gap-2"
+                className="w-full py-4 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-500 hover:opacity-95 text-white font-black text-xs uppercase tracking-widest rounded-2xl shadow-xl shadow-emerald-600/25 hover:shadow-emerald-600/40 hover:scale-[1.01] active:scale-[0.99] cursor-pointer border-0 transition-all duration-200 flex items-center justify-center gap-2.5"
               >
-                <QrCode className="w-4 h-4" />
+                <QrCode className="w-4.5 h-4.5" />
                 <span>Mulai Scan QR</span>
               </button>
             </div>
           ) : (
-            <div className="space-y-4">
-              <div className="w-14 h-14 bg-brand-50 text-brand-600 rounded-2xl flex items-center justify-center mx-auto border border-brand-200">
-                <ScanFace className="w-7 h-7" />
+            <div className="space-y-5">
+              <div className="relative mx-auto w-20 h-20 brand-gradient-soft text-brand-600 rounded-3xl flex items-center justify-center border-2 border-brand-200/90 shadow-xl shadow-brand-600/15">
+                <ScanFace className="w-10 h-10 text-brand-600" />
+                <div className="absolute -inset-1.5 rounded-3xl border border-brand-300/40 animate-pulse pointer-events-none" />
               </div>
               <div className="space-y-1">
-                <h5 className="font-extrabold text-xs text-brand-950">Scan Wajah AI Siswa</h5>
-                <p className="text-xs text-brand-400 font-semibold max-w-xs mx-auto">
+                <h5 className="font-black text-sm text-brand-950">Scan Wajah AI Siswa</h5>
+                <p className="text-xs text-brand-500 font-medium max-w-xs mx-auto">
                   Posisikan wajah siswa di depan kamera untuk verifikasi instan.
                 </p>
               </div>
               <button
                 onClick={() => setShowFaceScanner(true)}
-                className="w-full py-3.5 brand-gradient hover:opacity-95 active:scale-98 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-brand-500/20 cursor-pointer border-0 transition-all flex items-center justify-center gap-2"
+                className="w-full py-4 brand-gradient hover:opacity-95 text-white font-black text-xs uppercase tracking-widest rounded-2xl shadow-xl shadow-brand-500/25 hover:shadow-brand-500/40 hover:scale-[1.01] active:scale-[0.99] cursor-pointer border-0 transition-all duration-200 flex items-center justify-center gap-2.5"
               >
-                <ScanFace className="w-4 h-4" />
+                <ScanFace className="w-4.5 h-4.5" />
                 <span>Mulai Scan Wajah</span>
               </button>
             </div>
           )}
+
+          <div className="flex items-center justify-center gap-3 pt-2 text-[10.5px] font-bold text-slate-400 border-t border-brand-50">
+            <span>⚡ Deteksi Cepat</span>
+            <span>&bull;</span>
+            <span>🛡️ Validasi Otomatis</span>
+            <span>&bull;</span>
+            <span>📱 Fullscreen Kamera</span>
+          </div>
         </div>
       )}
 

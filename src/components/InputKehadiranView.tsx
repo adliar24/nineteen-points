@@ -21,12 +21,19 @@ import {
   RotateCcw,
   Users,
   SlidersHorizontal,
+  Lock,
+  ShieldCheck,
+  ToggleLeft,
+  ToggleRight,
+  Info,
 } from "lucide-react";
 import { Siswa, UserSession } from "../types";
 import {
   getSiswaListLight,
   getAturanKehadiranList,
   getKehadiranListByDate,
+  getPiketConfig,
+  savePiketConfig,
   saveKehadiran,
   deleteKehadiran,
   updateCachedSiswaPoin,
@@ -43,19 +50,69 @@ interface InputKehadiranViewProps {
   userSession: UserSession;
 }
 
+export type PresetKehadiranStatus = "tepat_waktu" | "telat_15" | "izin" | "sakit" | "alfa";
+
 export default function InputKehadiranView({ userSession }: InputKehadiranViewProps) {
+  const isAdmin = userSession.role === "super_admin" || userSession.role === "kepala_sekolah";
   const todayStr = useMemo(() => formatLocalDate(new Date()), []);
 
-  // Cutoff time setting (persisted in localStorage, default "06:30")
+  // ── 1. GLOBAL PIKET CONFIG (SUPER ADMIN CONTROL) ──
+  const { data: remotePiketConfig, refetch: refetchPiketConfig } = useQuery({
+    queryKey: ["piketConfig"],
+    queryFn: getPiketConfig,
+    staleTime: 1000 * 30, // 30s cache
+  });
+
+  // Local state for configuration (synced with Supabase remotePiketConfig)
+  const [useCutoff, setUseCutoff] = useState<boolean>(() => {
+    return localStorage.getItem("19points_piket_use_cutoff") !== "false";
+  });
+
   const [cutoffTime, setCutoffTime] = useState<string>(() => {
     return localStorage.getItem("19points_piket_cutoff_time") || "06:30";
   });
 
-  useEffect(() => {
-    localStorage.setItem("19points_piket_cutoff_time", cutoffTime);
-  }, [cutoffTime]);
+  const [isSavingConfig, setIsSavingConfig] = useState(false);
+  const [configSaveSuccess, setConfigSaveSuccess] = useState(false);
 
-  // Realtime clock (seconds counter)
+  // Sync state when remote config updates
+  useEffect(() => {
+    if (remotePiketConfig) {
+      setUseCutoff(remotePiketConfig.useCutoff);
+      setCutoffTime(remotePiketConfig.cutoffTime || "06:30");
+    }
+  }, [remotePiketConfig]);
+
+  // Handle Admin Saving Configuration
+  const handleSaveAdminConfig = async (newUseCutoff: boolean, newCutoffTime: string) => {
+    if (!isAdmin) return;
+    setIsSavingConfig(true);
+    try {
+      await savePiketConfig(newUseCutoff, newCutoffTime);
+      setUseCutoff(newUseCutoff);
+      setCutoffTime(newCutoffTime);
+      queryClient.invalidateQueries({ queryKey: ["piketConfig"] });
+      setConfigSaveSuccess(true);
+      setTimeout(() => setConfigSaveSuccess(false), 3000);
+    } catch (err: any) {
+      setErrorMsg("Gagal menyimpan konfigurasi batas waktu: " + err.message);
+      setTimeout(() => setErrorMsg(null), 4000);
+    } finally {
+      setIsSavingConfig(false);
+    }
+  };
+
+  // ── 2. PRESET STATUS SELECTION (WHEN CUTOFF IS OFF OR MANUAL OVERRIDE) ──
+  const [selectedPreset, setSelectedPreset] = useState<PresetKehadiranStatus>(() => {
+    return (localStorage.getItem("19points_piket_selected_preset") as PresetKehadiranStatus) || "tepat_waktu";
+  });
+
+  const handleSelectPreset = (status: PresetKehadiranStatus) => {
+    setSelectedPreset(status);
+    localStorage.setItem("19points_piket_selected_preset", status);
+  };
+
+  // ── 3. REALTIME CLOCK ──
   const [currentTimeStr, setCurrentTimeStr] = useState<string>(() => {
     const d = new Date();
     return d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
@@ -69,17 +126,20 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
     return () => clearInterval(timer);
   }, []);
 
-  // Check if a given date/time is late relative to cutoffTime
-  const checkIsLate = useCallback((dateObj: Date = new Date(), cutoff: string = cutoffTime) => {
-    const [cutoffH, cutoffM] = cutoff.split(":").map(Number);
-    const cutoffMinutes = (isNaN(cutoffH) ? 6 : cutoffH) * 60 + (isNaN(cutoffM) ? 30 : cutoffM);
-    const currentMinutes = dateObj.getHours() * 60 + dateObj.getMinutes();
-    return currentMinutes > cutoffMinutes;
-  }, [cutoffTime]);
+  // Time check helper relative to cutoffTime
+  const checkIsLate = useCallback(
+    (dateObj: Date = new Date(), cutoff: string = cutoffTime) => {
+      const [cutoffH, cutoffM] = cutoff.split(":").map(Number);
+      const cutoffMinutes = (isNaN(cutoffH) ? 6 : cutoffH) * 60 + (isNaN(cutoffM) ? 30 : cutoffM);
+      const currentMinutes = dateObj.getHours() * 60 + dateObj.getMinutes();
+      return currentMinutes > cutoffMinutes;
+    },
+    [cutoffTime]
+  );
 
   const isCurrentTimeLate = useMemo(() => checkIsLate(), [checkIsLate, currentTimeStr]);
 
-  // Notification banners
+  // ── 4. NOTIFICATIONS & MODAL STATES ──
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -91,7 +151,7 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
   const [showQrScanner, setShowQrScanner] = useState(false);
   const [showFaceScanner, setShowFaceScanner] = useState(false);
 
-  // Core Data Queries
+  // ── 5. CORE QUERIES ──
   const { data: siswaList = [] } = useQuery({
     queryKey: ["siswa"],
     queryFn: getSiswaListLight,
@@ -112,7 +172,7 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
     queryFn: () => getKehadiranListByDate(todayStr),
   });
 
-  // Aturan points map
+  // Aturan points map with explicit required defaults (+10 Hadir, -15 Terlambat, -50 Alfa, 0 Izin/Sakit)
   const aturanMap = useMemo(() => {
     const map: Record<string, AturanKehadiran> = {};
     aturanList.forEach((rule) => {
@@ -121,10 +181,18 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
     return map;
   }, [aturanList]);
 
-  const tepatPoin = aturanMap["tepat_waktu"]?.nilai_poin ?? 15;
-  const telatPoin = aturanMap["telat_15"]?.nilai_poin ?? aturanMap["telat_5"]?.nilai_poin ?? -10;
+  // Explicit user-specified point rules
+  const POINT_VALUES: Record<PresetKehadiranStatus, number> = useMemo(() => {
+    return {
+      tepat_waktu: aturanMap["tepat_waktu"]?.nilai_poin ?? 10,
+      telat_15: aturanMap["telat_15"]?.nilai_poin ?? -15,
+      alfa: aturanMap["alfa"]?.nilai_poin ?? -50,
+      izin: aturanMap["izin"]?.nilai_poin ?? 0,
+      sakit: aturanMap["sakit"]?.nilai_poin ?? 0,
+    };
+  }, [aturanMap]);
 
-  // In-memory lookup map of siswa_id -> KehadiranRow for instant duplicate detection
+  // In-memory lookup map of siswa_id -> KehadiranRow for instant O(1) duplicate detection
   const recordedTodayMap = useRef<Map<string, KehadiranRow>>(new Map());
   useEffect(() => {
     const map = new Map<string, KehadiranRow>();
@@ -148,7 +216,7 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
   const [activeSiswa, setActiveSiswa] = useState<Siswa | null>(null);
   const [siswaCategory, setSiswaCategory] = useState<"tepat_waktu" | "terlambat" | "izin_sakit" | "alfa">("tepat_waktu");
   const [siswaStatus, setSiswaStatus] = useState<string>("tepat_waktu");
-  const [siswaPoints, setSiswaPoints] = useState(15);
+  const [siswaPoints, setSiswaPoints] = useState(10);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Search filter query inputs for manual mode
@@ -160,8 +228,8 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
   const [recapFilterClass, setRecapFilterClass] = useState("Semua");
   const [recapFilterStatus, setRecapFilterStatus] = useState<"semua" | "tepat_waktu" | "terlambat" | "khusus">("semua");
 
-  // Audio beep feedback
-  const playAudio = useCallback((type: "success" | "late" | "duplicate" | "error") => {
+  // Audio beep feedback (optimized for instant audio context on mobile)
+  const playAudio = useCallback((type: "success" | "late" | "duplicate" | "neutral" | "error") => {
     try {
       const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
       const osc = ctx.createOscillator();
@@ -170,23 +238,32 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
       gain.connect(ctx.destination);
 
       if (type === "success") {
+        // High pleasant double-tone
         osc.frequency.setValueAtTime(880, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(1174, ctx.currentTime + 0.15); // A5 -> D6
+        osc.frequency.exponentialRampToValueAtTime(1174, ctx.currentTime + 0.12); // A5 -> D6
         gain.gain.setValueAtTime(0.15, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.18);
         osc.start(ctx.currentTime);
-        osc.stop(ctx.currentTime + 0.2);
+        osc.stop(ctx.currentTime + 0.18);
       } else if (type === "late") {
+        // Descending warning tone
         osc.frequency.setValueAtTime(659, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.2); // E5 -> A4
+        osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.15); // E5 -> A4
         gain.gain.setValueAtTime(0.18, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.22);
         osc.start(ctx.currentTime);
-        osc.stop(ctx.currentTime + 0.25);
-      } else {
-        // low buzz for duplicate/error
-        osc.frequency.setValueAtTime(320, ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.22);
+      } else if (type === "neutral") {
+        // Soft click/chime for izin/sakit
+        osc.frequency.setValueAtTime(523, ctx.currentTime);
         gain.gain.setValueAtTime(0.12, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.15);
+      } else {
+        // Low buzz for duplicate/error/alfa
+        osc.frequency.setValueAtTime(320, ctx.currentTime);
+        gain.gain.setValueAtTime(0.15, ctx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.18);
         osc.start(ctx.currentTime);
         osc.stop(ctx.currentTime + 0.18);
@@ -196,22 +273,27 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
     }
   }, []);
 
-  // Process attendance recording (Core function used by QR scan, Face match, and Manual quick-add)
+  // Helper label for status
+  const getStatusLabel = (status: string) => {
+    if (status === "tepat_waktu") return "Hadir (Tepat Waktu)";
+    if (status.startsWith("telat")) return "Terlambat";
+    if (status === "alfa") return "Alfa";
+    if (status === "izin") return "Izin";
+    if (status === "sakit") return "Sakit";
+    return status;
+  };
+
+  // ── 6. PROCESS ATTENDANCE (CORE FUNCTION) ──
   const processAttendance = async (
     student: Siswa,
     forcedStatus?: string,
     forcedPoints?: number
   ): Promise<QrScanFeedback> => {
-    // 1. Check duplicate attendance today
+    // 1. Instant in-memory duplicate check (< 1ms)
     const existing = recordedTodayMap.current.get(student.id);
     if (existing && !forcedStatus) {
       playAudio("duplicate");
-      const statusLabel =
-        existing.status === "tepat_waktu"
-          ? "Tepat Waktu"
-          : existing.status.startsWith("telat")
-          ? "Terlambat"
-          : existing.status;
+      const statusLabel = getStatusLabel(existing.status);
 
       setLastScanned({
         nama: student.nama,
@@ -231,23 +313,39 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
       };
     }
 
-    // 2. Determine late status and points based on cutoffTime
+    // 2. Determine status and points:
+    // If forcedStatus provided -> use it
+    // If useCutoff is true -> auto calculate based on scan time vs cutoffTime
+    // If useCutoff is false -> use selectedPreset
     const now = new Date();
-    const isLate = forcedStatus ? forcedStatus !== "tepat_waktu" : checkIsLate(now);
-    const status = forcedStatus || (isLate ? "telat_15" : "tepat_waktu");
-    const points =
-      forcedPoints !== undefined
-        ? forcedPoints
-        : isLate
-        ? telatPoin
-        : tepatPoin;
+    let status: string;
+    let points: number;
+    let feedbackTitle: string;
+
+    if (forcedStatus) {
+      status = forcedStatus;
+      points = forcedPoints !== undefined ? forcedPoints : POINT_VALUES[forcedStatus as PresetKehadiranStatus] ?? 0;
+      feedbackTitle = getStatusLabel(status).toUpperCase();
+    } else if (useCutoff) {
+      const isLate = checkIsLate(now);
+      status = isLate ? "telat_15" : "tepat_waktu";
+      points = isLate ? POINT_VALUES.telat_15 : POINT_VALUES.tepat_waktu;
+      feedbackTitle = isLate ? "TERLAMBAT" : "HADIR TEPAT WAKTU";
+    } else {
+      status = selectedPreset;
+      points = POINT_VALUES[selectedPreset];
+      feedbackTitle = getStatusLabel(selectedPreset).toUpperCase();
+    }
 
     try {
       // 3. Save to Supabase (upsert on siswa_id, tanggal)
       await saveKehadiran(student.id, status, points, userSession.email, todayStr);
 
-      // 4. Play audio beep
-      playAudio(isLate ? "late" : "success");
+      // 4. Play audio feedback
+      if (status === "tepat_waktu") playAudio("success");
+      else if (status.startsWith("telat")) playAudio("late");
+      else if (status === "izin" || status === "sakit") playAudio("neutral");
+      else playAudio("error");
 
       // 5. Construct local record
       const newRow: KehadiranRow = {
@@ -264,7 +362,7 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
         created_at: now.toISOString(),
       };
 
-      // 6. Update local in-memory map & query cache immediately
+      // 6. Optimistic in-memory map & query cache update (< 5ms)
       recordedTodayMap.current.set(student.id, newRow);
       queryClient.setQueryData<KehadiranRow[]>(["kehadiranToday", todayStr], (old = []) => {
         const filtered = old.filter((item) => item.siswa_id !== student.id);
@@ -287,7 +385,7 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
 
       return {
         type: "success",
-        title: isLate ? "TERLAMBAT" : "TEPAT WAKTU",
+        title: feedbackTitle,
         message: `${toSentenceCase(student.nama)} (${student.kelas}) • ${points >= 0 ? "+" : ""}${points} Poin`,
         kelas: student.kelas,
         fotoUrl: student.foto_url || undefined,
@@ -335,7 +433,6 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
 
     try {
       await deleteKehadiran(row.id);
-      // Revert point locally
       updateCachedSiswaPoin(row.siswa_id, -row.nilai_poin_diberikan);
       recordedTodayMap.current.delete(row.siswa_id);
       queryClient.setQueryData<KehadiranRow[]>(["kehadiranToday", todayStr], (old = []) =>
@@ -350,18 +447,38 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
     }
   };
 
-  // Manual modal activation for custom status (Sakit/Izin/Alfa)
+  // Manual modal activation for custom status
   const activateManualCustom = (student: Siswa) => {
     setActiveSiswa(student);
-    const isLate = checkIsLate();
-    if (isLate) {
-      setSiswaCategory("terlambat");
-      setSiswaStatus("telat_15");
-      setSiswaPoints(aturanMap["telat_15"]?.nilai_poin ?? -10);
+    if (useCutoff) {
+      const isLate = checkIsLate();
+      if (isLate) {
+        setSiswaCategory("terlambat");
+        setSiswaStatus("telat_15");
+        setSiswaPoints(POINT_VALUES.telat_15);
+      } else {
+        setSiswaCategory("tepat_waktu");
+        setSiswaStatus("tepat_waktu");
+        setSiswaPoints(POINT_VALUES.tepat_waktu);
+      }
     } else {
-      setSiswaCategory("tepat_waktu");
-      setSiswaStatus("tepat_waktu");
-      setSiswaPoints(aturanMap["tepat_waktu"]?.nilai_poin ?? 15);
+      if (selectedPreset === "tepat_waktu") {
+        setSiswaCategory("tepat_waktu");
+        setSiswaStatus("tepat_waktu");
+        setSiswaPoints(POINT_VALUES.tepat_waktu);
+      } else if (selectedPreset === "telat_15") {
+        setSiswaCategory("terlambat");
+        setSiswaStatus("telat_15");
+        setSiswaPoints(POINT_VALUES.telat_15);
+      } else if (selectedPreset === "alfa") {
+        setSiswaCategory("alfa");
+        setSiswaStatus("alfa");
+        setSiswaPoints(POINT_VALUES.alfa);
+      } else {
+        setSiswaCategory("izin_sakit");
+        setSiswaStatus(selectedPreset);
+        setSiswaPoints(0);
+      }
     }
   };
 
@@ -408,8 +525,9 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
     const terlambat = todayAttendance.filter(
       (r) => r.status.startsWith("telat") || (r.status !== "tepat_waktu" && r.status !== "sakit" && r.status !== "izin" && r.status !== "alfa")
     ).length;
-    const lainnya = total - tepatWaktu - terlambat;
-    return { total, tepatWaktu, terlambat, lainnya };
+    const alfa = todayAttendance.filter((r) => r.status === "alfa").length;
+    const izinSakit = todayAttendance.filter((r) => r.status === "izin" || r.status === "sakit").length;
+    return { total, tepatWaktu, terlambat, alfa, izinSakit };
   }, [todayAttendance]);
 
   // Filtered list for today's live recap table
@@ -437,6 +555,96 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
     return todayAttendance.map((r) => r.siswa_id);
   }, [todayAttendance]);
 
+  // ── 7. IN-CAMERA HEADER CONTROLS (QUICK STATUS SWITCHER) ──
+  const inCameraHeaderControls = useMemo(() => {
+    if (useCutoff) {
+      return (
+        <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-black/60 backdrop-blur-md border border-white/20 text-xs">
+          <div className="flex items-center gap-2">
+            <span className={`w-2.5 h-2.5 rounded-full ${!isCurrentTimeLate ? "bg-emerald-400" : "bg-amber-400"} animate-pulse`} />
+            <span className="text-white/90 font-bold text-[11px]">
+              Mode Auto Jam: &le; {cutoffTime} Hadir (+10) | &gt; {cutoffTime} Terlambat (-15)
+            </span>
+          </div>
+          <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase ${!isCurrentTimeLate ? "bg-emerald-500 text-white" : "bg-amber-500 text-black"}`}>
+            {!isCurrentTimeLate ? "Tepat Waktu" : "Terlambat"}
+          </span>
+        </div>
+      );
+    }
+
+    // When useCutoff is false: Render quick touch preset pills in camera header!
+    return (
+      <div className="space-y-1.5">
+        <div className="flex items-center justify-between">
+          <span className="text-[10px] font-extrabold text-white/75 uppercase tracking-wider">
+            Target Status Scan (Sentuh untuk ganti):
+          </span>
+          <span className="text-[10px] font-mono text-emerald-300 font-bold">
+            Poin: {POINT_VALUES[selectedPreset] >= 0 ? "+" : ""}{POINT_VALUES[selectedPreset]}
+          </span>
+        </div>
+        <div className="flex flex-wrap items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => handleSelectPreset("tepat_waktu")}
+            className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer border ${
+              selectedPreset === "tepat_waktu"
+                ? "bg-emerald-600 text-white border-emerald-300 shadow-md shadow-emerald-950/60 scale-105"
+                : "bg-black/60 text-white/70 border-white/20 hover:bg-black/80"
+            }`}
+          >
+            🟢 Hadir (+10)
+          </button>
+          <button
+            type="button"
+            onClick={() => handleSelectPreset("telat_15")}
+            className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer border ${
+              selectedPreset === "telat_15"
+                ? "bg-amber-500 text-black border-amber-200 shadow-md shadow-amber-950/60 scale-105"
+                : "bg-black/60 text-white/70 border-white/20 hover:bg-black/80"
+            }`}
+          >
+            🟡 Terlambat (-15)
+          </button>
+          <button
+            type="button"
+            onClick={() => handleSelectPreset("izin")}
+            className={`px-2.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer border ${
+              selectedPreset === "izin"
+                ? "bg-blue-600 text-white border-blue-300 shadow-md shadow-blue-950/60 scale-105"
+                : "bg-black/60 text-white/70 border-white/20 hover:bg-black/80"
+            }`}
+          >
+            🔵 Izin (0)
+          </button>
+          <button
+            type="button"
+            onClick={() => handleSelectPreset("sakit")}
+            className={`px-2.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer border ${
+              selectedPreset === "sakit"
+                ? "bg-purple-600 text-white border-purple-300 shadow-md shadow-purple-950/60 scale-105"
+                : "bg-black/60 text-white/70 border-white/20 hover:bg-black/80"
+            }`}
+          >
+            🟣 Sakit (0)
+          </button>
+          <button
+            type="button"
+            onClick={() => handleSelectPreset("alfa")}
+            className={`px-2.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer border ${
+              selectedPreset === "alfa"
+                ? "bg-rose-600 text-white border-rose-300 shadow-md shadow-rose-950/60 scale-105"
+                : "bg-black/60 text-white/70 border-white/20 hover:bg-black/80"
+            }`}
+          >
+            🔴 Alfa (-50)
+          </button>
+        </div>
+      </div>
+    );
+  }, [useCutoff, isCurrentTimeLate, cutoffTime, selectedPreset, POINT_VALUES]);
+
   return (
     <div className="space-y-6 pb-16 animate-fade-in font-sans">
       {/* Header */}
@@ -449,7 +657,7 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
             Scan Kehadiran Murid (Piket)
           </h2>
           <p className="text-xs text-brand-500 font-semibold mt-1">
-            Pindai kartu atau wajah murid secara terus-menerus. Sistem otomatis menentukan Tepat Waktu atau Terlambat berdasarkan batas jam masuk.
+            Pindai kartu pelajar atau wajah murid secara berkelanjutan dan cepat di semua perangkat.
           </p>
         </div>
 
@@ -463,89 +671,234 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
         </div>
       </div>
 
-      {/* Control Panel: Batas Waktu & Live Status Banner */}
+      {/* ── CONTROL PANEL: ADMIN POLICY & PIKET STATUS PRESET ── */}
       <div className="bg-gradient-to-r from-brand-50/80 via-white to-brand-50/50 rounded-3xl border border-brand-150 p-5 shadow-sm space-y-4">
+        {/* Row 1: Admin Toggle & Piket Information */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          {/* Batas Jam Setting */}
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-xl bg-brand-600 text-white flex items-center justify-center shadow-sm">
-                <Clock className="w-5 h-5" />
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-brand-600 text-white flex items-center justify-center shadow-md flex-shrink-0">
+              <Clock className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h4 className="text-xs font-black text-brand-950 uppercase tracking-wider">
+                  Pengaturan Batas Waktu Masuk
+                </h4>
+                {isAdmin ? (
+                  <span className="px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 text-[9.5px] font-black uppercase">
+                    Admin Kendali
+                  </span>
+                ) : (
+                  <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-[9.5px] font-bold flex items-center gap-1">
+                    <Lock className="w-3 h-3" />
+                    Kebijakan Admin
+                  </span>
+                )}
               </div>
-              <div>
-                <label className="text-[10.5px] font-black text-brand-950 block uppercase tracking-wide">
-                  Batas Jam Masuk (Tepat Waktu)
-                </label>
-                <span className="text-[10px] text-brand-500 font-semibold">
-                  Scan di atas jam ini otomatis dihitung terlambat
+              <p className="text-[10.5px] text-brand-500 font-semibold mt-0.5">
+                {useCutoff
+                  ? `Batas waktu aktif: Hadir (+10) jika \u2264 ${cutoffTime} WIB, Terlambat (-15) jika > ${cutoffTime} WIB.`
+                  : "Batas waktu dinonaktifkan: Murid yang discan otomatis tercatat sesuai preset status terpilih."}
+              </p>
+            </div>
+          </div>
+
+          {/* Admin Controls (Only Super Admin can change ON/OFF & cutoff time) */}
+          {isAdmin ? (
+            <div className="flex flex-wrap items-center gap-2.5 p-2 bg-white rounded-2xl border border-brand-150 shadow-inner">
+              <button
+                type="button"
+                onClick={() => handleSaveAdminConfig(!useCutoff, cutoffTime)}
+                disabled={isSavingConfig}
+                className={`px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-2 transition-all cursor-pointer border ${
+                  useCutoff
+                    ? "bg-emerald-600 text-white border-transparent shadow-sm"
+                    : "bg-slate-100 text-slate-700 border-slate-200"
+                }`}
+              >
+                {useCutoff ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
+                <span>Batas Waktu: {useCutoff ? "AKTIF" : "NON-AKTIF"}</span>
+              </button>
+
+              {useCutoff && (
+                <div className="flex items-center gap-1.5">
+                  <input
+                    type="time"
+                    value={cutoffTime}
+                    onChange={(e) => {
+                      const newTime = e.target.value || "06:30";
+                      setCutoffTime(newTime);
+                      handleSaveAdminConfig(useCutoff, newTime);
+                    }}
+                    className="px-3 py-1.5 bg-[#faf9ff] border border-brand-200 focus:border-brand-600 rounded-xl text-xs font-black font-mono text-brand-950 outline-none cursor-pointer"
+                  />
+                  {cutoffTime !== "06:30" && (
+                    <button
+                      onClick={() => handleSaveAdminConfig(useCutoff, "06:30")}
+                      title="Kembalikan ke default 06:30"
+                      className="p-1.5 bg-brand-100 hover:bg-brand-200 text-brand-700 rounded-xl transition-all cursor-pointer border-0"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {configSaveSuccess && (
+                <span className="text-[10px] font-black text-emerald-700 flex items-center gap-1 animate-fade-in">
+                  <Check className="w-3 h-3" /> Tersimpan
+                </span>
+              )}
+            </div>
+          ) : (
+            /* Read-only badge for Piket */
+            <div className="flex items-center gap-2">
+              <div
+                className={`px-3.5 py-2 rounded-2xl border text-xs font-bold flex items-center gap-2 shadow-sm ${
+                  useCutoff
+                    ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+                    : "bg-blue-50 border-blue-200 text-blue-800"
+                }`}
+              >
+                <div
+                  className={`w-2.5 h-2.5 rounded-full ${
+                    useCutoff ? "bg-emerald-500 animate-pulse" : "bg-blue-500"
+                  }`}
+                />
+                <span>
+                  {useCutoff
+                    ? `Batas Waktu: Aktif (${cutoffTime} WIB)`
+                    : "Batas Waktu: Non-Aktif (Mode Preset Status)"}
                 </span>
               </div>
             </div>
+          )}
+        </div>
 
-            <div className="flex items-center gap-2">
-              <div className="relative">
-                <input
-                  type="time"
-                  value={cutoffTime}
-                  onChange={(e) => setCutoffTime(e.target.value || "06:30")}
-                  className="px-3.5 py-2 bg-white border-2 border-brand-300 focus:border-brand-600 rounded-xl text-sm font-black font-mono text-brand-950 outline-none shadow-sm transition-all cursor-pointer"
-                />
-              </div>
-
-              {cutoffTime !== "06:30" && (
-                <button
-                  onClick={() => setCutoffTime("06:30")}
-                  title="Kembalikan ke default 06:30"
-                  className="px-2.5 py-2 bg-brand-100/70 hover:bg-brand-200/70 text-brand-700 text-xs font-bold rounded-xl transition-all flex items-center gap-1 border-0 cursor-pointer"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                  <span className="text-[10px]">06:30</span>
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Real-time Status Detection Pill */}
-          <div className="flex items-center gap-2">
-            <div
-              className={`px-4 py-2.5 rounded-2xl border text-xs font-black flex items-center gap-2.5 shadow-sm ${
-                !isCurrentTimeLate
-                  ? "bg-emerald-50 border-emerald-200 text-emerald-800"
-                  : "bg-amber-50 border-amber-200 text-amber-900"
-              }`}
-            >
-              <div
-                className={`w-3 h-3 rounded-full ${
-                  !isCurrentTimeLate ? "bg-emerald-500" : "bg-amber-500"
-                } animate-ping`}
-              />
+        {/* Row 2: Preset Status Selector (Active when useCutoff is FALSE) */}
+        {!useCutoff ? (
+          <div className="p-4 bg-white rounded-2xl border border-brand-100 space-y-2.5 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
               <div>
-                <p className="text-[9.5px] uppercase tracking-wider opacity-75">Status Scan Sekarang</p>
-                <p className="text-xs font-black">
-                  {!isCurrentTimeLate
-                    ? `TEPAT WAKTU (+${tepatPoin} Poin)`
-                    : `TERLAMBAT (${telatPoin} Poin)`}
+                <p className="text-xs font-black text-brand-950 flex items-center gap-1.5">
+                  <SlidersHorizontal className="w-4 h-4 text-brand-600" />
+                  Pilih Preset Status Kehadiran untuk Scan:
+                </p>
+                <p className="text-[10.5px] text-brand-500 font-semibold">
+                  Semua murid yang discan saat ini akan otomatis tercatat sesuai status yang Anda pilih di bawah.
                 </p>
               </div>
+              <span className="text-[11px] font-mono font-black text-brand-700 bg-brand-50 px-2.5 py-1 rounded-lg border border-brand-100 w-fit">
+                Poin: {POINT_VALUES[selectedPreset] >= 0 ? "+" : ""}{POINT_VALUES[selectedPreset]} Poin
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => handleSelectPreset("tepat_waktu")}
+                className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                  selectedPreset === "tepat_waktu"
+                    ? "bg-emerald-600 text-white border-transparent shadow-md shadow-emerald-600/20 scale-[1.02]"
+                    : "bg-[#faf9ff] border-brand-100 hover:bg-slate-50 text-slate-700"
+                }`}
+              >
+                <p className="text-xs font-black flex items-center gap-1.5">
+                  <span>🟢</span> Hadir
+                </p>
+                <p className={`text-[10.5px] font-extrabold mt-0.5 ${selectedPreset === "tepat_waktu" ? "text-emerald-100" : "text-emerald-700"}`}>
+                  +{POINT_VALUES.tepat_waktu} Poin
+                </p>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleSelectPreset("telat_15")}
+                className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                  selectedPreset === "telat_15"
+                    ? "bg-amber-500 text-slate-950 border-transparent shadow-md shadow-amber-500/20 scale-[1.02]"
+                    : "bg-[#faf9ff] border-brand-100 hover:bg-slate-50 text-slate-700"
+                }`}
+              >
+                <p className="text-xs font-black flex items-center gap-1.5">
+                  <span>🟡</span> Terlambat
+                </p>
+                <p className={`text-[10.5px] font-extrabold mt-0.5 ${selectedPreset === "telat_15" ? "text-slate-900" : "text-amber-700"}`}>
+                  {POINT_VALUES.telat_15} Poin
+                </p>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleSelectPreset("izin")}
+                className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                  selectedPreset === "izin"
+                    ? "bg-blue-600 text-white border-transparent shadow-md shadow-blue-600/20 scale-[1.02]"
+                    : "bg-[#faf9ff] border-brand-100 hover:bg-slate-50 text-slate-700"
+                }`}
+              >
+                <p className="text-xs font-black flex items-center gap-1.5">
+                  <span>🔵</span> Izin
+                </p>
+                <p className={`text-[10.5px] font-extrabold mt-0.5 ${selectedPreset === "izin" ? "text-blue-100" : "text-blue-700"}`}>
+                  0 Poin
+                </p>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleSelectPreset("sakit")}
+                className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                  selectedPreset === "sakit"
+                    ? "bg-purple-600 text-white border-transparent shadow-md shadow-purple-600/20 scale-[1.02]"
+                    : "bg-[#faf9ff] border-brand-100 hover:bg-slate-50 text-slate-700"
+                }`}
+              >
+                <p className="text-xs font-black flex items-center gap-1.5">
+                  <span>🟣</span> Sakit
+                </p>
+                <p className={`text-[10.5px] font-extrabold mt-0.5 ${selectedPreset === "sakit" ? "text-purple-100" : "text-purple-700"}`}>
+                  0 Poin
+                </p>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleSelectPreset("alfa")}
+                className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                  selectedPreset === "alfa"
+                    ? "bg-rose-600 text-white border-transparent shadow-md shadow-rose-600/20 scale-[1.02]"
+                    : "bg-[#faf9ff] border-brand-100 hover:bg-slate-50 text-slate-700"
+                }`}
+              >
+                <p className="text-xs font-black flex items-center gap-1.5">
+                  <span>🔴</span> Alfa
+                </p>
+                <p className={`text-[10.5px] font-extrabold mt-0.5 ${selectedPreset === "alfa" ? "text-rose-100" : "text-rose-700"}`}>
+                  {POINT_VALUES.alfa} Poin
+                </p>
+              </button>
             </div>
           </div>
-        </div>
-
-        {/* Brief explanation */}
-        <div className="pt-2 border-t border-brand-100/80 flex flex-wrap items-center justify-between text-[11px] font-semibold text-brand-600 gap-2">
-          <div className="flex items-center gap-2">
-            <span className="inline-block w-2 h-2 rounded-full bg-emerald-500" />
-            <span>&le; {cutoffTime} WIB &rarr; Hadir Tepat Waktu (+{tepatPoin} Poin)</span>
+        ) : (
+          /* Realtime Status Indicator when useCutoff is TRUE */
+          <div className="flex flex-wrap items-center justify-between text-[11px] font-semibold text-brand-600 pt-2 border-t border-brand-100/80 gap-2">
+            <div className="flex items-center gap-2">
+              <span className={`w-2.5 h-2.5 rounded-full ${!isCurrentTimeLate ? "bg-emerald-500" : "bg-amber-500"} animate-ping`} />
+              <span>
+                Status Scan Sekarang:{" "}
+                <strong className={!isCurrentTimeLate ? "text-emerald-700 font-black" : "text-amber-700 font-black"}>
+                  {!isCurrentTimeLate ? `HADIR TEPAT WAKTU (+${POINT_VALUES.tepat_waktu} Poin)` : `TERLAMBAT (${POINT_VALUES.telat_15} Poin)`}
+                </strong>
+              </span>
+            </div>
+            <div className="flex items-center gap-2 text-slate-500">
+              <span>Batas Masuk: &le; {cutoffTime} WIB</span>
+              <span>&bull;</span>
+              <span className="text-brand-500 font-bold">Anti-duplikat Aktif</span>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="inline-block w-2 h-2 rounded-full bg-amber-500" />
-            <span>&gt; {cutoffTime} WIB &rarr; Terlambat ({telatPoin} Poin)</span>
-          </div>
-          <div className="flex items-center gap-1.5 text-brand-400 text-[10px]">
-            <Sparkles className="w-3.5 h-3.5 text-brand-500" />
-            <span>Anti-duplikat otomatis aktif (1x absensi per murid per hari)</span>
-          </div>
-        </div>
+        )}
       </div>
 
       {/* SUCCESS / ERROR ALERTS */}
@@ -580,44 +933,54 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
       </AnimatePresence>
 
       {/* Live Statistics Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="p-4 bg-white rounded-2xl border border-brand-100 shadow-sm flex items-center justify-between">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        <div className="p-3.5 bg-white rounded-2xl border border-brand-100 shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-[10px] font-black text-brand-400 uppercase tracking-wider">Total Hadir</p>
-            <p className="text-xl font-mono font-black text-brand-950 mt-0.5">{stats.total}</p>
+            <p className="text-[9.5px] font-black text-brand-400 uppercase tracking-wider">Total Hadir</p>
+            <p className="text-lg font-mono font-black text-brand-950 mt-0.5">{stats.total}</p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-brand-50 border border-brand-100 flex items-center justify-center text-brand-600">
-            <Users className="w-5 h-5" />
+          <div className="w-9 h-9 rounded-xl bg-brand-50 border border-brand-100 flex items-center justify-center text-brand-600">
+            <Users className="w-4.5 h-4.5" />
           </div>
         </div>
 
-        <div className="p-4 bg-white rounded-2xl border border-emerald-100 shadow-sm flex items-center justify-between">
+        <div className="p-3.5 bg-white rounded-2xl border border-emerald-100 shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-[10px] font-black text-emerald-600 uppercase tracking-wider">Tepat Waktu</p>
-            <p className="text-xl font-mono font-black text-emerald-700 mt-0.5">{stats.tepatWaktu}</p>
+            <p className="text-[9.5px] font-black text-emerald-600 uppercase tracking-wider">Tepat Waktu</p>
+            <p className="text-lg font-mono font-black text-emerald-700 mt-0.5">{stats.tepatWaktu}</p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600">
-            <CheckCircle2 className="w-5 h-5" />
+          <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600">
+            <CheckCircle2 className="w-4.5 h-4.5" />
           </div>
         </div>
 
-        <div className="p-4 bg-white rounded-2xl border border-amber-100 shadow-sm flex items-center justify-between">
+        <div className="p-3.5 bg-white rounded-2xl border border-amber-100 shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-[10px] font-black text-amber-600 uppercase tracking-wider">Terlambat</p>
-            <p className="text-xl font-mono font-black text-amber-700 mt-0.5">{stats.terlambat}</p>
+            <p className="text-[9.5px] font-black text-amber-600 uppercase tracking-wider">Terlambat</p>
+            <p className="text-lg font-mono font-black text-amber-700 mt-0.5">{stats.terlambat}</p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600">
-            <AlertTriangle className="w-5 h-5" />
+          <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600">
+            <AlertTriangle className="w-4.5 h-4.5" />
           </div>
         </div>
 
-        <div className="p-4 bg-white rounded-2xl border border-brand-100 shadow-sm flex items-center justify-between">
+        <div className="p-3.5 bg-white rounded-2xl border border-rose-100 shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-[10px] font-black text-brand-400 uppercase tracking-wider">Status Khusus</p>
-            <p className="text-xl font-mono font-black text-brand-800 mt-0.5">{stats.lainnya}</p>
+            <p className="text-[9.5px] font-black text-rose-600 uppercase tracking-wider">Alfa</p>
+            <p className="text-lg font-mono font-black text-rose-700 mt-0.5">{stats.alfa}</p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-600">
-            <SlidersHorizontal className="w-5 h-5" />
+          <div className="w-9 h-9 rounded-xl bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600">
+            <X className="w-4.5 h-4.5" />
+          </div>
+        </div>
+
+        <div className="p-3.5 bg-white rounded-2xl border border-blue-100 shadow-sm flex items-center justify-between">
+          <div>
+            <p className="text-[9.5px] font-black text-blue-600 uppercase tracking-wider">Izin / Sakit</p>
+            <p className="text-lg font-mono font-black text-blue-700 mt-0.5">{stats.izinSakit}</p>
+          </div>
+          <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600">
+            <SlidersHorizontal className="w-4.5 h-4.5" />
           </div>
         </div>
       </div>
@@ -638,18 +1001,25 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
           <div className="space-y-1">
             <h4 className="font-extrabold text-base text-brand-950">Scanner QR Berkelanjutan</h4>
             <p className="text-xs text-brand-500 font-semibold">
-              Kamera akan terus menyala untuk memindai kartu pelajar satu per satu tanpa henti.
+              Kamera akan terus menyala untuk memindai kartu pelajar secara instan tanpa jeda konfirmasi.
             </p>
           </div>
 
-          <div className="p-8 bg-[#faf9ff] rounded-3xl border border-brand-100 text-center space-y-4">
+          <div className="p-7 bg-[#faf9ff] rounded-3xl border border-brand-100 text-center space-y-4">
             <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto border border-emerald-200 shadow-inner">
               <QrCode className="w-8 h-8 animate-pulse" />
             </div>
             <div className="space-y-1 max-w-xs mx-auto">
-              <p className="text-xs font-bold text-brand-800">Siap Scan Banyak Murid Sekaligus</p>
+              <p className="text-xs font-bold text-brand-800">
+                Mode Aktif:{" "}
+                <span className="text-emerald-700 font-black">
+                  {useCutoff
+                    ? `Auto Jam Masuk (${cutoffTime} WIB)`
+                    : `Preset: ${getStatusLabel(selectedPreset)} (${POINT_VALUES[selectedPreset] >= 0 ? "+" : ""}${POINT_VALUES[selectedPreset]} Poin)`}
+                </span>
+              </p>
               <p className="text-[11px] text-brand-400 font-medium">
-                Setiap scan akan memberikan notifikasi pop-up dan suara beep, langsung mencatat kehadiran sesuai batas waktu ({cutoffTime} WIB).
+                Setiap scan langsung mencatat kehadiran dan memberi audio beep serta pop-up visual.
               </p>
             </div>
             <button
@@ -673,14 +1043,21 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
             </p>
           </div>
 
-          <div className="p-8 bg-[#faf9ff] rounded-3xl border border-brand-100 text-center space-y-4">
+          <div className="p-7 bg-[#faf9ff] rounded-3xl border border-brand-100 text-center space-y-4">
             <div className="w-16 h-16 bg-brand-50 text-brand-600 rounded-2xl flex items-center justify-center mx-auto border border-brand-200 shadow-inner">
               <ScanFace className="w-8 h-8 animate-pulse" />
             </div>
             <div className="space-y-1 max-w-xs mx-auto">
-              <p className="text-xs font-bold text-brand-800">Deteksi Wajah Otomatis</p>
+              <p className="text-xs font-bold text-brand-800">
+                Mode Aktif:{" "}
+                <span className="text-brand-700 font-black">
+                  {useCutoff
+                    ? `Auto Jam Masuk (${cutoffTime} WIB)`
+                    : `Preset: ${getStatusLabel(selectedPreset)} (${POINT_VALUES[selectedPreset] >= 0 ? "+" : ""}${POINT_VALUES[selectedPreset]} Poin)`}
+                </span>
+              </p>
               <p className="text-[11px] text-brand-400 font-medium">
-                Murid yang terdeteksi otomatis tercatat Tepat Waktu atau Terlambat dengan notifikasi instan.
+                Deteksi wajah otomatis dengan notifikasi instan dan pencegahan duplikat hari ini.
               </p>
             </div>
             <button
@@ -700,7 +1077,7 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
           <div className="space-y-1">
             <h4 className="font-extrabold text-sm text-brand-950">Input Manual Murid</h4>
             <p className="text-xs text-brand-500 font-semibold">
-              Cari nama atau NIS murid untuk mencatat kehadiran satu klik atau mengatur status khusus (Sakit/Izin/Alfa).
+              Cari nama atau NIS murid untuk mencatat kehadiran satu klik atau mengatur status khusus.
             </p>
           </div>
 
@@ -767,7 +1144,7 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
                     <div className="flex items-center gap-2 flex-shrink-0">
                       {isAlready ? (
                         <span className="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-xl">
-                          Sudah Absen ({existingRow?.status === "tepat_waktu" ? "Tepat Waktu" : "Terlambat"})
+                          Sudah Absen ({getStatusLabel(existingRow?.status || "")})
                         </span>
                       ) : (
                         <>
@@ -811,7 +1188,9 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
               lastScanned.type === "success"
                 ? lastScanned.status === "tepat_waktu"
                   ? "bg-emerald-50 border-emerald-200 text-emerald-900"
-                  : "bg-amber-50 border-amber-200 text-amber-900"
+                  : lastScanned.status.startsWith("telat")
+                  ? "bg-amber-50 border-amber-200 text-amber-900"
+                  : "bg-blue-50 border-blue-200 text-blue-900"
                 : lastScanned.type === "duplicate"
                 ? "bg-amber-50 border-amber-200 text-amber-900"
                 : "bg-rose-50 border-rose-200 text-rose-900"
@@ -823,7 +1202,9 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
                   lastScanned.type === "success"
                     ? lastScanned.status === "tepat_waktu"
                       ? "bg-emerald-500"
-                      : "bg-amber-500"
+                      : lastScanned.status.startsWith("telat")
+                      ? "bg-amber-500"
+                      : "bg-blue-500"
                     : lastScanned.type === "duplicate"
                     ? "bg-amber-500"
                     : "bg-rose-500"
@@ -842,11 +1223,8 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
                 <p className="text-[10.5px] font-semibold opacity-85">
                   {lastScanned.type === "success" && (
                     <span>
-                      Tercatat:{" "}
-                      <strong className="font-black">
-                        {lastScanned.status === "tepat_waktu" ? "Hadir Tepat Waktu" : "Terlambat"}
-                      </strong>{" "}
-                      ({lastScanned.points >= 0 ? "+" : ""}
+                      Tercatat: <strong className="font-black">{getStatusLabel(lastScanned.status)}</strong> (
+                      {lastScanned.points >= 0 ? "+" : ""}
                       {lastScanned.points} Poin) &bull; {lastScanned.time} WIB
                     </span>
                   )}
@@ -925,8 +1303,8 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
             className="border border-brand-100 rounded-xl py-2 px-3 text-xs font-bold text-brand-700 bg-white outline-none cursor-pointer"
           >
             <option value="semua">Semua Status</option>
-            <option value="tepat_waktu">Tepat Waktu</option>
-            <option value="terlambat">Terlambat</option>
+            <option value="tepat_waktu">Tepat Waktu (+10)</option>
+            <option value="terlambat">Terlambat (-15)</option>
             <option value="khusus">Sakit/Izin/Alfa</option>
           </select>
         </div>
@@ -951,6 +1329,7 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
             {filteredTodayRecap.map((row) => {
               const isTepat = row.status === "tepat_waktu";
               const isTelat = row.status.startsWith("telat");
+              const isAlfa = row.status === "alfa";
 
               return (
                 <div
@@ -971,7 +1350,9 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
                             ? "bg-gradient-to-tr from-emerald-500 to-teal-400"
                             : isTelat
                             ? "bg-gradient-to-tr from-amber-500 to-orange-400"
-                            : "bg-slate-400"
+                            : isAlfa
+                            ? "bg-gradient-to-tr from-rose-500 to-red-600"
+                            : "bg-gradient-to-tr from-blue-500 to-indigo-500"
                         }`}
                       >
                         {row.siswa_nama.slice(0, 2).toUpperCase()}
@@ -995,21 +1376,25 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
                           ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                           : isTelat
                           ? "bg-amber-50 text-amber-800 border-amber-200"
-                          : "bg-slate-100 text-slate-700 border-slate-200"
+                          : isAlfa
+                          ? "bg-rose-50 text-rose-800 border-rose-200"
+                          : "bg-blue-50 text-blue-700 border-blue-200"
                       }`}
                     >
-                      {isTepat ? "Tepat Waktu" : isTelat ? "Terlambat" : row.status}
+                      {getStatusLabel(row.status)}
                     </span>
 
                     {/* Point badge */}
                     <span
                       className={`text-[10px] font-black px-2 py-0.5 rounded-lg font-mono ${
-                        row.nilai_poin_diberikan >= 0
+                        row.nilai_poin_diberikan > 0
                           ? "bg-emerald-100 text-emerald-800"
-                          : "bg-rose-100 text-rose-800"
+                          : row.nilai_poin_diberikan < 0
+                          ? "bg-rose-100 text-rose-800"
+                          : "bg-slate-100 text-slate-700"
                       }`}
                     >
-                      {row.nilai_poin_diberikan >= 0 ? `+${row.nilai_poin_diberikan}` : row.nilai_poin_diberikan}
+                      {row.nilai_poin_diberikan > 0 ? `+${row.nilai_poin_diberikan}` : row.nilai_poin_diberikan}
                     </span>
 
                     {/* Scan Time */}
@@ -1082,16 +1467,16 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
                           setSiswaCategory(cat);
                           if (cat === "tepat_waktu") {
                             setSiswaStatus("tepat_waktu");
-                            setSiswaPoints(aturanMap["tepat_waktu"]?.nilai_poin ?? 15);
+                            setSiswaPoints(POINT_VALUES.tepat_waktu);
                           } else if (cat === "alfa") {
                             setSiswaStatus("alfa");
-                            setSiswaPoints(aturanMap["alfa"]?.nilai_poin ?? -100);
+                            setSiswaPoints(POINT_VALUES.alfa);
                           } else if (cat === "terlambat") {
                             setSiswaStatus("telat_15");
-                            setSiswaPoints(aturanMap["telat_15"]?.nilai_poin ?? -10);
+                            setSiswaPoints(POINT_VALUES.telat_15);
                           } else {
                             setSiswaStatus("sakit");
-                            setSiswaPoints(aturanMap["sakit"]?.nilai_poin ?? 0);
+                            setSiswaPoints(0);
                           }
                         }}
                         className={`py-2 px-1 rounded-xl border text-[10px] font-black text-center cursor-pointer transition-all uppercase tracking-wider ${
@@ -1117,18 +1502,12 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
                     value={siswaStatus}
                     onChange={(e) => {
                       setSiswaStatus(e.target.value);
-                      setSiswaPoints(aturanMap[e.target.value]?.nilai_poin ?? -10);
+                      setSiswaPoints(POINT_VALUES.telat_15);
                     }}
                     className="w-full border border-brand-100 rounded-xl p-3 text-xs font-bold text-brand-800 bg-[#faf9ff] outline-none cursor-pointer"
                   >
                     <option value="telat_15">
-                      Terlambat &le; 15 menit ({aturanMap["telat_15"]?.nilai_poin ?? -10} Poin)
-                    </option>
-                    <option value="telat_30">
-                      Terlambat &le; 30 menit ({aturanMap["telat_30"]?.nilai_poin ?? -15} Poin)
-                    </option>
-                    <option value="telat_60">
-                      Terlambat &le; 60 menit ({aturanMap["telat_60"]?.nilai_poin ?? -20} Poin)
+                      Terlambat ({POINT_VALUES.telat_15} Poin)
                     </option>
                   </select>
                 )}
@@ -1138,19 +1517,19 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
                     value={siswaStatus}
                     onChange={(e) => {
                       setSiswaStatus(e.target.value);
-                      setSiswaPoints(aturanMap[e.target.value]?.nilai_poin ?? 0);
+                      setSiswaPoints(0);
                     }}
                     className="w-full border border-brand-100 rounded-xl p-3 text-xs font-bold text-brand-800 bg-[#faf9ff] outline-none cursor-pointer"
                   >
-                    <option value="sakit">Sakit ({aturanMap["sakit"]?.nilai_poin ?? 0} Poin)</option>
-                    <option value="izin">Izin ({aturanMap["izin"]?.nilai_poin ?? 0} Poin)</option>
+                    <option value="sakit">Sakit (0 Poin)</option>
+                    <option value="izin">Izin (0 Poin)</option>
                   </select>
                 )}
 
                 {siswaCategory === "tepat_waktu" && (
                   <input
                     type="text"
-                    value="Hadir Tepat Waktu"
+                    value="Hadir Tepat Waktu (+10 Poin)"
                     disabled
                     className="w-full border border-brand-100 rounded-xl p-3 text-xs font-bold text-slate-400 bg-brand-50/50 outline-none"
                   />
@@ -1159,7 +1538,7 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
                 {siswaCategory === "alfa" && (
                   <input
                     type="text"
-                    value="Alfa (Tanpa Keterangan)"
+                    value={`Alfa (${POINT_VALUES.alfa} Poin)`}
                     disabled
                     className="w-full border border-brand-100 rounded-xl p-3 text-xs font-bold text-slate-400 bg-brand-50/50 outline-none"
                   />
@@ -1174,10 +1553,14 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
                 </span>
                 <span
                   className={`font-mono text-base font-black ${
-                    siswaPoints >= 0 ? "text-emerald-700" : "text-rose-700"
+                    siswaPoints > 0
+                      ? "text-emerald-700"
+                      : siswaPoints < 0
+                      ? "text-rose-700"
+                      : "text-slate-700"
                   }`}
                 >
-                  {siswaPoints >= 0 ? `+${siswaPoints}` : siswaPoints} Poin
+                  {siswaPoints > 0 ? `+${siswaPoints}` : siswaPoints} Poin
                 </span>
               </div>
             </div>
@@ -1201,11 +1584,16 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
         </div>
       )}
 
-      {/* CONTINUOUS QR SCANNER MODAL */}
+      {/* CONTINUOUS QR SCANNER MODAL WITH IN-CAMERA HEADER CONTROLS */}
       {showQrScanner && (
         <QrScanner
           title="Scan QR Kehadiran (Piket)"
-          subtitle={`Arahkan kamera ke QR kartu pelajar • Batas tepat waktu: ${cutoffTime} WIB`}
+          subtitle={
+            useCutoff
+              ? `Batas tepat waktu: ${cutoffTime} WIB (+10 / -15)`
+              : `Status: ${getStatusLabel(selectedPreset)} (${POINT_VALUES[selectedPreset] >= 0 ? "+" : ""}${POINT_VALUES[selectedPreset]} Poin)`
+          }
+          headerBottom={inCameraHeaderControls}
           onScanSuccess={handleQrScan}
           onClose={() => setShowQrScanner(false)}
         />
@@ -1217,7 +1605,12 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
           siswaList={siswaList}
           scannedIds={scannedSiswaIds}
           title="Scan Wajah Kehadiran (Piket)"
-          subtitle={`Posisikan wajah murid di depan kamera • Batas tepat waktu: ${cutoffTime} WIB`}
+          subtitle={
+            useCutoff
+              ? `Batas tepat waktu: ${cutoffTime} WIB (+10 / -15)`
+              : `Status: ${getStatusLabel(selectedPreset)} (${POINT_VALUES[selectedPreset] >= 0 ? "+" : ""}${POINT_VALUES[selectedPreset]} Poin)`
+          }
+          headerBottom={inCameraHeaderControls}
           onMatchSuccess={handleFaceMatch}
           onClose={() => setShowFaceScanner(false)}
         />

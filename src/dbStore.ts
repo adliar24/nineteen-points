@@ -852,6 +852,60 @@ export const getKehadiranListByDate = async (date: string): Promise<KehadiranRow
   }));
 };
 
+export interface PiketConfig {
+  useCutoff: boolean;
+  cutoffTime: string;
+}
+
+export const getPiketConfig = async (): Promise<PiketConfig> => {
+  try {
+    const { data, error } = await supabase
+      .from("pengaturan_sistem")
+      .select("kunci, nilai")
+      .in("kunci", ["piket_use_cutoff", "piket_cutoff_time"]);
+
+    if (error || !data) {
+      const localCutoff = localStorage.getItem("19points_piket_cutoff_time") || "06:30";
+      const localUse = localStorage.getItem("19points_piket_use_cutoff") !== "false";
+      return { useCutoff: localUse, cutoffTime: localCutoff };
+    }
+
+    const useItem = data.find((r: any) => r.kunci === "piket_use_cutoff");
+    const timeItem = data.find((r: any) => r.kunci === "piket_cutoff_time");
+
+    const useCutoff = useItem ? useItem.nilai !== "false" : true;
+    const cutoffTime = timeItem?.nilai || "06:30";
+
+    localStorage.setItem("19points_piket_use_cutoff", String(useCutoff));
+    localStorage.setItem("19points_piket_cutoff_time", cutoffTime);
+
+    return { useCutoff, cutoffTime };
+  } catch {
+    const localCutoff = localStorage.getItem("19points_piket_cutoff_time") || "06:30";
+    const localUse = localStorage.getItem("19points_piket_use_cutoff") !== "false";
+    return { useCutoff: localUse, cutoffTime: localCutoff };
+  }
+};
+
+export const savePiketConfig = async (useCutoff: boolean, cutoffTime: string): Promise<void> => {
+  const payload = [
+    { kunci: "piket_use_cutoff", nilai: String(useCutoff) },
+    { kunci: "piket_cutoff_time", nilai: cutoffTime },
+  ];
+
+  localStorage.setItem("19points_piket_use_cutoff", String(useCutoff));
+  localStorage.setItem("19points_piket_cutoff_time", cutoffTime);
+
+  const { error } = await supabase
+    .from("pengaturan_sistem")
+    .upsert(payload, { onConflict: "kunci" });
+
+  if (error) {
+    console.error("Error saving piket config to database:", error);
+    throw error;
+  }
+};
+
 export const saveKehadiran = async (
   siswaId: string,
   status: string,

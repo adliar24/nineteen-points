@@ -30,6 +30,7 @@ interface QrScannerProps {
   subtitle?: string;
   batchCount?: number;
   onBatchConfirm?: () => void;
+  headerBottom?: React.ReactNode;
 }
 
 interface Feedback extends QrScanFeedback {
@@ -48,6 +49,7 @@ export default function QrScanner({
   subtitle = 'Pindai Kartu Murid',
   batchCount,
   onBatchConfirm,
+  headerBottom,
 }: QrScannerProps) {
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const elementIdRef = useRef(`qr-scanner-${++scannerIdCounter}`);
@@ -262,30 +264,30 @@ export default function QrScanner({
       />
 
       {/* ── TOP GRADIENT HEADER ── */}
-      <div className="absolute top-0 inset-x-0 z-30 bg-gradient-to-b from-black/90 via-black/60 to-transparent pt-safe pt-8 pb-6 px-5 md:px-10">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3 md:gap-5">
-            <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-900/50 flex-shrink-0">
-              <QrCode className="w-6 h-6 md:w-7 md:h-7 text-white" />
+      <div className="absolute top-0 inset-x-0 z-30 bg-gradient-to-b from-black/95 via-black/75 to-transparent pt-safe pt-3 sm:pt-6 pb-3 sm:pb-6 px-3.5 sm:px-8">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2.5 sm:gap-4 min-w-0">
+            <div className="w-10 h-10 sm:w-13 sm:h-13 rounded-xl sm:rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-900/50 flex-shrink-0">
+              <QrCode className="w-5 h-5 sm:w-7 sm:h-7 text-white" />
             </div>
-            <div>
-              <h2 className="font-extrabold text-white text-lg md:text-xl leading-tight">{title}</h2>
-              <p className="text-white/50 text-xs md:text-sm">{subtitle}</p>
+            <div className="min-w-0">
+              <h2 className="font-extrabold text-white text-sm sm:text-lg leading-tight truncate">{title}</h2>
+              <p className="text-white/60 text-[10.5px] sm:text-xs truncate">{subtitle}</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 md:gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
             {cameras.length > 1 && (
               <motion.button
                 whileTap={{ scale: 0.92 }}
                 onClick={handleSwitchCamera}
                 disabled={isSwitchingCamera}
                 title="Ganti Kamera"
-                className="w-11 h-11 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-slate-900/90 flex items-center justify-center text-white border border-white/20 hover:bg-slate-800 transition-all disabled:opacity-50"
+                className="w-9 h-9 sm:w-12 sm:h-12 rounded-xl bg-slate-900/90 flex items-center justify-center text-white border border-white/20 hover:bg-slate-800 transition-all disabled:opacity-50"
               >
                 {isSwitchingCamera
-                  ? <Loader2 className="w-5 h-5 md:w-6 md:h-6 animate-spin" />
-                  : <ArrowRightLeft className="w-5 h-5 md:w-6 md:h-6" />
+                  ? <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+                  : <ArrowRightLeft className="w-4 h-4 sm:w-5 sm:h-5" />
                 }
               </motion.button>
             )}
@@ -293,9 +295,9 @@ export default function QrScanner({
               whileTap={{ scale: 0.92 }}
               onClick={onClose}
               title="Tutup Scanner"
-              className="w-11 h-11 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-red-600 flex items-center justify-center text-white border border-red-400/40 hover:bg-red-700 transition-all shadow-lg shadow-red-950/40"
+              className="w-9 h-9 sm:w-12 sm:h-12 rounded-xl bg-red-600 flex items-center justify-center text-white border border-red-400/40 hover:bg-red-700 transition-all shadow-lg shadow-red-950/40"
             >
-              <X className="w-5 h-5 md:w-6 md:h-6" />
+              <X className="w-4 h-4 sm:w-5 sm:h-5" />
             </motion.button>
           </div>
         </div>
@@ -317,6 +319,12 @@ export default function QrScanner({
               : 'Kamera tidak tersedia'}
           </span>
         </div>
+
+        {headerBottom && (
+          <div className="mt-3">
+            {headerBottom}
+          </div>
+        )}
       </div>
 
       {/* ── CENTRE AREA ── */}

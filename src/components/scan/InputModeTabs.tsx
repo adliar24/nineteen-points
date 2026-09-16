@@ -1,5 +1,5 @@
 import React from 'react';
-import { Scan, Keyboard, QrCode, ScanFace } from 'lucide-react';
+import { Keyboard, QrCode, ScanFace } from 'lucide-react';
 
 export type InputMode = 'scan' | 'manual';
 export type ScanType = 'qr' | 'face';
@@ -17,59 +17,59 @@ export default function InputModeTabs({
   onModeChange,
   onScanTypeChange,
 }: InputModeTabsProps) {
-  return (
-    <div className="space-y-2">
-      <div className="bg-white rounded-2xl p-1.5 border border-brand-100/60 flex gap-2">
-        <button
-          onClick={() => onModeChange('scan')}
-          className={`flex-1 py-3 px-4 text-xs sm:text-sm font-bold rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
-            mode === 'scan'
-              ? 'bg-brand-600 text-white shadow-md'
-              : 'text-brand-600 hover:bg-brand-50'
-          }`}
-        >
-          <Scan className="w-4 h-4" />
-          Scan
-        </button>
-        <button
-          onClick={() => onModeChange('manual')}
-          className={`flex-1 py-3 px-4 text-xs sm:text-sm font-bold rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
-            mode === 'manual'
-              ? 'bg-brand-600 text-white shadow-md'
-              : 'text-brand-600 hover:bg-brand-50'
-          }`}
-        >
-          <Keyboard className="w-4 h-4" />
-          Input Manual
-        </button>
-      </div>
+  const isQr = mode === 'scan' && scanType === 'qr';
+  const isFace = mode === 'scan' && scanType === 'face';
+  const isManual = mode === 'manual';
 
-      {mode === 'scan' && (
-        <div className="flex gap-2">
-          <button
-            onClick={() => onScanTypeChange('qr')}
-            className={`flex-1 py-2.5 px-4 text-xs font-black rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer whitespace-nowrap border ${
-              scanType === 'qr'
-                ? 'bg-brand-600 text-white border-transparent shadow-sm'
-                : 'bg-white text-brand-600 border-brand-100 hover:bg-brand-50'
-            }`}
-          >
-            <QrCode className="w-4 h-4" />
-            Scan QR
-          </button>
-          <button
-            onClick={() => onScanTypeChange('face')}
-            className={`flex-1 py-2.5 px-4 text-xs font-black rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer whitespace-nowrap border ${
-              scanType === 'face'
-                ? 'bg-brand-600 text-white border-transparent shadow-sm'
-                : 'bg-white text-brand-600 border-brand-100 hover:bg-brand-50'
-            }`}
-          >
-            <ScanFace className="w-4 h-4" />
-            Scan Wajah
-          </button>
-        </div>
-      )}
+  return (
+    <div className="bg-slate-100/90 p-1.5 rounded-2xl border border-slate-200/80 flex items-center gap-1.5 shadow-inner">
+      {/* 1. Scan QR */}
+      <button
+        type="button"
+        onClick={() => {
+          onModeChange('scan');
+          onScanTypeChange('qr');
+        }}
+        className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-black flex items-center justify-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
+          isQr
+            ? 'bg-white text-emerald-700 shadow-sm border border-slate-200/60'
+            : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+        }`}
+      >
+        <QrCode className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+        <span>Scan QR</span>
+      </button>
+
+      {/* 2. Scan Wajah */}
+      <button
+        type="button"
+        onClick={() => {
+          onModeChange('scan');
+          onScanTypeChange('face');
+        }}
+        className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-black flex items-center justify-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
+          isFace
+            ? 'bg-white text-brand-700 shadow-sm border border-slate-200/60'
+            : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+        }`}
+      >
+        <ScanFace className="w-4 h-4 text-brand-600 flex-shrink-0" />
+        <span>Scan Wajah</span>
+      </button>
+
+      {/* 3. Input Manual */}
+      <button
+        type="button"
+        onClick={() => onModeChange('manual')}
+        className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-black flex items-center justify-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
+          isManual
+            ? 'bg-white text-indigo-700 shadow-sm border border-slate-200/60'
+            : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+        }`}
+      >
+        <Keyboard className="w-4 h-4 text-indigo-600 flex-shrink-0" />
+        <span>Input Manual</span>
+      </button>
     </div>
   );
 }

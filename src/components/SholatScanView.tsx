@@ -290,48 +290,54 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
 
       {/* SCAN MODE */}
       {mode === "scan" && (
-        <div className="max-w-xl mx-auto bg-white p-6 rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 space-y-6 text-center">
-          <div className="flex items-center justify-between">
-            <div className="text-left space-y-1">
+        <div className="max-w-md mx-auto bg-white p-6 rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 space-y-5 text-center">
+          <div className="flex items-center justify-between border-b border-brand-50 pb-3">
+            <div className="text-left space-y-0.5">
               <h4 className="font-extrabold text-sm text-brand-950">Scanner {sholatTypeLabel}</h4>
-              <p className="text-xs text-brand-500 font-semibold">Pilih metode untuk mencatat kehadiran sholat murid.</p>
+              <p className="text-[11px] text-brand-400 font-semibold">{scanType === "qr" ? "Mode Scan QR Kartu" : "Mode Scan Wajah AI"}</p>
             </div>
             <div className="text-right">
-              <p className="text-[9px] font-black text-brand-400 uppercase tracking-wider">Total Hari Ini</p>
-              <p className="text-lg font-mono font-black text-emerald-700">{scannedCount}</p>
+              <p className="text-[9px] font-black text-brand-400 uppercase tracking-wider">Hari Ini</p>
+              <p className="text-base font-mono font-black text-emerald-700">{scannedCount}</p>
             </div>
           </div>
 
           {scanType === "qr" ? (
-            <div className="p-8 text-center space-y-4">
-              <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto border border-emerald-100">
-                <QrCode className="w-6 h-6 animate-pulse" />
+            <div className="space-y-4">
+              <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto border border-emerald-200">
+                <QrCode className="w-7 h-7" />
               </div>
-              <p className="text-xs text-brand-500 font-semibold max-w-xs mx-auto">
-                Arahkan kamera ke QR kartu murid. Scanner terbuka layar penuh dan dapat memindai banyak murid sekaligus.
-              </p>
+              <div className="space-y-1">
+                <h5 className="font-extrabold text-xs text-brand-950">Scan QR Kartu Pelajar</h5>
+                <p className="text-xs text-brand-400 font-semibold max-w-xs mx-auto">
+                  Pindai kartu QR siswa untuk presensi {sholatTypeLabel.toLowerCase()} cepat.
+                </p>
+              </div>
               <button
                 onClick={() => setShowQrScanner(true)}
-                className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-md cursor-pointer border-0 transition-all flex items-center justify-center gap-2 mx-auto"
+                className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 active:scale-98 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-emerald-600/20 cursor-pointer border-0 transition-all flex items-center justify-center gap-2"
               >
                 <QrCode className="w-4 h-4" />
-                Mulai Scan QR
+                <span>Mulai Scan QR</span>
               </button>
             </div>
           ) : (
-            <div className="p-8 text-center space-y-4">
-              <div className="w-14 h-14 bg-brand-50 text-brand-600 rounded-full flex items-center justify-center mx-auto border border-brand-100">
-                <ScanFace className="w-6 h-6 animate-pulse" />
+            <div className="space-y-4">
+              <div className="w-14 h-14 bg-brand-50 text-brand-600 rounded-2xl flex items-center justify-center mx-auto border border-brand-200">
+                <ScanFace className="w-7 h-7" />
               </div>
-              <p className="text-xs text-brand-500 font-semibold max-w-xs mx-auto">
-                Posisikan wajah murid di depan kamera. Sistem AI mencocokkan wajah dan mencatat kehadiran secara otomatis.
-              </p>
+              <div className="space-y-1">
+                <h5 className="font-extrabold text-xs text-brand-950">Scan Wajah AI Siswa</h5>
+                <p className="text-xs text-brand-400 font-semibold max-w-xs mx-auto">
+                  Posisikan wajah siswa di depan kamera untuk verifikasi instan.
+                </p>
+              </div>
               <button
                 onClick={() => setShowFaceScanner(true)}
-                className="px-6 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-xs rounded-xl shadow-md cursor-pointer border-0 transition-all flex items-center justify-center gap-2 mx-auto"
+                className="w-full py-3.5 brand-gradient hover:opacity-95 active:scale-98 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-brand-500/20 cursor-pointer border-0 transition-all flex items-center justify-center gap-2"
               >
                 <ScanFace className="w-4 h-4" />
-                Mulai Scan Wajah
+                <span>Mulai Scan Wajah</span>
               </button>
             </div>
           )}

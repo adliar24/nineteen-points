@@ -305,17 +305,17 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
               >
                 {/* METHOD 1: FACE SCANNER AI */}
                 {mode === "scan" && scanType === "face" && (
-                  <div className="space-y-5 text-center py-6">
-                    <div className="mx-auto w-20 h-20 bg-brand-50 border-2 border-brand-200 rounded-3xl flex items-center justify-center shadow-lg shadow-brand-900/5 text-brand-600 animate-pulse">
-                      <ScanFace className="w-10 h-10" />
+                  <div className="space-y-4 text-center py-4">
+                    <div className="mx-auto w-16 h-16 bg-brand-50 border border-brand-200 rounded-2xl flex items-center justify-center text-brand-600">
+                      <ScanFace className="w-8 h-8" />
                     </div>
-                    <div className="max-w-md mx-auto space-y-1.5">
-                      <h3 className="font-extrabold text-lg text-brand-950">Pilih Murid via Scan Wajah (AI)</h3>
-                      <p className="text-xs text-brand-600 font-medium leading-relaxed">
-                        Arahkan kamera ke wajah siswa yang bersangkutan. Sistem AI akan secara otomatis mencocokkan wajah dan memilih profil murid untuk pencatatan poin.
+                    <div className="max-w-xs mx-auto space-y-1">
+                      <h3 className="font-extrabold text-sm text-brand-950">Scan Wajah Siswa</h3>
+                      <p className="text-xs text-brand-400 font-semibold">
+                        Arahkan kamera ke wajah siswa untuk verifikasi instan.
                       </p>
                     </div>
-                    <div className="flex items-center justify-center gap-3 py-2 bg-brand-50/50 rounded-2xl max-w-xs mx-auto border border-brand-100/50 mb-1">
+                    <div className="flex items-center justify-center gap-2.5 py-1.5 px-3 bg-brand-50/50 rounded-xl max-w-xs mx-auto border border-brand-100/60">
                       <input
                         type="checkbox"
                         id="batch-mode-toggle-face"
@@ -326,15 +326,15 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
                         }}
                         className="w-4 h-4 text-brand-600 border-brand-200 rounded focus:ring-brand-500 cursor-pointer"
                       />
-                      <label htmlFor="batch-mode-toggle-face" className="text-xs font-black text-brand-900 cursor-pointer select-none">
-                        Mode Batch (Scan Massal)
+                      <label htmlFor="batch-mode-toggle-face" className="text-xs font-bold text-brand-900 cursor-pointer select-none">
+                        Mode Batch (Massal)
                       </label>
                     </div>
                     <button
                       onClick={() => setShowFaceScannerModal(true)}
-                      className="px-6 py-3.5 brand-gradient text-white rounded-2xl text-sm font-bold shadow-lg shadow-brand-500/20 hover:opacity-95 transition-all flex items-center justify-center gap-2 mx-auto cursor-pointer"
+                      className="px-7 py-3.5 brand-gradient text-white rounded-2xl text-xs font-black uppercase tracking-wider shadow-lg shadow-brand-500/20 hover:opacity-95 active:scale-98 transition-all flex items-center justify-center gap-2 mx-auto cursor-pointer"
                     >
-                      <ScanFace className="w-5 h-5" />
+                      <ScanFace className="w-4 h-4" />
                       Mulai Scan Wajah
                     </button>
                   </div>
@@ -342,17 +342,17 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
 
                 {/* METHOD 2: QR SCANNER */}
                 {mode === "scan" && scanType === "qr" && (
-                  <div className="space-y-5 text-center py-6">
-                    <div className="mx-auto w-20 h-20 bg-emerald-50 border-2 border-emerald-200 rounded-3xl flex items-center justify-center shadow-lg shadow-emerald-900/5 text-emerald-600 animate-pulse">
-                      <QrCode className="w-10 h-10" />
+                  <div className="space-y-4 text-center py-4">
+                    <div className="mx-auto w-16 h-16 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center justify-center text-emerald-600">
+                      <QrCode className="w-8 h-8" />
                     </div>
-                    <div className="max-w-md mx-auto space-y-1.5">
-                      <h3 className="font-extrabold text-lg text-brand-950">Pilih Murid via Scan QR</h3>
-                      <p className="text-xs text-brand-600 font-medium leading-relaxed">
-                        Pindai QR kartu pelajar murid. Sistem otomatis mengenali NIS dan memilih profil murid untuk pencatatan poin.
+                    <div className="max-w-xs mx-auto space-y-1">
+                      <h3 className="font-extrabold text-sm text-brand-950">Scan QR Siswa</h3>
+                      <p className="text-xs text-brand-400 font-semibold">
+                        Pindai kartu QR siswa untuk pencatatan poin cepat.
                       </p>
                     </div>
-                    <div className="flex items-center justify-center gap-3 py-2 bg-brand-50/50 rounded-2xl max-w-xs mx-auto border border-brand-100/50 mb-1">
+                    <div className="flex items-center justify-center gap-2.5 py-1.5 px-3 bg-brand-50/50 rounded-xl max-w-xs mx-auto border border-brand-100/60">
                       <input
                         type="checkbox"
                         id="batch-mode-toggle-qr"
@@ -363,15 +363,15 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
                         }}
                         className="w-4 h-4 text-brand-600 border-brand-200 rounded focus:ring-brand-500 cursor-pointer"
                       />
-                      <label htmlFor="batch-mode-toggle-qr" className="text-xs font-black text-brand-900 cursor-pointer select-none">
-                        Mode Batch (Scan Massal)
+                      <label htmlFor="batch-mode-toggle-qr" className="text-xs font-bold text-brand-900 cursor-pointer select-none">
+                        Mode Batch (Massal)
                       </label>
                     </div>
                     <button
                       onClick={() => setShowQrScanner(true)}
-                      className="px-6 py-3.5 brand-gradient text-white rounded-2xl text-sm font-bold shadow-lg shadow-brand-500/20 hover:opacity-95 transition-all flex items-center justify-center gap-2 mx-auto cursor-pointer"
+                      className="px-7 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-black uppercase tracking-wider shadow-lg shadow-emerald-600/20 active:scale-98 transition-all flex items-center justify-center gap-2 mx-auto cursor-pointer"
                     >
-                      <QrCode className="w-5 h-5" />
+                      <QrCode className="w-4 h-4" />
                       Mulai Scan QR
                     </button>
                   </div>

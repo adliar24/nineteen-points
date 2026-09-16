@@ -20,12 +20,6 @@ import {
   AlertTriangle,
   RotateCcw,
   Users,
-  SlidersHorizontal,
-  Lock,
-  ShieldCheck,
-  ToggleLeft,
-  ToggleRight,
-  Info,
 } from "lucide-react";
 import { Siswa, UserSession } from "../types";
 import {
@@ -33,7 +27,6 @@ import {
   getAturanKehadiranList,
   getKehadiranListByDate,
   getPiketConfig,
-  savePiketConfig,
   saveKehadiran,
   deleteKehadiran,
   updateCachedSiswaPoin,
@@ -50,14 +43,14 @@ interface InputKehadiranViewProps {
   userSession: UserSession;
 }
 
-export type PresetKehadiranStatus = "tepat_waktu" | "telat_15" | "izin" | "sakit" | "alfa";
+export type PresetKehadiranStatus = "tepat_waktu" | "terlambat" | "izin" | "sakit";
+export type LateTier = "telat_5" | "telat_10" | "telat_15";
 
 export default function InputKehadiranView({ userSession }: InputKehadiranViewProps) {
-  const isAdmin = userSession.role === "super_admin" || userSession.role === "kepala_sekolah";
   const todayStr = useMemo(() => formatLocalDate(new Date()), []);
 
-  // ── 1. GLOBAL PIKET CONFIG (SUPER ADMIN CONTROL) ──
-  const { data: remotePiketConfig, refetch: refetchPiketConfig } = useQuery({
+  // ── 1. GLOBAL PIKET CONFIG (SUPER ADMIN CONTROLLED) ──
+  const { data: remotePiketConfig } = useQuery({
     queryKey: ["piketConfig"],
     queryFn: getPiketConfig,
     staleTime: 1000 * 30, // 30s cache
@@ -72,9 +65,6 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
     return localStorage.getItem("19points_piket_cutoff_time") || "06:30";
   });
 
-  const [isSavingConfig, setIsSavingConfig] = useState(false);
-  const [configSaveSuccess, setConfigSaveSuccess] = useState(false);
-
   // Sync state when remote config updates
   useEffect(() => {
     if (remotePiketConfig) {
@@ -83,33 +73,31 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
     }
   }, [remotePiketConfig]);
 
-  // Handle Admin Saving Configuration
-  const handleSaveAdminConfig = async (newUseCutoff: boolean, newCutoffTime: string) => {
-    if (!isAdmin) return;
-    setIsSavingConfig(true);
-    try {
-      await savePiketConfig(newUseCutoff, newCutoffTime);
-      setUseCutoff(newUseCutoff);
-      setCutoffTime(newCutoffTime);
-      queryClient.invalidateQueries({ queryKey: ["piketConfig"] });
-      setConfigSaveSuccess(true);
-      setTimeout(() => setConfigSaveSuccess(false), 3000);
-    } catch (err: any) {
-      setErrorMsg("Gagal menyimpan konfigurasi batas waktu: " + err.message);
-      setTimeout(() => setErrorMsg(null), 4000);
-    } finally {
-      setIsSavingConfig(false);
-    }
-  };
-
-  // ── 2. PRESET STATUS SELECTION (WHEN CUTOFF IS OFF OR MANUAL OVERRIDE) ──
+  // ── 2. PRESET STATUS & LATE TIER (WHEN CUTOFF IS OFF OR IN CAMERA) ──
   const [selectedPreset, setSelectedPreset] = useState<PresetKehadiranStatus>(() => {
-    return (localStorage.getItem("19points_piket_selected_preset") as PresetKehadiranStatus) || "tepat_waktu";
+    const saved = localStorage.getItem("19points_piket_selected_preset");
+    if (saved === "tepat_waktu" || saved === "terlambat" || saved === "izin" || saved === "sakit") {
+      return saved;
+    }
+    return "tepat_waktu";
+  });
+
+  const [selectedLateTier, setSelectedLateTier] = useState<LateTier>(() => {
+    const saved = localStorage.getItem("19points_piket_selected_late_tier");
+    if (saved === "telat_5" || saved === "telat_10" || saved === "telat_15") {
+      return saved as LateTier;
+    }
+    return "telat_15";
   });
 
   const handleSelectPreset = (status: PresetKehadiranStatus) => {
     setSelectedPreset(status);
     localStorage.setItem("19points_piket_selected_preset", status);
+  };
+
+  const handleSelectLateTier = (tier: LateTier) => {
+    setSelectedLateTier(tier);
+    localStorage.setItem("19points_piket_selected_late_tier", tier);
   };
 
   // ── 3. REALTIME CLOCK ──
@@ -172,7 +160,7 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
     queryFn: () => getKehadiranListByDate(todayStr),
   });
 
-  // Aturan points map with explicit required defaults (+10 Hadir, -15 Terlambat, -50 Alfa, 0 Izin/Sakit)
+  // Aturan points map with explicit required defaults (+10 Hadir, -5 / -10 / -15 Terlambat, -50 Alfa, 0 Izin/Sakit)
   const aturanMap = useMemo(() => {
     const map: Record<string, AturanKehadiran> = {};
     aturanList.forEach((rule) => {
@@ -181,16 +169,85 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
     return map;
   }, [aturanList]);
 
-  // Explicit user-specified point rules
-  const POINT_VALUES: Record<PresetKehadiranStatus, number> = useMemo(() => {
-    return {
-      tepat_waktu: aturanMap["tepat_waktu"]?.nilai_poin ?? 10,
-      telat_15: aturanMap["telat_15"]?.nilai_poin ?? -15,
-      alfa: aturanMap["alfa"]?.nilai_poin ?? -50,
-      izin: aturanMap["izin"]?.nilai_poin ?? 0,
-      sakit: aturanMap["sakit"]?.nilai_poin ?? 0,
-    };
-  }, [aturanMap]);
+  // Points and status resolver for Auto Cutoff
+  const getCutoffStatusAndPoints = useCallback(
+    (now: Date = new Date()) => {
+      const [cutoffH, cutoffM] = cutoffTime.split(":").map(Number);
+      const cutoffMinutes = (isNaN(cutoffH) ? 6 : cutoffH) * 60 + (isNaN(cutoffM) ? 30 : cutoffM);
+      const currentMinutes = now.getHours() * 60 + now.getMinutes();
+      const diffMinutes = currentMinutes - cutoffMinutes;
+
+      if (diffMinutes <= 0) {
+        return {
+          status: "tepat_waktu",
+          points: aturanMap["tepat_waktu"]?.nilai_poin ?? 10,
+          label: "HADIR TEPAT WAKTU",
+        };
+      }
+      if (diffMinutes <= 5) {
+        return {
+          status: "telat_5",
+          points: aturanMap["telat_5"]?.nilai_poin ?? -5,
+          label: "TERLAMBAT ≤ 5 MENIT",
+        };
+      }
+      if (diffMinutes <= 10) {
+        return {
+          status: "telat_10",
+          points: aturanMap["telat_10"]?.nilai_poin ?? -10,
+          label: "TERLAMBAT ≤ 10 MENIT",
+        };
+      }
+      return {
+        status: "telat_15",
+        points: aturanMap["telat_15"]?.nilai_poin ?? -15,
+        label: "TERLAMBAT > 15 MENIT",
+      };
+    },
+    [cutoffTime, aturanMap]
+  );
+
+  // Points and status resolver for Preset Selection
+  const getPresetStatusAndPoints = useCallback(
+    (preset: PresetKehadiranStatus, lateTier: LateTier) => {
+      if (preset === "tepat_waktu") {
+        return {
+          status: "tepat_waktu",
+          points: aturanMap["tepat_waktu"]?.nilai_poin ?? 10,
+          label: "HADIR TEPAT WAKTU",
+        };
+      }
+      if (preset === "terlambat") {
+        const pts = aturanMap[lateTier]?.nilai_poin ?? (lateTier === "telat_5" ? -5 : lateTier === "telat_10" ? -10 : -15);
+        const tierLabel = lateTier === "telat_5" ? "≤ 5 Menit" : lateTier === "telat_10" ? "≤ 10 Menit" : "> 15 Menit";
+        return {
+          status: lateTier,
+          points: pts,
+          label: `TERLAMBAT (${tierLabel})`,
+        };
+      }
+      if (preset === "izin") {
+        return {
+          status: "izin",
+          points: aturanMap["izin"]?.nilai_poin ?? 0,
+          label: "IZIN",
+        };
+      }
+      if (preset === "sakit") {
+        return {
+          status: "sakit",
+          points: aturanMap["sakit"]?.nilai_poin ?? 0,
+          label: "SAKIT",
+        };
+      }
+      return {
+        status: "tepat_waktu",
+        points: 10,
+        label: "HADIR",
+      };
+    },
+    [aturanMap]
+  );
 
   // In-memory lookup map of siswa_id -> KehadiranRow for instant O(1) duplicate detection
   const recordedTodayMap = useRef<Map<string, KehadiranRow>>(new Map());
@@ -276,7 +333,9 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
   // Helper label for status
   const getStatusLabel = (status: string) => {
     if (status === "tepat_waktu") return "Hadir (Tepat Waktu)";
-    if (status.startsWith("telat")) return "Terlambat";
+    if (status === "telat_5") return "Terlambat ≤ 5m";
+    if (status === "telat_10") return "Terlambat ≤ 10m";
+    if (status === "telat_15" || status === "terlambat") return "Terlambat > 15m";
     if (status === "alfa") return "Alfa";
     if (status === "izin") return "Izin";
     if (status === "sakit") return "Sakit";
@@ -313,10 +372,7 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
       };
     }
 
-    // 2. Determine status and points:
-    // If forcedStatus provided -> use it
-    // If useCutoff is true -> auto calculate based on scan time vs cutoffTime
-    // If useCutoff is false -> use selectedPreset
+    // 2. Determine status and points
     const now = new Date();
     let status: string;
     let points: number;
@@ -324,17 +380,18 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
 
     if (forcedStatus) {
       status = forcedStatus;
-      points = forcedPoints !== undefined ? forcedPoints : POINT_VALUES[forcedStatus as PresetKehadiranStatus] ?? 0;
+      points = forcedPoints !== undefined ? forcedPoints : (aturanMap[forcedStatus]?.nilai_poin ?? 0);
       feedbackTitle = getStatusLabel(status).toUpperCase();
     } else if (useCutoff) {
-      const isLate = checkIsLate(now);
-      status = isLate ? "telat_15" : "tepat_waktu";
-      points = isLate ? POINT_VALUES.telat_15 : POINT_VALUES.tepat_waktu;
-      feedbackTitle = isLate ? "TERLAMBAT" : "HADIR TEPAT WAKTU";
+      const cutoffRes = getCutoffStatusAndPoints(now);
+      status = cutoffRes.status;
+      points = cutoffRes.points;
+      feedbackTitle = cutoffRes.label;
     } else {
-      status = selectedPreset;
-      points = POINT_VALUES[selectedPreset];
-      feedbackTitle = getStatusLabel(selectedPreset).toUpperCase();
+      const presetRes = getPresetStatusAndPoints(selectedPreset, selectedLateTier);
+      status = presetRes.status;
+      points = presetRes.points;
+      feedbackTitle = presetRes.label;
     }
 
     try {
@@ -451,29 +508,25 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
   const activateManualCustom = (student: Siswa) => {
     setActiveSiswa(student);
     if (useCutoff) {
-      const isLate = checkIsLate();
-      if (isLate) {
-        setSiswaCategory("terlambat");
-        setSiswaStatus("telat_15");
-        setSiswaPoints(POINT_VALUES.telat_15);
-      } else {
+      const cutoffRes = getCutoffStatusAndPoints();
+      if (cutoffRes.status === "tepat_waktu") {
         setSiswaCategory("tepat_waktu");
         setSiswaStatus("tepat_waktu");
-        setSiswaPoints(POINT_VALUES.tepat_waktu);
+        setSiswaPoints(aturanMap["tepat_waktu"]?.nilai_poin ?? 10);
+      } else {
+        setSiswaCategory("terlambat");
+        setSiswaStatus(cutoffRes.status);
+        setSiswaPoints(cutoffRes.points);
       }
     } else {
       if (selectedPreset === "tepat_waktu") {
         setSiswaCategory("tepat_waktu");
         setSiswaStatus("tepat_waktu");
-        setSiswaPoints(POINT_VALUES.tepat_waktu);
-      } else if (selectedPreset === "telat_15") {
+        setSiswaPoints(aturanMap["tepat_waktu"]?.nilai_poin ?? 10);
+      } else if (selectedPreset === "terlambat") {
         setSiswaCategory("terlambat");
-        setSiswaStatus("telat_15");
-        setSiswaPoints(POINT_VALUES.telat_15);
-      } else if (selectedPreset === "alfa") {
-        setSiswaCategory("alfa");
-        setSiswaStatus("alfa");
-        setSiswaPoints(POINT_VALUES.alfa);
+        setSiswaStatus(selectedLateTier);
+        setSiswaPoints(aturanMap[selectedLateTier]?.nilai_poin ?? -15);
       } else {
         setSiswaCategory("izin_sakit");
         setSiswaStatus(selectedPreset);
@@ -558,12 +611,13 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
   // ── 7. IN-CAMERA HEADER CONTROLS (QUICK STATUS SWITCHER) ──
   const inCameraHeaderControls = useMemo(() => {
     if (useCutoff) {
+      const currentCutoff = getCutoffStatusAndPoints();
       return (
-        <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-black/60 backdrop-blur-md border border-white/20 text-xs">
+        <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-black/70 backdrop-blur-md border border-white/20 text-xs">
           <div className="flex items-center gap-2">
             <span className={`w-2.5 h-2.5 rounded-full ${!isCurrentTimeLate ? "bg-emerald-400" : "bg-amber-400"} animate-pulse`} />
             <span className="text-white/90 font-bold text-[11px]">
-              Mode Auto Jam: &le; {cutoffTime} Hadir (+10) | &gt; {cutoffTime} Terlambat (-15)
+              Auto Jam (&le; {cutoffTime}): {!isCurrentTimeLate ? "Tepat Waktu (+10)" : `Terlambat (${currentCutoff.points} Pts)`}
             </span>
           </div>
           <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase ${!isCurrentTimeLate ? "bg-emerald-500 text-white" : "bg-amber-500 text-black"}`}>
@@ -574,14 +628,15 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
     }
 
     // When useCutoff is false: Render quick touch preset pills in camera header!
+    const currentConfig = getPresetStatusAndPoints(selectedPreset, selectedLateTier);
     return (
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
-          <span className="text-[10px] font-extrabold text-white/75 uppercase tracking-wider">
-            Target Status Scan (Sentuh untuk ganti):
+          <span className="text-[10px] font-extrabold text-white/80 uppercase tracking-wider">
+            Status Scan:
           </span>
           <span className="text-[10px] font-mono text-emerald-300 font-bold">
-            Poin: {POINT_VALUES[selectedPreset] >= 0 ? "+" : ""}{POINT_VALUES[selectedPreset]}
+            Poin: {currentConfig.points >= 0 ? "+" : ""}{currentConfig.points}
           </span>
         </div>
         <div className="flex flex-wrap items-center gap-1.5">
@@ -590,30 +645,30 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
             onClick={() => handleSelectPreset("tepat_waktu")}
             className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer border ${
               selectedPreset === "tepat_waktu"
-                ? "bg-emerald-600 text-white border-emerald-300 shadow-md shadow-emerald-950/60 scale-105"
-                : "bg-black/60 text-white/70 border-white/20 hover:bg-black/80"
+                ? "bg-emerald-600 text-white border-emerald-300 shadow-md scale-105"
+                : "bg-black/60 text-white/75 border-white/20 hover:bg-black/80"
             }`}
           >
-            🟢 Hadir (+10)
+            🟢 Hadir (+{aturanMap["tepat_waktu"]?.nilai_poin ?? 10})
           </button>
           <button
             type="button"
-            onClick={() => handleSelectPreset("telat_15")}
+            onClick={() => handleSelectPreset("terlambat")}
             className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer border ${
-              selectedPreset === "telat_15"
-                ? "bg-amber-500 text-black border-amber-200 shadow-md shadow-amber-950/60 scale-105"
-                : "bg-black/60 text-white/70 border-white/20 hover:bg-black/80"
+              selectedPreset === "terlambat"
+                ? "bg-amber-500 text-black border-amber-200 shadow-md scale-105"
+                : "bg-black/60 text-white/75 border-white/20 hover:bg-black/80"
             }`}
           >
-            🟡 Terlambat (-15)
+            🟡 Terlambat
           </button>
           <button
             type="button"
             onClick={() => handleSelectPreset("izin")}
             className={`px-2.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer border ${
               selectedPreset === "izin"
-                ? "bg-blue-600 text-white border-blue-300 shadow-md shadow-blue-950/60 scale-105"
-                : "bg-black/60 text-white/70 border-white/20 hover:bg-black/80"
+                ? "bg-blue-600 text-white border-blue-300 shadow-md scale-105"
+                : "bg-black/60 text-white/75 border-white/20 hover:bg-black/80"
             }`}
           >
             🔵 Izin (0)
@@ -623,27 +678,48 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
             onClick={() => handleSelectPreset("sakit")}
             className={`px-2.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer border ${
               selectedPreset === "sakit"
-                ? "bg-purple-600 text-white border-purple-300 shadow-md shadow-purple-950/60 scale-105"
-                : "bg-black/60 text-white/70 border-white/20 hover:bg-black/80"
+                ? "bg-purple-600 text-white border-purple-300 shadow-md scale-105"
+                : "bg-black/60 text-white/75 border-white/20 hover:bg-black/80"
             }`}
           >
             🟣 Sakit (0)
           </button>
-          <button
-            type="button"
-            onClick={() => handleSelectPreset("alfa")}
-            className={`px-2.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer border ${
-              selectedPreset === "alfa"
-                ? "bg-rose-600 text-white border-rose-300 shadow-md shadow-rose-950/60 scale-105"
-                : "bg-black/60 text-white/70 border-white/20 hover:bg-black/80"
-            }`}
-          >
-            🔴 Alfa (-50)
-          </button>
         </div>
+
+        {/* Sub-tier selector when Terlambat is selected */}
+        {selectedPreset === "terlambat" && (
+          <div className="flex items-center gap-1.5 pt-1">
+            <span className="text-[10px] font-bold text-amber-200 uppercase tracking-wider shrink-0">Waktu:</span>
+            <div className="flex items-center gap-1.5 flex-1">
+              {(
+                [
+                  { tier: "telat_5" as const, label: "≤ 5 Menit", pts: aturanMap["telat_5"]?.nilai_poin ?? -5 },
+                  { tier: "telat_10" as const, label: "≤ 10 Menit", pts: aturanMap["telat_10"]?.nilai_poin ?? -10 },
+                  { tier: "telat_15" as const, label: "> 15 Menit", pts: aturanMap["telat_15"]?.nilai_poin ?? -15 },
+                ]
+              ).map((item) => {
+                const isActive = selectedLateTier === item.tier;
+                return (
+                  <button
+                    key={item.tier}
+                    type="button"
+                    onClick={() => handleSelectLateTier(item.tier)}
+                    className={`flex-1 py-1 px-1.5 rounded-lg text-[10.5px] font-black transition-all cursor-pointer border text-center ${
+                      isActive
+                        ? "bg-amber-400 text-black border-white shadow-sm scale-102 font-extrabold"
+                        : "bg-black/50 text-amber-200/80 border-amber-400/30 hover:bg-black/80"
+                    }`}
+                  >
+                    {item.label} ({item.pts})
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     );
-  }, [useCutoff, isCurrentTimeLate, cutoffTime, selectedPreset, POINT_VALUES]);
+  }, [useCutoff, isCurrentTimeLate, cutoffTime, selectedPreset, selectedLateTier, aturanMap, getCutoffStatusAndPoints, getPresetStatusAndPoints]);
 
   return (
     <div className="space-y-6 pb-16 animate-fade-in font-sans">
@@ -671,234 +747,42 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
         </div>
       </div>
 
-      {/* ── CONTROL PANEL: ADMIN POLICY & PIKET STATUS PRESET ── */}
-      <div className="bg-gradient-to-r from-brand-50/80 via-white to-brand-50/50 rounded-3xl border border-brand-150 p-5 shadow-sm space-y-4">
-        {/* Row 1: Admin Toggle & Piket Information */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-brand-600 text-white flex items-center justify-center shadow-md flex-shrink-0">
-              <Clock className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h4 className="text-xs font-black text-brand-950 uppercase tracking-wider">
-                  Pengaturan Batas Waktu Masuk
-                </h4>
-                {isAdmin ? (
-                  <span className="px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 text-[9.5px] font-black uppercase">
-                    Admin Kendali
-                  </span>
-                ) : (
-                  <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-[9.5px] font-bold flex items-center gap-1">
-                    <Lock className="w-3 h-3" />
-                    Kebijakan Admin
-                  </span>
-                )}
-              </div>
-              <p className="text-[10.5px] text-brand-500 font-semibold mt-0.5">
-                {useCutoff
-                  ? `Batas waktu aktif: Hadir (+10) jika \u2264 ${cutoffTime} WIB, Terlambat (-15) jika > ${cutoffTime} WIB.`
-                  : "Batas waktu dinonaktifkan: Murid yang discan otomatis tercatat sesuai preset status terpilih."}
-              </p>
-            </div>
-          </div>
-
-          {/* Admin Controls (Only Super Admin can change ON/OFF & cutoff time) */}
-          {isAdmin ? (
-            <div className="flex flex-wrap items-center gap-2.5 p-2 bg-white rounded-2xl border border-brand-150 shadow-inner">
-              <button
-                type="button"
-                onClick={() => handleSaveAdminConfig(!useCutoff, cutoffTime)}
-                disabled={isSavingConfig}
-                className={`px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-2 transition-all cursor-pointer border ${
-                  useCutoff
-                    ? "bg-emerald-600 text-white border-transparent shadow-sm"
-                    : "bg-slate-100 text-slate-700 border-slate-200"
-                }`}
-              >
-                {useCutoff ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
-                <span>Batas Waktu: {useCutoff ? "AKTIF" : "NON-AKTIF"}</span>
-              </button>
-
-              {useCutoff && (
-                <div className="flex items-center gap-1.5">
-                  <input
-                    type="time"
-                    value={cutoffTime}
-                    onChange={(e) => {
-                      const newTime = e.target.value || "06:30";
-                      setCutoffTime(newTime);
-                      handleSaveAdminConfig(useCutoff, newTime);
-                    }}
-                    className="px-3 py-1.5 bg-[#faf9ff] border border-brand-200 focus:border-brand-600 rounded-xl text-xs font-black font-mono text-brand-950 outline-none cursor-pointer"
-                  />
-                  {cutoffTime !== "06:30" && (
-                    <button
-                      onClick={() => handleSaveAdminConfig(useCutoff, "06:30")}
-                      title="Kembalikan ke default 06:30"
-                      className="p-1.5 bg-brand-100 hover:bg-brand-200 text-brand-700 rounded-xl transition-all cursor-pointer border-0"
-                    >
-                      <RotateCcw className="w-3.5 h-3.5" />
-                    </button>
-                  )}
-                </div>
-              )}
-
-              {configSaveSuccess && (
-                <span className="text-[10px] font-black text-emerald-700 flex items-center gap-1 animate-fade-in">
-                  <Check className="w-3 h-3" /> Tersimpan
-                </span>
-              )}
-            </div>
-          ) : (
-            /* Read-only badge for Piket */
-            <div className="flex items-center gap-2">
-              <div
-                className={`px-3.5 py-2 rounded-2xl border text-xs font-bold flex items-center gap-2 shadow-sm ${
-                  useCutoff
-                    ? "bg-emerald-50 border-emerald-200 text-emerald-800"
-                    : "bg-blue-50 border-blue-200 text-blue-800"
-                }`}
-              >
-                <div
-                  className={`w-2.5 h-2.5 rounded-full ${
-                    useCutoff ? "bg-emerald-500 animate-pulse" : "bg-blue-500"
-                  }`}
-                />
-                <span>
-                  {useCutoff
-                    ? `Batas Waktu: Aktif (${cutoffTime} WIB)`
-                    : "Batas Waktu: Non-Aktif (Mode Preset Status)"}
-                </span>
-              </div>
-            </div>
-          )}
+      {/* ── STATUS BAR ── */}
+      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 bg-white rounded-2xl border border-brand-100 shadow-sm text-xs">
+        <div className="flex items-center gap-2.5">
+          <div
+            className={`w-2.5 h-2.5 rounded-full ${
+              useCutoff
+                ? !isCurrentTimeLate
+                  ? "bg-emerald-500"
+                  : "bg-amber-500"
+                : "bg-brand-500"
+            } animate-pulse`}
+          />
+          <span className="font-bold text-brand-950">
+            {useCutoff ? (
+              <>
+                Batas Jam: &le; {cutoffTime} WIB (
+                <strong className={!isCurrentTimeLate ? "text-emerald-700" : "text-amber-700"}>
+                  {!isCurrentTimeLate ? "Tepat Waktu" : "Terlambat"}
+                </strong>
+                )
+              </>
+            ) : (
+              <>
+                Mode Bebas: Status scan dipilih langsung di kamera ({getStatusLabel(selectedPreset)})
+              </>
+            )}
+          </span>
         </div>
 
-        {/* Row 2: Preset Status Selector (Active when useCutoff is FALSE) */}
-        {!useCutoff ? (
-          <div className="p-4 bg-white rounded-2xl border border-brand-100 space-y-2.5 shadow-sm">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-              <div>
-                <p className="text-xs font-black text-brand-950 flex items-center gap-1.5">
-                  <SlidersHorizontal className="w-4 h-4 text-brand-600" />
-                  Pilih Preset Status Kehadiran untuk Scan:
-                </p>
-                <p className="text-[10.5px] text-brand-500 font-semibold">
-                  Semua murid yang discan saat ini akan otomatis tercatat sesuai status yang Anda pilih di bawah.
-                </p>
-              </div>
-              <span className="text-[11px] font-mono font-black text-brand-700 bg-brand-50 px-2.5 py-1 rounded-lg border border-brand-100 w-fit">
-                Poin: {POINT_VALUES[selectedPreset] >= 0 ? "+" : ""}{POINT_VALUES[selectedPreset]} Poin
-              </span>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-1">
-              <button
-                type="button"
-                onClick={() => handleSelectPreset("tepat_waktu")}
-                className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
-                  selectedPreset === "tepat_waktu"
-                    ? "bg-emerald-600 text-white border-transparent shadow-md shadow-emerald-600/20 scale-[1.02]"
-                    : "bg-[#faf9ff] border-brand-100 hover:bg-slate-50 text-slate-700"
-                }`}
-              >
-                <p className="text-xs font-black flex items-center gap-1.5">
-                  <span>🟢</span> Hadir
-                </p>
-                <p className={`text-[10.5px] font-extrabold mt-0.5 ${selectedPreset === "tepat_waktu" ? "text-emerald-100" : "text-emerald-700"}`}>
-                  +{POINT_VALUES.tepat_waktu} Poin
-                </p>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleSelectPreset("telat_15")}
-                className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
-                  selectedPreset === "telat_15"
-                    ? "bg-amber-500 text-slate-950 border-transparent shadow-md shadow-amber-500/20 scale-[1.02]"
-                    : "bg-[#faf9ff] border-brand-100 hover:bg-slate-50 text-slate-700"
-                }`}
-              >
-                <p className="text-xs font-black flex items-center gap-1.5">
-                  <span>🟡</span> Terlambat
-                </p>
-                <p className={`text-[10.5px] font-extrabold mt-0.5 ${selectedPreset === "telat_15" ? "text-slate-900" : "text-amber-700"}`}>
-                  {POINT_VALUES.telat_15} Poin
-                </p>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleSelectPreset("izin")}
-                className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
-                  selectedPreset === "izin"
-                    ? "bg-blue-600 text-white border-transparent shadow-md shadow-blue-600/20 scale-[1.02]"
-                    : "bg-[#faf9ff] border-brand-100 hover:bg-slate-50 text-slate-700"
-                }`}
-              >
-                <p className="text-xs font-black flex items-center gap-1.5">
-                  <span>🔵</span> Izin
-                </p>
-                <p className={`text-[10.5px] font-extrabold mt-0.5 ${selectedPreset === "izin" ? "text-blue-100" : "text-blue-700"}`}>
-                  0 Poin
-                </p>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleSelectPreset("sakit")}
-                className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
-                  selectedPreset === "sakit"
-                    ? "bg-purple-600 text-white border-transparent shadow-md shadow-purple-600/20 scale-[1.02]"
-                    : "bg-[#faf9ff] border-brand-100 hover:bg-slate-50 text-slate-700"
-                }`}
-              >
-                <p className="text-xs font-black flex items-center gap-1.5">
-                  <span>🟣</span> Sakit
-                </p>
-                <p className={`text-[10.5px] font-extrabold mt-0.5 ${selectedPreset === "sakit" ? "text-purple-100" : "text-purple-700"}`}>
-                  0 Poin
-                </p>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleSelectPreset("alfa")}
-                className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
-                  selectedPreset === "alfa"
-                    ? "bg-rose-600 text-white border-transparent shadow-md shadow-rose-600/20 scale-[1.02]"
-                    : "bg-[#faf9ff] border-brand-100 hover:bg-slate-50 text-slate-700"
-                }`}
-              >
-                <p className="text-xs font-black flex items-center gap-1.5">
-                  <span>🔴</span> Alfa
-                </p>
-                <p className={`text-[10.5px] font-extrabold mt-0.5 ${selectedPreset === "alfa" ? "text-rose-100" : "text-rose-700"}`}>
-                  {POINT_VALUES.alfa} Poin
-                </p>
-              </button>
-            </div>
-          </div>
-        ) : (
-          /* Realtime Status Indicator when useCutoff is TRUE */
-          <div className="flex flex-wrap items-center justify-between text-[11px] font-semibold text-brand-600 pt-2 border-t border-brand-100/80 gap-2">
-            <div className="flex items-center gap-2">
-              <span className={`w-2.5 h-2.5 rounded-full ${!isCurrentTimeLate ? "bg-emerald-500" : "bg-amber-500"} animate-ping`} />
-              <span>
-                Status Scan Sekarang:{" "}
-                <strong className={!isCurrentTimeLate ? "text-emerald-700 font-black" : "text-amber-700 font-black"}>
-                  {!isCurrentTimeLate ? `HADIR TEPAT WAKTU (+${POINT_VALUES.tepat_waktu} Poin)` : `TERLAMBAT (${POINT_VALUES.telat_15} Poin)`}
-                </strong>
-              </span>
-            </div>
-            <div className="flex items-center gap-2 text-slate-500">
-              <span>Batas Masuk: &le; {cutoffTime} WIB</span>
-              <span>&bull;</span>
-              <span className="text-brand-500 font-bold">Anti-duplikat Aktif</span>
-            </div>
-          </div>
-        )}
+        <div className="flex items-center gap-2 text-slate-400 text-[11px] font-semibold">
+          <span className="px-2.5 py-0.5 rounded-lg bg-brand-50 text-brand-700 font-bold">
+            {useCutoff ? "Batas Otomatis" : "Status Manual"}
+          </span>
+          <span>&bull;</span>
+          <span>Anti-duplikat Aktif</span>
+        </div>
       </div>
 
       {/* SUCCESS / ERROR ALERTS */}
@@ -997,77 +881,49 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
 
       {/* 1. TAB SCAN QR */}
       {!activeSiswa && mode === "scan" && scanType === "qr" && (
-        <div className="max-w-xl mx-auto bg-white p-6 md:p-8 rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 space-y-6 text-center">
+        <div className="max-w-md mx-auto bg-white p-6 rounded-3xl border border-brand-100 shadow-md space-y-5 text-center">
+          <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto border border-emerald-200">
+            <QrCode className="w-7 h-7" />
+          </div>
+
           <div className="space-y-1">
-            <h4 className="font-extrabold text-base text-brand-950">Scanner QR Berkelanjutan</h4>
-            <p className="text-xs text-brand-500 font-semibold">
-              Kamera akan terus menyala untuk memindai kartu pelajar secara instan tanpa jeda konfirmasi.
+            <h4 className="font-extrabold text-sm text-brand-950">Scanner QR Siswa</h4>
+            <p className="text-xs text-brand-400 font-semibold">
+              Kamera aktif terus memindai kartu QR siswa tanpa henti.
             </p>
           </div>
 
-          <div className="p-7 bg-[#faf9ff] rounded-3xl border border-brand-100 text-center space-y-4">
-            <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto border border-emerald-200 shadow-inner">
-              <QrCode className="w-8 h-8 animate-pulse" />
-            </div>
-            <div className="space-y-1 max-w-xs mx-auto">
-              <p className="text-xs font-bold text-brand-800">
-                Mode Aktif:{" "}
-                <span className="text-emerald-700 font-black">
-                  {useCutoff
-                    ? `Auto Jam Masuk (${cutoffTime} WIB)`
-                    : `Preset: ${getStatusLabel(selectedPreset)} (${POINT_VALUES[selectedPreset] >= 0 ? "+" : ""}${POINT_VALUES[selectedPreset]} Poin)`}
-                </span>
-              </p>
-              <p className="text-[11px] text-brand-400 font-medium">
-                Setiap scan langsung mencatat kehadiran dan memberi audio beep serta pop-up visual.
-              </p>
-            </div>
-            <button
-              onClick={() => setShowQrScanner(true)}
-              className="px-7 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-2xl shadow-lg shadow-emerald-600/20 cursor-pointer border-0 transition-all flex items-center justify-center gap-2.5 mx-auto"
-            >
-              <QrCode className="w-4.5 h-4.5" />
-              Buka Scanner QR (Full Screen)
-            </button>
-          </div>
+          <button
+            onClick={() => setShowQrScanner(true)}
+            className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 active:scale-98 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-emerald-600/20 cursor-pointer border-0 transition-all flex items-center justify-center gap-2"
+          >
+            <QrCode className="w-4 h-4" />
+            <span>Mulai Scan QR</span>
+          </button>
         </div>
       )}
 
       {/* 2. TAB SCAN WAJAH */}
       {!activeSiswa && mode === "scan" && scanType === "face" && (
-        <div className="max-w-xl mx-auto bg-white p-6 md:p-8 rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 space-y-6 text-center">
+        <div className="max-w-md mx-auto bg-white p-6 rounded-3xl border border-brand-100 shadow-md space-y-5 text-center">
+          <div className="w-14 h-14 bg-brand-50 text-brand-600 rounded-2xl flex items-center justify-center mx-auto border border-brand-200">
+            <ScanFace className="w-7 h-7" />
+          </div>
+
           <div className="space-y-1">
-            <h4 className="font-extrabold text-base text-brand-950">Scan Wajah AI Berkelanjutan</h4>
-            <p className="text-xs text-brand-500 font-semibold">
-              Posisikan wajah murid di depan kamera. Sistem AI akan mencocokkan wajah dan mencatat kehadiran secara beruntun.
+            <h4 className="font-extrabold text-sm text-brand-950">Scan Wajah AI Siswa</h4>
+            <p className="text-xs text-brand-400 font-semibold">
+              Posisikan wajah siswa di depan kamera untuk verifikasi instan.
             </p>
           </div>
 
-          <div className="p-7 bg-[#faf9ff] rounded-3xl border border-brand-100 text-center space-y-4">
-            <div className="w-16 h-16 bg-brand-50 text-brand-600 rounded-2xl flex items-center justify-center mx-auto border border-brand-200 shadow-inner">
-              <ScanFace className="w-8 h-8 animate-pulse" />
-            </div>
-            <div className="space-y-1 max-w-xs mx-auto">
-              <p className="text-xs font-bold text-brand-800">
-                Mode Aktif:{" "}
-                <span className="text-brand-700 font-black">
-                  {useCutoff
-                    ? `Auto Jam Masuk (${cutoffTime} WIB)`
-                    : `Preset: ${getStatusLabel(selectedPreset)} (${POINT_VALUES[selectedPreset] >= 0 ? "+" : ""}${POINT_VALUES[selectedPreset]} Poin)`}
-                </span>
-              </p>
-              <p className="text-[11px] text-brand-400 font-medium">
-                Deteksi wajah otomatis dengan notifikasi instan dan pencegahan duplikat hari ini.
-              </p>
-            </div>
-            <button
-              onClick={() => setShowFaceScanner(true)}
-              className="px-7 py-3 bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-xs rounded-2xl shadow-lg shadow-brand-600/20 cursor-pointer border-0 transition-all flex items-center justify-center gap-2.5 mx-auto"
-            >
-              <ScanFace className="w-4.5 h-4.5" />
-              Buka Scanner Wajah (Full Screen)
-            </button>
-          </div>
+          <button
+            onClick={() => setShowFaceScanner(true)}
+            className="w-full py-3.5 brand-gradient hover:opacity-95 active:scale-98 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-brand-500/20 cursor-pointer border-0 transition-all flex items-center justify-center gap-2"
+          >
+            <ScanFace className="w-4 h-4" />
+            <span>Mulai Scan Wajah</span>
+          </button>
         </div>
       )}
 
@@ -1467,13 +1323,13 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
                           setSiswaCategory(cat);
                           if (cat === "tepat_waktu") {
                             setSiswaStatus("tepat_waktu");
-                            setSiswaPoints(POINT_VALUES.tepat_waktu);
+                            setSiswaPoints(aturanMap["tepat_waktu"]?.nilai_poin ?? 10);
                           } else if (cat === "alfa") {
                             setSiswaStatus("alfa");
-                            setSiswaPoints(POINT_VALUES.alfa);
+                            setSiswaPoints(aturanMap["alfa"]?.nilai_poin ?? -50);
                           } else if (cat === "terlambat") {
-                            setSiswaStatus("telat_15");
-                            setSiswaPoints(POINT_VALUES.telat_15);
+                            setSiswaStatus(selectedLateTier);
+                            setSiswaPoints(aturanMap[selectedLateTier]?.nilai_poin ?? -15);
                           } else {
                             setSiswaStatus("sakit");
                             setSiswaPoints(0);
@@ -1501,13 +1357,20 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
                   <select
                     value={siswaStatus}
                     onChange={(e) => {
-                      setSiswaStatus(e.target.value);
-                      setSiswaPoints(POINT_VALUES.telat_15);
+                      const st = e.target.value;
+                      setSiswaStatus(st);
+                      setSiswaPoints(aturanMap[st]?.nilai_poin ?? -15);
                     }}
                     className="w-full border border-brand-100 rounded-xl p-3 text-xs font-bold text-brand-800 bg-[#faf9ff] outline-none cursor-pointer"
                   >
+                    <option value="telat_5">
+                      Terlambat ≤ 5 Menit ({aturanMap["telat_5"]?.nilai_poin ?? -5} Poin)
+                    </option>
+                    <option value="telat_10">
+                      Terlambat ≤ 10 Menit ({aturanMap["telat_10"]?.nilai_poin ?? -10} Poin)
+                    </option>
                     <option value="telat_15">
-                      Terlambat ({POINT_VALUES.telat_15} Poin)
+                      Terlambat > 15 Menit ({aturanMap["telat_15"]?.nilai_poin ?? -15} Poin)
                     </option>
                   </select>
                 )}
@@ -1529,7 +1392,7 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
                 {siswaCategory === "tepat_waktu" && (
                   <input
                     type="text"
-                    value="Hadir Tepat Waktu (+10 Poin)"
+                    value={`Hadir Tepat Waktu (+${aturanMap["tepat_waktu"]?.nilai_poin ?? 10} Poin)`}
                     disabled
                     className="w-full border border-brand-100 rounded-xl p-3 text-xs font-bold text-slate-400 bg-brand-50/50 outline-none"
                   />
@@ -1538,7 +1401,7 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
                 {siswaCategory === "alfa" && (
                   <input
                     type="text"
-                    value={`Alfa (${POINT_VALUES.alfa} Poin)`}
+                    value={`Alfa (${aturanMap["alfa"]?.nilai_poin ?? -50} Poin)`}
                     disabled
                     className="w-full border border-brand-100 rounded-xl p-3 text-xs font-bold text-slate-400 bg-brand-50/50 outline-none"
                   />
@@ -1590,8 +1453,8 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
           title="Scan QR Kehadiran (Piket)"
           subtitle={
             useCutoff
-              ? `Batas tepat waktu: ${cutoffTime} WIB (+10 / -15)`
-              : `Status: ${getStatusLabel(selectedPreset)} (${POINT_VALUES[selectedPreset] >= 0 ? "+" : ""}${POINT_VALUES[selectedPreset]} Poin)`
+              ? `Batas tepat waktu: ${cutoffTime} WIB`
+              : `Status: ${getStatusLabel(selectedPreset)}`
           }
           headerBottom={inCameraHeaderControls}
           onScanSuccess={handleQrScan}
@@ -1607,8 +1470,8 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
           title="Scan Wajah Kehadiran (Piket)"
           subtitle={
             useCutoff
-              ? `Batas tepat waktu: ${cutoffTime} WIB (+10 / -15)`
-              : `Status: ${getStatusLabel(selectedPreset)} (${POINT_VALUES[selectedPreset] >= 0 ? "+" : ""}${POINT_VALUES[selectedPreset]} Poin)`
+              ? `Batas tepat waktu: ${cutoffTime} WIB`
+              : `Status: ${getStatusLabel(selectedPreset)}`
           }
           headerBottom={inCameraHeaderControls}
           onMatchSuccess={handleFaceMatch}

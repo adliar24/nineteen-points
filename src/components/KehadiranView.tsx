@@ -36,6 +36,8 @@ import {
   getAturanKehadiranList,
   updateAturanKehadiranList,
   getKehadiranListByPeriod,
+  getPiketConfig,
+  savePiketConfig,
   saveKehadiran,
   deleteKehadiran,
   deleteRiwayat,
@@ -155,6 +157,12 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
   const [isConfirmGpsModalOpen, setIsConfirmGpsModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  // Piket Cutoff Policy State
+  const [piketUseCutoff, setPiketUseCutoff] = useState(() => localStorage.getItem("19points_piket_use_cutoff") !== "false");
+  const [piketCutoffTime, setPiketCutoffTime] = useState(() => localStorage.getItem("19points_piket_cutoff_time") || "06:30");
+  const [isSavingPiketConfig, setIsSavingPiketConfig] = useState(false);
+  const [piketConfigSuccess, setPiketConfigSuccess] = useState(false);
+
   useEffect(() => {
     const fetchAdminSettings = async () => {
       try {
@@ -167,6 +175,8 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
           const eItem = remoteConfig.find((r: any) => r.kunci === "scan_end");
           const bindItem = remoteConfig.find((r: any) => r.kunci === "device_binding_enabled");
           const gpsItem = remoteConfig.find((r: any) => r.kunci === "gps_enabled");
+          const pUse = remoteConfig.find((r: any) => r.kunci === "piket_use_cutoff");
+          const pTime = remoteConfig.find((r: any) => r.kunci === "piket_cutoff_time");
 
           if (latItem?.nilai) { setGpsLat(latItem.nilai); localStorage.setItem("19points_gps_lat", latItem.nilai); }
           if (lngItem?.nilai) { setGpsLng(lngItem.nilai); localStorage.setItem("19points_gps_lng", lngItem.nilai); }
@@ -182,6 +192,15 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
             const isGps = gpsItem.nilai !== "false";
             setGpsEnabled(isGps);
             localStorage.setItem("19points_gps_enabled", gpsItem.nilai);
+          }
+          if (pUse) {
+            const isPUse = pUse.nilai !== "false";
+            setPiketUseCutoff(isPUse);
+            localStorage.setItem("19points_piket_use_cutoff", String(isPUse));
+          }
+          if (pTime?.nilai) {
+            setPiketCutoffTime(pTime.nilai);
+            localStorage.setItem("19points_piket_cutoff_time", pTime.nilai);
           }
         }
       } catch (e) {}
@@ -687,6 +706,20 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
       alert("Gagal menyimpan konfigurasi: " + err.message);
     } finally {
       setIsSavingConfig(false);
+    }
+  };
+
+  const handleSavePiketCutoffPolicy = async () => {
+    setIsSavingPiketConfig(true);
+    try {
+      await savePiketConfig(piketUseCutoff, piketCutoffTime);
+      setPiketConfigSuccess(true);
+      setTimeout(() => setPiketConfigSuccess(false), 3000);
+      alert("Pengaturan batas jam masuk piket berhasil disimpan!");
+    } catch (err: any) {
+      alert("Gagal menyimpan aturan piket: " + err.message);
+    } finally {
+      setIsSavingPiketConfig(false);
     }
   };
 
@@ -1794,6 +1827,66 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
               {isBulkPrintingQr ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
               <span>Cetak Semua QR Kelas (ZIP)</span>
             </button>
+          </div>
+
+          {/* Piket Attendance Cutoff Policy Card */}
+          <div className="bg-white p-5 md:p-6 rounded-3xl border border-brand-100 shadow-md shadow-brand-900/5 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h3 className="text-sm font-black text-brand-950 uppercase tracking-widest flex items-center gap-2">
+                  <Clock className="w-5 h-5 text-brand-600" />
+                  Batas Jam Masuk Piket
+                </h3>
+                <p className="text-[11px] text-brand-400 font-semibold mt-0.5">
+                  Tentukan apakah scan piket otomatis mendeteksi keterlambatan berdasarkan jam batas atau diatur manual.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setPiketUseCutoff(!piketUseCutoff)}
+                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                    piketUseCutoff ? "bg-brand-600" : "bg-slate-200"
+                  }`}
+                >
+                  <span
+                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                      piketUseCutoff ? "translate-x-5" : "translate-x-0"
+                    }`}
+                  />
+                </button>
+                <span className={`text-xs font-black uppercase tracking-wider ${piketUseCutoff ? "text-brand-600" : "text-slate-400"}`}>
+                  {piketUseCutoff ? "Otomatis Aktif" : "Manual / Bebas"}
+                </span>
+              </div>
+            </div>
+
+            {piketUseCutoff && (
+              <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-brand-50">
+                <span className="text-xs font-bold text-slate-600">Jam Batas Tepat Waktu:</span>
+                <input
+                  type="time"
+                  value={piketCutoffTime}
+                  onChange={(e) => setPiketCutoffTime(e.target.value)}
+                  className="px-3 py-1.5 border border-brand-200 rounded-xl text-xs font-black text-brand-900 font-mono outline-none focus:ring-2 focus:ring-brand-500 bg-white"
+                />
+                <span className="text-[11px] text-slate-400 font-semibold">
+                  (Lewat jam ini otomatis terhitung Terlambat sesuai selisih menit)
+                </span>
+              </div>
+            )}
+
+            <div className="flex justify-end pt-1">
+              <button
+                onClick={handleSavePiketCutoffPolicy}
+                disabled={isSavingPiketConfig}
+                className="px-5 py-2.5 brand-gradient text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-md shadow-brand-500/20 cursor-pointer disabled:opacity-50 flex items-center gap-2 hover:opacity-95 transition-all"
+              >
+                {isSavingPiketConfig ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                <span>{piketConfigSuccess ? "Tersimpan!" : "Simpan Jam Masuk"}</span>
+              </button>
+            </div>
           </div>
 
           {/* Attendance Points Rules Card */}

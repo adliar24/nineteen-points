@@ -47,6 +47,7 @@ import {
 import { toSentenceCase } from "../formatName";
 import { formatLocalDate } from "../parseDateSafe";
 import { supabase } from "../supabaseClient";
+import PaginationFooter from "./PaginationFooter";
 import * as XLSX from "xlsx";
 
 interface KehadiranViewProps {
@@ -374,6 +375,12 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
   // Table Filters (for aggregate rekap)
   const [rekapSearch, setRekapSearch] = useState("");
   const [rekapClass, setRekapClass] = useState("Semua");
+  const [rekapPage, setRekapPage] = useState(1);
+  const [rekapPageSize, setRekapPageSize] = useState(25);
+
+  useEffect(() => {
+    setRekapPage(1);
+  }, [rekapSearch, rekapClass, filterType, dateRange]);
 
   // Initialize Admin Point Config Form
   useEffect(() => {
@@ -754,6 +761,12 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
       return matchesSearch && matchesClass;
     });
   }, [aggregateReport, rekapSearch, rekapClass]);
+
+  // Paginated slice for aggregate table
+  const paginatedReport = useMemo(() => {
+    const start = (rekapPage - 1) * rekapPageSize;
+    return filteredReport.slice(start, start + rekapPageSize);
+  }, [filteredReport, rekapPage, rekapPageSize]);
 
   const rekapStats = useMemo(() => {
     if (filteredReport.length === 0) {
@@ -1555,7 +1568,7 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-brand-50 text-xs font-semibold text-brand-900">
-                    {filteredReport.map((row) => (
+                    {paginatedReport.map((row) => (
                       <tr 
                         key={row.siswa.id} 
                         className="hover:bg-slate-50/40 transition-colors cursor-pointer"
@@ -1577,27 +1590,27 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
                         <td className="py-3.5 px-4">{row.siswa.kelas}</td>
                         
                         {/* Hadir */}
-                        <td className="py-3.5 px-3 text-center bg-emerald-50/10 font-mono text-emerald-700 font-bold">
+                        <td className="py-3.5 px-3 text-center bg-emerald-50/10 font-extrabold text-emerald-700">
                           {row.hadir > 0 ? `${row.hadir}x` : "-"}
                         </td>
                         
                         {/* Telat */}
-                        <td className="py-3.5 px-3 text-center bg-amber-50/10 font-mono text-amber-700 font-bold">
+                        <td className="py-3.5 px-3 text-center bg-amber-50/10 font-extrabold text-amber-700">
                           {row.terlambat > 0 ? `${row.terlambat}x` : "-"}
                         </td>
                         
                         {/* Sakit */}
-                        <td className="py-3.5 px-3 text-center bg-purple-50/10 font-mono text-purple-700 font-bold">
+                        <td className="py-3.5 px-3 text-center bg-purple-50/10 font-extrabold text-purple-700">
                           {row.sakit > 0 ? `${row.sakit}x` : "-"}
                         </td>
 
                         {/* Izin */}
-                        <td className="py-3.5 px-3 text-center bg-indigo-50/10 font-mono text-indigo-700 font-bold">
+                        <td className="py-3.5 px-3 text-center bg-indigo-50/10 font-extrabold text-indigo-700">
                           {row.izin > 0 ? `${row.izin}x` : "-"}
                         </td>
 
                         {/* Alfa */}
-                        <td className="py-3.5 px-3 text-center bg-rose-50/10 font-mono text-rose-700 font-bold">
+                        <td className="py-3.5 px-3 text-center bg-rose-50/10 font-extrabold text-rose-700">
                           {row.alfa > 0 ? `${row.alfa}x` : "-"}
                         </td>
 
@@ -1626,6 +1639,15 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
                     ))}
                   </tbody>
                 </table>
+                {filteredReport.length > rekapPageSize && (
+                  <PaginationFooter
+                    totalItems={filteredReport.length}
+                    itemsPerPage={rekapPageSize}
+                    currentPage={rekapPage}
+                    setCurrentPage={setRekapPage}
+                    itemLabel="murid"
+                  />
+                )}
               ) : (
                 <div className="py-24 text-center space-y-2">
                   <Calendar className="w-10 h-10 text-brand-300 mx-auto" />

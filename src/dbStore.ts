@@ -688,57 +688,54 @@ export interface AturanKehadiran {
 
 export const getKehadiranListByPeriod = async (startDate: string, endDate: string): Promise<any[]> => {
   // 1. Fetch records from 'kehadiran' table
-  let kehadiranQuery = supabase
-    .from("kehadiran")
-    .select(`
-      id,
-      siswa_id,
-      tanggal,
-      status,
-      nilai_poin_diberikan,
-      pencatat_email,
-      created_at
-    `);
-  if (startDate !== "1970-01-01") {
-    kehadiranQuery = kehadiranQuery.gte("tanggal", startDate);
-  }
-  if (endDate !== "9999-12-31") {
-    kehadiranQuery = kehadiranQuery.lte("tanggal", endDate);
-  }
-
-  const { data: kehadiranData, error: kErr } = await kehadiranQuery;
-  if (kErr) {
-    console.error("Error fetching attendance from kehadiran table:", kErr);
-  }
+  const kehadiranData = await fetchAllPages<any>((from, to) => {
+    let q = supabase
+      .from("kehadiran")
+      .select(`
+        id,
+        siswa_id,
+        tanggal,
+        status,
+        nilai_poin_diberikan,
+        pencatat_email,
+        created_at
+      `);
+    if (startDate !== "1970-01-01") {
+      q = q.gte("tanggal", startDate);
+    }
+    if (endDate !== "9999-12-31") {
+      q = q.lte("tanggal", endDate);
+    }
+    return q.range(from, to);
+  });
 
   // 2. Fetch lateness/terlambat records from 'riwayat_poin' table
-  let riwayatQuery = supabase
-    .from("riwayat_poin")
-    .select(`
-      id,
-      siswa_id,
-      nilai_diberikan,
-      nama_poin,
-      guru_email,
-      created_at,
-      semester
-    `)
-    .or("nama_poin.ilike.%terlambat%,nama_poin.ilike.%telat%");
+  const riwayatData = await fetchAllPages<any>((from, to) => {
+    let q = supabase
+      .from("riwayat_poin")
+      .select(`
+        id,
+        siswa_id,
+        nilai_diberikan,
+        nama_poin,
+        guru_email,
+        created_at,
+        semester
+      `)
+      .or("nama_poin.ilike.%terlambat%,nama_poin.ilike.%telat%");
 
-  // Convert WIB dates to UTC timestamps for timestamptz range query
-  if (startDate !== "1970-01-01") {
-    const startUtc = new Date(`${startDate}T00:00:00+07:00`).toISOString();
-    riwayatQuery = riwayatQuery.gte("created_at", startUtc);
-  }
-  if (endDate !== "9999-12-31") {
-    const endUtc = new Date(`${endDate}T23:59:59+07:00`).toISOString();
-    riwayatQuery = riwayatQuery.lte("created_at", endUtc);
-  }
+    // Convert WIB dates to UTC timestamps for timestamptz range query
+    if (startDate !== "1970-01-01") {
+      const startUtc = new Date(`${startDate}T00:00:00+07:00`).toISOString();
+      q = q.gte("created_at", startUtc);
+    }
+    if (endDate !== "9999-12-31") {
+      const endUtc = new Date(`${endDate}T23:59:59+07:00`).toISOString();
+      q = q.lte("created_at", endUtc);
+    }
 
-  const { data: riwayatData, error: rErr } = await riwayatQuery;
-  if (rErr) {
-    console.error("Error fetching late records from riwayat_poin table:", rErr);
-  }
+    return q.range(from, to);
+  });
 
   const combined: any[] = [...(kehadiranData || [])];
   const existingSet = new Set((kehadiranData || []).map((k: any) => `${k.siswa_id}_${k.tanggal}`));
@@ -814,29 +811,29 @@ export const updateAturanKehadiranList = async (rules: AturanKehadiran[]): Promi
 };
 
 export const getKehadiranListByDate = async (date: string): Promise<KehadiranRow[]> => {
-  const { data, error } = await supabase
-    .from("kehadiran")
-    .select(`
-      id,
-      siswa_id,
-      tanggal,
-      status,
-      nilai_poin_diberikan,
-      pencatat_email,
-      created_at,
-      siswa (
-        nis,
-        nama,
-        kelas,
-        foto_url
-      )
-    `)
-    .eq("tanggal", date)
-    .order("created_at", { ascending: false });
-  if (error) {
-    console.error("Error fetching attendance by date:", error);
-    return [];
-  }
+  const data = await fetchAllPages<any>((from, to) =>
+    supabase
+      .from("kehadiran")
+      .select(`
+        id,
+        siswa_id,
+        tanggal,
+        status,
+        nilai_poin_diberikan,
+        pencatat_email,
+        created_at,
+        siswa (
+          nis,
+          nama,
+          kelas,
+          foto_url
+        )
+      `)
+      .eq("tanggal", date)
+      .order("created_at", { ascending: false })
+      .range(from, to)
+  );
+
   return (data || []).map((row: any) => ({
     id: row.id,
     siswa_id: row.siswa_id,

@@ -39,6 +39,7 @@ import { formatLocalDate } from "../parseDateSafe";
 import FaceScanner from "./face/FaceScanner";
 import QrScanner, { QrScanFeedback } from "./scan/QrScanner";
 import InputModeTabs, { InputMode, ScanType } from "./scan/InputModeTabs";
+import PaginationFooter from "./PaginationFooter";
 
 interface InputKehadiranViewProps {
   userSession: UserSession;
@@ -285,6 +286,12 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
   const [recapQuery, setRecapQuery] = useState("");
   const [recapFilterClass, setRecapFilterClass] = useState("Semua");
   const [recapFilterStatus, setRecapFilterStatus] = useState<"semua" | "tepat_waktu" | "terlambat" | "khusus">("semua");
+  const [recapPage, setRecapPage] = useState(1);
+  const RECAP_PAGE_SIZE = 25;
+
+  useEffect(() => {
+    setRecapPage(1);
+  }, [recapQuery, recapFilterClass, recapFilterStatus]);
 
   // Audio beep feedback (optimized for instant audio context on mobile)
   const playAudio = useCallback((type: "success" | "late" | "duplicate" | "neutral" | "error") => {
@@ -604,6 +611,12 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
     });
   }, [todayAttendance, recapQuery, recapFilterClass, recapFilterStatus]);
 
+  // Paginated slice for today's live recap to keep DOM lightweight
+  const paginatedTodayRecap = useMemo(() => {
+    const start = (recapPage - 1) * RECAP_PAGE_SIZE;
+    return filteredTodayRecap.slice(start, start + RECAP_PAGE_SIZE);
+  }, [filteredTodayRecap, recapPage]);
+
   // List of IDs scanned today for face recognition hint
   const scannedSiswaIds = useMemo(() => {
     return todayAttendance.map((r) => r.siswa_id);
@@ -760,7 +773,7 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
         {/* Modern Live Clock */}
         <div className="flex items-center gap-2.5 bg-gradient-to-br from-slate-950 via-brand-950 to-indigo-950 px-4 py-2 rounded-2xl border border-brand-800/60 shadow-md shadow-brand-950/15 text-white w-fit shrink-0">
           <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="text-xl font-mono font-black tracking-wider tabular-nums">{currentTimeStr}</span>
+          <span className="text-xl font-extrabold tracking-tight tabular-nums">{currentTimeStr}</span>
           <span className="text-[10px] font-black uppercase px-1.5 py-0.5 rounded bg-white/15 text-brand-200">WIB</span>
         </div>
       </div>
@@ -837,7 +850,7 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
         <div className="p-3.5 bg-gradient-to-br from-white via-brand-50/40 to-white rounded-2xl border border-brand-150/90 shadow-xs flex items-center justify-between">
           <div>
             <p className="text-[10px] font-black text-brand-500 uppercase tracking-wider">Total Hadir</p>
-            <p className="text-xl sm:text-2xl font-mono font-black text-brand-950 mt-0.5">{stats.total}</p>
+            <p className="text-xl sm:text-2xl font-extrabold tracking-tight text-brand-950 mt-0.5">{stats.total}</p>
           </div>
           <div className="w-8 h-8 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center">
             <Users className="w-4 h-4" />
@@ -848,7 +861,7 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
         <div className="p-3.5 bg-gradient-to-br from-white via-emerald-50/50 to-white rounded-2xl border border-emerald-150/90 shadow-xs flex items-center justify-between">
           <div>
             <p className="text-[10px] font-black text-emerald-600 uppercase tracking-wider">Tepat Waktu</p>
-            <p className="text-xl sm:text-2xl font-mono font-black text-emerald-700 mt-0.5">{stats.tepatWaktu}</p>
+            <p className="text-xl sm:text-2xl font-extrabold tracking-tight text-emerald-700 mt-0.5">{stats.tepatWaktu}</p>
           </div>
           <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
             <CheckCircle2 className="w-4 h-4" />
@@ -859,7 +872,7 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
         <div className="p-3.5 bg-gradient-to-br from-white via-amber-50/50 to-white rounded-2xl border border-amber-150/90 shadow-xs flex items-center justify-between">
           <div>
             <p className="text-[10px] font-black text-amber-600 uppercase tracking-wider">Terlambat</p>
-            <p className="text-xl sm:text-2xl font-mono font-black text-amber-700 mt-0.5">{stats.terlambat}</p>
+            <p className="text-xl sm:text-2xl font-extrabold tracking-tight text-amber-700 mt-0.5">{stats.terlambat}</p>
           </div>
           <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
             <AlertTriangle className="w-4 h-4" />
@@ -870,7 +883,7 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
         <div className="p-3.5 bg-gradient-to-br from-white via-rose-50/50 to-white rounded-2xl border border-rose-150/90 shadow-xs flex items-center justify-between">
           <div>
             <p className="text-[10px] font-black text-rose-600 uppercase tracking-wider">Alfa</p>
-            <p className="text-xl sm:text-2xl font-mono font-black text-rose-700 mt-0.5">{stats.alfa}</p>
+            <p className="text-xl sm:text-2xl font-extrabold tracking-tight text-rose-700 mt-0.5">{stats.alfa}</p>
           </div>
           <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
             <X className="w-4 h-4" />
@@ -881,7 +894,7 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
         <div className="p-3.5 bg-gradient-to-br from-white via-blue-50/50 to-white rounded-2xl border border-blue-150/90 shadow-xs flex items-center justify-between">
           <div>
             <p className="text-[10px] font-black text-blue-600 uppercase tracking-wider">Izin / Sakit</p>
-            <p className="text-xl sm:text-2xl font-mono font-black text-blue-700 mt-0.5">{stats.izinSakit}</p>
+            <p className="text-xl sm:text-2xl font-extrabold tracking-tight text-blue-700 mt-0.5">{stats.izinSakit}</p>
           </div>
           <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
             <SlidersHorizontal className="w-4 h-4" />
@@ -932,9 +945,9 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
                 return (
                   <div
                     key={student.id}
-                    className="p-3.5 hover:bg-brand-50/40 transition-colors flex items-center justify-between gap-3 text-left"
+                    className="p-3 hover:bg-brand-50/40 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-left"
                   >
-                    <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
                       {student.foto_url ? (
                         <img
                           src={student.foto_url}
@@ -946,20 +959,20 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
                           {student.nama.slice(0, 2).toUpperCase()}
                         </div>
                       )}
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex-1">
                         <span className="font-extrabold text-xs text-brand-950 block truncate">
                           {toSentenceCase(student.nama)}
                         </span>
-                        <div className="flex items-center gap-2 mt-0.5">
+                        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                           <span className="text-[10px] text-slate-400 font-bold">NIS {student.nis}</span>
-                          <span className="text-[10px] font-black text-brand-600 bg-brand-50 border border-brand-100 px-2 py-0.2 rounded-md">
+                          <span className="text-[10px] font-black text-brand-600 bg-brand-50 border border-brand-100 px-2 py-0.5 rounded-md">
                             {student.kelas}
                           </span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="flex items-center gap-2 flex-shrink-0 self-end sm:self-auto">
                       {isAlready ? (
                         <span className="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-xl">
                           Sudah Absen ({getStatusLabel(existingRow?.status || "")})
@@ -968,16 +981,17 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
                         <>
                           <button
                             onClick={() => processAttendance(student)}
-                            className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[10.5px] rounded-xl shadow-sm transition-all cursor-pointer border-0 flex items-center gap-1"
+                            className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[11px] rounded-xl shadow-xs transition-all cursor-pointer border-0 flex items-center gap-1.5"
                           >
-                            <Check className="w-3 h-3" />
-                            Catat Otomatis
+                            <Check className="w-3.5 h-3.5" />
+                            <span>Hadir</span>
                           </button>
                           <button
                             onClick={() => activateManualCustom(student)}
-                            className="px-2.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-bold text-[10.5px] rounded-xl border border-brand-100 transition-all cursor-pointer"
+                            className="px-2.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-bold text-[11px] rounded-xl border border-brand-100 transition-all cursor-pointer flex items-center gap-1"
                           >
-                            Opsi Khusus
+                            <SlidersHorizontal className="w-3 h-3" />
+                            <span>Khusus</span>
                           </button>
                         </>
                       )}
@@ -1143,98 +1157,109 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
             Tidak ada murid yang sesuai filter pencarian.
           </div>
         ) : (
-          <div className="divide-y border border-brand-100 rounded-2xl overflow-hidden max-h-[380px] overflow-y-auto">
-            {filteredTodayRecap.map((row) => {
-              const isTepat = row.status === "tepat_waktu";
-              const isTelat = row.status.startsWith("telat");
-              const isAlfa = row.status === "alfa";
+          <div className="border border-brand-100 rounded-2xl overflow-hidden bg-white">
+            <div className="divide-y divide-brand-100 max-h-[380px] overflow-y-auto">
+              {paginatedTodayRecap.map((row) => {
+                const isTepat = row.status === "tepat_waktu";
+                const isTelat = row.status.startsWith("telat");
+                const isAlfa = row.status === "alfa";
 
-              return (
-                <div
-                  key={row.id}
-                  className="px-4 py-3 flex items-center justify-between hover:bg-brand-50/30 transition-colors gap-3"
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    {row.siswa_foto_url ? (
-                      <img
-                        src={row.siswa_foto_url}
-                        alt={row.siswa_nama}
-                        className="w-9 h-9 rounded-xl object-cover border border-brand-100 flex-shrink-0"
-                      />
-                    ) : (
-                      <div
-                        className={`w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-black flex-shrink-0 ${
+                return (
+                  <div
+                    key={row.id}
+                    className="px-4 py-3 flex items-center justify-between hover:bg-brand-50/30 transition-colors gap-3"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      {row.siswa_foto_url ? (
+                        <img
+                          src={row.siswa_foto_url}
+                          alt={row.siswa_nama}
+                          className="w-9 h-9 rounded-xl object-cover border border-brand-100 flex-shrink-0"
+                        />
+                      ) : (
+                        <div
+                          className={`w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-black flex-shrink-0 ${
+                            isTepat
+                              ? "bg-gradient-to-tr from-emerald-500 to-teal-400"
+                              : isTelat
+                              ? "bg-gradient-to-tr from-amber-500 to-orange-400"
+                              : isAlfa
+                              ? "bg-gradient-to-tr from-rose-500 to-red-600"
+                              : "bg-gradient-to-tr from-blue-500 to-indigo-500"
+                          }`}
+                        >
+                          {row.siswa_nama.slice(0, 2).toUpperCase()}
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold text-brand-950 truncate">
+                          {toSentenceCase(row.siswa_nama)}
+                        </p>
+                        <p className="text-[10px] text-brand-400 font-semibold">
+                          {row.siswa_kelas} &bull; NIS {row.siswa_nis}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2.5 flex-shrink-0">
+                      {/* Status badge */}
+                      <span
+                        className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
                           isTepat
-                            ? "bg-gradient-to-tr from-emerald-500 to-teal-400"
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                             : isTelat
-                            ? "bg-gradient-to-tr from-amber-500 to-orange-400"
+                            ? "bg-amber-50 text-amber-800 border-amber-200"
                             : isAlfa
-                            ? "bg-gradient-to-tr from-rose-500 to-red-600"
-                            : "bg-gradient-to-tr from-blue-500 to-indigo-500"
+                            ? "bg-rose-50 text-rose-800 border-rose-200"
+                            : "bg-blue-50 text-blue-700 border-blue-200"
                         }`}
                       >
-                        {row.siswa_nama.slice(0, 2).toUpperCase()}
-                      </div>
-                    )}
-                    <div className="min-w-0">
-                      <p className="text-xs font-bold text-brand-950 truncate">
-                        {toSentenceCase(row.siswa_nama)}
-                      </p>
-                      <p className="text-[10px] text-brand-400 font-semibold">
-                        {row.siswa_kelas} &bull; NIS {row.siswa_nis}
-                      </p>
+                        {getStatusLabel(row.status)}
+                      </span>
+
+                      {/* Point badge */}
+                      <span
+                        className={`text-[10px] font-extrabold px-2 py-0.5 rounded-lg ${
+                          row.nilai_poin_diberikan > 0
+                            ? "bg-emerald-100 text-emerald-800"
+                            : row.nilai_poin_diberikan < 0
+                            ? "bg-rose-100 text-rose-800"
+                            : "bg-slate-100 text-slate-700"
+                        }`}
+                      >
+                        {row.nilai_poin_diberikan > 0 ? `+${row.nilai_poin_diberikan}` : row.nilai_poin_diberikan}
+                      </span>
+
+                      {/* Scan Time */}
+                      <span className="text-[10px] text-brand-400 font-bold hidden sm:inline-block">
+                        {new Date(row.created_at).toLocaleTimeString("id-ID", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
+
+                      {/* Delete button (Undo scan) */}
+                      <button
+                        onClick={() => handleDeleteTodayAttendance(row)}
+                        title="Batalkan / Hapus absensi ini"
+                        className="p-1.5 hover:bg-rose-50 text-slate-300 hover:text-rose-600 rounded-lg transition-colors cursor-pointer border-0 bg-transparent"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </div>
                   </div>
-
-                  <div className="flex items-center gap-2.5 flex-shrink-0">
-                    {/* Status badge */}
-                    <span
-                      className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
-                        isTepat
-                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                          : isTelat
-                          ? "bg-amber-50 text-amber-800 border-amber-200"
-                          : isAlfa
-                          ? "bg-rose-50 text-rose-800 border-rose-200"
-                          : "bg-blue-50 text-blue-700 border-blue-200"
-                      }`}
-                    >
-                      {getStatusLabel(row.status)}
-                    </span>
-
-                    {/* Point badge */}
-                    <span
-                      className={`text-[10px] font-black px-2 py-0.5 rounded-lg font-mono ${
-                        row.nilai_poin_diberikan > 0
-                          ? "bg-emerald-100 text-emerald-800"
-                          : row.nilai_poin_diberikan < 0
-                          ? "bg-rose-100 text-rose-800"
-                          : "bg-slate-100 text-slate-700"
-                      }`}
-                    >
-                      {row.nilai_poin_diberikan > 0 ? `+${row.nilai_poin_diberikan}` : row.nilai_poin_diberikan}
-                    </span>
-
-                    {/* Scan Time */}
-                    <span className="text-[10px] text-brand-400 font-mono hidden sm:inline-block">
-                      {new Date(row.created_at).toLocaleTimeString("id-ID", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </span>
-
-                    {/* Delete button (Undo scan) */}
-                    <button
-                      onClick={() => handleDeleteTodayAttendance(row)}
-                      title="Batalkan / Hapus absensi ini"
-                      className="p-1.5 hover:bg-rose-50 text-slate-300 hover:text-rose-600 rounded-lg transition-colors cursor-pointer border-0 bg-transparent"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
+            {filteredTodayRecap.length > RECAP_PAGE_SIZE && (
+              <PaginationFooter
+                totalItems={filteredTodayRecap.length}
+                itemsPerPage={RECAP_PAGE_SIZE}
+                currentPage={recapPage}
+                setCurrentPage={setRecapPage}
+                itemLabel="murid"
+              />
+            )}
           </div>
         )}
       </div>

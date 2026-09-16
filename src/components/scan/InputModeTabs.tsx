@@ -23,52 +23,52 @@ export default function InputModeTabs({
 
   return (
     <div className="bg-white/95 backdrop-blur-xl p-1.5 rounded-2xl border border-brand-150/90 shadow-md shadow-brand-950/5 flex items-center gap-1.5">
-      {/* 1. Scan QR */}
+      {/* 1. QR */}
       <button
         type="button"
         onClick={() => {
           onModeChange('scan');
           onScanTypeChange('qr');
         }}
-        className={`flex-1 py-3 px-3.5 rounded-xl text-xs font-black flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer whitespace-nowrap ${
+        className={`flex-1 py-2.5 sm:py-3 px-2 sm:px-3.5 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 sm:gap-2 transition-all duration-200 cursor-pointer whitespace-nowrap ${
           isQr
             ? 'bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-500 text-white shadow-md shadow-emerald-600/30 scale-[1.01]'
             : 'text-slate-600 hover:text-brand-950 hover:bg-brand-50/70'
         }`}
       >
         <QrCode className={`w-4 h-4 flex-shrink-0 ${isQr ? 'text-white' : 'text-emerald-600'}`} />
-        <span className="tracking-wide">Scan QR</span>
+        <span className="tracking-wide">QR</span>
       </button>
 
-      {/* 2. Scan Wajah */}
+      {/* 2. Wajah */}
       <button
         type="button"
         onClick={() => {
           onModeChange('scan');
           onScanTypeChange('face');
         }}
-        className={`flex-1 py-3 px-3.5 rounded-xl text-xs font-black flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer whitespace-nowrap ${
+        className={`flex-1 py-2.5 sm:py-3 px-2 sm:px-3.5 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 sm:gap-2 transition-all duration-200 cursor-pointer whitespace-nowrap ${
           isFace
             ? 'brand-gradient text-white shadow-md shadow-brand-500/30 scale-[1.01]'
             : 'text-slate-600 hover:text-brand-950 hover:bg-brand-50/70'
         }`}
       >
         <ScanFace className={`w-4 h-4 flex-shrink-0 ${isFace ? 'text-white' : 'text-brand-600'}`} />
-        <span className="tracking-wide">Scan Wajah</span>
+        <span className="tracking-wide">Wajah</span>
       </button>
 
-      {/* 3. Input Manual */}
+      {/* 3. Manual */}
       <button
         type="button"
         onClick={() => onModeChange('manual')}
-        className={`flex-1 py-3 px-3.5 rounded-xl text-xs font-black flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer whitespace-nowrap ${
+        className={`flex-1 py-2.5 sm:py-3 px-2 sm:px-3.5 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 sm:gap-2 transition-all duration-200 cursor-pointer whitespace-nowrap ${
           isManual
             ? 'bg-gradient-to-r from-indigo-600 via-purple-600 to-brand-600 text-white shadow-md shadow-indigo-600/30 scale-[1.01]'
             : 'text-slate-600 hover:text-brand-950 hover:bg-brand-50/70'
         }`}
       >
         <Keyboard className={`w-4 h-4 flex-shrink-0 ${isManual ? 'text-white' : 'text-indigo-600'}`} />
-        <span className="tracking-wide">Input Manual</span>
+        <span className="tracking-wide">Manual</span>
       </button>
     </div>
   );

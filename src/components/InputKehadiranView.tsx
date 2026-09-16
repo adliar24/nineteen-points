@@ -1370,7 +1370,7 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
                       Terlambat ≤ 10 Menit ({aturanMap["telat_10"]?.nilai_poin ?? -10} Poin)
                     </option>
                     <option value="telat_15">
-                      Terlambat > 15 Menit ({aturanMap["telat_15"]?.nilai_poin ?? -15} Poin)
+                      Terlambat &gt; 15 Menit ({aturanMap["telat_15"]?.nilai_poin ?? -15} Poin)
                     </option>
                   </select>
                 )}

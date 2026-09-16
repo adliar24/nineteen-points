@@ -625,91 +625,90 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
   // ── 7. IN-CAMERA HEADER CONTROLS (QUICK STATUS SWITCHER) ──
   const inCameraHeaderControls = useMemo(() => {
     if (useCutoff) {
-      const currentCutoff = getCutoffStatusAndPoints();
       return (
-        <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-black/70 backdrop-blur-md border border-white/20 text-xs">
+        <div className="flex items-center justify-between gap-2 px-3.5 py-2 rounded-lg bg-slate-950/80 backdrop-blur-md border border-white/15 text-xs shadow-lg">
           <div className="flex items-center gap-2">
-            <span className={`w-2.5 h-2.5 rounded-full ${!isCurrentTimeLate ? "bg-emerald-400" : "bg-amber-400"} animate-pulse`} />
-            <span className="text-white/90 font-bold text-[11px]">
-              Auto Jam (&le; {cutoffTime}): {!isCurrentTimeLate ? "Tepat Waktu (+10)" : `Terlambat (${currentCutoff.points} Pts)`}
+            <span className={`w-2 h-2 rounded-sm ${!isCurrentTimeLate ? "bg-emerald-400" : "bg-amber-400"} animate-pulse`} />
+            <span className="text-white/90 font-bold text-xs tracking-tight">
+              Auto Jam: Batas &le; {cutoffTime} WIB
             </span>
           </div>
-          <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase ${!isCurrentTimeLate ? "bg-emerald-500 text-white" : "bg-amber-500 text-black"}`}>
+          <span className={`px-2.5 py-1 rounded text-[11px] font-black uppercase tracking-wider ${!isCurrentTimeLate ? "bg-emerald-500/90 text-white border border-emerald-400/40" : "bg-amber-500/90 text-black border border-amber-300"}`}>
             {!isCurrentTimeLate ? "Tepat Waktu" : "Terlambat"}
           </span>
         </div>
       );
     }
 
-    // When useCutoff is false: Render quick touch preset pills in camera header!
-    const currentConfig = getPresetStatusAndPoints(selectedPreset, selectedLateTier);
+    // When useCutoff is false: Render quick touch preset buttons in camera header
     return (
-      <div className="space-y-1.5">
+      <div className="p-2.5 rounded-lg bg-slate-950/80 backdrop-blur-md border border-white/15 shadow-lg space-y-2">
         <div className="flex items-center justify-between">
-          <span className="text-[10px] font-extrabold text-white/80 uppercase tracking-wider">
-            Status Scan:
-          </span>
-          <span className="text-[10px] font-mono text-emerald-300 font-bold">
-            Poin: {currentConfig.points >= 0 ? "+" : ""}{currentConfig.points}
+          <span className="text-[10px] font-black text-white/70 uppercase tracking-widest">
+            Pilih Status Presensi:
           </span>
         </div>
-        <div className="flex flex-wrap items-center gap-1.5">
+        <div className="grid grid-cols-4 gap-1.5">
           <button
             type="button"
             onClick={() => handleSelectPreset("tepat_waktu")}
-            className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer border ${
+            className={`py-2 px-2 rounded-lg text-xs font-black transition-all cursor-pointer border flex items-center justify-center gap-1.5 ${
               selectedPreset === "tepat_waktu"
-                ? "bg-emerald-600 text-white border-emerald-300 shadow-md scale-105"
-                : "bg-black/60 text-white/75 border-white/20 hover:bg-black/80"
+                ? "bg-emerald-600 text-white border-emerald-400 shadow-md shadow-emerald-950/40"
+                : "bg-slate-900/80 text-white/70 border-white/10 hover:bg-slate-800"
             }`}
           >
-            🟢 Hadir (+{aturanMap["tepat_waktu"]?.nilai_poin ?? 10})
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            <span>Hadir</span>
           </button>
           <button
             type="button"
             onClick={() => handleSelectPreset("terlambat")}
-            className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer border ${
+            className={`py-2 px-2 rounded-lg text-xs font-black transition-all cursor-pointer border flex items-center justify-center gap-1.5 ${
               selectedPreset === "terlambat"
-                ? "bg-amber-500 text-black border-amber-200 shadow-md scale-105"
-                : "bg-black/60 text-white/75 border-white/20 hover:bg-black/80"
+                ? "bg-amber-500 text-slate-950 border-amber-300 shadow-md shadow-amber-950/40"
+                : "bg-slate-900/80 text-white/70 border-white/10 hover:bg-slate-800"
             }`}
           >
-            🟡 Terlambat
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+            <span>Terlambat</span>
           </button>
           <button
             type="button"
             onClick={() => handleSelectPreset("izin")}
-            className={`px-2.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer border ${
+            className={`py-2 px-2 rounded-lg text-xs font-black transition-all cursor-pointer border flex items-center justify-center gap-1.5 ${
               selectedPreset === "izin"
-                ? "bg-blue-600 text-white border-blue-300 shadow-md scale-105"
-                : "bg-black/60 text-white/75 border-white/20 hover:bg-black/80"
+                ? "bg-blue-600 text-white border-blue-400 shadow-md shadow-blue-950/40"
+                : "bg-slate-900/80 text-white/70 border-white/10 hover:bg-slate-800"
             }`}
           >
-            🔵 Izin (0)
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+            <span>Izin</span>
           </button>
           <button
             type="button"
             onClick={() => handleSelectPreset("sakit")}
-            className={`px-2.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer border ${
+            className={`py-2 px-2 rounded-lg text-xs font-black transition-all cursor-pointer border flex items-center justify-center gap-1.5 ${
               selectedPreset === "sakit"
-                ? "bg-purple-600 text-white border-purple-300 shadow-md scale-105"
-                : "bg-black/60 text-white/75 border-white/20 hover:bg-black/80"
+                ? "bg-purple-600 text-white border-purple-400 shadow-md shadow-purple-950/40"
+                : "bg-slate-900/80 text-white/70 border-white/10 hover:bg-slate-800"
             }`}
           >
-            🟣 Sakit (0)
+            <span className="w-1.5 h-1.5 rounded-full bg-purple-400" />
+            <span>Sakit</span>
           </button>
         </div>
 
         {/* Sub-tier selector when Terlambat is selected */}
         {selectedPreset === "terlambat" && (
-          <div className="flex items-center gap-1.5 pt-1">
-            <span className="text-[10px] font-bold text-amber-200 uppercase tracking-wider shrink-0">Waktu:</span>
+          <div className="flex items-center gap-1.5 pt-1 border-t border-white/10">
+            <span className="text-[10px] font-black text-amber-300/90 uppercase tracking-wider shrink-0">Durasi:</span>
             <div className="flex items-center gap-1.5 flex-1">
               {(
                 [
-                  { tier: "telat_5" as const, label: "≤ 5 Menit", pts: aturanMap["telat_5"]?.nilai_poin ?? -5 },
-                  { tier: "telat_10" as const, label: "≤ 10 Menit", pts: aturanMap["telat_10"]?.nilai_poin ?? -10 },
-                  { tier: "telat_15" as const, label: "> 15 Menit", pts: aturanMap["telat_15"]?.nilai_poin ?? -15 },
+                  { tier: "telat_5" as const, label: "≤ 5 Menit" },
+                  { tier: "telat_10" as const, label: "≤ 10 Menit" },
+                  { tier: "telat_15" as const, label: "> 15 Menit" },
                 ]
               ).map((item) => {
                 const isActive = selectedLateTier === item.tier;
@@ -718,13 +717,13 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
                     key={item.tier}
                     type="button"
                     onClick={() => handleSelectLateTier(item.tier)}
-                    className={`flex-1 py-1 px-1.5 rounded-lg text-[10.5px] font-black transition-all cursor-pointer border text-center ${
+                    className={`flex-1 py-1.5 px-2 rounded-md text-[11px] font-extrabold transition-all cursor-pointer border text-center ${
                       isActive
-                        ? "bg-amber-400 text-black border-white shadow-sm scale-102 font-extrabold"
-                        : "bg-black/50 text-amber-200/80 border-amber-400/30 hover:bg-black/80"
+                        ? "bg-amber-400 text-slate-950 border-white shadow-sm font-black"
+                        : "bg-black/50 text-amber-200/80 border-amber-400/20 hover:bg-black/70"
                     }`}
                   >
-                    {item.label} ({item.pts})
+                    {item.label}
                   </button>
                 );
               })}
@@ -733,7 +732,7 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
         )}
       </div>
     );
-  }, [useCutoff, isCurrentTimeLate, cutoffTime, selectedPreset, selectedLateTier, aturanMap, getCutoffStatusAndPoints, getPresetStatusAndPoints]);
+  }, [useCutoff, isCurrentTimeLate, cutoffTime, selectedPreset, selectedLateTier]);
 
   return (
     <div className="space-y-5 pb-16 animate-fade-in font-sans">

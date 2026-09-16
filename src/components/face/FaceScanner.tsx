@@ -397,8 +397,8 @@ export default function FaceScanner({
         <div className="flex items-center justify-between gap-2">
           {/* Left: icon + title */}
           <div className="flex items-center gap-2.5 sm:gap-4 min-w-0">
-            <div className="w-10 h-10 sm:w-13 sm:h-13 rounded-xl sm:rounded-2xl bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center shadow-lg shadow-purple-900/50 flex-shrink-0">
-              <ScanFace className="w-5 h-5 sm:w-7 sm:h-7 text-white" />
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center shadow-lg shadow-purple-900/50 flex-shrink-0">
+              <ScanFace className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </div>
             <div className="min-w-0">
               <h2 className="font-extrabold text-white text-sm sm:text-lg leading-tight truncate">{title}</h2>
@@ -414,7 +414,7 @@ export default function FaceScanner({
                 onClick={handleSwitchCamera}
                 disabled={isSwitchingCamera}
                 title="Ganti Kamera"
-                className="w-9 h-9 sm:w-12 sm:h-12 rounded-xl bg-slate-900/90 flex items-center justify-center text-white border border-white/20 hover:bg-slate-800 transition-all disabled:opacity-50"
+                className="w-9 h-9 sm:w-11 sm:h-11 rounded-lg bg-slate-900/90 flex items-center justify-center text-white border border-white/20 hover:bg-slate-800 transition-all disabled:opacity-50"
               >
                 {isSwitchingCamera
                   ? <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
@@ -426,7 +426,7 @@ export default function FaceScanner({
               whileTap={{ scale: 0.92 }}
               onClick={onClose}
               title="Tutup Scanner"
-              className="w-9 h-9 sm:w-12 sm:h-12 rounded-xl bg-red-600 flex items-center justify-center text-white border border-red-400/40 hover:bg-red-700 transition-all shadow-lg shadow-red-950/40"
+              className="w-9 h-9 sm:w-11 sm:h-11 rounded-lg bg-red-600 flex items-center justify-center text-white border border-red-400/40 hover:bg-red-700 transition-all shadow-lg shadow-red-950/40"
             >
               <X className="w-4 h-4 sm:w-5 sm:h-5" />
             </motion.button>

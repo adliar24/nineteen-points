@@ -1547,98 +1547,100 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
 
           {/* Aggregate Student Grid Table */}
           <div className="bg-white rounded-3xl border border-brand-100 shadow-md shadow-brand-900/5 overflow-hidden">
-            <div className="overflow-x-auto">
-              {loadingKehadiran ? (
-                <div className="py-20 text-center">
-                  <RefreshCw className="w-8 h-8 animate-spin mx-auto text-brand-500" />
-                  <p className="text-xs font-bold text-brand-400 mt-2">Memuat rekap absensi...</p>
-                </div>
-              ) : filteredReport.length > 0 ? (
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="border-b border-brand-100 bg-brand-50/20 text-[10px] font-black text-brand-400 uppercase tracking-widest">
-                      <th className="py-4 px-5">Murid</th>
-                      <th className="py-4 px-4">Kelas</th>
-                      <th className="py-4 px-3 text-center bg-emerald-50/20 text-emerald-700">Hadir</th>
-                      <th className="py-4 px-3 text-center bg-amber-50/20 text-amber-700">Telat</th>
-                      <th className="py-4 px-3 text-center bg-purple-50/20 text-purple-700">Sakit</th>
-                      <th className="py-4 px-3 text-center bg-indigo-50/20 text-indigo-700">Izin</th>
-                      <th className="py-4 px-3 text-center bg-rose-50/20 text-rose-700">Alfa</th>
-                      <th className="py-4 px-5 text-right">Tindakan</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-brand-50 text-xs font-semibold text-brand-900">
-                    {paginatedReport.map((row) => (
-                      <tr 
-                        key={row.siswa.id} 
-                        className="hover:bg-slate-50/40 transition-colors cursor-pointer"
-                        onClick={() => setDetailedStudent(row.siswa)}
-                      >
-                        <td className="py-3.5 px-5 flex items-center gap-3">
-                          {row.siswa.foto_url ? (
-                            <img src={row.siswa.foto_url} className="w-8 h-10 rounded-lg object-cover border border-brand-100 shadow-xs" alt="Avatar" />
-                          ) : (
-                            <div className="w-8 h-10 rounded-lg bg-gradient-to-tr from-brand-500 to-accent-500 text-white flex items-center justify-center font-bold text-[10px] shadow-xs">
-                              {row.siswa.nama.slice(0, 2).toUpperCase()}
+            {loadingKehadiran ? (
+              <div className="py-20 text-center">
+                <RefreshCw className="w-8 h-8 animate-spin mx-auto text-brand-500" />
+                <p className="text-xs font-bold text-brand-400 mt-2">Memuat rekap absensi...</p>
+              </div>
+            ) : filteredReport.length > 0 ? (
+              <>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="border-b border-brand-100 bg-brand-50/20 text-[10px] font-black text-brand-400 uppercase tracking-widest">
+                        <th className="py-4 px-5">Murid</th>
+                        <th className="py-4 px-4">Kelas</th>
+                        <th className="py-4 px-3 text-center bg-emerald-50/20 text-emerald-700">Hadir</th>
+                        <th className="py-4 px-3 text-center bg-amber-50/20 text-amber-700">Telat</th>
+                        <th className="py-4 px-3 text-center bg-purple-50/20 text-purple-700">Sakit</th>
+                        <th className="py-4 px-3 text-center bg-indigo-50/20 text-indigo-700">Izin</th>
+                        <th className="py-4 px-3 text-center bg-rose-50/20 text-rose-700">Alfa</th>
+                        <th className="py-4 px-5 text-right">Tindakan</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-brand-50 text-xs font-semibold text-brand-900">
+                      {paginatedReport.map((row) => (
+                        <tr 
+                          key={row.siswa.id} 
+                          className="hover:bg-slate-50/40 transition-colors cursor-pointer"
+                          onClick={() => setDetailedStudent(row.siswa)}
+                        >
+                          <td className="py-3.5 px-5 flex items-center gap-3">
+                            {row.siswa.foto_url ? (
+                              <img src={row.siswa.foto_url} className="w-8 h-10 rounded-lg object-cover border border-brand-100 shadow-xs" alt="Avatar" />
+                            ) : (
+                              <div className="w-8 h-10 rounded-lg bg-gradient-to-tr from-brand-500 to-accent-500 text-white flex items-center justify-center font-bold text-[10px] shadow-xs">
+                                {row.siswa.nama.slice(0, 2).toUpperCase()}
+                              </div>
+                            )}
+                            <div>
+                              <span className="font-extrabold text-brand-950 block hover:text-brand-700 transition-colors">{toSentenceCase(row.siswa.nama)}</span>
+                              <span className="text-[10px] text-slate-400 font-bold block mt-1">NIS {row.siswa.nis}</span>
                             </div>
-                          )}
-                          <div>
-                            <span className="font-extrabold text-brand-950 block hover:text-brand-700 transition-colors">{toSentenceCase(row.siswa.nama)}</span>
-                            <span className="text-[10px] text-slate-400 font-bold block mt-1">NIS {row.siswa.nis}</span>
-                          </div>
-                        </td>
-                        <td className="py-3.5 px-4">{row.siswa.kelas}</td>
-                        
-                        {/* Hadir */}
-                        <td className="py-3.5 px-3 text-center bg-emerald-50/10 font-extrabold text-emerald-700">
-                          {row.hadir > 0 ? `${row.hadir}x` : "-"}
-                        </td>
-                        
-                        {/* Telat */}
-                        <td className="py-3.5 px-3 text-center bg-amber-50/10 font-extrabold text-amber-700">
-                          {row.terlambat > 0 ? `${row.terlambat}x` : "-"}
-                        </td>
-                        
-                        {/* Sakit */}
-                        <td className="py-3.5 px-3 text-center bg-purple-50/10 font-extrabold text-purple-700">
-                          {row.sakit > 0 ? `${row.sakit}x` : "-"}
-                        </td>
+                          </td>
+                          <td className="py-3.5 px-4">{row.siswa.kelas}</td>
+                          
+                          {/* Hadir */}
+                          <td className="py-3.5 px-3 text-center bg-emerald-50/10 font-extrabold text-emerald-700">
+                            {row.hadir > 0 ? `${row.hadir}x` : "-"}
+                          </td>
+                          
+                          {/* Telat */}
+                          <td className="py-3.5 px-3 text-center bg-amber-50/10 font-extrabold text-amber-700">
+                            {row.terlambat > 0 ? `${row.terlambat}x` : "-"}
+                          </td>
+                          
+                          {/* Sakit */}
+                          <td className="py-3.5 px-3 text-center bg-purple-50/10 font-extrabold text-purple-700">
+                            {row.sakit > 0 ? `${row.sakit}x` : "-"}
+                          </td>
 
-                        {/* Izin */}
-                        <td className="py-3.5 px-3 text-center bg-indigo-50/10 font-extrabold text-indigo-700">
-                          {row.izin > 0 ? `${row.izin}x` : "-"}
-                        </td>
+                          {/* Izin */}
+                          <td className="py-3.5 px-3 text-center bg-indigo-50/10 font-extrabold text-indigo-700">
+                            {row.izin > 0 ? `${row.izin}x` : "-"}
+                          </td>
 
-                        {/* Alfa */}
-                        <td className="py-3.5 px-3 text-center bg-rose-50/10 font-extrabold text-rose-700">
-                          {row.alfa > 0 ? `${row.alfa}x` : "-"}
-                        </td>
+                          {/* Alfa */}
+                          <td className="py-3.5 px-3 text-center bg-rose-50/10 font-extrabold text-rose-700">
+                            {row.alfa > 0 ? `${row.alfa}x` : "-"}
+                          </td>
 
-                        <td className="py-3.5 px-5 text-right">
-                          <div className="inline-flex gap-1.5 justify-end items-center">
-                            <button
-                              type="button"
-                              onClick={(e) => { e.stopPropagation(); setDetailedStudent(row.siswa); }}
-                              className="px-3 py-1.5 bg-brand-50 border border-brand-100 hover:bg-brand-100 hover:text-brand-800 text-brand-600 rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors cursor-pointer"
-                            >
-                              Riwayat
-                            </button>
-                            {(isAdmin || userSession.role === "piket") && (row.hadir > 0 || row.terlambat > 0 || row.sakit > 0 || row.izin > 0 || row.alfa > 0) && (
+                          <td className="py-3.5 px-5 text-right">
+                            <div className="inline-flex gap-1.5 justify-end items-center">
                               <button
                                 type="button"
-                                onClick={(e) => { e.stopPropagation(); handleDeleteStudentAllAttendance(row.siswa.id, row.siswa.nama); }}
-                                className="p-1.5 border border-rose-100 bg-rose-50/50 hover:bg-rose-100 text-rose-600 rounded-xl transition-all cursor-pointer"
-                                title={`Hapus seluruh absensi milik ${row.siswa.nama}`}
+                                onClick={(e) => { e.stopPropagation(); setDetailedStudent(row.siswa); }}
+                                className="px-3 py-1.5 bg-brand-50 border border-brand-100 hover:bg-brand-100 hover:text-brand-800 text-brand-600 rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors cursor-pointer"
                               >
-                                <Trash2 className="w-3.5 h-3.5" />
+                                Riwayat
                               </button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                              {(isAdmin || userSession.role === "piket") && (row.hadir > 0 || row.terlambat > 0 || row.sakit > 0 || row.izin > 0 || row.alfa > 0) && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => { e.stopPropagation(); handleDeleteStudentAllAttendance(row.siswa.id, row.siswa.nama); }}
+                                  className="p-1.5 border border-rose-100 bg-rose-50/50 hover:bg-rose-100 text-rose-600 rounded-xl transition-all cursor-pointer"
+                                  title={`Hapus seluruh absensi milik ${row.siswa.nama}`}
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
                 {filteredReport.length > rekapPageSize && (
                   <PaginationFooter
                     totalItems={filteredReport.length}
@@ -1648,16 +1650,16 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
                     itemLabel="murid"
                   />
                 )}
-              ) : (
-                <div className="py-24 text-center space-y-2">
-                  <Calendar className="w-10 h-10 text-brand-300 mx-auto" />
-                  <h4 className="text-xs font-black text-brand-500 uppercase tracking-widest">Tidak Ada Murid</h4>
-                  <p className="text-[10px] text-brand-400 font-semibold max-w-xs mx-auto">
-                    Tidak ditemukan data murid yang cocok dengan filter.
-                  </p>
-                </div>
-              )}
-            </div>
+              </>
+            ) : (
+              <div className="py-24 text-center space-y-2">
+                <Calendar className="w-10 h-10 text-brand-300 mx-auto" />
+                <h4 className="text-xs font-black text-brand-500 uppercase tracking-widest">Tidak Ada Murid</h4>
+                <p className="text-[10px] text-brand-400 font-semibold max-w-xs mx-auto">
+                  Tidak ditemukan data murid yang cocok dengan filter.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       )}

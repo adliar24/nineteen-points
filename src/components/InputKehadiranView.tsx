@@ -723,102 +723,45 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
   }, [useCutoff, isCurrentTimeLate, cutoffTime, selectedPreset, selectedLateTier, aturanMap, getCutoffStatusAndPoints, getPresetStatusAndPoints]);
 
   return (
-    <div className="space-y-6 pb-16 animate-fade-in font-sans">
-      {/* Header & Digital Clock Terminal */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-50 border border-brand-200/80 text-brand-700 text-[10.5px] font-black uppercase tracking-widest mb-2 shadow-xs">
-            <Sparkles className="w-3 h-3 text-brand-600" />
-            <span>Presensi Piket Terpadu</span>
-          </div>
-          <h2 className="text-2xl sm:text-3xl font-black text-brand-950 tracking-tight flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl brand-gradient text-white flex items-center justify-center shadow-lg shadow-brand-500/25 shrink-0">
-              <QrCode className="w-5 h-5" />
-            </div>
-            <span>Scan Kehadiran Murid</span>
-          </h2>
-          <p className="text-xs text-brand-600/80 font-medium mt-1">
-            Pindai kartu pelajar atau wajah murid secara berkelanjutan dengan validasi instan.
-          </p>
-        </div>
-
-        {/* Ultra-Modern Live Clock Terminal */}
-        <div className="relative group overflow-hidden bg-gradient-to-br from-slate-950 via-brand-950 to-indigo-950 p-3.5 sm:px-5 sm:py-3.5 rounded-3xl shadow-xl shadow-brand-950/20 border border-brand-800/60 flex items-center gap-3.5 shrink-0">
-          <div className="absolute -right-8 -top-8 w-24 h-24 bg-brand-500/25 rounded-full blur-xl pointer-events-none" />
-          <div className="absolute -left-8 -bottom-8 w-24 h-24 bg-emerald-500/15 rounded-full blur-xl pointer-events-none" />
-
-          <div className="relative flex items-center justify-center w-10 h-10 rounded-2xl bg-white/10 border border-white/15 text-emerald-400 shadow-inner shrink-0">
-            <Clock className="w-5 h-5 animate-pulse" />
-            <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-emerald-400 ring-4 ring-slate-950 animate-ping" />
-            <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-emerald-500 shadow-sm shadow-emerald-400/80" />
-          </div>
-
-          <div className="relative z-10">
-            <div className="flex items-center gap-2">
-              <span className="text-[9.5px] font-black uppercase tracking-widest text-brand-300">Waktu Realtime</span>
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            </div>
-            <div className="flex items-baseline gap-1.5 mt-0.5">
-              <span className="text-2xl sm:text-3xl font-mono font-black tracking-wider text-white drop-shadow-sm tabular-nums">
-                {currentTimeStr}
-              </span>
-              <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-lg bg-brand-500/30 text-brand-200 border border-brand-400/30 shadow-xs tracking-wider">
-                WIB
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ── MODERN STATUS & POLICY BOARD ── */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-white via-brand-50/40 to-white/95 backdrop-blur-md rounded-3xl border border-brand-150/90 p-4 sm:p-5 shadow-sm shadow-brand-900/5 flex flex-wrap items-center justify-between gap-4">
+    <div className="space-y-5 pb-16 animate-fade-in font-sans">
+      {/* ── TOP BAR: TITLE, STATUS & CLOCK ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div
-            className={`px-3.5 py-2 rounded-2xl font-black text-xs flex items-center gap-2.5 shadow-sm tracking-wide ${
-              useCutoff
-                ? !isCurrentTimeLate
-                  ? "bg-emerald-600 text-white shadow-emerald-600/25"
-                  : "bg-amber-500 text-slate-950 shadow-amber-500/25"
-                : "brand-gradient text-white shadow-brand-500/25"
-            }`}
-          >
-            <span className={`w-2 h-2 rounded-full ${useCutoff ? (!isCurrentTimeLate ? "bg-white" : "bg-black") : "bg-emerald-300"} animate-ping`} />
-            <span>
-              {useCutoff
-                ? !isCurrentTimeLate
-                  ? "HADIR TEPAT WAKTU"
-                  : "STATUS TERLAMBAT"
-                : "MODE PRESET BEBAS"}
-            </span>
+          <div className="w-10 h-10 rounded-2xl brand-gradient text-white flex items-center justify-center shadow-md shadow-brand-500/20 shrink-0">
+            <QrCode className="w-5 h-5" />
           </div>
-
-          <div className="space-y-0.5">
-            <p className="text-xs font-black text-brand-950">
-              {useCutoff ? (
-                <>
-                  Batas Jam Masuk: <span className="font-mono text-brand-700 bg-brand-100/70 px-2 py-0.5 rounded-lg">&le; {cutoffTime} WIB</span>
-                </>
-              ) : (
-                <>Status Terpilih: <strong className="text-brand-700 font-black">{getStatusLabel(selectedPreset)}</strong></>
-              )}
-            </p>
-            <p className="text-[11px] text-brand-500/90 font-semibold">
-              {useCutoff
-                ? `Murid discan otomatis tercatat ${!isCurrentTimeLate ? "Tepat Waktu (+10)" : "Terlambat sesuai menit"}.`
-                : "Preset aktif dapat dialihkan secara langsung di header kamera."}
-            </p>
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="text-xl sm:text-2xl font-black text-brand-950 tracking-tight">Scan Kehadiran</h2>
+              <span
+                className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10.5px] font-black uppercase ${
+                  useCutoff
+                    ? !isCurrentTimeLate
+                      ? "bg-emerald-100 text-emerald-800 border border-emerald-200/80"
+                      : "bg-amber-100 text-amber-900 border border-amber-200/80"
+                    : "bg-brand-100 text-brand-800 border border-brand-200/80"
+                }`}
+              >
+                <span
+                  className={`w-1.5 h-1.5 rounded-full ${
+                    useCutoff ? (!isCurrentTimeLate ? "bg-emerald-500" : "bg-amber-500") : "bg-brand-500"
+                  } animate-pulse`}
+                />
+                {useCutoff
+                  ? !isCurrentTimeLate
+                    ? `Tepat Waktu (≤ ${cutoffTime})`
+                    : `Terlambat (> ${cutoffTime})`
+                  : `Preset: ${getStatusLabel(selectedPreset)}`}
+              </span>
+            </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 text-[11px] font-bold text-slate-500">
-          <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200/80 shadow-2xs">
-            <Check className="w-3.5 h-3.5" />
-            <span>Anti-Duplikat Aktif</span>
-          </span>
-          <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-brand-50 text-brand-700 border border-brand-150 shadow-2xs">
-            <Zap className="w-3.5 h-3.5 text-brand-600" />
-            <span>Verifikasi Kilat</span>
-          </span>
+        {/* Modern Live Clock */}
+        <div className="flex items-center gap-2.5 bg-gradient-to-br from-slate-950 via-brand-950 to-indigo-950 px-4 py-2 rounded-2xl border border-brand-800/60 shadow-md shadow-brand-950/15 text-white w-fit shrink-0">
+          <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="text-xl font-mono font-black tracking-wider tabular-nums">{currentTimeStr}</span>
+          <span className="text-[10px] font-black uppercase px-1.5 py-0.5 rounded bg-white/15 text-brand-200">WIB</span>
         </div>
       </div>
 
@@ -829,10 +772,10 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl text-xs font-bold flex items-center gap-3 shadow-md"
+            className="p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl text-xs font-bold flex items-center gap-2.5 shadow-sm"
           >
-            <div className="w-6 h-6 rounded-lg bg-emerald-500 text-white flex items-center justify-center flex-shrink-0">
-              <Check className="w-3.5 h-3.5" />
+            <div className="w-5 h-5 rounded-lg bg-emerald-500 text-white flex items-center justify-center flex-shrink-0">
+              <Check className="w-3 h-3" />
             </div>
             <span>{successMsg}</span>
           </motion.div>
@@ -843,90 +786,17 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl text-xs font-bold flex items-center gap-3 shadow-md"
+            className="p-3.5 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl text-xs font-bold flex items-center gap-2.5 shadow-sm"
           >
-            <div className="w-6 h-6 rounded-lg bg-rose-500 text-white flex items-center justify-center flex-shrink-0">
-              <AlertCircle className="w-3.5 h-3.5" />
+            <div className="w-5 h-5 rounded-lg bg-rose-500 text-white flex items-center justify-center flex-shrink-0">
+              <AlertCircle className="w-3 h-3" />
             </div>
             <span>{errorMsg}</span>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* ── 5 LIVE STATISTICS BOARDS ── */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3.5">
-        {/* Total Hadir */}
-        <div className="p-4 bg-gradient-to-br from-white via-brand-50/40 to-white rounded-3xl border border-brand-150/90 shadow-sm shadow-brand-900/5 card-hover-effect flex flex-col justify-between gap-3">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-black text-brand-500 uppercase tracking-widest">Total Hadir</span>
-            <div className="w-9 h-9 rounded-2xl bg-brand-50 border border-brand-200/70 text-brand-600 flex items-center justify-center shadow-2xs">
-              <Users className="w-4.5 h-4.5" />
-            </div>
-          </div>
-          <div>
-            <p className="text-2xl sm:text-3xl font-mono font-black text-brand-950 tracking-tight">{stats.total}</p>
-            <span className="text-[10px] font-bold text-brand-400">Murid Masuk</span>
-          </div>
-        </div>
-
-        {/* Tepat Waktu */}
-        <div className="p-4 bg-gradient-to-br from-white via-emerald-50/50 to-white rounded-3xl border border-emerald-150/90 shadow-sm shadow-emerald-900/5 card-hover-effect flex flex-col justify-between gap-3">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Tepat Waktu</span>
-            <div className="w-9 h-9 rounded-2xl bg-emerald-50 border border-emerald-200/70 text-emerald-600 flex items-center justify-center shadow-2xs">
-              <CheckCircle2 className="w-4.5 h-4.5" />
-            </div>
-          </div>
-          <div>
-            <p className="text-2xl sm:text-3xl font-mono font-black text-emerald-700 tracking-tight">{stats.tepatWaktu}</p>
-            <span className="text-[10px] font-bold text-emerald-600/80">+10 Poin</span>
-          </div>
-        </div>
-
-        {/* Terlambat */}
-        <div className="p-4 bg-gradient-to-br from-white via-amber-50/50 to-white rounded-3xl border border-amber-150/90 shadow-sm shadow-amber-900/5 card-hover-effect flex flex-col justify-between gap-3">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest">Terlambat</span>
-            <div className="w-9 h-9 rounded-2xl bg-amber-50 border border-amber-200/70 text-amber-600 flex items-center justify-center shadow-2xs">
-              <AlertTriangle className="w-4.5 h-4.5" />
-            </div>
-          </div>
-          <div>
-            <p className="text-2xl sm:text-3xl font-mono font-black text-amber-700 tracking-tight">{stats.terlambat}</p>
-            <span className="text-[10px] font-bold text-amber-600/80">Poin Minus</span>
-          </div>
-        </div>
-
-        {/* Alfa */}
-        <div className="p-4 bg-gradient-to-br from-white via-rose-50/50 to-white rounded-3xl border border-rose-150/90 shadow-sm shadow-rose-900/5 card-hover-effect flex flex-col justify-between gap-3">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-black text-rose-600 uppercase tracking-widest">Alfa</span>
-            <div className="w-9 h-9 rounded-2xl bg-rose-50 border border-rose-200/70 text-rose-600 flex items-center justify-center shadow-2xs">
-              <X className="w-4.5 h-4.5" />
-            </div>
-          </div>
-          <div>
-            <p className="text-2xl sm:text-3xl font-mono font-black text-rose-700 tracking-tight">{stats.alfa}</p>
-            <span className="text-[10px] font-bold text-rose-600/80">-50 Poin</span>
-          </div>
-        </div>
-
-        {/* Izin / Sakit */}
-        <div className="p-4 bg-gradient-to-br from-white via-blue-50/50 to-white rounded-3xl border border-blue-150/90 shadow-sm shadow-blue-900/5 card-hover-effect flex flex-col justify-between gap-3">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Izin / Sakit</span>
-            <div className="w-9 h-9 rounded-2xl bg-blue-50 border border-blue-200/70 text-blue-600 flex items-center justify-center shadow-2xs">
-              <SlidersHorizontal className="w-4.5 h-4.5" />
-            </div>
-          </div>
-          <div>
-            <p className="text-2xl sm:text-3xl font-mono font-black text-blue-700 tracking-tight">{stats.izinSakit}</p>
-            <span className="text-[10px] font-bold text-blue-600/80">Dispensasi</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Method Tabs */}
+      {/* ── 1. FITUR UTAMA: SCAN TABS LANGSUNG DI ATAS ── */}
       {!activeSiswa && (
         <InputModeTabs
           mode={mode}
@@ -936,87 +806,88 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
         />
       )}
 
-      {/* 1. TAB SCAN QR */}
+      {/* ── 2. TOMBOL AKSI SCAN LANGSUNG (TO THE POINT) ── */}
       {!activeSiswa && mode === "scan" && scanType === "qr" && (
-        <div className="relative overflow-hidden max-w-md mx-auto bg-white/95 backdrop-blur-xl p-8 rounded-3xl border border-brand-150 shadow-xl shadow-brand-950/5 space-y-6 text-center card-hover-effect">
-          <div className="absolute -top-16 -right-16 w-36 h-36 bg-emerald-400/15 rounded-full blur-2xl pointer-events-none" />
-          <div className="absolute -bottom-16 -left-16 w-36 h-36 bg-teal-400/15 rounded-full blur-2xl pointer-events-none" />
-
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[10px] font-black uppercase tracking-widest shadow-2xs">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span>Kamera QR Siap Digunakan</span>
-          </div>
-
-          <div className="relative mx-auto w-20 h-20 bg-gradient-to-br from-emerald-50 to-teal-100/70 text-emerald-600 rounded-3xl flex items-center justify-center border-2 border-emerald-200/90 shadow-xl shadow-emerald-600/15">
-            <QrCode className="w-10 h-10" />
-            <div className="absolute -inset-1.5 rounded-3xl border border-emerald-300/40 animate-pulse pointer-events-none" />
-          </div>
-
-          <div className="space-y-1.5">
-            <h4 className="font-black text-base text-brand-950 tracking-tight">Scanner QR Kartu Pelajar</h4>
-            <p className="text-xs text-brand-500 font-medium leading-relaxed max-w-xs mx-auto">
-              Arahkan kamera ke kartu QR siswa untuk presensi cepat tanpa henti di gerbang sekolah.
-            </p>
-          </div>
-
+        <div className="bg-white/95 backdrop-blur-xl p-6 sm:p-8 rounded-3xl border border-brand-150 shadow-md text-center card-hover-effect">
           <button
             onClick={() => setShowQrScanner(true)}
-            className="w-full py-4 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-500 hover:opacity-95 text-white font-black text-xs uppercase tracking-widest rounded-2xl shadow-xl shadow-emerald-600/25 hover:shadow-emerald-600/40 hover:scale-[1.01] active:scale-[0.99] cursor-pointer border-0 transition-all duration-200 flex items-center justify-center gap-2.5"
+            className="w-full max-w-md mx-auto py-4 sm:py-5 px-8 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-500 hover:opacity-95 active:scale-98 text-white font-black text-sm uppercase tracking-wider rounded-2xl shadow-xl shadow-emerald-600/30 cursor-pointer border-0 transition-all flex items-center justify-center gap-3"
           >
-            <QrCode className="w-4.5 h-4.5" />
-            <span>Buka Layar Scanner QR</span>
+            <QrCode className="w-6 h-6" />
+            <span>Mulai Scan QR Siswa</span>
           </button>
-
-          <div className="flex items-center justify-center gap-3 pt-2 text-[10.5px] font-bold text-slate-400 border-t border-brand-50">
-            <span>⚡ Deteksi Cepat</span>
-            <span>&bull;</span>
-            <span>🛡️ Validasi Otomatis</span>
-            <span>&bull;</span>
-            <span>📱 Kamera Depan / Belakang</span>
-          </div>
         </div>
       )}
 
-      {/* 2. TAB SCAN WAJAH */}
       {!activeSiswa && mode === "scan" && scanType === "face" && (
-        <div className="relative overflow-hidden max-w-md mx-auto bg-white/95 backdrop-blur-xl p-8 rounded-3xl border border-brand-150 shadow-xl shadow-brand-950/5 space-y-6 text-center card-hover-effect">
-          <div className="absolute -top-16 -right-16 w-36 h-36 bg-brand-500/15 rounded-full blur-2xl pointer-events-none" />
-          <div className="absolute -bottom-16 -left-16 w-36 h-36 bg-fuchsia-500/15 rounded-full blur-2xl pointer-events-none" />
-
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-50 border border-brand-200 text-brand-800 text-[10px] font-black uppercase tracking-widest shadow-2xs">
-            <span className="w-2 h-2 rounded-full bg-brand-500 animate-pulse" />
-            <span>AI Face Recognition Siap</span>
-          </div>
-
-          <div className="relative mx-auto w-20 h-20 brand-gradient-soft text-brand-600 rounded-3xl flex items-center justify-center border-2 border-brand-200/90 shadow-xl shadow-brand-600/15">
-            <ScanFace className="w-10 h-10 text-brand-600" />
-            <div className="absolute -inset-1.5 rounded-3xl border border-brand-300/40 animate-pulse pointer-events-none" />
-          </div>
-
-          <div className="space-y-1.5">
-            <h4 className="font-black text-base text-brand-950 tracking-tight">Scan Wajah AI Siswa</h4>
-            <p className="text-xs text-brand-500 font-medium leading-relaxed max-w-xs mx-auto">
-              Posisikan wajah siswa di depan kamera. Kecerdasan buatan akan mengenali dan memvalidasi profil instan.
-            </p>
-          </div>
-
+        <div className="bg-white/95 backdrop-blur-xl p-6 sm:p-8 rounded-3xl border border-brand-150 shadow-md text-center card-hover-effect">
           <button
             onClick={() => setShowFaceScanner(true)}
-            className="w-full py-4 brand-gradient hover:opacity-95 text-white font-black text-xs uppercase tracking-widest rounded-2xl shadow-xl shadow-brand-500/25 hover:shadow-brand-500/40 hover:scale-[1.01] active:scale-[0.99] cursor-pointer border-0 transition-all duration-200 flex items-center justify-center gap-2.5"
+            className="w-full max-w-md mx-auto py-4 sm:py-5 px-8 brand-gradient hover:opacity-95 active:scale-98 text-white font-black text-sm uppercase tracking-wider rounded-2xl shadow-xl shadow-brand-500/30 cursor-pointer border-0 transition-all flex items-center justify-center gap-3"
           >
-            <ScanFace className="w-4.5 h-4.5" />
-            <span>Buka Layar Scanner Wajah</span>
+            <ScanFace className="w-6 h-6" />
+            <span>Mulai Scan Wajah Siswa</span>
           </button>
-
-          <div className="flex items-center justify-center gap-3 pt-2 text-[10.5px] font-bold text-slate-400 border-t border-brand-50">
-            <span>🤖 AI Pencocokan Wajah</span>
-            <span>&bull;</span>
-            <span>🛡️ Anti-Titip Absen</span>
-            <span>&bull;</span>
-            <span>⚡ Rekam Otomatis</span>
-          </div>
         </div>
       )}
+
+      {/* ── 3. PAPAN STATISTIK RINGKAS (DI BAWAH SCAN) ── */}
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        {/* Total Hadir */}
+        <div className="p-3.5 bg-gradient-to-br from-white via-brand-50/40 to-white rounded-2xl border border-brand-150/90 shadow-xs flex items-center justify-between">
+          <div>
+            <p className="text-[10px] font-black text-brand-500 uppercase tracking-wider">Total Hadir</p>
+            <p className="text-xl sm:text-2xl font-mono font-black text-brand-950 mt-0.5">{stats.total}</p>
+          </div>
+          <div className="w-8 h-8 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center">
+            <Users className="w-4 h-4" />
+          </div>
+        </div>
+
+        {/* Tepat Waktu */}
+        <div className="p-3.5 bg-gradient-to-br from-white via-emerald-50/50 to-white rounded-2xl border border-emerald-150/90 shadow-xs flex items-center justify-between">
+          <div>
+            <p className="text-[10px] font-black text-emerald-600 uppercase tracking-wider">Tepat Waktu</p>
+            <p className="text-xl sm:text-2xl font-mono font-black text-emerald-700 mt-0.5">{stats.tepatWaktu}</p>
+          </div>
+          <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+            <CheckCircle2 className="w-4 h-4" />
+          </div>
+        </div>
+
+        {/* Terlambat */}
+        <div className="p-3.5 bg-gradient-to-br from-white via-amber-50/50 to-white rounded-2xl border border-amber-150/90 shadow-xs flex items-center justify-between">
+          <div>
+            <p className="text-[10px] font-black text-amber-600 uppercase tracking-wider">Terlambat</p>
+            <p className="text-xl sm:text-2xl font-mono font-black text-amber-700 mt-0.5">{stats.terlambat}</p>
+          </div>
+          <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+            <AlertTriangle className="w-4 h-4" />
+          </div>
+        </div>
+
+        {/* Alfa */}
+        <div className="p-3.5 bg-gradient-to-br from-white via-rose-50/50 to-white rounded-2xl border border-rose-150/90 shadow-xs flex items-center justify-between">
+          <div>
+            <p className="text-[10px] font-black text-rose-600 uppercase tracking-wider">Alfa</p>
+            <p className="text-xl sm:text-2xl font-mono font-black text-rose-700 mt-0.5">{stats.alfa}</p>
+          </div>
+          <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
+            <X className="w-4 h-4" />
+          </div>
+        </div>
+
+        {/* Izin / Sakit */}
+        <div className="p-3.5 bg-gradient-to-br from-white via-blue-50/50 to-white rounded-2xl border border-blue-150/90 shadow-xs flex items-center justify-between">
+          <div>
+            <p className="text-[10px] font-black text-blue-600 uppercase tracking-wider">Izin / Sakit</p>
+            <p className="text-xl sm:text-2xl font-mono font-black text-blue-700 mt-0.5">{stats.izinSakit}</p>
+          </div>
+          <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+            <SlidersHorizontal className="w-4 h-4" />
+          </div>
+        </div>
+      </div>
 
       {/* 3. TAB MANUAL */}
       {!activeSiswa && mode === "manual" && (

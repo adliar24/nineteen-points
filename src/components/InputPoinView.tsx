@@ -203,7 +203,10 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
             value > 0 ? `+${value}` : value
           } poin untuk "${name}".`
         );
-        const updatedSiswa = { ...selectedSiswa, total_poin: selectedSiswa.total_poin + value };
+        const updatedSiswa = {
+          ...selectedSiswa,
+          total_poin: value > 0 ? selectedSiswa.total_poin + value : selectedSiswa.total_poin,
+        };
         setSelectedSiswa(updatedSiswa);
         updateCachedSiswaPoin(selectedSiswa.id, value);
       } else {
@@ -483,8 +486,8 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
 
                     <div className="flex items-center gap-3 self-start sm:self-auto">
                       <div className="text-right">
-                        <p className="text-[9px] font-black text-brand-400 uppercase tracking-wider">Poin Saat Ini</p>
-                        <p className="text-sm font-mono font-black text-brand-900">{selectedSiswa.total_poin} pts</p>
+                        <p className="text-[9px] font-black text-brand-400 uppercase tracking-wider">Poin Prestasi (+)</p>
+                        <p className="text-sm font-mono font-black text-emerald-600">+{selectedSiswa.total_poin} pts</p>
                       </div>
                       <button
                         onClick={handleResetTarget}

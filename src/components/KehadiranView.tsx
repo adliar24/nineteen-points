@@ -1131,8 +1131,8 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
                     <div>
                       <h4 className="text-sm font-extrabold text-brand-950 leading-tight">{toSentenceCase(targetSiswa.nama)}</h4>
                       <p className="text-[10px] text-brand-400 font-bold mt-1.5 uppercase tracking-wider">{targetSiswa.kelas} • NIS {targetSiswa.nis}</p>
-                      <span className="inline-block mt-2 text-[9px] font-black uppercase bg-brand-100 text-brand-800 px-2 py-0.5 rounded-md border border-brand-200">
-                        Poin Total: {targetSiswa.total_poin} pts
+                      <span className="inline-block mt-2 text-[9px] font-black uppercase bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded-md border border-emerald-200">
+                        Prestasi: +{targetSiswa.total_poin} pts
                       </span>
                     </div>
                   </div>

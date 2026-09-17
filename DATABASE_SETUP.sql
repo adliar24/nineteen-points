@@ -307,9 +307,12 @@ CREATE TRIGGER on_auth_user_created
 CREATE OR REPLACE FUNCTION public.update_total_poin_on_insert()
 RETURNS TRIGGER AS $$
 BEGIN
-  UPDATE public.siswa
-  SET total_poin = total_poin + NEW.nilai_diberikan
-  WHERE id = NEW.siswa_id;
+  -- Poin positif dan negatif terpisah: hanya poin prestasi (> 0) yang masuk ke total_poin
+  IF NEW.nilai_diberikan > 0 THEN
+    UPDATE public.siswa
+    SET total_poin = total_poin + NEW.nilai_diberikan
+    WHERE id = NEW.siswa_id;
+  END IF;
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -323,9 +326,12 @@ CREATE TRIGGER trg_riwayat_poin_insert
 CREATE OR REPLACE FUNCTION public.update_total_poin_on_delete()
 RETURNS TRIGGER AS $$
 BEGIN
-  UPDATE public.siswa
-  SET total_poin = total_poin - OLD.nilai_diberikan
-  WHERE id = OLD.siswa_id;
+  -- Hanya kurangkan jika riwayat yang dihapus bernilai positif
+  IF OLD.nilai_diberikan > 0 THEN
+    UPDATE public.siswa
+    SET total_poin = total_poin - OLD.nilai_diberikan
+    WHERE id = OLD.siswa_id;
+  END IF;
   RETURN OLD;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -338,10 +344,15 @@ CREATE TRIGGER trg_riwayat_poin_delete
 -- 4d. AUTO-UPDATE total_poin SAAT RIWAYAT DIUBAH (UPDATE)
 CREATE OR REPLACE FUNCTION public.update_total_poin_on_update()
 RETURNS TRIGGER AS $$
+DECLARE
+  v_old_pos INT := GREATEST(OLD.nilai_diberikan, 0);
+  v_new_pos INT := GREATEST(NEW.nilai_diberikan, 0);
 BEGIN
-  UPDATE public.siswa
-  SET total_poin = total_poin - OLD.nilai_diberikan + NEW.nilai_diberikan
-  WHERE id = NEW.siswa_id;
+  IF v_old_pos <> v_new_pos THEN
+    UPDATE public.siswa
+    SET total_poin = total_poin - v_old_pos + v_new_pos
+    WHERE id = NEW.siswa_id;
+  END IF;
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

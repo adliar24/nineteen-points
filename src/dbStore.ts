@@ -76,6 +76,8 @@ export const getSiswaListLight = async (): Promise<Siswa[]> => {
  * table (with heavy face embeddings) after every single scan.
  */
 export const updateCachedSiswaPoin = (siswaId: string, delta: number): void => {
+  // Poin positif dan negatif terpisah: poin negatif tidak boleh mengurangi total_poin prestasi
+  if (delta <= 0) return;
   queryClient.setQueryData<Siswa[]>(["siswa"], (old) => {
     if (!old) return old;
     return old.map((s) =>
@@ -85,10 +87,12 @@ export const updateCachedSiswaPoin = (siswaId: string, delta: number): void => {
 };
 
 export const updateCachedSiswaPoinBatch = (updates: { siswaId: string; delta: number }[]): void => {
-  if (updates.length === 0) return;
+  // Hanya proses delta positif untuk total_poin prestasi
+  const positiveUpdates = updates.filter((u) => u.delta > 0);
+  if (positiveUpdates.length === 0) return;
   queryClient.setQueryData<Siswa[]>(["siswa"], (old) => {
     if (!old) return old;
-    const map = new Map(updates.map((u) => [u.siswaId, u.delta]));
+    const map = new Map(positiveUpdates.map((u) => [u.siswaId, u.delta]));
     return old.map((s) => {
       const delta = map.get(s.id);
       return delta === undefined ? s : { ...s, total_poin: (s.total_poin || 0) + delta };
@@ -661,7 +665,8 @@ export const importSummaryData = async (rows: SummaryRow[]): Promise<{ updated: 
       skipped++;
       return;
     }
-    const valToUpdate = row.total_poin ?? ((row.poin_positif || 0) - (row.poin_negatif || 0));
+    // Poin positif dan negatif terpisah: jangan kurangkan poin negatif dari total prestasi
+    const valToUpdate = row.poin_positif ?? row.total_poin ?? 0;
     const { error } = await supabase
       .from("siswa")
       .update({ total_poin: valToUpdate })

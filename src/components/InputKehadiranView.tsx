@@ -1166,9 +1166,9 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
                 return (
                   <div
                     key={row.id}
-                    className="px-4 py-3 flex items-center justify-between hover:bg-brand-50/30 transition-colors gap-3"
+                    className="px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-brand-50/30 transition-colors gap-2 sm:gap-3"
                   >
-                    <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
                       {row.siswa_foto_url ? (
                         <img
                           src={row.siswa_foto_url}
@@ -1191,51 +1191,53 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
                         </div>
                       )}
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs font-bold text-brand-950 break-words leading-snug">
+                        <p className="text-xs sm:text-sm font-bold text-brand-950 leading-snug">
                           {toSentenceCase(row.siswa_nama)}
                         </p>
-                        <p className="text-[10px] text-brand-400 font-semibold">
+                        <p className="text-[10px] sm:text-[11px] text-brand-400 font-semibold mt-0.5">
                           {row.siswa_kelas} &bull; NIS {row.siswa_nis}
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2.5 flex-shrink-0">
-                      {/* Status badge */}
-                      <span
-                        className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
-                          isTepat
-                            ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                            : isTelat
-                            ? "bg-amber-50 text-amber-800 border-amber-200"
-                            : isAlfa
-                            ? "bg-rose-50 text-rose-800 border-rose-200"
-                            : "bg-blue-50 text-blue-700 border-blue-200"
-                        }`}
-                      >
-                        {getStatusLabel(row.status)}
-                      </span>
+                    <div className="flex items-center justify-between sm:justify-end gap-2 flex-shrink-0 pl-12 sm:pl-0">
+                      <div className="flex items-center gap-2">
+                        {/* Status badge */}
+                        <span
+                          className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
+                            isTepat
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                              : isTelat
+                              ? "bg-amber-50 text-amber-800 border-amber-200"
+                              : isAlfa
+                              ? "bg-rose-50 text-rose-800 border-rose-200"
+                              : "bg-blue-50 text-blue-700 border-blue-200"
+                          }`}
+                        >
+                          {getStatusLabel(row.status)}
+                        </span>
 
-                      {/* Point badge */}
-                      <span
-                        className={`text-[10px] font-extrabold px-2 py-0.5 rounded-lg ${
-                          row.nilai_poin_diberikan > 0
-                            ? "bg-emerald-100 text-emerald-800"
-                            : row.nilai_poin_diberikan < 0
-                            ? "bg-rose-100 text-rose-800"
-                            : "bg-slate-100 text-slate-700"
-                        }`}
-                      >
-                        {row.nilai_poin_diberikan > 0 ? `+${row.nilai_poin_diberikan}` : row.nilai_poin_diberikan}
-                      </span>
+                        {/* Point badge */}
+                        <span
+                          className={`text-[10px] font-extrabold px-2 py-0.5 rounded-lg ${
+                            row.nilai_poin_diberikan > 0
+                              ? "bg-emerald-100 text-emerald-800"
+                              : row.nilai_poin_diberikan < 0
+                              ? "bg-rose-100 text-rose-800"
+                              : "bg-slate-100 text-slate-700"
+                          }`}
+                        >
+                          {row.nilai_poin_diberikan > 0 ? `+${row.nilai_poin_diberikan}` : row.nilai_poin_diberikan}
+                        </span>
 
-                      {/* Scan Time */}
-                      <span className="text-[10px] text-brand-400 font-bold hidden sm:inline-block">
-                        {new Date(row.created_at).toLocaleTimeString("id-ID", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </span>
+                        {/* Scan Time */}
+                        <span className="text-[10px] text-brand-400 font-bold hidden sm:inline-block">
+                          {new Date(row.created_at).toLocaleTimeString("id-ID", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </span>
+                      </div>
 
                       {/* Delete button (Undo scan) */}
                       <button

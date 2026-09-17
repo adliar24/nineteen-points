@@ -453,17 +453,17 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
         ) : (
           <div className="divide-y border border-brand-100 rounded-2xl overflow-hidden max-h-[300px] overflow-y-auto">
             {todayRecap.map((row) => (
-              <div key={row.id} className="px-4 py-3 flex items-center justify-between hover:bg-brand-50/30 transition-colors">
-                <div className="flex items-center gap-3 min-w-0">
+              <div key={row.id} className="px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-brand-50/30 transition-colors gap-2 sm:gap-3">
+                <div className="flex items-center gap-3 min-w-0 flex-1">
                   <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-white text-[10px] font-black flex-shrink-0">
                     {row.siswa_nama.slice(0, 2)}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-xs font-bold text-brand-950 break-words leading-snug">{toSentenceCase(row.siswa_nama)}</p>
-                    <p className="text-[10px] text-brand-400 font-semibold">{row.siswa_kelas} &bull; NIS {row.siswa_nis}</p>
+                    <p className="text-xs sm:text-sm font-bold text-brand-950 leading-snug">{toSentenceCase(row.siswa_nama)}</p>
+                    <p className="text-[10px] text-brand-400 font-semibold mt-0.5">{row.siswa_kelas} &bull; NIS {row.siswa_nis}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="flex items-center gap-2 flex-shrink-0 pl-11 sm:pl-0">
                   <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
                     +{currentPoinValue}
                   </span>

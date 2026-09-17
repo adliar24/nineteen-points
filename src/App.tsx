@@ -710,7 +710,7 @@ export default function App() {
               className="flex items-center gap-2 sm:gap-3 bg-brand-950/40 md:bg-brand-50/70 pl-2 sm:pl-4 pr-1.5 py-1.5 rounded-2xl border border-white/10 md:border-brand-100 shadow-xs hover:shadow-md transition-all cursor-pointer"
             >
               <div className="text-right">
-                <p className="text-[11px] md:text-xs font-bold text-white md:!text-[#1e1b4b] tracking-wide whitespace-nowrap">{toSentenceCase(userSession.fullName)}</p>
+                <p className="text-[11px] md:text-xs font-bold text-white md:!text-[#1e1b4b] tracking-wide truncate max-w-[110px] sm:max-w-[180px] md:max-w-[220px]">{toSentenceCase(userSession.fullName)}</p>
                 <div className="flex items-center justify-end gap-1 text-[9px] md:text-[10px] text-brand-200 md:!text-slate-500 font-extrabold uppercase tracking-widest mt-0.5">
                   <ShieldCheck className="w-2.5 h-2.5 text-accent-500" />
                   <span>{userSession.role === "siswa" ? "murid" : userSession.role.replace("_", " ")}</span>

@@ -226,7 +226,7 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
         </div>
 
         {/* Tab Selector for Sholat Type */}
-        <div className="flex flex-wrap bg-white/90 backdrop-blur-md p-1.5 rounded-2xl border border-brand-150 shadow-xs w-fit shrink-0 gap-1.5">
+        <div className="flex flex-wrap bg-white/90 backdrop-blur-md p-1.5 rounded-2xl border border-brand-200 shadow-xs w-fit shrink-0 gap-1.5">
           <button
             onClick={() => setSholatType("dhuha")}
             className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
@@ -296,7 +296,7 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
 
       {/* SCAN MODE: TO THE POINT */}
       {mode === "scan" && scanType === "qr" && (
-        <div className="bg-white/95 backdrop-blur-xl p-6 sm:p-8 rounded-3xl border border-brand-150 shadow-md text-center card-hover-effect">
+        <div className="bg-white/95 backdrop-blur-xl p-6 sm:p-8 rounded-3xl border border-brand-200 shadow-md text-center card-hover-effect">
           <button
             onClick={() => setShowQrScanner(true)}
             className="w-full max-w-md mx-auto py-4 sm:py-5 px-8 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-500 hover:opacity-95 active:scale-98 text-white font-black text-sm uppercase tracking-wider rounded-2xl shadow-xl shadow-emerald-600/30 cursor-pointer border-0 transition-all flex items-center justify-center gap-3"
@@ -308,7 +308,7 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
       )}
 
       {mode === "scan" && scanType === "face" && (
-        <div className="bg-white/95 backdrop-blur-xl p-6 sm:p-8 rounded-3xl border border-brand-150 shadow-md text-center card-hover-effect">
+        <div className="bg-white/95 backdrop-blur-xl p-6 sm:p-8 rounded-3xl border border-brand-200 shadow-md text-center card-hover-effect">
           <button
             onClick={() => setShowFaceScanner(true)}
             className="w-full max-w-md mx-auto py-4 sm:py-5 px-8 brand-gradient hover:opacity-95 active:scale-98 text-white font-black text-sm uppercase tracking-wider rounded-2xl shadow-xl shadow-brand-500/30 cursor-pointer border-0 transition-all flex items-center justify-center gap-3"
@@ -480,7 +480,7 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
       {showQrScanner && (
         <QrScanner
           title={`Scan QR - ${sholatTypeLabel}`}
-          subtitle={`Setiap murid yang terpindai otomatis memperoleh +${currentPoinValue} poin sholat`}
+          subtitle={`Murid terpindai otomatis mendapat +${currentPoinValue} poin.`}
           onScanSuccess={handleQrScan}
           onClose={() => setShowQrScanner(false)}
         />
@@ -490,7 +490,7 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
         <FaceScanner
           siswaList={siswaList}
           title={`Scan Wajah - ${sholatTypeLabel}`}
-          subtitle={`Setiap siswa yang terdeteksi otomatis memperoleh +${currentPoinValue} poin sholat`}
+          subtitle={`Murid terdeteksi otomatis mendapat +${currentPoinValue} poin.`}
           onMatchSuccess={handleStudentSholatAttendance}
           onClose={() => setShowFaceScanner(false)}
         />

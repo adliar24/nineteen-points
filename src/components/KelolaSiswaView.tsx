@@ -553,8 +553,8 @@ export default function KelolaSiswaView({
               ) : (
                 <ScanFace className="w-4.5 h-4.5 text-purple-600" />
               )}
-              <span className="hidden md:inline">
-                {isBatchProcessingFaces ? batchProgressMsg : "Ekstrak Wajah (Massal)"}
+              <span className="hidden md:inline truncate max-w-[160px]">
+                {isBatchProcessingFaces ? batchProgressMsg : "Ekstrak Wajah"}
               </span>
             </motion.button>
 
@@ -643,7 +643,7 @@ export default function KelolaSiswaView({
               className="flex items-center justify-center gap-2 p-3 md:px-5 md:py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-2xl text-sm font-black transition-all shadow-md cursor-pointer"
             >
               <Printer className="w-4.5 h-4.5" />
-              <span className="hidden md:inline">Cetak QR Kelas ({selectedKelas === "Semua" ? "X-A" : selectedKelas})</span>
+              <span className="hidden md:inline">Cetak QR ({selectedKelas === "Semua" ? "X-A" : selectedKelas})</span>
             </motion.button>
 
             {/* Kartu Murid (pilihan / semua) */}
@@ -745,9 +745,9 @@ export default function KelolaSiswaView({
           className="bg-white rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 overflow-hidden"
         >
           <div className="overflow-x-auto min-h-[520px]">
-            <table className="w-full text-left border-collapse table-fixed">
+            <table className="w-full min-w-[800px] text-left border-collapse table-fixed">
               <thead>
-                <tr className="bg-brand-50/50 border-b border-brand-100/70 text-brand-500 text-xs font-black uppercase tracking-wider">
+                <tr className="bg-brand-50/50 border-b border-brand-100/70 text-brand-500 text-xs font-black uppercase tracking-wider whitespace-nowrap">
                   {isAdmin && (
                     <th className="py-4 px-6 w-12 text-center">
                       <input

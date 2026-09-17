@@ -552,11 +552,11 @@ export default function SiswaDashboardView({ userSession, activeTab, onSelectTab
                     className="bg-amber-400 hover:bg-amber-300 text-amber-950 px-3 py-2 rounded-2xl font-black text-xs inline-flex flex-col items-center justify-center transition-all shadow-md cursor-pointer border border-amber-300 flex-1 h-14"
                   >
                     <Camera className="w-4 h-4 text-amber-950" />
-                    <span className="text-[9px] font-black tracking-tight text-amber-950 leading-none mt-0.5">Kehadiran</span>
+                    <span className="text-[10px] font-black tracking-tight text-amber-950 leading-none mt-1">Absen QR</span>
                   </button>
                   <div className="bg-emerald-50/70 border border-emerald-100 rounded-2xl px-3 py-2 text-center flex-1 flex flex-col justify-center h-14">
-                    <span className="text-[8.5px] font-black text-emerald-600 block uppercase tracking-wider">Kelas</span>
-                    <span className="text-xs font-extrabold text-emerald-800 truncate">{siswaDetail.kelas}</span>
+                    <span className="text-[10px] font-black text-emerald-700 block uppercase tracking-wider">Kelas</span>
+                    <span className="text-xs font-black text-emerald-900 truncate">{siswaDetail.kelas}</span>
                   </div>
                 </div>
               </div>
@@ -581,19 +581,15 @@ export default function SiswaDashboardView({ userSession, activeTab, onSelectTab
                   </p>
                 </div>
               </div>
-              <div className="flex gap-4">
-                <button
-                  onClick={() => setShowStudentScanModal(true)}
-                  className="bg-amber-400 hover:bg-amber-300 text-amber-950 px-4 py-2.5 rounded-2xl font-black text-xs inline-flex flex-col items-center justify-center transition-all shadow-md cursor-pointer border border-amber-300 min-w-[90px] h-14 hover:scale-[1.02] active:scale-[0.98]"
-                >
-                  <Camera className="w-4.5 h-4.5 text-amber-950" />
-                  <span className="text-[9.5px] font-black text-amber-950 leading-none mt-0.5">Kehadiran</span>
-                </button>
-                <div className="bg-emerald-50/70 border border-emerald-100 rounded-2xl px-5 py-3 text-center min-w-[90px] h-14 flex flex-col justify-center">
-                  <span className="text-[10px] font-black text-emerald-600 block uppercase tracking-wider">Kelas</span>
-                  <span className="text-base font-extrabold text-emerald-800">{siswaDetail.kelas}</span>
-                </div>
-              </div>
+
+              {/* Desktop quick scan button */}
+              <button
+                onClick={() => setShowStudentScanModal(true)}
+                className="bg-amber-400 hover:bg-amber-300 text-amber-950 px-5 py-3 rounded-2xl font-black text-sm flex items-center gap-2.5 transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-pointer border border-amber-300 shrink-0"
+              >
+                <Camera className="w-5 h-5" />
+                <span>Scan QR Masuk</span>
+              </button>
             </div>
           </div>
 
@@ -607,7 +603,7 @@ export default function SiswaDashboardView({ userSession, activeTab, onSelectTab
               <div>
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Akumulasi Prestasi</span>
                 <span className="text-xl font-black text-emerald-600">+{totalPrestasi} Poin</span>
-                <p className="text-[10px] text-slate-400 mt-0.5">Poin dari kelakuan baikmu.</p>
+                <p className="text-[10px] text-slate-400 mt-0.5">Total perolehan prestasi.</p>
               </div>
             </div>
 
@@ -619,7 +615,7 @@ export default function SiswaDashboardView({ userSession, activeTab, onSelectTab
               <div>
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Akumulasi Pelanggaran</span>
                 <span className="text-xl font-black text-rose-600">{totalPelanggaran} Poin</span>
-                <p className="text-[10px] text-slate-400 mt-0.5">Poin minus dari melanggar aturan.</p>
+                <p className="text-[10px] text-slate-400 mt-0.5">Total pengurangan poin.</p>
               </div>
             </div>
 
@@ -668,9 +664,9 @@ export default function SiswaDashboardView({ userSession, activeTab, onSelectTab
             </h3>
             
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+              <table className="w-full min-w-[500px] text-left border-collapse">
                 <thead>
-                  <tr className="bg-brand-50/40 border-b border-brand-100 text-brand-500 text-[10px] font-black uppercase tracking-wider">
+                  <tr className="bg-brand-50/40 border-b border-brand-100 text-brand-500 text-[10px] font-black uppercase tracking-wider whitespace-nowrap">
                     <th className="py-3 px-4">Tanggal & Waktu</th>
                     <th className="py-3 px-4">Keterangan</th>
                     <th className="py-3 px-4 text-center">Nilai Poin</th>
@@ -682,14 +678,14 @@ export default function SiswaDashboardView({ userSession, activeTab, onSelectTab
                       const isPositive = record.nilai_diberikan > 0;
                       return (
                         <tr key={record.id} className="hover:bg-brand-50/20 transition-colors">
-                          <td className="py-3.5 px-4 font-mono text-[10px] text-brand-500">
+                          <td className="py-3.5 px-4 font-mono text-[10px] text-brand-500 whitespace-nowrap">
                             {new Date(record.created_at).toLocaleString("id-ID", {
                               dateStyle: "medium",
                               timeStyle: "short"
                             })}
                           </td>
                           <td className="py-3.5 px-4 max-w-sm">
-                            <span className="font-bold block text-brand-950 truncate">{record.nama_poin}</span>
+                            <span className="font-bold block text-brand-950 line-clamp-2 break-words text-xs leading-snug">{record.nama_poin}</span>
                           </td>
                           <td className="py-3.5 px-4 text-center">
                             <span 
@@ -769,7 +765,7 @@ export default function SiswaDashboardView({ userSession, activeTab, onSelectTab
                 {siswaDetail.foto_url ? (
                   <img src={siswaDetail.foto_url} className="w-full h-full rounded-xl object-cover" alt={siswaDetail.nama} />
                 ) : (
-                  <div className="w-full h-full rounded-xl border border-brand-100 bg-brand-50/50 flex items-center justify-center text-brand-650 font-black text-3xl uppercase tracking-wider">
+                  <div className="w-full h-full rounded-xl border border-brand-100 bg-brand-50/50 flex items-center justify-center text-brand-700 font-black text-3xl uppercase tracking-wider">
                     {siswaDetail.nama.slice(0, 2)}
                   </div>
                 )}
@@ -777,7 +773,7 @@ export default function SiswaDashboardView({ userSession, activeTab, onSelectTab
 
               {/* 2. Student Info */}
               <div className="text-center space-y-1 mt-3">
-                <h3 className="text-sm font-black tracking-tight text-[#1e1b4b] px-2 line-clamp-1 leading-snug">
+                <h3 className="text-sm font-black tracking-tight text-[#1e1b4b] px-2 line-clamp-2 break-words leading-snug">
                   {toSentenceCase(siswaDetail.nama)}
                 </h3>
                 <p className="text-[9px] text-brand-600 font-extrabold uppercase tracking-widest">
@@ -810,10 +806,10 @@ export default function SiswaDashboardView({ userSession, activeTab, onSelectTab
             <div>
               <h3 className="text-base font-extrabold text-brand-900 flex items-center gap-2">
                 <Clock className="w-5 h-5 text-brand-600" />
-                Catatan Aktivitas Murid
+                Riwayat Aktivitas
               </h3>
-              <p className="text-[10px] text-brand-500 font-medium mt-0.5">
-                Daftar lengkap perolehan poin dan riwayat kehadiran harian Anda.
+              <p className="text-[11px] text-brand-500 font-medium mt-0.5">
+                Daftar perolehan poin dan riwayat presensi harian Anda.
               </p>
             </div>
             
@@ -865,7 +861,7 @@ export default function SiswaDashboardView({ userSession, activeTab, onSelectTab
                           {isPositive ? <Award className="w-5 h-5" /> : <TrendingUp className="w-5 h-5 rotate-180" />}
                         </div>
                         <div className="min-w-0">
-                          <span className="font-extrabold text-xs text-brand-950 block leading-snug truncate">
+                          <span className="font-extrabold text-xs text-brand-950 block leading-snug line-clamp-2 break-words">
                             {record.nama_poin}
                           </span>
                           <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-slate-400 font-semibold mt-1">
@@ -931,7 +927,7 @@ export default function SiswaDashboardView({ userSession, activeTab, onSelectTab
                           <Calendar className="w-5 h-5" />
                         </div>
                         <div className="min-w-0">
-                          <span className="font-extrabold text-xs text-brand-950 block leading-snug truncate">
+                          <span className="font-extrabold text-xs text-brand-950 block leading-snug line-clamp-2 break-words">
                             Absensi: {statusLabel}
                           </span>
                           <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-slate-400 font-semibold mt-1">
@@ -1060,7 +1056,7 @@ export default function SiswaDashboardView({ userSession, activeTab, onSelectTab
                 {siswaDetail.foto_url ? (
                   <img src={siswaDetail.foto_url} className="w-full h-full rounded-[22px] object-cover" alt={siswaDetail.nama} />
                 ) : (
-                  <div className="w-full h-full rounded-[22px] border border-brand-100 bg-brand-50/50 flex items-center justify-center text-brand-650 font-black text-4xl uppercase tracking-wider">
+                  <div className="w-full h-full rounded-[22px] border border-brand-100 bg-brand-50/50 flex items-center justify-center text-brand-700 font-black text-4xl uppercase tracking-wider">
                     {siswaDetail.nama.slice(0, 2)}
                   </div>
                 )}
@@ -1068,10 +1064,10 @@ export default function SiswaDashboardView({ userSession, activeTab, onSelectTab
 
               {/* 2. Student Info */}
               <div className="text-center space-y-1 mt-3">
-                <h3 className="text-lg font-black tracking-tight text-[#1e1b4b] px-2 line-clamp-1 leading-snug">
+                <h3 className="text-lg font-black tracking-tight text-[#1e1b4b] px-2 line-clamp-2 break-words leading-snug">
                   {toSentenceCase(siswaDetail.nama)}
                 </h3>
-                <p className="text-xs text-brand-650 font-extrabold uppercase tracking-widest mt-1">
+                <p className="text-xs text-brand-600 font-extrabold uppercase tracking-widest mt-1">
                   NIS: {siswaDetail.nis} &bull; KELAS: {siswaDetail.kelas}
                 </p>
               </div>

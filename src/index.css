@@ -5,20 +5,31 @@
   --font-sans: "Poppins", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
   
-  --font-size-xs: 0.825rem;
-  --font-size-sm: 0.95rem;
-  --font-size-base: 1.05rem;
-  --font-size-lg: 1.2rem;
-  --font-size-xl: 1.35rem;
-  --font-size-2xl: 1.6rem;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
   
   --color-brand-50: #f5f3ff;
   --color-brand-100: #ede9fe;
+  --color-brand-150: #e4ddfe;
   --color-brand-200: #ddd6fe;
+  --color-brand-300: #c4b5fd;
+  --color-brand-350: #b19cfd;
+  --color-brand-400: #a78bfa;
+  --color-brand-450: #936ef8;
   --color-brand-500: #6d28d9;
+  --color-brand-550: #6322c9;
   --color-brand-600: #5b21b6;
+  --color-brand-650: #521da6;
   --color-brand-700: #4c1d95;
+  --color-brand-750: #421683;
   --color-brand-800: #3b0764;
+  --color-brand-850: #310555;
+  --color-brand-900: #260343;
+  --color-brand-950: #1a012e;
   --color-accent-500: #d946ef;
   --color-accent-600: #c026d3;
 }

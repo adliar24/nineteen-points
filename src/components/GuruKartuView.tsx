@@ -51,13 +51,13 @@ export default function GuruKartuView({ userSession }: GuruKartuViewProps) {
       {/* Card Showcase Column */}
       <div className="flex justify-between items-center w-full max-w-[290px] px-1">
         <h3 className="text-xs font-black text-brand-950 uppercase tracking-widest flex items-center gap-2">
-          <CreditCard className="w-4.5 h-4.5 text-brand-650" />
+          <CreditCard className="w-4.5 h-4.5 text-brand-600" />
           Kartu Guru Digital
         </h3>
         <button
           onClick={handleDownloadCard}
           disabled={isDownloading}
-          className="text-xs font-bold text-brand-650 hover:text-brand-850 flex items-center gap-1.5 transition-colors cursor-pointer"
+          className="text-xs font-bold text-brand-600 hover:text-brand-800 flex items-center gap-1.5 transition-colors cursor-pointer"
         >
           <Download className="w-4 h-4" />
           {isDownloading ? "Mengunduh..." : "Download PNG"}
@@ -98,7 +98,7 @@ export default function GuruKartuView({ userSession }: GuruKartuViewProps) {
             {userSession.foto_url ? (
               <img src={userSession.foto_url} crossOrigin="anonymous" className="w-full h-full rounded-xl object-cover" alt={userSession.fullName} />
             ) : (
-              <div className="w-full h-full rounded-xl border border-brand-100 bg-brand-50/50 flex items-center justify-center text-brand-650 font-black text-3xl uppercase tracking-wider">
+              <div className="w-full h-full rounded-xl border border-brand-100 bg-brand-50/50 flex items-center justify-center text-brand-700 font-black text-3xl uppercase tracking-wider">
                 {userSession.fullName.slice(0, 2)}
               </div>
             )}
@@ -106,7 +106,7 @@ export default function GuruKartuView({ userSession }: GuruKartuViewProps) {
 
           {/* 2. Teacher Info */}
           <div className="text-center space-y-1 mt-3">
-            <h3 className="text-sm font-black tracking-tight text-[#1e1b4b] px-2 line-clamp-1 leading-snug">
+            <h3 className="text-sm font-black tracking-tight text-[#1e1b4b] px-2 line-clamp-2 break-words leading-snug">
               {toSentenceCase(userSession.fullName)}
             </h3>
             <p className="text-[9px] text-brand-600 font-extrabold uppercase tracking-widest">
@@ -176,7 +176,7 @@ export default function GuruKartuView({ userSession }: GuruKartuViewProps) {
                 {userSession.foto_url ? (
                   <img src={userSession.foto_url} className="w-full h-full rounded-[22px] object-cover" alt={userSession.fullName} />
                 ) : (
-                  <div className="w-full h-full rounded-[22px] border border-brand-100 bg-brand-50/50 flex items-center justify-center text-brand-650 font-black text-4xl uppercase tracking-wider">
+                  <div className="w-full h-full rounded-[22px] border border-brand-100 bg-brand-50/50 flex items-center justify-center text-brand-700 font-black text-4xl uppercase tracking-wider">
                     {userSession.fullName.slice(0, 2)}
                   </div>
                 )}
@@ -184,10 +184,10 @@ export default function GuruKartuView({ userSession }: GuruKartuViewProps) {
 
               {/* 2. Teacher Info */}
               <div className="text-center space-y-1 mt-3">
-                <h3 className="text-lg font-black tracking-tight text-[#1e1b4b] px-2 line-clamp-1 leading-snug">
+                <h3 className="text-lg font-black tracking-tight text-[#1e1b4b] px-2 line-clamp-2 break-words leading-snug">
                   {toSentenceCase(userSession.fullName)}
                 </h3>
-                <p className="text-xs text-brand-650 font-extrabold uppercase tracking-widest mt-1">
+                <p className="text-xs text-brand-600 font-extrabold uppercase tracking-widest mt-1">
                   NIP: {emailPrefix} &bull; GURU
                 </p>
               </div>

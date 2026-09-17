@@ -69,7 +69,7 @@ export default function ChangePasswordView({ activeTheme, applyTheme, role }: Ch
             <Palette className="w-5 h-5 text-brand-600" />
             Warna Tema
           </h3>
-          <p className="text-[10.5px] text-brand-450 font-semibold leading-relaxed">
+          <p className="text-[11px] text-brand-500 font-semibold leading-relaxed">
             Sesuaikan skema warna antarmuka aplikasi. Perubahan disimpan langsung di perangkat Anda.
           </p>
         </div>
@@ -106,10 +106,10 @@ export default function ChangePasswordView({ activeTheme, applyTheme, role }: Ch
         <div className="md:col-span-7 bg-white p-6 md:p-8 rounded-3xl border border-brand-100 shadow-xl shadow-brand-900/5 space-y-6">
           <div className="space-y-1.5">
             <h3 className="text-sm font-black text-brand-950 uppercase tracking-widest flex items-center gap-2">
-              <Lock className="w-5 h-5 text-brand-650" />
+              <Lock className="w-5 h-5 text-brand-600" />
               Keamanan Akun
             </h3>
-            <p className="text-[10.5px] text-brand-450 font-semibold leading-relaxed">
+            <p className="text-[11px] text-brand-500 font-semibold leading-relaxed">
               Perbarui kata sandi akun Anda secara berkala untuk menjaga kerahasiaan hak akses.
             </p>
           </div>

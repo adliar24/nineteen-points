@@ -1083,7 +1083,7 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
                   Mencatat Ketidakhadiran (Alfa)
                 </h4>
                 <p className="text-[10.5px] text-amber-800 font-medium leading-relaxed max-w-lg">
-                  Setelah jam masuk selesai, tandai semua murid yang tidak absen hari ini sebagai Alfa untuk memotong poin pelanggaran kehadiran harian secara massal.
+                  Tandai seluruh murid yang belum melakukan absensi hari ini sebagai Alfa.
                 </p>
               </div>
               <button
@@ -1340,7 +1340,7 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
                 <Users className="w-5 h-5" />
               </div>
               <div>
-                <p className="text-[10px] text-brand-450 font-black tracking-wider uppercase leading-none">TOTAL MURID</p>
+                <p className="text-[10px] text-brand-600 font-black tracking-wider uppercase leading-none">TOTAL MURID</p>
                 <h4 className="text-xl font-black text-brand-950 mt-1.5 leading-none">{rekapStats.totalStudents}</h4>
               </div>
             </div>
@@ -1351,7 +1351,7 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
                 <Zap className="w-5 h-5" />
               </div>
               <div>
-                <p className="text-[10px] text-emerald-650 font-black tracking-wider uppercase leading-none">TINGK. KEHADIRAN</p>
+                <p className="text-[10px] text-emerald-700 font-black tracking-wider uppercase leading-none">TINGK. KEHADIRAN</p>
                 <h4 className="text-xl font-black text-emerald-800 mt-1.5 leading-none">{rekapStats.avgAttendance}%</h4>
               </div>
             </div>
@@ -1362,7 +1362,7 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
                 <Clock className="w-5 h-5" />
               </div>
               <div>
-                <p className="text-[10px] text-brand-450 font-black tracking-wider uppercase leading-none">TOTAL SAKIT/IZIN</p>
+                <p className="text-[10px] text-brand-600 font-black tracking-wider uppercase leading-none">TOTAL SAKIT/IZIN</p>
                 <h4 className="text-xl font-black text-brand-800 mt-1.5 leading-none">{rekapStats.totalSakitIzin} <span className="text-[9px] font-bold text-brand-400">kali</span></h4>
               </div>
             </div>
@@ -1373,7 +1373,7 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
                 <AlertCircle className="w-5 h-5" />
               </div>
               <div>
-                <p className="text-[10px] text-rose-650 font-black tracking-wider uppercase leading-none">TOTAL ALFA</p>
+                <p className="text-[10px] text-rose-700 font-black tracking-wider uppercase leading-none">TOTAL ALFA</p>
                 <h4 className="text-xl font-black text-rose-800 mt-1.5 leading-none">{rekapStats.totalAlfa} <span className="text-[9px] font-bold text-rose-400">kali</span></h4>
               </div>
             </div>
@@ -1384,10 +1384,10 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div>
                 <h3 className="text-sm font-black text-brand-950 uppercase tracking-widest">
-                  Filter & Periode Rekapitulasi Kehadiran
+                  Periode Rekapitulasi
                 </h3>
-                <p className="text-[10.5px] text-brand-400 font-semibold mt-1">
-                  Pilih rentang tanggal rekap absensi agregat murid
+                <p className="text-[10.5px] text-brand-400 font-semibold mt-0.5">
+                  Rentang tanggal rekap absensi agregat murid
                 </p>
               </div>
 
@@ -1441,7 +1441,7 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
                       : "text-slate-400 hover:text-slate-600"
                   }`}
                 >
-                  Filter Baru
+                  Rentang Tanggal
                 </button>
               </div>
             </div>
@@ -1502,7 +1502,7 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
                   title="Hapus / Reset semua data absensi tanggal ini"
                 >
                   <Trash2 className="w-3.5 h-3.5 text-rose-600" />
-                  <span>Reset / Hapus Absensi Tanggal Ini</span>
+                  <span>Reset Absensi Hari Ini</span>
                 </button>
               )}
             </div>
@@ -1555,10 +1555,10 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
             ) : filteredReport.length > 0 ? (
               <>
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
+                  <table className="w-full text-left border-collapse min-w-[640px]">
                     <thead>
-                      <tr className="border-b border-brand-100 bg-brand-50/20 text-[10px] font-black text-brand-400 uppercase tracking-widest">
-                        <th className="py-4 px-5">Murid</th>
+                      <tr className="border-b border-brand-100 bg-brand-50/20 text-[10px] font-black text-brand-400 uppercase tracking-widest whitespace-nowrap">
+                        <th className="py-4 px-5 min-w-[170px]">Murid</th>
                         <th className="py-4 px-4">Kelas</th>
                         <th className="py-4 px-3 text-center bg-emerald-50/20 text-emerald-700">Hadir</th>
                         <th className="py-4 px-3 text-center bg-amber-50/20 text-amber-700">Telat</th>

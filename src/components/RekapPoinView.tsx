@@ -109,7 +109,7 @@ export default function RekapPoinView({ userSession }: RekapPoinViewProps) {
       <div>
         <h2 className="text-xl font-extrabold text-brand-950 tracking-tight">Rekapitulasi Poin Murid</h2>
         <p className="text-xs text-brand-500 font-semibold mt-1">
-          Rekapitulasi poin positif dan poin negatif seluruh murid terpisah. Klik nama murid atau tombol Riwayat untuk melihat audit log per individu.
+          Rekapitulasi akumulasi poin positif & negatif murid. Klik baris atau tombol Detail untuk riwayat lengkap.
         </p>
       </div>
 
@@ -162,11 +162,11 @@ export default function RekapPoinView({ userSession }: RekapPoinViewProps) {
       {/* TABLE */}
       <div className="bg-white rounded-3xl border border-brand-100/60 shadow-md shadow-brand-900/5 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left">
+          <table className="w-full min-w-[640px] text-left">
             <thead>
-              <tr className="border-b border-brand-100 bg-brand-50/40 text-[10px] font-black uppercase tracking-widest text-slate-400">
+              <tr className="border-b border-brand-100 bg-brand-50/40 text-[10px] font-black uppercase tracking-widest text-slate-400 whitespace-nowrap">
                 <th className="px-4 py-3.5 w-12">#</th>
-                <th className="px-4 py-3.5">Murid</th>
+                <th className="px-4 py-3.5 min-w-[160px]">Murid</th>
                 <th className="px-4 py-3.5">NIS</th>
                 <th className="px-4 py-3.5">Kelas</th>
                 <th className="px-4 py-3.5 text-center">Poin Positif (+)</th>
@@ -203,7 +203,7 @@ export default function RekapPoinView({ userSession }: RekapPoinViewProps) {
                               {siswa.nama.slice(0, 2)}
                             </div>
                           )}
-                          <span className="font-extrabold text-xs text-brand-950 leading-tight truncate group-hover:text-brand-600 transition-colors">
+                          <span className="font-extrabold text-xs text-brand-950 leading-tight line-clamp-2 break-words group-hover:text-brand-600 transition-colors">
                             {toSentenceCase(siswa.nama)}
                           </span>
                         </div>

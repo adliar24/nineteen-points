@@ -165,9 +165,9 @@ export default function HistoryView({ onRefreshTrigger, refreshCount, userSessio
 
       <div className="border border-brand-100 rounded-2xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full min-w-[760px] text-left border-collapse">
             <thead>
-              <tr className="bg-brand-50/40 border-b border-brand-100/70 text-brand-500 text-xs font-black uppercase tracking-wider">
+              <tr className="bg-brand-50/40 border-b border-brand-100/70 text-brand-500 text-xs font-black uppercase tracking-wider whitespace-nowrap">
                 <th className="py-4 px-5">Waktu Dicatat</th>
                 <th className="py-4 px-5">Siswa</th>
                 <th className="py-4 px-4">Kelas</th>
@@ -230,8 +230,8 @@ export default function HistoryView({ onRefreshTrigger, refreshCount, userSessio
                       <td className="py-4.5 px-4 font-black text-brand-600 uppercase">
                         {log.siswa_kelas}
                       </td>
-                      <td className="py-4.5 px-5 font-bold max-w-[200px] text-sm" title={log.nama_poin}>
-                        <span className="truncate block">{log.nama_poin}</span>
+                      <td className="py-4.5 px-5 font-bold min-w-[180px] max-w-xs text-xs sm:text-sm text-brand-950 leading-snug" title={log.nama_poin}>
+                        <span className="line-clamp-2 break-words block">{log.nama_poin}</span>
                         {isCustomPoint(log.nama_poin) && (
                           <span className="text-[9px] font-black uppercase tracking-wider text-amber-500 bg-amber-50 px-1.5 py-0.5 rounded-md border border-amber-100 inline-block mt-1">
                             Kustom
@@ -242,8 +242,8 @@ export default function HistoryView({ onRefreshTrigger, refreshCount, userSessio
                         <span
                           className={`font-mono font-black px-3 py-1 rounded-xl text-sm border shadow-xs ${
                             isPositive
-                              ? "bg-emerald-50 text-emerald-700 border-emerald-150"
-                              : "bg-rose-50 text-rose-700 border-rose-150"
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                              : "bg-rose-50 text-rose-700 border-rose-200"
                           }`}
                         >
                           {isPositive ? `+${log.nilai_diberikan}` : log.nilai_diberikan}

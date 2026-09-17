@@ -164,7 +164,7 @@ export default function RekapSholatKehadiranView({ userSession }: RekapSholatKeh
       </div>
 
       {/* Summary Cards Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         <div
           onClick={() => setActiveTab("dhuha")}
           className={`p-4 rounded-3xl border transition-all cursor-pointer shadow-xs ${
@@ -386,9 +386,9 @@ export default function RekapSholatKehadiranView({ userSession }: RekapSholatKeh
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left">
+            <table className="w-full min-w-[700px] text-left">
               <thead>
-                <tr className="border-b border-brand-100 bg-brand-50/40 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                <tr className="border-b border-brand-100 bg-brand-50/40 text-[10px] font-black uppercase tracking-widest text-slate-400 whitespace-nowrap">
                   <th className="px-4 py-3.5 w-12 sticky left-0 bg-brand-50/40 z-20">#</th>
                   <th className="px-4 py-3.5 sticky left-12 bg-brand-50/40 z-20 min-w-[200px]">Murid</th>
                   <th className="px-4 py-3.5">NIS</th>

@@ -844,11 +844,11 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
       )}
 
       {/* ── 3. PAPAN STATISTIK RINGKAS (DI BAWAH SCAN) ── */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         {/* Total Hadir */}
-        <div className="p-3.5 bg-gradient-to-br from-white via-brand-50/40 to-white rounded-2xl border border-brand-150/90 shadow-xs flex items-center justify-between">
+        <div className="p-3.5 bg-gradient-to-br from-white via-brand-50/40 to-white rounded-2xl border border-brand-200/80 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-[10px] font-black text-brand-500 uppercase tracking-wider">Total Hadir</p>
+            <p className="text-[10px] font-black text-brand-600 uppercase tracking-wider">Total Hadir</p>
             <p className="text-xl sm:text-2xl font-extrabold tracking-tight text-brand-950 mt-0.5">{stats.total}</p>
           </div>
           <div className="w-8 h-8 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center">
@@ -857,9 +857,9 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
         </div>
 
         {/* Tepat Waktu */}
-        <div className="p-3.5 bg-gradient-to-br from-white via-emerald-50/50 to-white rounded-2xl border border-emerald-150/90 shadow-xs flex items-center justify-between">
+        <div className="p-3.5 bg-gradient-to-br from-white via-emerald-50/50 to-white rounded-2xl border border-emerald-200/80 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-[10px] font-black text-emerald-600 uppercase tracking-wider">Tepat Waktu</p>
+            <p className="text-[10px] font-black text-emerald-700 uppercase tracking-wider">Tepat Waktu</p>
             <p className="text-xl sm:text-2xl font-extrabold tracking-tight text-emerald-700 mt-0.5">{stats.tepatWaktu}</p>
           </div>
           <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
@@ -868,9 +868,9 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
         </div>
 
         {/* Terlambat */}
-        <div className="p-3.5 bg-gradient-to-br from-white via-amber-50/50 to-white rounded-2xl border border-amber-150/90 shadow-xs flex items-center justify-between">
+        <div className="p-3.5 bg-gradient-to-br from-white via-amber-50/50 to-white rounded-2xl border border-amber-200/80 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-[10px] font-black text-amber-600 uppercase tracking-wider">Terlambat</p>
+            <p className="text-[10px] font-black text-amber-700 uppercase tracking-wider">Terlambat</p>
             <p className="text-xl sm:text-2xl font-extrabold tracking-tight text-amber-700 mt-0.5">{stats.terlambat}</p>
           </div>
           <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
@@ -879,9 +879,9 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
         </div>
 
         {/* Alfa */}
-        <div className="p-3.5 bg-gradient-to-br from-white via-rose-50/50 to-white rounded-2xl border border-rose-150/90 shadow-xs flex items-center justify-between">
+        <div className="p-3.5 bg-gradient-to-br from-white via-rose-50/50 to-white rounded-2xl border border-rose-200/80 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-[10px] font-black text-rose-600 uppercase tracking-wider">Alfa</p>
+            <p className="text-[10px] font-black text-rose-700 uppercase tracking-wider">Alfa</p>
             <p className="text-xl sm:text-2xl font-extrabold tracking-tight text-rose-700 mt-0.5">{stats.alfa}</p>
           </div>
           <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
@@ -890,9 +890,9 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
         </div>
 
         {/* Izin / Sakit */}
-        <div className="p-3.5 bg-gradient-to-br from-white via-blue-50/50 to-white rounded-2xl border border-blue-150/90 shadow-xs flex items-center justify-between">
+        <div className="col-span-2 sm:col-span-1 p-3.5 bg-gradient-to-br from-white via-blue-50/50 to-white rounded-2xl border border-blue-200/80 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-[10px] font-black text-blue-600 uppercase tracking-wider">Izin / Sakit</p>
+            <p className="text-[10px] font-black text-blue-700 uppercase tracking-wider">Izin / Sakit</p>
             <p className="text-xl sm:text-2xl font-extrabold tracking-tight text-blue-700 mt-0.5">{stats.izinSakit}</p>
           </div>
           <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">

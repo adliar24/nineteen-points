@@ -411,8 +411,8 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
                             </button>
                           ))}
                           {filteredStudentsForManual.length === 100 && (
-                            <div className="p-3.5 bg-amber-50/60 text-[10px] text-amber-800 font-bold border-t border-brand-100 text-center">
-                              Menampilkan 100 murid pertama. Gunakan kolom pencarian atau filter kelas untuk hasil spesifik.
+                            <div className="p-3 bg-amber-50/60 text-[10px] text-amber-800 font-bold border-t border-brand-100 text-center">
+                              Menampilkan 100 murid pertama. Gunakan pencarian untuk hasil spesifik.
                             </div>
                           )}
                         </>
@@ -439,8 +439,8 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
                     <div className="flex items-center justify-between">
                       <div>
                         <h4 className="text-base font-black text-brand-950 leading-tight">Pencatatan Massal ({selectedSiswaBatch.length} Murid)</h4>
-                        <p className="text-[10px] text-brand-500 font-bold uppercase mt-0.5">
-                          Murid-murid berikut akan menerima poin yang sama secara bersamaan.
+                        <p className="text-[10.5px] text-brand-500 font-semibold mt-0.5">
+                          Semua murid terpilih akan menerima poin yang sama.
                         </p>
                       </div>
                       <button
@@ -652,7 +652,7 @@ export default function InputPoinView({ userSession, onRefreshHistory }: InputPo
                               <p>Tidak ada aturan poin yang cocok.</p>
                               {ruleFilterType !== "Semua" && (
                                 <p className="text-[10px] text-brand-500 font-semibold">
-                                  Sedang difilter di tab <strong>{ruleFilterType === "Positif" ? "Prestasi (+)" : "Sanksi (-)"}</strong>. Coba beralih ke tab <strong>"Semua"</strong>.
+                                  Sedang difilter di kategori <strong>{ruleFilterType === "Positif" ? "Prestasi (+)" : "Sanksi (-)"}</strong>. Coba beralih ke <strong>"Semua"</strong>.
                                 </p>
                               )}
                             </div>

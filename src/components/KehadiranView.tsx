@@ -1583,8 +1583,8 @@ export default function KehadiranView({ userSession, onRefreshHistory }: Kehadir
                                 {row.siswa.nama.slice(0, 2).toUpperCase()}
                               </div>
                             )}
-                            <div>
-                              <span className="font-extrabold text-brand-950 block hover:text-brand-700 transition-colors">{toSentenceCase(row.siswa.nama)}</span>
+                            <div className="min-w-0 flex-1">
+                              <span className="font-extrabold text-brand-950 block break-words leading-snug hover:text-brand-700 transition-colors">{toSentenceCase(row.siswa.nama)}</span>
                               <span className="text-[10px] text-slate-400 font-bold block mt-1">NIS {row.siswa.nis}</span>
                             </div>
                           </td>

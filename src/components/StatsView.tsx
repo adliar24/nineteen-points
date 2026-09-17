@@ -376,9 +376,9 @@ export default function StatsView() {
                     }`}>
                       {idx + 1}
                     </span>
-                    <div className="min-w-0">
-                      <h4 className="font-extrabold text-xs text-brand-950 truncate leading-none">{toSentenceCase(siswa.nama)}</h4>
-                      <p className="text-[9px] text-brand-400 font-semibold mt-1.5">{siswa.kelas}</p>
+                    <div className="min-w-0 flex-1">
+                      <h4 className="font-extrabold text-xs text-brand-950 break-words leading-tight">{toSentenceCase(siswa.nama)}</h4>
+                      <p className="text-[9px] text-brand-400 font-semibold mt-1">{siswa.kelas}</p>
                     </div>
                   </div>
                   <span className="font-mono font-black text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-xl border border-emerald-100 text-[10px] flex-shrink-0">
@@ -392,13 +392,13 @@ export default function StatsView() {
               topViolators.length > 0 ? (
                 topViolators.map((item, idx) => (
                   <div key={item.siswa.id} className="flex items-center justify-between p-2.5 bg-brand-50/15 hover:bg-brand-50/30 rounded-2xl border border-brand-100/20 transition-all">
-                    <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
                       <span className="w-6 h-6 rounded-xl flex items-center justify-center font-black text-[10px] flex-shrink-0 bg-rose-50 text-rose-700 border border-rose-100">
                         {idx + 1}
                       </span>
-                      <div className="min-w-0">
-                        <h4 className="font-extrabold text-xs text-brand-950 truncate leading-none">{toSentenceCase(item.siswa.nama)}</h4>
-                        <p className="text-[9px] text-brand-400 font-semibold mt-1.5">{item.siswa.kelas}</p>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-extrabold text-xs text-brand-950 break-words leading-tight">{toSentenceCase(item.siswa.nama)}</h4>
+                        <p className="text-[9px] text-brand-400 font-semibold mt-1">{item.siswa.kelas}</p>
                       </div>
                     </div>
                     <span className="font-mono font-black text-rose-600 bg-rose-50 px-2.5 py-1 rounded-xl border border-rose-100 text-[10px] flex-shrink-0">
@@ -418,7 +418,7 @@ export default function StatsView() {
                 popularRulesData.map((item, idx) => (
                   <div key={idx} className="flex items-center justify-between p-2.5 bg-brand-50/15 hover:bg-brand-50/30 rounded-2xl border border-brand-100/20 transition-all">
                     <div className="min-w-0 flex-1">
-                      <h4 className="font-extrabold text-xs text-brand-950 truncate leading-none" title={item.fullName}>
+                      <h4 className="font-extrabold text-xs text-brand-950 break-words leading-tight" title={item.fullName}>
                         {item.fullName}
                       </h4>
                       <p className={`text-[8px] font-black uppercase mt-1.5 ${item.Tipe === "Penghargaan" ? "text-emerald-600" : "text-rose-600"}`}>

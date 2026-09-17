@@ -458,8 +458,8 @@ export default function SholatScanView({ userSession }: SholatScanViewProps) {
                   <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-white text-[10px] font-black flex-shrink-0">
                     {row.siswa_nama.slice(0, 2)}
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-bold text-brand-950 truncate">{toSentenceCase(row.siswa_nama)}</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-bold text-brand-950 break-words leading-snug">{toSentenceCase(row.siswa_nama)}</p>
                     <p className="text-[10px] text-brand-400 font-semibold">{row.siswa_kelas} &bull; NIS {row.siswa_nis}</p>
                   </div>
                 </div>

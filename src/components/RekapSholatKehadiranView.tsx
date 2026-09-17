@@ -427,7 +427,7 @@ export default function RekapSholatKehadiranView({ userSession }: RekapSholatKeh
                               {row.siswa_nama.slice(0, 2)}
                             </div>
                           )}
-                          <span className="font-extrabold text-xs text-brand-950 leading-tight truncate">
+                          <span className="font-extrabold text-xs text-brand-950 leading-tight break-words">
                             {toSentenceCase(row.siswa_nama)}
                           </span>
                         </div>

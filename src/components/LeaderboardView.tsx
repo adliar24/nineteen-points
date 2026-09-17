@@ -317,7 +317,7 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
 
                     {/* Student Info (Full text display on mobile without clipping) */}
                     <div className="text-center px-1 w-full max-w-[110px] sm:max-w-[160px] space-y-0.5">
-                      <h4 className="font-extrabold text-[11px] sm:text-xs md:text-sm text-brand-950 break-words line-clamp-2 leading-tight group-hover:text-brand-600 transition-colors">
+                      <h4 className="font-extrabold text-[11px] sm:text-xs md:text-sm text-brand-950 break-words leading-tight group-hover:text-brand-600 transition-colors">
                         {toSentenceCase(top2.nama)}
                       </h4>
                       <p className="text-[10px] sm:text-xs font-bold text-slate-500">
@@ -378,7 +378,7 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
 
                     {/* Student Info */}
                     <div className="text-center px-1 w-full max-w-[120px] sm:max-w-[180px] space-y-0.5">
-                      <h4 className="font-black text-xs sm:text-sm md:text-base text-brand-950 break-words line-clamp-2 leading-tight group-hover:text-amber-600 transition-colors">
+                      <h4 className="font-black text-xs sm:text-sm md:text-base text-brand-950 break-words leading-tight group-hover:text-amber-600 transition-colors">
                         {toSentenceCase(top1.nama)}
                       </h4>
                       <p className="text-[10px] sm:text-xs font-extrabold text-amber-700">
@@ -435,7 +435,7 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
 
                     {/* Student Info */}
                     <div className="text-center px-1 w-full max-w-[110px] sm:max-w-[160px] space-y-0.5">
-                      <h4 className="font-extrabold text-[11px] sm:text-xs md:text-sm text-brand-950 break-words line-clamp-2 leading-tight group-hover:text-amber-800 transition-colors">
+                      <h4 className="font-extrabold text-[11px] sm:text-xs md:text-sm text-brand-950 break-words leading-tight group-hover:text-amber-800 transition-colors">
                         {toSentenceCase(top3.nama)}
                       </h4>
                       <p className="text-[10px] sm:text-xs font-bold text-amber-800/80">
@@ -530,7 +530,7 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                         {/* Name & Class (No cut-off, wraps properly) */}
                         <div className="min-w-0 flex-1">
                           <h4
-                            className={`font-extrabold text-xs sm:text-sm break-words line-clamp-2 leading-snug transition-colors ${
+                            className={`font-extrabold text-xs sm:text-sm break-words leading-snug transition-colors ${
                               isTop10
                                 ? "text-purple-950 group-hover:text-purple-700"
                                 : "text-brand-950 group-hover:text-brand-600"
@@ -609,7 +609,7 @@ export default function LeaderboardView({ userSession }: LeaderboardViewProps) {
                   <p className="text-[10px] text-amber-300 font-bold uppercase tracking-wider leading-none mb-0.5">
                     Posisi Kamu
                   </p>
-                  <h5 className="text-xs sm:text-sm font-extrabold truncate text-white leading-tight">
+                  <h5 className="text-xs sm:text-sm font-extrabold break-words text-white leading-tight">
                     {toSentenceCase(currentStudentRank.student.nama)}
                   </h5>
                   <p className="text-[11px] font-bold text-amber-200/90 leading-none mt-0.5">

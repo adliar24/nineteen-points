@@ -959,7 +959,7 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
                         </div>
                       )}
                       <div className="min-w-0 flex-1">
-                        <span className="font-extrabold text-xs text-brand-950 block truncate">
+                        <span className="font-extrabold text-xs text-brand-950 block break-words leading-snug">
                           {toSentenceCase(student.nama)}
                         </span>
                         <div className="flex items-center gap-2 mt-0.5 flex-wrap">
@@ -1190,8 +1190,8 @@ export default function InputKehadiranView({ userSession }: InputKehadiranViewPr
                           {row.siswa_nama.slice(0, 2).toUpperCase()}
                         </div>
                       )}
-                      <div className="min-w-0">
-                        <p className="text-xs font-bold text-brand-950 truncate">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-bold text-brand-950 break-words leading-snug">
                           {toSentenceCase(row.siswa_nama)}
                         </p>
                         <p className="text-[10px] text-brand-400 font-semibold">

@@ -203,7 +203,7 @@ export default function RekapPoinView({ userSession }: RekapPoinViewProps) {
                               {siswa.nama.slice(0, 2)}
                             </div>
                           )}
-                          <span className="font-extrabold text-xs text-brand-950 leading-tight line-clamp-2 break-words group-hover:text-brand-600 transition-colors">
+                          <span className="font-extrabold text-xs text-brand-950 leading-tight break-words group-hover:text-brand-600 transition-colors">
                             {toSentenceCase(siswa.nama)}
                           </span>
                         </div>

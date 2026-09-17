@@ -773,7 +773,7 @@ export default function SiswaDashboardView({ userSession, activeTab, onSelectTab
 
               {/* 2. Student Info */}
               <div className="text-center space-y-1 mt-3">
-                <h3 className="text-sm font-black tracking-tight text-[#1e1b4b] px-2 line-clamp-2 break-words leading-snug">
+                <h3 className="text-sm font-black tracking-tight text-[#1e1b4b] px-2 break-words leading-snug">
                   {toSentenceCase(siswaDetail.nama)}
                 </h3>
                 <p className="text-[9px] text-brand-600 font-extrabold uppercase tracking-widest">
@@ -860,8 +860,8 @@ export default function SiswaDashboardView({ userSession, activeTab, onSelectTab
                         >
                           {isPositive ? <Award className="w-5 h-5" /> : <TrendingUp className="w-5 h-5 rotate-180" />}
                         </div>
-                        <div className="min-w-0">
-                          <span className="font-extrabold text-xs text-brand-950 block leading-snug line-clamp-2 break-words">
+                        <div className="min-w-0 flex-1">
+                          <span className="font-extrabold text-xs text-brand-950 block leading-snug break-words">
                             {record.nama_poin}
                           </span>
                           <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-slate-400 font-semibold mt-1">
@@ -872,7 +872,7 @@ export default function SiswaDashboardView({ userSession, activeTab, onSelectTab
                               })}
                             </span>
                             <span className="hidden sm:inline w-1 h-1 bg-slate-300 rounded-full" />
-                            <span className="truncate">
+                            <span className="break-words">
                               Dicatat: {toSentenceCase(record.guru_email.split("@")[0])}
                             </span>
                           </div>
@@ -926,8 +926,8 @@ export default function SiswaDashboardView({ userSession, activeTab, onSelectTab
                         >
                           <Calendar className="w-5 h-5" />
                         </div>
-                        <div className="min-w-0">
-                          <span className="font-extrabold text-xs text-brand-950 block leading-snug line-clamp-2 break-words">
+                        <div className="min-w-0 flex-1">
+                          <span className="font-extrabold text-xs text-brand-950 block leading-snug break-words">
                             Absensi: {statusLabel}
                           </span>
                           <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-slate-400 font-semibold mt-1">
@@ -935,7 +935,7 @@ export default function SiswaDashboardView({ userSession, activeTab, onSelectTab
                               Tanggal: {record.tanggal}
                             </span>
                             <span className="hidden sm:inline w-1 h-1 bg-slate-300 rounded-full" />
-                            <span className="truncate">
+                            <span className="break-words">
                               Petugas: {toSentenceCase(record.pencatat_email.split("@")[0])}
                             </span>
                           </div>
@@ -1064,7 +1064,7 @@ export default function SiswaDashboardView({ userSession, activeTab, onSelectTab
 
               {/* 2. Student Info */}
               <div className="text-center space-y-1 mt-3">
-                <h3 className="text-lg font-black tracking-tight text-[#1e1b4b] px-2 line-clamp-2 break-words leading-snug">
+                <h3 className="text-lg font-black tracking-tight text-[#1e1b4b] px-2 break-words leading-snug">
                   {toSentenceCase(siswaDetail.nama)}
                 </h3>
                 <p className="text-xs text-brand-600 font-extrabold uppercase tracking-widest mt-1">

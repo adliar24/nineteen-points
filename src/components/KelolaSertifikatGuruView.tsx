@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "motion/react";
 import { parseDateSafe } from "../parseDateSafe";
-import { Award, Plus, Trash2, Search, X, Check, RefreshCw, Layout, Upload, Save, RotateCcw, Move, Edit3, Image as ImageIcon, Users, CheckSquare, Square, FileText, AlignLeft, Folder, FolderOpen, ArrowLeft, Download, Filter, GraduationCap, Sparkles, Eye, EyeOff } from "lucide-react";
+import { Award, Plus, Trash2, Search, X, Check, RefreshCw, Layout, Upload, Save, RotateCcw, Move, Edit3, Image as ImageIcon, Users, CheckSquare, Square, FileText, AlignLeft, Folder, FolderOpen, ArrowLeft, Download, Filter, GraduationCap, Sparkles, Eye, EyeOff, Scissors } from "lucide-react";
 import { getAllKegiatanGuru, getTeacherProfiles, getAllCertifiableProfiles, addKegiatanGuruBulk, deleteKegiatanGuru, deleteKegiatanGuruBulk, deleteAllKegiatanGuru } from "../dbStore";
 import ModalPortal from "./ModalPortal";
 import { toSentenceCase, compareClasses } from "../formatName";
@@ -11,6 +11,7 @@ import { drawCertificateOnCanvas, drawJpTablePageOnCanvas } from "./GuruSertifik
 import { KegiatanGuru } from "../types";
 import { jsPDF } from "jspdf";
 import JSZip from "jszip";
+import CertificateExportModal from "./CertificateExportModal";
 
 // Helper function to compress/resize uploaded image data to max 2000px width
 function optimizeImageDataUrl(file: File, maxWidth = 2000): Promise<string> {
@@ -59,6 +60,19 @@ export default function KelolaSertifikatGuruView() {
   const [selectedActivityFolder, setSelectedActivityFolder] = useState<string | null>(null);
   const [zipDownloadingId, setZipDownloadingId] = useState<string | null>(null);
   const [zipProgress, setZipProgress] = useState<{ current: number; total: number } | null>(null);
+
+  // Modal Ekspor A4 (2x A5) & Opsi Format
+  const [exportModalState, setExportModalState] = useState<{
+    isOpen: boolean;
+    kegiatanSingle?: KegiatanGuru | null;
+    batchFolderName?: string | null;
+    batchItems?: KegiatanGuru[] | null;
+  }>({
+    isOpen: false,
+    kegiatanSingle: null,
+    batchFolderName: null,
+    batchItems: null
+  });
 
 
   // Form State for publishing certificate
@@ -1803,6 +1817,14 @@ durasi_jam: null,
                             BUKA FOLDER
                           </button>
                           <button
+                            onClick={() => setExportModalState({ isOpen: true, batchFolderName: folder.nama_kegiatan, batchItems: folder.items })}
+                            className="px-3.5 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-2xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer shadow-md shadow-amber-600/20 whitespace-nowrap"
+                            title="Opsi Cetak A4 (2x A5) atau Standar"
+                          >
+                            <Scissors className="w-3.5 h-3.5 text-white" />
+                            A4 (2x A5)
+                          </button>
+                          <button
                             onClick={() => handleDownloadAllAsSinglePdf(folder.nama_kegiatan, folder.items, "both")}
                             disabled={pdfDownloadingId !== null || zipDownloadingId !== null}
                             className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 whitespace-nowrap"
@@ -1899,6 +1921,14 @@ durasi_jam: null,
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   <button
+                    onClick={() => setExportModalState({ isOpen: true, batchFolderName: selectedActivityFolder, batchItems: folderItems })}
+                    className="px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer shadow-md shadow-amber-600/20 whitespace-nowrap"
+                    title="Opsi Cetak A4 (2x A5) atau Standar"
+                  >
+                    <Scissors className="w-3.5 h-3.5 text-white" />
+                    Cetak A4 (2x A5) / OPSI
+                  </button>
+                  <button
                     onClick={() => handleDownloadAllAsSinglePdf(selectedActivityFolder, folderItems, "both")}
                     disabled={pdfDownloadingId !== null || zipDownloadingId !== null}
                     className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 whitespace-nowrap"
@@ -1980,6 +2010,14 @@ durasi_jam: null,
                             </td>
                             <td className="py-4 px-6 text-right">
                               <div className="inline-flex items-center gap-1.5">
+                                <button
+                                  onClick={() => setExportModalState({ isOpen: true, kegiatanSingle: row })}
+                                  className="px-2.5 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1 cursor-pointer whitespace-nowrap shadow-sm shadow-amber-600/20"
+                                  title="Cetak A4 (2x A5) atau Opsi Format"
+                                >
+                                  <Scissors className="w-3 h-3" />
+                                  A4 (2x A5)
+                                </button>
                                 <button
                                   onClick={() => handleDownloadSingle(row, "both")}
                                   className="px-2.5 py-1.5 bg-brand-600 hover:bg-brand-750 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1 cursor-pointer whitespace-nowrap"
@@ -4380,6 +4418,15 @@ durasi_jam: null,
           </motion.div>
         )}
       </AnimatePresence>
+      {/* MODAL EKSPOR SERTIFIKAT A4 (2x A5) & STANDAR */}
+      <CertificateExportModal
+        isOpen={exportModalState.isOpen}
+        onClose={() => setExportModalState({ isOpen: false, kegiatanSingle: null, batchFolderName: null, batchItems: null })}
+        kegiatanSingle={exportModalState.kegiatanSingle}
+        batchFolderName={exportModalState.batchFolderName}
+        batchItems={exportModalState.batchItems}
+        config={config}
+      />
     </div>
   );
 }

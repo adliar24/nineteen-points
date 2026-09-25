@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Award, Download, Calendar, RefreshCw, FileText, Search, Eye, X } from "lucide-react";
+import { Award, Download, Calendar, RefreshCw, FileText, Search, Eye, X, Scissors } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { jsPDF } from "jspdf";
+import CertificateExportModal from "./CertificateExportModal";
 import { parseDateSafe } from "../parseDateSafe";
 import { getKegiatanGuruList } from "../dbStore";
 import { UserSession, KegiatanGuru } from "../types";
@@ -846,6 +847,7 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
   const [currentConfig, setCurrentConfig] = useState<SertifikatLayoutConfig>(() => getSertifikatConfig());
   const previewCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const [openDownloadMenu, setOpenDownloadMenu] = useState<string | null>(null);
+  const [exportModalKegiatan, setExportModalKegiatan] = useState<KegiatanGuru | null>(null);
 
   useEffect(() => {
     const handler = () => setOpenDownloadMenu(null);
@@ -1177,6 +1179,13 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
                         <Download className="w-3.5 h-3.5 text-brand-500" />
                         {currentConfig.hasJpPage && currentConfig.materiJpRows && currentConfig.materiJpRows.length > 0 ? "Lengkap (PDF)" : "Unduh (PDF)"}
                       </button>
+                      <button
+                        onClick={() => { setOpenDownloadMenu(null); setExportModalKegiatan(kegiatan); }}
+                        className="w-full px-4 py-2.5 text-left text-xs font-bold text-amber-800 hover:bg-amber-50 flex items-center gap-2 cursor-pointer bg-transparent border-0 border-t border-brand-50"
+                      >
+                        <Scissors className="w-3.5 h-3.5 text-amber-600" />
+                        Cetak A4 (2x A5) / Opsi...
+                      </button>
                     </div>
                   )}
                 </div>
@@ -1274,6 +1283,14 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
                     </button>
                   )}
                   <button
+                    onClick={() => setExportModalKegiatan(previewKegiatan)}
+                    className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-xs shadow-md transition-all cursor-pointer border-0 flex items-center gap-1.5"
+                    title="Cetak A4 (2x A5) atau format lain"
+                  >
+                    <Scissors className="w-3.5 h-3.5" />
+                    A4 (2x A5) / Opsi
+                  </button>
+                  <button
                     onClick={() => handleDownloadCertificate(previewKegiatan, "both")}
                     disabled={downloadingId !== null}
                     className="px-5 py-2.5 rounded-2xl bg-brand-600 hover:bg-brand-750 text-white font-bold text-sm shadow-md transition-all cursor-pointer border-0 flex items-center gap-2"
@@ -1287,6 +1304,14 @@ export default function GuruSertifikatView({ userSession }: GuruSertifikatViewPr
           </div>
         )}
       </AnimatePresence>
+      {/* MODAL EKSPOR A4 (2x A5) & STANDAR */}
+      <CertificateExportModal
+        isOpen={Boolean(exportModalKegiatan)}
+        onClose={() => setExportModalKegiatan(null)}
+        kegiatanSingle={exportModalKegiatan}
+        userNameOverride={userSession.fullName || userSession.email}
+        config={currentConfig}
+      />
     </div>
   );
 }

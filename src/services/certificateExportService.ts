@@ -161,30 +161,17 @@ export function renderCertificatePageToCanvas(
 }
 
 /**
- * Draw a clean dashed cutting line with scissor icons across the center of an A4 canvas
+ * Draw a clean dashed cutting line across the center of an A4 canvas (without text labels)
  */
 export function drawCanvasCuttingLine(ctx: CanvasRenderingContext2D, width: number, y: number) {
   ctx.save();
   ctx.strokeStyle = "#94a3b8";
-  ctx.lineWidth = Math.max(2, Math.round(width * 0.001));
-  ctx.setLineDash([16, 12]);
+  ctx.lineWidth = Math.max(1.5, Math.round(width * 0.0008));
+  ctx.setLineDash([12, 10]);
   ctx.beginPath();
   ctx.moveTo(0, y);
   ctx.lineTo(width, y);
   ctx.stroke();
-
-  // Subtle guides
-  const fontSize = Math.max(14, Math.round(width * 0.011));
-  ctx.font = `600 ${fontSize}px sans-serif`;
-  ctx.fillStyle = "#64748b";
-  ctx.textBaseline = "middle";
-
-  ctx.textAlign = "left";
-  ctx.fillText(" ✂ Potong di sini (Ukuran A5)", 20, y - fontSize * 0.8);
-
-  ctx.textAlign = "right";
-  ctx.fillText("Garis Panduan A5 ✂ ", width - 20, y - fontSize * 0.8);
-
   ctx.restore();
 }
 
@@ -263,18 +250,13 @@ export function addA4TwoInOnePageToPdf(
     pdf.addImage(bottomImgData, "JPEG", 0, halfH, pageW, halfH, undefined, "FAST");
   }
 
-  // Cutting line in the middle
+  // Cutting line in the middle (hanya garis pemisah putus-putus tanpa teks)
   if (options.withCuttingLine !== false) {
     pdf.saveGraphicsState();
     pdf.setDrawColor(148, 163, 184);
-    pdf.setLineWidth(0.25);
+    pdf.setLineWidth(0.2);
     pdf.setLineDashPattern([2, 1.5], 0);
     pdf.line(0, halfH, pageW, halfH);
-
-    pdf.setFontSize(6.5);
-    pdf.setTextColor(100, 116, 139);
-    pdf.text("✂ Potong di sini (Ukuran A5)", 5, halfH - 1.2);
-    pdf.text("Garis Panduan A5 ✂", pageW - 5, halfH - 1.2, { align: "right" });
     pdf.restoreGraphicsState();
   }
 }

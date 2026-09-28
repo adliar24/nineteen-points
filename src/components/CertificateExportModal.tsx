@@ -152,7 +152,11 @@ export default function CertificateExportModal({
                   <div className="h-5 bg-brand-200/80 rounded flex items-center justify-center text-[7px] font-bold text-brand-800">
                     A5
                   </div>
-                  <div className="border-t border-dashed border-slate-400 w-full" />
+                  <div
+                    className={`w-full transition-all ${
+                      withCuttingLine ? "border-t border-dashed border-slate-400" : "border-t border-slate-200 opacity-40"
+                    }`}
+                  />
                   <div className="h-5 bg-brand-200/80 rounded flex items-center justify-center text-[7px] font-bold text-brand-800">
                     A5
                   </div>
@@ -413,20 +417,48 @@ export default function CertificateExportModal({
 
         {/* 4. OPSI GARIS POTONG */}
         {paperSize === "a4_2in1" && (
-          <div className="p-3 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between">
-            <label htmlFor="cutting_line_chk" className="flex items-center gap-2.5 cursor-pointer">
-              <Scissors className="w-4 h-4 text-slate-500" />
-              <div className="text-xs font-bold text-slate-800">
-                Garis Panduan Potong Putus-Putus (✂)
-              </div>
+          <div className="space-y-2">
+            <label className="text-xs font-black uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
+              <Scissors className="w-3.5 h-3.5 text-brand-600" />
+              4. Garis Potong Pemisah A5
             </label>
-            <input
-              id="cutting_line_chk"
-              type="checkbox"
-              checked={withCuttingLine}
-              onChange={(e) => setWithCuttingLine(e.target.checked)}
-              className="w-4 h-4 accent-brand-600 rounded cursor-pointer"
-            />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <button
+                type="button"
+                onClick={() => setWithCuttingLine(true)}
+                className={`p-3 rounded-2xl border-2 text-left cursor-pointer transition-all ${
+                  withCuttingLine
+                    ? "bg-brand-50/70 border-brand-600 text-brand-950 font-bold ring-2 ring-brand-500/20 shadow-sm"
+                    : "bg-white border-slate-200 text-slate-600 hover:border-brand-200 hover:bg-slate-50"
+                }`}
+              >
+                <div className="text-xs font-black flex items-center justify-between">
+                  Ada Garis Potong
+                  {withCuttingLine && <Check className="w-3.5 h-3.5 text-brand-600" />}
+                </div>
+                <div className="text-[10px] text-slate-500 mt-1 font-normal leading-relaxed">
+                  Garis putus-putus tipis di tengah sebagai acuan potong (tanpa teks keterangan).
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setWithCuttingLine(false)}
+                className={`p-3 rounded-2xl border-2 text-left cursor-pointer transition-all ${
+                  !withCuttingLine
+                    ? "bg-brand-50/70 border-brand-600 text-brand-950 font-bold ring-2 ring-brand-500/20 shadow-sm"
+                    : "bg-white border-slate-200 text-slate-600 hover:border-brand-200 hover:bg-slate-50"
+                }`}
+              >
+                <div className="text-xs font-black flex items-center justify-between">
+                  Tanpa Garis Potong
+                  {!withCuttingLine && <Check className="w-3.5 h-3.5 text-brand-600" />}
+                </div>
+                <div className="text-[10px] text-slate-500 mt-1 font-normal leading-relaxed">
+                  Halaman polos bersih tanpa garis tengah (untuk pemotong kertas presisi).
+                </div>
+              </button>
+            </div>
           </div>
         )}
 

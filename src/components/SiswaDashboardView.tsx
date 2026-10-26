@@ -28,7 +28,9 @@ import html2canvas from "html2canvas-pro";
 import SkeletonLoader from "./SkeletonLoader";
 import { toSentenceCase } from "../formatName";
 import { getVisiblePages } from "../pagination";
-import { getWibDateStr } from "../parseDateSafe";
+import { getWibDateStr, formatLocalDate } from "../parseDateSafe";
+import { getTujuhKaihBySiswaAndDate } from "../dbStore";
+import { calculate7KaihProgress } from "../services/kaihService";
 import QrScanner from "./scan/QrScanner";
 
 interface SiswaDashboardViewProps {
@@ -42,6 +44,7 @@ export default function SiswaDashboardView({ userSession, activeTab, onSelectTab
   const [riwayat, setRiwayat] = useState<RiwayatPoin[]>([]);
   const [absensi, setAbsensi] = useState<any[]>([]);
   const [sertifikatCount, setSertifikatCount] = useState<number>(0);
+  const [today7KaihPercent, setToday7KaihPercent] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isZoomed, setIsZoomed] = useState(false);
@@ -340,6 +343,14 @@ export default function SiswaDashboardView({ userSession, activeTab, onSelectTab
           if (riwayatError) throw riwayatError;
           setRiwayat(riwayatData || []);
 
+          // 2a. Fetch Today 7 KAIH Progress
+          try {
+            const todayKaih = await getTujuhKaihBySiswaAndDate(siswaData.id, formatLocalDate(new Date()));
+            if (todayKaih) {
+              setToday7KaihPercent(todayKaih.progres_persen ?? calculate7KaihProgress(todayKaih));
+            }
+          } catch (e) {}
+
           // 2b. Fetch Attendance History
           const { data: absensiData, error: absensiError } = await supabase
             .from("kehadiran")
@@ -589,6 +600,41 @@ export default function SiswaDashboardView({ userSession, activeTab, onSelectTab
               >
                 <Camera className="w-5 h-5" />
                 <span>Scan QR Masuk</span>
+              </button>
+            </div>
+          </div>
+
+          {/* 7 KAIH Character Widget Banner */}
+          <div
+            onClick={() => onSelectTab && onSelectTab("checklist_7kaih")}
+            className="bg-gradient-to-r from-brand-700 via-indigo-700 to-purple-800 rounded-3xl p-5 sm:p-6 text-white shadow-xl shadow-brand-900/10 cursor-pointer hover:shadow-2xl hover:scale-[1.01] transition-all relative overflow-hidden group border border-white/10"
+          >
+            <div className="absolute right-0 top-0 translate-x-8 -translate-y-8 w-44 h-44 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center font-bold flex-shrink-0 text-amber-300">
+                  <Sparkles className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-black uppercase tracking-wider bg-white/20 px-2.5 py-0.5 rounded-full">
+                      7 Kebiasaan Anak Indonesia Hebat
+                    </span>
+                    <span className="text-amber-300 text-xs font-black">
+                      {today7KaihPercent}% Tercapai
+                    </span>
+                  </div>
+                  <h3 className="text-base sm:text-lg font-black text-white mt-1">
+                    Checklist Karakter 7 KAIH Hari Ini
+                  </h3>
+                  <p className="text-xs text-brand-100 font-medium">
+                    Bangun pagi, beribadah, olahraga, makan sehat, gemar belajar, bermasyarakat, dan tidur cepat.
+                  </p>
+                </div>
+              </div>
+              <button className="px-5 py-2.5 bg-white text-brand-950 rounded-2xl text-xs font-black group-hover:bg-brand-50 transition-all self-start sm:self-auto shadow-md flex items-center gap-1.5 cursor-pointer flex-shrink-0">
+                <span>Isi Checklist</span>
+                <span>&rarr;</span>
               </button>
             </div>
           </div>

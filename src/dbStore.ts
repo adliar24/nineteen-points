@@ -1,7 +1,8 @@
-import { Siswa, MasterPoin, RiwayatPoin } from "./types";
+import { Siswa, MasterPoin, RiwayatPoin, TujuhKaih, GuruPenugasan7Kaih } from "./types";
 import { supabase, supabaseAdminAuth } from "./supabaseClient";
 import { parseDateSafe, getWibDateStr } from "./parseDateSafe";
 import { queryClient } from "./queryClient";
+import { calculate7KaihProgress, isBangunPagiTargetMet, isTidurCepatTargetMet } from "./services/kaihService";
 import * as XLSX from "xlsx";
 
 // Helper functions for LocalStorage management (fallback/session tracking only)
@@ -1636,3 +1637,312 @@ export const deleteJadwalGuru = async (id: string): Promise<void> => {
 
   if (error) throw error;
 };
+
+// ==========================================
+// 7 KAIH (7 KEBIASAAN ANAK INDONESIA HEBAT)
+// ==========================================
+
+export const getTujuhKaihBySiswaAndDate = async (
+  siswaId: string,
+  tanggal: string
+): Promise<TujuhKaih | null> => {
+  const localKey = `19points_7kaih_${siswaId}_${tanggal}`;
+  try {
+    if (supabase) {
+      const { data, error } = await supabase
+        .from("tujuh_kaih")
+        .select("*")
+        .eq("siswa_id", siswaId)
+        .eq("tanggal", tanggal)
+        .maybeSingle();
+
+      if (!error && data) {
+        setLocalStorage(localKey, data);
+        return data as TujuhKaih;
+      }
+    }
+  } catch (err) {
+    console.warn("Supabase getTujuhKaih error, fallback to local:", err);
+  }
+
+  // Fallback to local storage
+  return getLocalStorage<TujuhKaih | null>(localKey, null);
+};
+
+export const saveTujuhKaih = async (
+  record: Partial<TujuhKaih>
+): Promise<{ success: boolean; data?: TujuhKaih; error?: string }> => {
+  if (!record.siswa_id || !record.tanggal) {
+    return { success: false, error: "siswa_id dan tanggal wajib diisi" };
+  }
+
+  const progres = calculate7KaihProgress(record);
+  const targetBangun = isBangunPagiTargetMet(record.bangun_pagi_waktu);
+  const targetTidur = isTidurCepatTargetMet(record.tidur_cepat_waktu);
+
+  const payload: any = {
+    siswa_id: record.siswa_id,
+    tanggal: record.tanggal,
+    bangun_pagi_waktu: record.bangun_pagi_waktu || null,
+    bangun_pagi_target_sesuai: targetBangun,
+    salat_subuh: !!record.salat_subuh,
+    salat_zuhur: !!record.salat_zuhur,
+    salat_asar: !!record.salat_asar,
+    salat_magrib: !!record.salat_magrib,
+    salat_isya: !!record.salat_isya,
+    mengaji_status: record.mengaji_status || "belum_diisi",
+    mengaji_surah: record.mengaji_surah || null,
+    mengaji_ayat_awal: record.mengaji_ayat_awal || null,
+    mengaji_ayat_akhir: record.mengaji_ayat_akhir || null,
+    mengaji_catatan: record.mengaji_catatan || null,
+    olahraga_status: record.olahraga_status || "belum_diisi",
+    olahraga_jenis: record.olahraga_jenis || null,
+    olahraga_durasi_menit: record.olahraga_durasi_menit || null,
+    sarapan_status: record.sarapan_status || "belum_diisi",
+    sarapan_bergizi: !!record.sarapan_bergizi,
+    sarapan_menu: record.sarapan_menu || null,
+    makan_siang_status: record.makan_siang_status || "belum_diisi",
+    makan_siang_bergizi: !!record.makan_siang_bergizi,
+    makan_siang_menu: record.makan_siang_menu || null,
+    makan_malam_status: record.makan_malam_status || "belum_diisi",
+    makan_malam_bergizi: !!record.makan_malam_bergizi,
+    makan_malam_menu: record.makan_malam_menu || null,
+    belajar_kegiatan: Array.isArray(record.belajar_kegiatan) ? record.belajar_kegiatan : [],
+    belajar_total_durasi: Number(record.belajar_total_durasi || 0),
+    bermasyarakat_status: record.bermasyarakat_status || "belum_diisi",
+    bermasyarakat_kegiatan: record.bermasyarakat_kegiatan || null,
+    tidur_cepat_waktu: record.tidur_cepat_waktu || null,
+    tidur_cepat_target_sesuai: targetTidur,
+    progres_persen: progres,
+    updated_at: new Date().toISOString()
+  };
+
+  const localKey = `19points_7kaih_${record.siswa_id}_${record.tanggal}`;
+  setLocalStorage(localKey, payload);
+
+  // Update history list in local storage for fallback
+  const listKey = `19points_7kaih_history_${record.siswa_id}`;
+  const existingList = getLocalStorage<TujuhKaih[]>(listKey, []);
+  const idx = existingList.findIndex(e => e.tanggal === record.tanggal);
+  if (idx >= 0) {
+    existingList[idx] = payload;
+  } else {
+    existingList.unshift(payload);
+  }
+  setLocalStorage(listKey, existingList);
+
+  try {
+    if (supabase) {
+      const { data, error } = await supabase
+        .from("tujuh_kaih")
+        .upsert(payload, { onConflict: "siswa_id, tanggal" })
+        .select()
+        .single();
+
+      if (error) {
+        console.warn("Supabase upsert tujuh_kaih warning:", error.message);
+        return { success: true, data: payload as TujuhKaih };
+      }
+      return { success: true, data: data as TujuhKaih };
+    }
+  } catch (err: any) {
+    console.warn("Supabase saveTujuhKaih error:", err);
+  }
+
+  return { success: true, data: payload as TujuhKaih };
+};
+
+export const getTujuhKaihHistoryBySiswa = async (
+  siswaId: string,
+  limit: number = 30
+): Promise<TujuhKaih[]> => {
+  const listKey = `19points_7kaih_history_${siswaId}`;
+  try {
+    if (supabase) {
+      const { data, error } = await supabase
+        .from("tujuh_kaih")
+        .select("*")
+        .eq("siswa_id", siswaId)
+        .order("tanggal", { ascending: false })
+        .limit(limit);
+
+      if (!error && data && data.length > 0) {
+        setLocalStorage(listKey, data);
+        return data as TujuhKaih[];
+      }
+    }
+  } catch (err) {
+    console.warn("Supabase getTujuhKaihHistory error:", err);
+  }
+
+  return getLocalStorage<TujuhKaih[]>(listKey, []);
+};
+
+export const getTujuhKaihRekap = async (filter: {
+  kelas?: string;
+  tanggal?: string;
+  guruId?: string;
+  role: string;
+}): Promise<TujuhKaih[]> => {
+  try {
+    let allowedClasses: string[] | null = null;
+
+    // Jika guru, batasi hanya kelas yang ditugaskan
+    if (filter.role === "guru" && filter.guruId) {
+      const assignments = await getGuruPenugasan7Kaih(filter.guruId);
+      allowedClasses = assignments.map(a => a.kelas);
+      if (allowedClasses.length === 0) {
+        return [];
+      }
+    }
+
+    if (supabase) {
+      let query = supabase
+        .from("tujuh_kaih")
+        .select(`
+          *,
+          siswa:siswa_id (
+            id,
+            nis,
+            nama,
+            kelas,
+            foto_url
+          )
+        `);
+
+      if (filter.tanggal) {
+        query = query.eq("tanggal", filter.tanggal);
+      }
+
+      const { data, error } = await query;
+      if (!error && data) {
+        let results = (data || []).map((row: any) => ({
+          ...row,
+          siswa_nama: row.siswa?.nama,
+          siswa_nis: row.siswa?.nis,
+          siswa_kelas: row.siswa?.kelas,
+          siswa_foto_url: row.siswa?.foto_url
+        }));
+
+        if (allowedClasses) {
+          results = results.filter(r => allowedClasses?.includes(r.siswa_kelas));
+        }
+
+        if (filter.kelas && filter.kelas !== "Semua") {
+          results = results.filter(r => r.siswa_kelas === filter.kelas);
+        }
+
+        return results as TujuhKaih[];
+      }
+    }
+  } catch (err) {
+    console.warn("Supabase getTujuhKaihRekap error:", err);
+  }
+
+  return [];
+};
+
+export const getGuruPenugasan7Kaih = async (guruId?: string): Promise<GuruPenugasan7Kaih[]> => {
+  const localKey = guruId ? `19points_7kaih_penugasan_${guruId}` : "19points_7kaih_penugasan_all";
+  try {
+    if (supabase) {
+      let query = supabase
+        .from("guru_penugasan_7kaih")
+        .select(`
+          id,
+          guru_id,
+          kelas,
+          created_at,
+          profiles:guru_id (
+            id,
+            nama,
+            email
+          )
+        `);
+
+      if (guruId) {
+        query = query.eq("guru_id", guruId);
+      }
+
+      const { data, error } = await query;
+      if (!error && data) {
+        const mapped = data.map((d: any) => ({
+          id: d.id,
+          guru_id: d.guru_id,
+          kelas: d.kelas,
+          created_at: d.created_at,
+          guru_nama: d.profiles?.nama || "Guru",
+          guru_email: d.profiles?.email || ""
+        }));
+        setLocalStorage(localKey, mapped);
+        return mapped;
+      }
+    }
+  } catch (err) {
+    console.warn("Supabase getGuruPenugasan7Kaih error:", err);
+  }
+
+  return getLocalStorage<GuruPenugasan7Kaih[]>(localKey, []);
+};
+
+export const assignGuruKelas7Kaih = async (
+  guruId: string,
+  kelasList: string[]
+): Promise<{ success: boolean; error?: string }> => {
+  try {
+    if (supabase) {
+      // Hapus penugasan lama untuk guru ini terlebih dahulu lalu insert yang baru
+      await supabase.from("guru_penugasan_7kaih").delete().eq("guru_id", guruId);
+
+      if (kelasList.length > 0) {
+        const rows = kelasList.map(kelas => ({
+          guru_id: guruId,
+          kelas
+        }));
+        const { error } = await supabase.from("guru_penugasan_7kaih").insert(rows);
+        if (error) throw error;
+      }
+    }
+
+    // Update local cache
+    const existing = getLocalStorage<GuruPenugasan7Kaih[]>("19points_7kaih_penugasan_all", []);
+    const filtered = existing.filter(e => e.guru_id !== guruId);
+    const newItems = kelasList.map(k => ({
+      id: `local_${guruId}_${k}`,
+      guru_id: guruId,
+      kelas: k
+    }));
+    setLocalStorage("19points_7kaih_penugasan_all", [...filtered, ...newItems]);
+    setLocalStorage(`19points_7kaih_penugasan_${guruId}`, newItems);
+
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+};
+
+export const removeGuruPenugasan7Kaih = async (
+  guruId: string,
+  kelas: string
+): Promise<{ success: boolean; error?: string }> => {
+  try {
+    if (supabase) {
+      const { error } = await supabase
+        .from("guru_penugasan_7kaih")
+        .delete()
+        .eq("guru_id", guruId)
+        .eq("kelas", kelas);
+
+      if (error) throw error;
+    }
+
+    const existing = getLocalStorage<GuruPenugasan7Kaih[]>("19points_7kaih_penugasan_all", []);
+    const filtered = existing.filter(e => !(e.guru_id === guruId && e.kelas === kelas));
+    setLocalStorage("19points_7kaih_penugasan_all", filtered);
+
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+};
+

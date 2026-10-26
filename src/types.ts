@@ -89,3 +89,94 @@ export interface JadwalGuru {
   user_nama?: string;
   user_email?: string;
 }
+
+export interface BelajarItem {
+  id: string;
+  kegiatan: string;
+  durasi_menit: number;
+}
+
+export type HabitStatus = 'belum_diisi' | 'belum' | 'sudah';
+
+export interface TujuhKaih {
+  id?: string;
+  siswa_id: string;
+  tanggal: string; // YYYY-MM-DD
+
+  // 1. Bangun Pagi
+  bangun_pagi_waktu: string | null; // HH:mm
+  bangun_pagi_target_sesuai?: boolean;
+
+  // 2. Beribadah
+  salat_subuh: boolean;
+  salat_zuhur: boolean;
+  salat_asar: boolean;
+  salat_magrib: boolean;
+  salat_isya: boolean;
+
+  // 2b. Pendukung Beribadah: Mengaji
+  mengaji_status: HabitStatus;
+  mengaji_surah?: string | null;
+  mengaji_ayat_awal?: number | null;
+  mengaji_ayat_akhir?: number | null;
+  mengaji_catatan?: string | null;
+
+  // 3. Berolahraga
+  olahraga_status: HabitStatus;
+  olahraga_jenis?: string | null;
+  olahraga_durasi_menit?: number | null;
+
+  // 4. Makan Sehat dan Bergizi
+  sarapan_status: HabitStatus;
+  sarapan_bergizi: boolean;
+  sarapan_menu?: string | null;
+
+  makan_siang_status: HabitStatus;
+  makan_siang_bergizi: boolean;
+  makan_siang_menu?: string | null;
+
+  makan_malam_status: HabitStatus;
+  makan_malam_bergizi: boolean;
+  makan_malam_menu?: string | null;
+
+  // 5. Gemar Belajar
+  belajar_kegiatan: BelajarItem[];
+  belajar_total_durasi: number;
+
+  // 6. Bermasyarakat
+  bermasyarakat_status: HabitStatus;
+  bermasyarakat_kegiatan?: string | null;
+
+  // 7. Tidur Cepat
+  tidur_cepat_waktu: string | null; // HH:mm
+  tidur_cepat_target_sesuai?: boolean;
+
+  progres_persen: number; // 0 - 100
+  created_at?: string;
+  updated_at?: string;
+
+  // Joined fields
+  siswa_nama?: string;
+  siswa_nis?: string;
+  siswa_kelas?: string;
+  siswa_foto_url?: string | null;
+}
+
+export interface GuruPenugasan7Kaih {
+  id?: string;
+  guru_id: string;
+  kelas: string;
+  created_at?: string;
+  guru_nama?: string;
+  guru_email?: string;
+}
+
+export interface HabitEvaluation {
+  id: string;
+  title: string;
+  nomenklatur: string;
+  status: 'selesai' | 'belum_dilakukan' | 'belum_diisi';
+  summary: string;
+  targetMet?: boolean;
+}
+

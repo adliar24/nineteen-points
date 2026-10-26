@@ -152,6 +152,8 @@ export interface TujuhKaih {
   tidur_cepat_target_sesuai?: boolean;
 
   progres_persen: number; // 0 - 100
+  is_final?: boolean;
+  waktu_kirim_final?: string | null;
   created_at?: string;
   updated_at?: string;
 

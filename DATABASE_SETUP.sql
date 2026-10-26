@@ -805,13 +805,20 @@ CREATE TABLE IF NOT EXISTS public.tujuh_kaih (
   -- Progres 0 - 100%
   progres_persen           INT DEFAULT 0 NOT NULL,
 
+  -- Status Pengiriman Final (Terkunci jika true)
+  is_final                 BOOLEAN DEFAULT FALSE NOT NULL,
+  waktu_kirim_final        TIMESTAMP WITH TIME ZONE,
+
   created_at               TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
   updated_at               TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
 
   UNIQUE (siswa_id, tanggal)
 );
 
--- 8b. TABEL PENUGASAN GURU PEMANTAU 7 KAIH
+ALTER TABLE public.tujuh_kaih ADD COLUMN IF NOT EXISTS is_final BOOLEAN DEFAULT FALSE;
+ALTER TABLE public.tujuh_kaih ADD COLUMN IF NOT EXISTS waktu_kirim_final TIMESTAMP WITH TIME ZONE;
+
+-- 8b. TABEL PENUGASAN GURU / KEPALA SEKOLAH PEMANTAU 7 KAIH
 CREATE TABLE IF NOT EXISTS public.guru_penugasan_7kaih (
   id         UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   guru_id    UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
@@ -850,14 +857,14 @@ CREATE POLICY "tujuh_kaih_select" ON public.tujuh_kaih
     EXISTS (
       SELECT 1 FROM public.profiles p
       WHERE p.id = auth.uid()
-        AND p.role IN ('super_admin', 'kepala_sekolah')
+        AND p.role = 'super_admin'
     )
     OR
     EXISTS (
       SELECT 1 FROM public.guru_penugasan_7kaih gp
-      JOIN public.siswa s ON s.kelas = gp.kelas
+      LEFT JOIN public.siswa s ON s.kelas = gp.kelas
       WHERE gp.guru_id = auth.uid()
-        AND s.id = tujuh_kaih.siswa_id
+        AND (gp.kelas = 'Semua' OR s.id = tujuh_kaih.siswa_id)
     )
   );
 
@@ -880,10 +887,13 @@ CREATE POLICY "tujuh_kaih_insert" ON public.tujuh_kaih
 CREATE POLICY "tujuh_kaih_update" ON public.tujuh_kaih
   FOR UPDATE TO authenticated
   USING (
-    siswa_id IN (
-      SELECT s.id FROM public.siswa s
-      JOIN public.profiles p ON p.nis = s.nis
-      WHERE p.id = auth.uid()
+    (
+      siswa_id IN (
+        SELECT s.id FROM public.siswa s
+        JOIN public.profiles p ON p.nis = s.nis
+        WHERE p.id = auth.uid()
+      )
+      AND (is_final = false OR is_final IS NULL)
     )
     OR
     EXISTS (
@@ -918,7 +928,15 @@ CREATE POLICY "tujuh_kaih_delete" ON public.tujuh_kaih
 
 CREATE POLICY "guru_penugasan_select" ON public.guru_penugasan_7kaih
   FOR SELECT TO authenticated
-  USING (true);
+  USING (
+    guru_id = auth.uid()
+    OR
+    EXISTS (
+      SELECT 1 FROM public.profiles p
+      WHERE p.id = auth.uid()
+        AND p.role = 'super_admin'
+    )
+  );
 
 CREATE POLICY "guru_penugasan_insert" ON public.guru_penugasan_7kaih
   FOR INSERT TO authenticated

@@ -1714,6 +1714,8 @@ export const saveTujuhKaih = async (
     tidur_cepat_waktu: record.tidur_cepat_waktu || null,
     tidur_cepat_target_sesuai: targetTidur,
     progres_persen: progres,
+    is_final: !!record.is_final,
+    waktu_kirim_final: record.waktu_kirim_final || (record.is_final ? new Date().toISOString() : null),
     updated_at: new Date().toISOString()
   };
 
@@ -1824,7 +1826,7 @@ export const getTujuhKaihRekap = async (filter: {
           siswa_foto_url: row.siswa?.foto_url
         }));
 
-        if (allowedClasses) {
+        if (allowedClasses && !allowedClasses.includes("Semua")) {
           results = results.filter(r => allowedClasses?.includes(r.siswa_kelas));
         }
 
@@ -1840,6 +1842,54 @@ export const getTujuhKaihRekap = async (filter: {
   }
 
   return [];
+};
+
+export const submitFinal7Kaih = async (
+  siswaId: string,
+  tanggal: string
+): Promise<{ success: boolean; error?: string }> => {
+  const current = await getTujuhKaihBySiswaAndDate(siswaId, tanggal);
+  if (!current) {
+    return { success: false, error: "Data checklist belum diisi sama sekali." };
+  }
+
+  const updated: Partial<TujuhKaih> = {
+    ...current,
+    is_final: true,
+    waktu_kirim_final: new Date().toISOString()
+  };
+
+  return await saveTujuhKaih(updated);
+};
+
+export const unlockFinal7Kaih = async (
+  siswaId: string,
+  tanggal: string
+): Promise<{ success: boolean; error?: string }> => {
+  const current = await getTujuhKaihBySiswaAndDate(siswaId, tanggal);
+  if (!current) {
+    return { success: false, error: "Data checklist tidak ditemukan." };
+  }
+
+  const updated: Partial<TujuhKaih> = {
+    ...current,
+    is_final: false,
+    waktu_kirim_final: null
+  };
+
+  return await saveTujuhKaih(updated);
+};
+
+export const checkKaihUserAccess = async (userSession: UserSession): Promise<boolean> => {
+  if (userSession.role === "super_admin") return true;
+  if (userSession.role === "siswa") return true;
+
+  if (userSession.role === "guru" || userSession.role === "kepala_sekolah") {
+    const assignments = await getGuruPenugasan7Kaih(userSession.id);
+    return assignments.length > 0;
+  }
+
+  return false;
 };
 
 export const getGuruPenugasan7Kaih = async (guruId?: string): Promise<GuruPenugasan7Kaih[]> => {

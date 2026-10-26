@@ -73,6 +73,8 @@ export function createDefault7Kaih(siswaId: string, tanggal: string): TujuhKaih 
     tidur_cepat_waktu: null,
     tidur_cepat_target_sesuai: false,
     progres_persen: 0,
+    is_final: false,
+    waktu_kirim_final: null,
   };
 }
 

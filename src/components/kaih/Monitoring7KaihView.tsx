@@ -23,7 +23,10 @@ import {
   Clock,
   ChevronDown,
   RefreshCw,
-  Award
+  Award,
+  Lock,
+  Unlock,
+  CheckCheck
 } from "lucide-react";
 import { UserSession, Siswa, TujuhKaih, GuruPenugasan7Kaih, Profile } from "../../types";
 import {
@@ -32,7 +35,7 @@ import {
   getGuruPenugasan7Kaih,
   assignGuruKelas7Kaih,
   removeGuruPenugasan7Kaih,
-  fetchAllPages
+  unlockFinal7Kaih
 } from "../../dbStore";
 import { supabase } from "../../supabaseClient";
 import { evaluate7KaihHabits, calculate7KaihProgress } from "../../services/kaihService";
@@ -62,8 +65,9 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
   const [rekapRecords, setRekapRecords] = useState<TujuhKaih[]>([]);
   const [assignedClasses, setAssignedClasses] = useState<string[]>([]);
   const [allAssignments, setAllAssignments] = useState<GuruPenugasan7Kaih[]>([]);
-  const [teachersList, setTeachersList] = useState<Profile[]>([]);
+  const [candidatesList, setCandidatesList] = useState<Profile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isUnlocking, setIsUnlocking] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
 
   // Detail Modal State
@@ -72,31 +76,35 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
 
   // Admin Assignment Form Modal
   const [showAssignModal, setShowAssignModal] = useState(false);
-  const [selectedTeacherId, setSelectedTeacherId] = useState("");
+  const [selectedCandidateId, setSelectedCandidateId] = useState("");
   const [selectedClassesToAssign, setSelectedClassesToAssign] = useState<string[]>([]);
   const [isAssigning, setIsAssigning] = useState(false);
 
-  // Muat data penugasan kelas untuk guru yang sedang login
+  // Muat data penugasan kelas untuk guru / kepala sekolah yang sedang login
   const loadUserAssignments = async () => {
-    if (isGuru) {
+    if (isGuru || isKepsek) {
       const assignments = await getGuruPenugasan7Kaih(userSession.id);
       const classes = assignments.map((a) => a.kelas);
       setAssignedClasses(classes);
     }
   };
 
-  // Muat data master guru & penugasan untuk Super Admin
+  // Muat data master guru & kepsek serta penugasan untuk Super Admin
   const loadAdminData = async () => {
     if (isAdmin) {
       try {
         const [assignments, { data: profiles }] = await Promise.all([
           getGuruPenugasan7Kaih(),
-          supabase.from("profiles").select("*").in("role", ["guru", "tata_usaha", "piket"]).order("nama", { ascending: true })
+          supabase
+            .from("profiles")
+            .select("*")
+            .in("role", ["guru", "kepala_sekolah"])
+            .order("nama", { ascending: true })
         ]);
-        setAllAssignments(assignments);
-        if (profiles) setTeachersList(profiles as Profile[]);
+        setAllAssignments(assignments || []);
+        if (profiles) setCandidatesList(profiles as Profile[]);
       } catch (err) {
-        console.error("Gagal memuat master guru / penugasan:", err);
+        console.error("Gagal memuat kandidat guru/kepsek penugasan:", err);
       }
     }
   };
@@ -109,14 +117,14 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
         getSiswaList(),
         getTujuhKaihRekap({
           tanggal: selectedDate,
-          guruId: isGuru ? userSession.id : undefined,
+          guruId: (isGuru || isKepsek) ? userSession.id : undefined,
           role: userSession.role
         })
       ]);
       setAllSiswa(siswa);
       setRekapRecords(rekap);
     } catch (err) {
-      console.error("Gagal memuat data monitoring 7 KAIH:", err);
+      console.error("Gagal memuat data 7 KAIH:", err);
     } finally {
       setIsLoading(false);
     }
@@ -134,29 +142,30 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
   // Daftar kelas unik yang relevan
   const availableClassOptions = useMemo(() => {
     let rawClasses: string[] = [];
-    if (isGuru) {
-      rawClasses = assignedClasses;
+    if (isGuru || isKepsek) {
+      if (assignedClasses.includes("Semua")) {
+        rawClasses = Array.from(new Set(allSiswa.map((s) => s.kelas).filter(Boolean)));
+      } else {
+        rawClasses = assignedClasses;
+      }
     } else {
       rawClasses = Array.from(new Set(allSiswa.map((s) => s.kelas).filter(Boolean)));
     }
     return rawClasses.sort(compareClasses);
-  }, [allSiswa, isGuru, assignedClasses]);
+  }, [allSiswa, isGuru, isKepsek, assignedClasses]);
 
   // Gabungkan daftar siswa dengan rekap hari ini
   const mergedSiswaRows = useMemo(() => {
-    // 1. Filter siswa berdasarkan hak akses guru
     let scopedSiswa = allSiswa;
-    if (isGuru) {
+    if ((isGuru || isKepsek) && !assignedClasses.includes("Semua")) {
       scopedSiswa = allSiswa.filter((s) => assignedClasses.includes(s.kelas));
     }
 
-    // 2. Buat map record 7 KAIH berdasarkan siswa_id
     const rekapMap = new Map<string, TujuhKaih>();
     rekapRecords.forEach((r) => {
       rekapMap.set(r.siswa_id, r);
     });
 
-    // 3. Mapping data siswa dengan status pengisian
     return scopedSiswa.map((s) => {
       const record = rekapMap.get(s.id);
       const isFilled = !!record;
@@ -171,21 +180,18 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
         evaluations
       };
     });
-  }, [allSiswa, rekapRecords, isGuru, assignedClasses]);
+  }, [allSiswa, rekapRecords, isGuru, isKepsek, assignedClasses]);
 
   // Filter hasil pencarian dan filter dropdown
   const filteredRows = useMemo(() => {
     return mergedSiswaRows.filter((item) => {
-      // Filter Kelas
       if (selectedKelas !== "Semua" && item.siswa.kelas !== selectedKelas) {
         return false;
       }
 
-      // Filter Status Pengisian
       if (statusFilter === "Sudah Mengisi" && !item.isFilled) return false;
       if (statusFilter === "Belum Mengisi" && item.isFilled) return false;
 
-      // Filter Pencarian Nama / NIS
       if (searchQuery.trim() !== "") {
         const q = searchQuery.toLowerCase();
         const namaMatch = (item.siswa.nama || "").toLowerCase().includes(q);
@@ -197,7 +203,7 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
     });
   }, [mergedSiswaRows, selectedKelas, statusFilter, searchQuery]);
 
-  // Statistik Ringkasan (KPI)
+  // KPI Stats
   const stats = useMemo(() => {
     const total = mergedSiswaRows.length;
     const sudah = mergedSiswaRows.filter((r) => r.isFilled).length;
@@ -212,7 +218,7 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
     return { total, sudah, belum, avgProgress };
   }, [mergedSiswaRows]);
 
-  // Export ke Excel
+  // Export ke Excel (.xlsx)
   const handleExportExcel = () => {
     if (filteredRows.length === 0) {
       alert("Tidak ada data untuk diekspor");
@@ -221,8 +227,6 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
 
     const rows = filteredRows.map((item, idx) => {
       const r = item.record;
-      const evals = item.evaluations;
-
       const salatList = r
         ? [
             r.salat_subuh && "Subuh",
@@ -261,7 +265,7 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
         Nama: item.siswa.nama,
         Kelas: item.siswa.kelas,
         Tanggal: selectedDate,
-        "Status Pengisian": item.isFilled ? "Sudah Mengisi" : "Belum Mengisi",
+        "Status Pengisian": item.isFilled ? (r?.is_final ? "Terkirim Final" : "Draft (Auto-saved)") : "Belum Mengisi",
         "Progres 7 KAIH (%)": item.progress,
         "1. Bangun Pagi": r?.bangun_pagi_waktu || "-",
         "Target Bangun": r?.bangun_pagi_target_sesuai ? "Tercapai" : "-",
@@ -282,25 +286,25 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
     XLSX.writeFile(workbook, `Rekap_7KAIH_${selectedKelas}_${selectedDate}.xlsx`);
   };
 
-  // Handler Admin: Simpan Penugasan Guru
+  // Admin: Simpan Penugasan Guru / Kepsek
   const handleSaveTeacherAssignment = async () => {
-    if (!selectedTeacherId) {
-      alert("Silakan pilih guru terlebih dahulu");
+    if (!selectedCandidateId) {
+      alert("Silakan pilih guru atau kepala sekolah terlebih dahulu");
       return;
     }
     if (selectedClassesToAssign.length === 0) {
-      alert("Pilih minimal satu kelas untuk ditugaskan");
+      alert("Pilih minimal satu kelas (atau 'Semua') untuk diberikan izin akses");
       return;
     }
 
     setIsAssigning(true);
     try {
-      const res = await assignGuruKelas7Kaih(selectedTeacherId, selectedClassesToAssign);
+      const res = await assignGuruKelas7Kaih(selectedCandidateId, selectedClassesToAssign);
       if (res.success) {
-        setToastMsg("Penugasan kelas berhasil disimpan!");
+        setToastMsg("Izin akses & penugasan kelas berhasil disimpan!");
         loadAdminData();
         setShowAssignModal(false);
-        setSelectedTeacherId("");
+        setSelectedCandidateId("");
         setSelectedClassesToAssign([]);
         setTimeout(() => setToastMsg(""), 3500);
       } else {
@@ -313,9 +317,9 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
     }
   };
 
-  // Handler Admin: Cabut Penugasan Kelas
+  // Admin: Cabut Penugasan Kelas
   const handleRemoveAssignment = async (guruId: string, kelas: string) => {
-    if (!window.confirm(`Yakin ingin mencabut akses kelas ${kelas} dari guru ini?`)) return;
+    if (!window.confirm(`Yakin ingin mencabut akses kelas ${kelas} dari pengguna ini?`)) return;
     try {
       const res = await removeGuruPenugasan7Kaih(guruId, kelas);
       if (res.success) {
@@ -327,6 +331,29 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
       }
     } catch (e: any) {
       alert("Error: " + e.message);
+    }
+  };
+
+  // Admin: Buka Kunci (Unlock) Checklist Murid
+  const handleUnlockRecord = async () => {
+    if (!detailModalStudent || !detailModalRecord) return;
+    if (!window.confirm(`Buka kunci checklist untuk murid ${detailModalStudent.nama} pada tanggal ${detailModalRecord.tanggal}? Murid akan dapat mengedit kembali checklist hari ini.`)) return;
+
+    setIsUnlocking(true);
+    try {
+      const res = await unlockFinal7Kaih(detailModalStudent.id, detailModalRecord.tanggal);
+      if (res.success) {
+        setDetailModalRecord((prev) => (prev ? { ...prev, is_final: false, waktu_kirim_final: null } : null));
+        setToastMsg("Checklist berhasil dibuka kuncinya! Murid dapat mengedit kembali.");
+        loadData();
+        setTimeout(() => setToastMsg(""), 3500);
+      } else {
+        alert("Gagal membuka kunci: " + res.error);
+      }
+    } catch (e: any) {
+      alert("Error: " + e.message);
+    } finally {
+      setIsUnlocking(false);
     }
   };
 
@@ -353,19 +380,17 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-xs font-black uppercase tracking-wider mb-3">
               <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-              Monitoring Karakter Siswa SMAN 19 Bandung
+              7 Kebiasaan Anak Indonesia Hebat
             </div>
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
-              Pemantauan 7 Kebiasaan Anak Indonesia Hebat
+              7 KAIH
             </h1>
             <p className="text-brand-200 text-xs sm:text-sm mt-1 max-w-2xl">
               {isAdmin
-                ? "Pantau rekap progres karakter seluruh murid dan kelola penugasan kelas untuk guru pembina."
-                : isGuru
-                ? `Memantau progres 7 KAIH siswa di kelas binaan Anda: ${
-                    assignedClasses.length > 0 ? assignedClasses.join(", ") : "Belum ada kelas yang ditugaskan"
-                  }.`
-                : "Monitoring progres rekapitulasi kebiasaan harian seluruh siswa SMAN 19 Bandung."}
+                ? "Monitoring capaian karakter murid harian dan kelola izin akses guru atau kepala sekolah."
+                : `Pemantauan data karakter murid di kelas binaan Anda: ${
+                    assignedClasses.includes("Semua") ? "Semua Kelas" : assignedClasses.join(", ")
+                  }.`}
             </p>
           </div>
 
@@ -391,21 +416,11 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                 }`}
               >
                 <ShieldCheck className="w-3.5 h-3.5" />
-                Penugasan Guru
+                Izin & Penugasan Akses
               </button>
             </div>
           )}
         </div>
-
-        {/* Informative Warning bila Guru Belum Ditugaskan Kelas */}
-        {isGuru && assignedClasses.length === 0 && (
-          <div className="mt-6 p-4 rounded-2xl bg-amber-500/20 border border-amber-300/30 text-amber-200 text-xs font-bold flex items-center gap-3">
-            <AlertCircle className="w-5 h-5 flex-shrink-0 text-amber-300" />
-            <span>
-              Anda belum ditugaskan untuk memantau kelas manapun. Silakan hubungi Super Admin untuk penugasan kelas 7 KAIH.
-            </span>
-          </div>
-        )}
       </div>
 
       {/* ======================================================== */}
@@ -440,7 +455,7 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                 <AlertCircle className="w-6 h-6" />
               </div>
               <div>
-                <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Belum Mengisi</p>
+                <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Belum Mengisi (Kosong)</p>
                 <h3 className="text-2xl font-black text-rose-700">{stats.belum}</h3>
               </div>
             </div>
@@ -505,7 +520,6 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
             </div>
 
             <div className="flex items-center gap-3">
-              {/* Search */}
               <div className="relative flex-1 md:w-64">
                 <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
@@ -517,7 +531,6 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                 />
               </div>
 
-              {/* Export Button */}
               <button
                 onClick={handleExportExcel}
                 className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-black transition-all cursor-pointer flex items-center gap-2 shadow-sm"
@@ -533,14 +546,14 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
             {isLoading ? (
               <div className="py-20 text-center text-slate-400 space-y-3">
                 <div className="w-8 h-8 border-3 border-brand-500 border-t-transparent rounded-full animate-spin mx-auto" />
-                <p className="text-xs font-bold">Memuat data rekap 7 KAIH...</p>
+                <p className="text-xs font-bold">Memuat data 7 KAIH...</p>
               </div>
             ) : filteredRows.length === 0 ? (
               <div className="py-20 text-center text-slate-400 space-y-2">
                 <Users className="w-12 h-12 mx-auto text-slate-300" />
                 <p className="text-sm font-bold text-slate-700">Tidak ada data murid yang ditemukan</p>
                 <p className="text-xs text-slate-400">
-                  Coba ubah filter tanggal, kelas, atau kata kunci pencarian Anda.
+                  Coba ubah tanggal, kelas, atau kata kunci pencarian Anda.
                 </p>
               </div>
             ) : (
@@ -550,7 +563,7 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                     <tr className="bg-slate-50/75 border-b border-slate-100 text-[11px] font-black uppercase tracking-wider text-slate-500">
                       <th className="py-4 px-5">Murid</th>
                       <th className="py-4 px-4">Kelas</th>
-                      <th className="py-4 px-4 text-center">Status</th>
+                      <th className="py-4 px-4 text-center">Status Pengisian</th>
                       <th className="py-4 px-4">Capaian 7 Kebiasaan</th>
                       <th className="py-4 px-4 text-center">Progres</th>
                       <th className="py-4 px-5 text-right">Aksi</th>
@@ -590,10 +603,17 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
 
                           <td className="py-3.5 px-4 text-center">
                             {item.isFilled ? (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 font-black text-[10px] border border-emerald-200">
-                                <CheckCircle2 className="w-3 h-3" />
-                                Sudah Mengisi
-                              </span>
+                              item.record?.is_final ? (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 font-black text-[10px] border border-emerald-300">
+                                  <Lock className="w-3 h-3 text-emerald-600" />
+                                  Terkirim Final
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-cyan-50 text-cyan-800 font-black text-[10px] border border-cyan-200">
+                                  <CheckCircle2 className="w-3 h-3 text-cyan-600" />
+                                  Draft (Auto-saved)
+                                </span>
+                              )
                             ) : (
                               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 font-black text-[10px] border border-rose-200">
                                 <AlertCircle className="w-3 h-3" />
@@ -625,7 +645,7 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                                 </span>
                               </div>
                             ) : (
-                              <span className="text-[11px] text-slate-400 italic">Belum ada input</span>
+                              <span className="text-[11px] text-slate-400 italic">Kosong</span>
                             )}
                           </td>
 
@@ -677,38 +697,37 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
       )}
 
       {/* ======================================================== */}
-      {/* KONTEN TAB: PENUGASAN GURU (KHUSUS SUPER ADMIN)          */}
+      {/* KONTEN TAB: PENUGASAN GURU & KEPSEK (SUPER ADMIN)        */}
       {/* ======================================================== */}
       {isAdmin && activeTab === "penugasan" && (
         <div className="space-y-6">
           <div className="bg-white rounded-3xl p-6 border border-brand-100 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h2 className="text-lg font-black text-brand-950">Pengaturan Penugasan Guru Pemantau</h2>
+              <h2 className="text-lg font-black text-brand-950">Izin Akses & Penugasan 7 KAIH</h2>
               <p className="text-xs text-slate-500 font-medium">
-                Pilih guru dan tentukan kelas mana saja yang dapat dipantau oleh guru tersebut.
+                Pilih guru atau kepala sekolah yang diberi izin untuk memantau data 7 KAIH.
               </p>
             </div>
             <button
               onClick={() => {
-                setSelectedTeacherId("");
+                setSelectedCandidateId("");
                 setSelectedClassesToAssign([]);
                 setShowAssignModal(true);
               }}
               className="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-2xl text-xs font-black transition-all cursor-pointer flex items-center gap-2 shadow-sm"
             >
               <UserPlus className="w-4 h-4" />
-              Tambah / Atur Penugasan Guru
+              Beri Akses / Atur Penugasan
             </button>
           </div>
 
-          {/* Tabel Penugasan Guru */}
           <div className="bg-white rounded-3xl border border-brand-100 shadow-sm overflow-hidden">
             {allAssignments.length === 0 ? (
               <div className="py-20 text-center text-slate-400 space-y-2">
                 <ShieldCheck className="w-12 h-12 mx-auto text-slate-300" />
-                <p className="text-sm font-bold text-slate-700">Belum ada penugasan guru yang aktif</p>
+                <p className="text-sm font-bold text-slate-700">Belum ada guru / kepala sekolah yang diberi akses</p>
                 <p className="text-xs text-slate-400">
-                  Klik tombol "Tambah / Atur Penugasan Guru" di atas untuk memberikan akses pemantauan kelas.
+                  Fitur 7 KAIH saat ini hanya aktif di Super Admin dan Murid. Berikan izin akses melalui tombol di atas.
                 </p>
               </div>
             ) : (
@@ -716,40 +735,39 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-slate-50/75 border-b border-slate-100 text-[11px] font-black uppercase tracking-wider text-slate-500">
-                      <th className="py-4 px-5">Nama Guru</th>
+                      <th className="py-4 px-5">Nama Pengguna</th>
                       <th className="py-4 px-4">Email</th>
-                      <th className="py-4 px-4">Kelas Binaan</th>
+                      <th className="py-4 px-4">Kelas yang Diizinkan</th>
                       <th className="py-4 px-5 text-right">Aksi</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-xs">
-                    {/* Kelompokkan penugasan per guru */}
                     {Array.from(new Set(allAssignments.map((a) => a.guru_id))).map((guruId) => {
-                      const guruAssignments = allAssignments.filter((a) => a.guru_id === guruId);
-                      const guruInfo = guruAssignments[0];
+                      const userAssignments = allAssignments.filter((a) => a.guru_id === guruId);
+                      const userInfo = userAssignments[0];
 
                       return (
                         <tr key={guruId} className="hover:bg-slate-50/50">
                           <td className="py-4 px-5">
                             <span className="font-black text-brand-950 text-sm">
-                              {toSentenceCase(guruInfo.guru_nama || "Guru")}
+                              {toSentenceCase(userInfo.guru_nama || "Pengguna")}
                             </span>
                           </td>
                           <td className="py-4 px-4 font-mono text-slate-500 text-xs">
-                            {guruInfo.guru_email || "-"}
+                            {userInfo.guru_email || "-"}
                           </td>
                           <td className="py-4 px-4">
                             <div className="flex flex-wrap gap-1.5">
-                              {guruAssignments.map((ga) => (
+                              {userAssignments.map((ga) => (
                                 <span
                                   key={ga.kelas}
                                   className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-brand-50 text-brand-700 border border-brand-200 font-black text-xs"
                                 >
-                                  {ga.kelas}
+                                  {ga.kelas === "Semua" ? "Semua Kelas" : ga.kelas}
                                   <button
                                     onClick={() => handleRemoveAssignment(guruId, ga.kelas)}
                                     className="hover:text-rose-600 transition-colors cursor-pointer"
-                                    title={`Cabut akses kelas ${ga.kelas}`}
+                                    title={`Cabut akses ${ga.kelas}`}
                                   >
                                     <X className="w-3.5 h-3.5" />
                                   </button>
@@ -760,13 +778,13 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                           <td className="py-4 px-5 text-right">
                             <button
                               onClick={() => {
-                                setSelectedTeacherId(guruId);
-                                setSelectedClassesToAssign(guruAssignments.map((g) => g.kelas));
+                                setSelectedCandidateId(guruId);
+                                setSelectedClassesToAssign(userAssignments.map((g) => g.kelas));
                                 setShowAssignModal(true);
                               }}
                               className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all cursor-pointer"
                             >
-                              Edit Kelas
+                              Edit Izin
                             </button>
                           </td>
                         </tr>
@@ -825,20 +843,52 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                   </div>
                 </div>
 
-                <button
-                  onClick={() => {
-                    setDetailModalStudent(null);
-                    setDetailModalRecord(null);
-                  }}
-                  className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all cursor-pointer"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+                <div className="flex items-center gap-2">
+                  {isAdmin && detailModalRecord.is_final && (
+                    <button
+                      onClick={handleUnlockRecord}
+                      disabled={isUnlocking}
+                      className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-xl text-xs font-bold transition-all border border-amber-200 flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <Unlock className="w-3.5 h-3.5" />
+                      {isUnlocking ? "Membuka..." : "Buka Kunci"}
+                    </button>
+                  )}
+                  <button
+                    onClick={() => {
+                      setDetailModalStudent(null);
+                      setDetailModalRecord(null);
+                    }}
+                    className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all cursor-pointer"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Status Header */}
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-200">
+                <div className="flex items-center gap-2 text-xs font-bold">
+                  {detailModalRecord.is_final ? (
+                    <>
+                      <Lock className="w-4 h-4 text-emerald-600" />
+                      <span className="text-emerald-800 font-black">Data Final Terkunci</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-4 h-4 text-cyan-600" />
+                      <span className="text-cyan-800 font-black">Data Draft (Auto-saved)</span>
+                    </>
+                  )}
+                </div>
+                <span className="text-xs font-black text-brand-950">
+                  Progres: {detailModalRecord.progres_persen || calculate7KaihProgress(detailModalRecord)}%
+                </span>
               </div>
 
               {/* Rincian 7 Kebiasaan */}
               <div className="space-y-4">
-                {evaluate7KaihHabits(detailModalRecord).map((h, idx) => (
+                {evaluate7KaihHabits(detailModalRecord).map((h) => (
                   <div
                     key={h.id}
                     className="p-4 rounded-2xl border border-slate-200 bg-slate-50/60 flex items-start justify-between gap-3"
@@ -847,7 +897,6 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                       <h4 className="text-xs font-black text-brand-950 mb-1">{h.nomenklatur}</h4>
                       <p className="text-xs font-bold text-slate-700">{h.summary}</p>
 
-                      {/* Detail Spesifik */}
                       {h.id === "beribadah" && (
                         <div className="mt-2 text-[11px] text-slate-600 space-y-1">
                           <p>
@@ -860,7 +909,7 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                               detailModalRecord.salat_isya && "Isya"
                             ]
                               .filter(Boolean)
-                              .join(", ") || "Tidak ada yang dicentang"}
+                              .join(", ") || "Belum ada yang dicentang"}
                           </p>
                           {detailModalRecord.mengaji_status === "sudah" && (
                             <p>
@@ -925,7 +974,7 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
       </AnimatePresence>
 
       {/* ======================================================== */}
-      {/* MODAL PENUGASAN KELAS UNTUK GURU (SUPER ADMIN)           */}
+      {/* MODAL PENUGASAN: HANYA GURU & KEPALA SEKOLAH             */}
       {/* ======================================================== */}
       <AnimatePresence>
         {isAdmin && showAssignModal && (
@@ -945,9 +994,9 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-base font-black text-brand-950">Atur Penugasan Kelas Guru</h3>
+                  <h3 className="text-base font-black text-brand-950">Beri Izin Akses 7 KAIH</h3>
                   <p className="text-xs text-slate-500 font-medium">
-                    Tentukan kelas yang dapat dipantau oleh guru pembina
+                    Hanya guru dan kepala sekolah yang dapat dipilih
                   </p>
                 </div>
                 <button
@@ -958,34 +1007,34 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                 </button>
               </div>
 
-              {/* Pilih Guru */}
+              {/* Pilih Guru / Kepsek */}
               <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">Pilih Guru Pembina:</label>
+                <label className="text-xs font-bold text-slate-700 block mb-1">Pilih Guru / Kepala Sekolah:</label>
                 <select
-                  value={selectedTeacherId}
-                  onChange={(e) => setSelectedTeacherId(e.target.value)}
+                  value={selectedCandidateId}
+                  onChange={(e) => setSelectedCandidateId(e.target.value)}
                   className="w-full bg-slate-50 px-3 py-2.5 rounded-2xl border border-slate-200 text-xs font-bold text-slate-800 outline-none"
                 >
-                  <option value="">-- Pilih Guru --</option>
-                  {teachersList.map((t) => (
+                  <option value="">-- Pilih Guru / Kepala Sekolah --</option>
+                  {candidatesList.map((t) => (
                     <option key={t.id} value={t.id}>
-                      {toSentenceCase(t.nama)} ({t.email})
+                      {toSentenceCase(t.nama)} ({t.role === "kepala_sekolah" ? "Kepala Sekolah" : "Guru"}) - {t.email}
                     </option>
                   ))}
                 </select>
               </div>
 
-              {/* Pilih Kelas (Multi-Checkbox) */}
+              {/* Pilih Kelas Binaan (Termasuk "Semua Kelas") */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-xs font-bold text-slate-700">Pilih Kelas Binaan:</label>
+                  <label className="text-xs font-bold text-slate-700">Pilih Akses Kelas:</label>
                   <div className="flex items-center gap-2 text-[11px] font-bold">
                     <button
                       type="button"
-                      onClick={() => setSelectedClassesToAssign([...availableClassOptions])}
+                      onClick={() => setSelectedClassesToAssign(["Semua"])}
                       className="text-brand-600 hover:underline cursor-pointer"
                     >
-                      Pilih Semua
+                      Akses Semua Kelas
                     </button>
                     <span className="text-slate-300">•</span>
                     <button
@@ -999,6 +1048,24 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                 </div>
 
                 <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto p-2 border border-slate-200 rounded-2xl bg-slate-50">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (selectedClassesToAssign.includes("Semua")) {
+                        setSelectedClassesToAssign([]);
+                      } else {
+                        setSelectedClassesToAssign(["Semua"]);
+                      }
+                    }}
+                    className={`col-span-3 p-2 rounded-xl text-xs font-black transition-all cursor-pointer border ${
+                      selectedClassesToAssign.includes("Semua")
+                        ? "bg-brand-600 text-white border-brand-600 shadow-sm"
+                        : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
+                    }`}
+                  >
+                    ⭐ Semua Kelas (Akses Penuh Seluruh Siswa)
+                  </button>
+
                   {availableClassOptions.map((k) => {
                     const isSelected = selectedClassesToAssign.includes(k);
                     return (
@@ -1006,14 +1073,16 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                         key={k}
                         type="button"
                         onClick={() => {
-                          if (isSelected) {
+                          if (selectedClassesToAssign.includes("Semua")) {
+                            setSelectedClassesToAssign([k]);
+                          } else if (isSelected) {
                             setSelectedClassesToAssign(selectedClassesToAssign.filter((c) => c !== k));
                           } else {
                             setSelectedClassesToAssign([...selectedClassesToAssign, k]);
                           }
                         }}
                         className={`p-2 rounded-xl text-xs font-black transition-all cursor-pointer border ${
-                          isSelected
+                          isSelected && !selectedClassesToAssign.includes("Semua")
                             ? "bg-brand-600 text-white border-brand-600 shadow-sm"
                             : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
                         }`}
@@ -1040,7 +1109,7 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                   disabled={isAssigning}
                   className="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-2xl text-xs font-black transition-all cursor-pointer flex items-center gap-2 shadow-sm"
                 >
-                  {isAssigning ? "Menyimpan..." : "Simpan Penugasan"}
+                  {isAssigning ? "Menyimpan..." : "Simpan Izin Akses"}
                 </button>
               </div>
             </motion.div>

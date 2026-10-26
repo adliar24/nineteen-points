@@ -42,6 +42,7 @@ import { evaluate7KaihHabits, calculate7KaihProgress } from "../../services/kaih
 import { formatLocalDate, parseDateSafe } from "../../parseDateSafe";
 import { compareClasses, toSentenceCase } from "../../formatName";
 import * as XLSX from "xlsx";
+import PaginationFooter from "../PaginationFooter";
 
 interface Monitoring7KaihViewProps {
   userSession: UserSession;
@@ -59,6 +60,13 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
   const [selectedKelas, setSelectedKelas] = useState<string>("Semua");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"Semua" | "Sudah Mengisi" | "Belum Mengisi">("Semua");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
+
+  // Reset pagination ke halaman 1 saat filter berubah
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedKelas, statusFilter, searchQuery, selectedDate]);
 
   // Data States
   const [allSiswa, setAllSiswa] = useState<Siswa[]>([]);
@@ -202,6 +210,12 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
       return true;
     });
   }, [mergedSiswaRows, selectedKelas, statusFilter, searchQuery]);
+
+  // Paginated rows (20 murid per halaman agar ringan & tidak lag)
+  const paginatedRows = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredRows.slice(start, start + itemsPerPage);
+  }, [filteredRows, currentPage, itemsPerPage]);
 
   // KPI Stats
   const stats = useMemo(() => {
@@ -557,20 +571,21 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                 </p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="bg-slate-50/75 border-b border-slate-100 text-[11px] font-black uppercase tracking-wider text-slate-500">
-                      <th className="py-4 px-5">Murid</th>
-                      <th className="py-4 px-4">Kelas</th>
-                      <th className="py-4 px-4 text-center">Status Pengisian</th>
-                      <th className="py-4 px-4">Capaian 7 Kebiasaan</th>
-                      <th className="py-4 px-4 text-center">Progres</th>
-                      <th className="py-4 px-5 text-right">Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 text-xs">
-                    {filteredRows.map((item) => {
+              <>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-slate-50/75 border-b border-slate-100 text-[11px] font-black uppercase tracking-wider text-slate-500">
+                        <th className="py-4 px-5">Murid</th>
+                        <th className="py-4 px-4">Kelas</th>
+                        <th className="py-4 px-4 text-center">Status Pengisian</th>
+                        <th className="py-4 px-4">Capaian 7 Kebiasaan</th>
+                        <th className="py-4 px-4 text-center">Progres</th>
+                        <th className="py-4 px-5 text-right">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-xs">
+                      {paginatedRows.map((item) => {
                       const completedCount = item.evaluations.filter((e) => e.status === "selesai").length;
 
                       return (
@@ -691,8 +706,17 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                   </tbody>
                 </table>
               </div>
-            )}
-          </div>
+
+              <PaginationFooter
+                totalItems={filteredRows.length}
+                itemsPerPage={itemsPerPage}
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+                itemLabel="murid"
+              />
+            </>
+          )}
+        </div>
         </div>
       )}
 

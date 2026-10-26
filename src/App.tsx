@@ -548,7 +548,7 @@ export default function App() {
       { type: "item", id: "guru_kartu", label: "Kartu Guru", icon: CreditCard, description: "QR Kartu Guru Digital" },
       { type: "item", id: "input", label: "Input Poin", icon: ClipboardCheck, description: "Catat via QR atau pencarian" },
       ...(hasKaihAccess
-        ? [{ type: "item", id: "monitoring_7kaih", label: "7 KAIH", icon: CheckCircle2, description: "Checklist 7 kebiasaan murid" }]
+        ? [{ type: "item", id: "monitoring_7kaih", label: "Jurnal 7 KAIH", icon: CheckCircle2, description: "Checklist 7 kebiasaan murid" }]
         : []),
       { type: "item", id: "scan_sholat", label: "Input Keagamaan", icon: BookOpen, description: "Scan QR sholat murid" },
       { type: "item", id: "rekap_sholat_kehadiran", label: "Rekap Sholat", icon: ClipboardList, description: "Rekap sholat berjamaah murid" },
@@ -583,7 +583,7 @@ export default function App() {
       },
       { type: "item", id: "kehadiran", label: "Kehadiran Murid", icon: Users, description: "Monitoring absensi murid" },
       ...(hasKaihAccess
-        ? [{ type: "item", id: "monitoring_7kaih", label: "7 KAIH", icon: CheckCircle2, description: "Checklist 7 kebiasaan murid" }]
+        ? [{ type: "item", id: "monitoring_7kaih", label: "Jurnal 7 KAIH", icon: CheckCircle2, description: "Checklist 7 kebiasaan murid" }]
         : []),
       { type: "item", id: "rekap_sholat_kehadiran", label: "Rekap Sholat", icon: ClipboardList, description: "Rekap sholat berjamaah murid" },
       // Sembunyikan sementara: Kehadiran Guru
@@ -623,7 +623,7 @@ export default function App() {
         icon: FolderOpen,
         items: [
           { id: "students", label: "Kelola Murid", icon: Users, description: "Database & kartu pelajar" },
-          { id: "kelola_7kaih", label: "7 KAIH", icon: CheckCircle2, description: "Rekap & penugasan murid" },
+          { id: "kelola_7kaih", label: "Jurnal 7 KAIH", icon: CheckCircle2, description: "Rekap & penugasan murid" },
           // Sembunyikan sementara: Jadwal Guru
           // { id: "kelola_jadwal_guru", label: "Jadwal Guru", icon: Calendar, description: "Manajemen jadwal mengajar guru" },
           { id: "kelola_sertifikat_guru", label: "Sertifikat", icon: Award, description: "Kelola kegiatan & sertifikat" },
@@ -644,7 +644,7 @@ export default function App() {
   } else if (userSession.role === "siswa") {
     sidebarElements = [
       { type: "item", id: "siswa_stats", label: "Beranda", icon: Home, description: "Statistik & presensi Anda" },
-      { type: "item", id: "checklist_7kaih", label: "7 KAIH", icon: CheckCircle2, description: "Checklist 7 kebiasaan harian" },
+      { type: "item", id: "checklist_7kaih", label: "Jurnal 7 KAIH", icon: CheckCircle2, description: "Checklist 7 kebiasaan harian" },
       { type: "item", id: "leaderboard", label: "Papan Peringkat", icon: Trophy, description: "Klasemen Hall of Fame murid" },
       { type: "item", id: "peringkatku", label: "Peringkatku", icon: Award, description: "Kartu prestise & posisi Anda" },
       { type: "item", id: "siswa_sertifikat", label: "Sertifikat Saya", icon: Award, description: "Unduh sertifikat resmi Anda" },

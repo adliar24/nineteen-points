@@ -280,7 +280,7 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
         Kelas: item.siswa.kelas,
         Tanggal: selectedDate,
         "Status Pengisian": item.isFilled ? (r?.is_final ? "Terkirim Final" : "Draft (Auto-saved)") : "Belum Mengisi",
-        "Progres 7 KAIH (%)": item.progress,
+        "Progres Jurnal 7 KAIH (%)": item.progress,
         "1. Bangun Pagi": r?.bangun_pagi_waktu || "-",
         "Target Bangun": r?.bangun_pagi_target_sesuai ? "Tercapai" : "-",
         "2. Salat Wajib": salatList,
@@ -296,8 +296,8 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
 
     const worksheet = XLSX.utils.json_to_sheet(rows);
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap 7 KAIH");
-    XLSX.writeFile(workbook, `Rekap_7KAIH_${selectedKelas}_${selectedDate}.xlsx`);
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap Jurnal 7 KAIH");
+    XLSX.writeFile(workbook, `Rekap_Jurnal_7KAIH_${selectedKelas}_${selectedDate}.xlsx`);
   };
 
   // Admin: Simpan Penugasan Guru / Kepsek
@@ -397,7 +397,7 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
               7 Kebiasaan Anak Indonesia Hebat
             </div>
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
-              7 KAIH
+              Jurnal 7 KAIH
             </h1>
             <p className="text-brand-200 text-xs sm:text-sm mt-1 max-w-2xl">
               {isAdmin
@@ -560,7 +560,7 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
             {isLoading ? (
               <div className="py-20 text-center text-slate-400 space-y-3">
                 <div className="w-8 h-8 border-3 border-brand-500 border-t-transparent rounded-full animate-spin mx-auto" />
-                <p className="text-xs font-bold">Memuat data 7 KAIH...</p>
+                <p className="text-xs font-bold">Memuat data Jurnal 7 KAIH...</p>
               </div>
             ) : filteredRows.length === 0 ? (
               <div className="py-20 text-center text-slate-400 space-y-2">
@@ -727,9 +727,9 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
         <div className="space-y-6">
           <div className="bg-white rounded-3xl p-6 border border-brand-100 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h2 className="text-lg font-black text-brand-950">Izin Akses & Penugasan 7 KAIH</h2>
+              <h2 className="text-lg font-black text-brand-950">Izin Akses & Penugasan Jurnal 7 KAIH</h2>
               <p className="text-xs text-slate-500 font-medium">
-                Pilih guru atau kepala sekolah yang diberi izin untuk memantau data 7 KAIH.
+                Pilih guru atau kepala sekolah yang diberi izin untuk memantau data Jurnal 7 KAIH.
               </p>
             </div>
             <button
@@ -751,7 +751,7 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                 <ShieldCheck className="w-12 h-12 mx-auto text-slate-300" />
                 <p className="text-sm font-bold text-slate-700">Belum ada guru / kepala sekolah yang diberi akses</p>
                 <p className="text-xs text-slate-400">
-                  Fitur 7 KAIH saat ini hanya aktif di Super Admin dan Murid. Berikan izin akses melalui tombol di atas.
+                  Fitur Jurnal 7 KAIH saat ini hanya aktif di Super Admin dan Murid. Berikan izin akses melalui tombol di atas.
                 </p>
               </div>
             ) : (
@@ -1018,7 +1018,7 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-base font-black text-brand-950">Beri Izin Akses 7 KAIH</h3>
+                  <h3 className="text-base font-black text-brand-950">Beri Izin Akses Jurnal 7 KAIH</h3>
                   <p className="text-xs text-slate-500 font-medium">
                     Hanya guru dan kepala sekolah yang dapat dipilih
                   </p>

@@ -625,7 +625,7 @@ export default function SiswaDashboardView({ userSession, activeTab, onSelectTab
                     </span>
                   </div>
                   <h3 className="text-base sm:text-lg font-black text-white mt-1">
-                    Checklist Karakter 7 KAIH Hari Ini
+                    Jurnal 7 KAIH Hari Ini
                   </h3>
                   <p className="text-xs text-brand-100 font-medium">
                     Bangun pagi, beribadah, olahraga, makan sehat, gemar belajar, bermasyarakat, dan tidur cepat.
@@ -633,7 +633,7 @@ export default function SiswaDashboardView({ userSession, activeTab, onSelectTab
                 </div>
               </div>
               <button className="px-5 py-2.5 bg-white text-brand-950 rounded-2xl text-xs font-black group-hover:bg-brand-50 transition-all self-start sm:self-auto shadow-md flex items-center gap-1.5 cursor-pointer flex-shrink-0">
-                <span>Isi Checklist</span>
+                <span>Isi Jurnal 7 KAIH</span>
                 <span>&rarr;</span>
               </button>
             </div>

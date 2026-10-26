@@ -264,7 +264,7 @@ export default function Checklist7KaihView({ userSession, siswaId: propSiswaId }
           waktu_kirim_final: new Date().toISOString()
         }));
         setShowConfirmSubmitFinal(false);
-        setToastMsg("Data 7 KAIH hari ini berhasil dikirim & dikunci!");
+        setToastMsg("Data Jurnal 7 KAIH hari ini berhasil dikirim & dikunci!");
         loadHistory();
         setTimeout(() => setToastMsg(""), 4000);
       } else {
@@ -303,7 +303,7 @@ export default function Checklist7KaihView({ userSession, siswaId: propSiswaId }
               7 Kebiasaan Anak Indonesia Hebat
             </div>
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
-              7 KAIH
+              Jurnal 7 KAIH
             </h1>
             <p className="text-brand-100 text-xs sm:text-sm mt-1 max-w-xl">
               Cukup klik setiap kali Anda melakukan kebiasaan, sistem akan menyimpan otomatis secara real-time.
@@ -406,7 +406,7 @@ export default function Checklist7KaihView({ userSession, siswaId: propSiswaId }
             </div>
             <div>
               <h4 className="text-sm font-black text-amber-950">
-                Checklist 7 KAIH Hari Ini Telah Dikirim & Dikunci
+                Checklist Jurnal 7 KAIH Hari Ini Telah Dikirim & Dikunci
               </h4>
               <p className="text-xs text-amber-800 font-medium">
                 Data sudah final dan tidak dapat diubah lagi oleh murid. Hanya Super Admin yang memiliki wewenang membuka kunci jika ada perbaikan.
@@ -1077,7 +1077,7 @@ export default function Checklist7KaihView({ userSession, siswaId: propSiswaId }
         isOpen={showConfirmSubmitFinal}
         onClose={() => setShowConfirmSubmitFinal(false)}
         onConfirm={handleConfirmSubmitFinal}
-        title="Kirim Data Final 7 KAIH?"
+        title="Kirim Data Final Jurnal 7 KAIH?"
         message="Setelah dikirim, data checklist hari ini akan dikunci dan TIDAK DAPAT DIUBAH LAGI oleh murid (hanya Admin yang dapat membukanya). Apakah Anda yakin ingin mengirim data final hari ini?"
         confirmText={isSubmittingFinal ? "Mengirim..." : "Ya, Kirim & Kunci Data"}
         cancelText="Periksa Lagi"
@@ -1107,7 +1107,7 @@ export default function Checklist7KaihView({ userSession, siswaId: propSiswaId }
                     <History className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-black text-brand-950">Riwayat Pengisian 7 KAIH</h3>
+                    <h3 className="text-lg font-black text-brand-950">Riwayat Pengisian Jurnal 7 KAIH</h3>
                     <p className="text-xs text-slate-500 font-medium">
                       Pilih tanggal untuk melihat detail capaian Anda
                     </p>

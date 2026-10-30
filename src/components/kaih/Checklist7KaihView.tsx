@@ -24,7 +24,13 @@ import {
   Activity,
   Zap,
   CheckCheck,
-  Eye
+  Eye,
+  Download,
+  Layers,
+  FileSpreadsheet,
+  Printer,
+  Award,
+  FileText
 } from "lucide-react";
 import { UserSession, TujuhKaih, BelajarItem, HabitStatus, Siswa } from "../../types";
 import {
@@ -40,7 +46,12 @@ import {
   evaluate7KaihHabits,
   calculate7KaihProgress,
   TARGET_BANGUN_PAGI,
-  TARGET_TIDUR_CEPAT
+  TARGET_TIDUR_CEPAT,
+  getWeekRange,
+  getMonthRange,
+  MONTH_NAMES_ID,
+  calculatePeriodSummary,
+  exportRekapIndividuToExcel
 } from "../../services/kaihService";
 import { formatLocalDate, parseDateSafe } from "../../parseDateSafe";
 import ConfirmationModal from "../ConfirmationModal";
@@ -53,6 +64,83 @@ interface Checklist7KaihViewProps {
 
 export default function Checklist7KaihView({ userSession, siswaId: propSiswaId }: Checklist7KaihViewProps) {
   const currentSiswaId = propSiswaId || userSession.id;
+
+  const [mainTab, setMainTab] = useState<"checklist" | "rekap">("checklist");
+
+  // Rekap Hasil Saya States
+  const [rekapPeriodMode, setRekapPeriodMode] = useState<"mingguan" | "bulanan">("mingguan");
+  const [rekapWeekDate, setRekapWeekDate] = useState<string>(() => formatLocalDate(new Date()));
+  const now = new Date();
+  const [rekapYear, setRekapYear] = useState<number>(() => now.getFullYear());
+  const [rekapMonth, setRekapMonth] = useState<number>(() => now.getMonth() + 1); // 1-12
+  const [periodRecords, setPeriodRecords] = useState<TujuhKaih[]>([]);
+  const [isLoadingPeriodRekap, setIsLoadingPeriodRekap] = useState(false);
+
+  // Range Rekap Periode Murid
+  const rekapWeekRange = useMemo(() => getWeekRange(rekapWeekDate), [rekapWeekDate]);
+  const rekapMonthRange = useMemo(() => getMonthRange(rekapYear, rekapMonth), [rekapYear, rekapMonth]);
+
+  const activeRekapRange = useMemo(() => {
+    return rekapPeriodMode === "mingguan" ? rekapWeekRange : rekapMonthRange;
+  }, [rekapPeriodMode, rekapWeekRange, rekapMonthRange]);
+
+  const totalDaysInRekapPeriod = useMemo(() => {
+    if (rekapPeriodMode === "mingguan") return 7;
+    return new Date(rekapYear, rekapMonth, 0).getDate();
+  }, [rekapPeriodMode, rekapYear, rekapMonth]);
+
+  const handleShiftRekapWeek = (weeks: number) => {
+    const d = parseDateSafe(rekapWeekDate);
+    d.setDate(d.getDate() + (weeks * 7));
+    setRekapWeekDate(formatLocalDate(d));
+  };
+
+  const handleShiftRekapMonth = (months: number) => {
+    let nextMonth = rekapMonth + months;
+    let nextYear = rekapYear;
+    if (nextMonth > 12) {
+      nextMonth = 1;
+      nextYear += 1;
+    } else if (nextMonth < 1) {
+      nextMonth = 12;
+      nextYear -= 1;
+    }
+    setRekapMonth(nextMonth);
+    setRekapYear(nextYear);
+  };
+
+  // Muat data rekap untuk periode aktif
+  const loadPeriodRekap = async () => {
+    setIsLoadingPeriodRekap(true);
+    try {
+      const list = await getTujuhKaihHistoryBySiswa(
+        currentSiswaId,
+        60,
+        activeRekapRange.startDate,
+        activeRekapRange.endDate
+      );
+      setPeriodRecords(list || []);
+    } catch (err) {
+      console.error("Gagal memuat rekap periode murid:", err);
+      setPeriodRecords([]);
+    } finally {
+      setIsLoadingPeriodRekap(false);
+    }
+  };
+
+  useEffect(() => {
+    if (mainTab === "rekap") {
+      loadPeriodRekap();
+    }
+  }, [mainTab, activeRekapRange.startDate, activeRekapRange.endDate, currentSiswaId]);
+
+  const periodSummary = useMemo(() => calculatePeriodSummary(periodRecords), [periodRecords]);
+
+  // Export Rekap Murid ke Excel
+  const handleExportMyRekap = () => {
+    if (!currentStudent) return;
+    exportRekapIndividuToExcel(currentStudent, periodRecords, activeRekapRange.label);
+  };
 
   const [selectedDate, setSelectedDate] = useState<string>(() => formatLocalDate(new Date()));
   const [data, setData] = useState<TujuhKaih>(() => createDefault7Kaih(currentSiswaId, formatLocalDate(new Date())));
@@ -330,6 +418,34 @@ export default function Checklist7KaihView({ userSession, siswaId: propSiswaId }
         )}
       </AnimatePresence>
 
+      {/* Tab Switcher: Checklist Harian vs Rekap Hasil Saya */}
+      <div className="flex items-center gap-2 p-1.5 bg-slate-100 rounded-2xl w-fit print:hidden">
+        <button
+          onClick={() => setMainTab("checklist")}
+          className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
+            mainTab === "checklist"
+              ? "bg-white text-brand-950 shadow-sm"
+              : "text-slate-600 hover:text-slate-900"
+          }`}
+        >
+          <Sparkles className="w-4 h-4 text-amber-500" />
+          Checklist Harian
+        </button>
+        <button
+          onClick={() => setMainTab("rekap")}
+          className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
+            mainTab === "rekap"
+              ? "bg-white text-brand-950 shadow-sm"
+              : "text-slate-600 hover:text-slate-900"
+          }`}
+        >
+          <Activity className="w-4 h-4 text-emerald-600" />
+          Rekap Hasil Saya
+        </button>
+      </div>
+
+      {mainTab === "checklist" && (
+        <div className="space-y-6">
       {/* Header Banner & Date Selector */}
       <div className="bg-gradient-to-br from-brand-700 via-brand-600 to-indigo-700 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
@@ -1137,7 +1253,436 @@ export default function Checklist7KaihView({ userSession, siswaId: propSiswaId }
         type="warning"
       />
 
-      {/* History Modal */}
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* TAMPILAN REKAP HASIL SAYA (MINGGUAN / BULANAN)           */}
+      {/* ======================================================== */}
+      {mainTab === "rekap" && (
+        <div className="space-y-6">
+          {/* Header Banner Rekap Murid */}
+          <div className="bg-gradient-to-br from-indigo-900 via-brand-900 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+              <div>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-xs font-black uppercase tracking-wider mb-3">
+                  <Activity className="w-3.5 h-3.5 text-emerald-400" />
+                  Rekapitulasi Capaian Karakter
+                </div>
+                <h2 className="text-2xl sm:text-3xl font-black tracking-tight">
+                  Rekap Hasil Jurnal 7 KAIH
+                </h2>
+                <p className="text-brand-200 text-xs sm:text-sm mt-1 max-w-xl">
+                  {currentStudent?.nama} ({currentStudent?.kelas || "Siswa"}) • Pantau tingkat konsistensi dan capaian 7 Kebiasaan Anak Indonesia Hebat Anda.
+                </p>
+              </div>
+
+              {/* Selector Periode Mingguan vs Bulanan */}
+              <div className="bg-white/15 backdrop-blur-md p-1.5 rounded-2xl flex items-center gap-1 border border-white/20 self-start md:self-auto print:hidden">
+                <button
+                  onClick={() => setRekapPeriodMode("mingguan")}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
+                    rekapPeriodMode === "mingguan"
+                      ? "bg-white text-brand-950 shadow-sm"
+                      : "text-white hover:bg-white/15"
+                  }`}
+                >
+                  <Layers className="w-3.5 h-3.5 text-indigo-500" />
+                  Mingguan
+                </button>
+                <button
+                  onClick={() => setRekapPeriodMode("bulanan")}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
+                    rekapPeriodMode === "bulanan"
+                      ? "bg-white text-brand-950 shadow-sm"
+                      : "text-white hover:bg-white/15"
+                  }`}
+                >
+                  <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
+                  Bulanan
+                </button>
+              </div>
+            </div>
+
+            {/* Sub-bar: Periode Navigator & Tombol Export */}
+            <div className="mt-6 pt-5 border-t border-white/15 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              {/* Date Navigator */}
+              <div className="flex items-center gap-2">
+                {rekapPeriodMode === "mingguan" ? (
+                  <div className="flex items-center gap-1.5 bg-black/25 px-2 py-1 rounded-xl border border-white/15">
+                    <button
+                      onClick={() => handleShiftRekapWeek(-1)}
+                      title="Minggu Sebelumnya"
+                      className="p-1 hover:bg-white/20 text-white rounded-lg transition-all cursor-pointer"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <div className="flex items-center gap-2 px-2">
+                      <Calendar className="w-3.5 h-3.5 text-amber-300" />
+                      <span className="text-xs font-black text-white whitespace-nowrap">
+                        Minggu: {rekapWeekRange.label}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => handleShiftRekapWeek(1)}
+                      title="Minggu Berikutnya"
+                      className="p-1 hover:bg-white/20 text-white rounded-lg transition-all cursor-pointer"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1.5 bg-black/25 px-2 py-1 rounded-xl border border-white/15">
+                    <button
+                      onClick={() => handleShiftRekapMonth(-1)}
+                      title="Bulan Sebelumnya"
+                      className="p-1 hover:bg-white/20 text-white rounded-lg transition-all cursor-pointer"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <div className="flex items-center gap-2 px-2">
+                      <Calendar className="w-3.5 h-3.5 text-amber-300" />
+                      <span className="text-xs font-black text-white whitespace-nowrap">
+                        Bulan: {MONTH_NAMES_ID[rekapMonth - 1]} {rekapYear}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => handleShiftRekapMonth(1)}
+                      title="Bulan Berikutnya"
+                      className="p-1 hover:bg-white/20 text-white rounded-lg transition-all cursor-pointer"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Action Buttons: Export Excel & Cetak PDF */}
+              <div className="flex items-center gap-2 print:hidden">
+                <button
+                  onClick={handleExportMyRekap}
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-2 shadow-sm"
+                  title="Unduh laporan rekap saya ke Excel (.xlsx)"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Download Rekap (Excel)</span>
+                </button>
+                <button
+                  onClick={() => window.print()}
+                  className="p-2 bg-white/20 hover:bg-white/30 text-white rounded-xl transition-all cursor-pointer border border-white/20"
+                  title="Cetak Ringkasan Jurnal"
+                >
+                  <Printer className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* KPI Summary Cards Murid */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-white p-5 rounded-3xl border border-brand-100 shadow-sm flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-brand-50 text-brand-700 flex items-center justify-center border border-brand-100">
+                <Calendar className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Hari Mengisi</p>
+                <h3 className="text-2xl font-black text-brand-950">
+                  {periodSummary.totalHariTerisi}{" "}
+                  <span className="text-xs font-bold text-slate-400">/ {totalDaysInRekapPeriod} Hari</span>
+                </h3>
+              </div>
+            </div>
+
+            <div className="bg-white p-5 rounded-3xl border border-brand-100 shadow-sm flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center border border-emerald-100">
+                <Award className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Rata-rata Capaian</p>
+                <h3 className="text-2xl font-black text-emerald-700">{periodSummary.avgProgress}%</h3>
+              </div>
+            </div>
+
+            <div className="bg-white p-5 rounded-3xl border border-brand-100 shadow-sm flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-700 flex items-center justify-center border border-indigo-100">
+                <BookOpen className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Total Belajar</p>
+                <h3 className="text-2xl font-black text-indigo-700">
+                  {periodSummary.totalDurasiBelajar}{" "}
+                  <span className="text-xs font-bold text-slate-400">Menit</span>
+                </h3>
+              </div>
+            </div>
+
+            <div className="bg-white p-5 rounded-3xl border border-brand-100 shadow-sm flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center border border-amber-100">
+                <Dumbbell className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Olahraga Fisik</p>
+                <h3 className="text-2xl font-black text-amber-700">
+                  {periodSummary.olahragaSudahCount}{" "}
+                  <span className="text-xs font-bold text-slate-400">Sesi</span>
+                </h3>
+              </div>
+            </div>
+          </div>
+
+          {/* Grid Capaian 7 Kebiasaan Murid */}
+          <div className="bg-white rounded-3xl p-6 border border-brand-100 shadow-sm space-y-4">
+            <h3 className="text-base font-black text-brand-950 flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-amber-500" />
+              Tingkat Konsistensi 7 Kebiasaan pada Periode Ini
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3.5">
+              {/* 1. Bangun Pagi */}
+              <div className="p-4 rounded-2xl bg-amber-50/60 border border-amber-200/80 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Sun className="w-4 h-4 text-amber-600" />
+                    <span className="text-xs font-black text-brand-950">1. Bangun Pagi</span>
+                  </div>
+                  <span className="text-xs font-black text-amber-800 bg-white px-2 py-0.5 rounded-md border border-amber-200">
+                    {periodSummary.bangunPagiTargetMetCount}x
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-600 font-medium">
+                  Bangun tepat waktu sebelum Subuh (≤ {TARGET_BANGUN_PAGI} WIB)
+                </p>
+              </div>
+
+              {/* 2. Beribadah */}
+              <div className="p-4 rounded-2xl bg-emerald-50/60 border border-emerald-200/80 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-emerald-600" />
+                    <span className="text-xs font-black text-brand-950">2. Beribadah</span>
+                  </div>
+                  <span className="text-xs font-black text-emerald-800 bg-white px-2 py-0.5 rounded-md border border-emerald-200">
+                    {periodSummary.salat5WaktuLengkapCount}x
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-600 font-medium">
+                  Salat 5 waktu lengkap & {periodSummary.mengajiSudahCount}x tadarus Al-Qur'an
+                </p>
+              </div>
+
+              {/* 3. Berolahraga */}
+              <div className="p-4 rounded-2xl bg-blue-50/60 border border-blue-200/80 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Dumbbell className="w-4 h-4 text-blue-600" />
+                    <span className="text-xs font-black text-brand-950">3. Berolahraga</span>
+                  </div>
+                  <span className="text-xs font-black text-blue-800 bg-white px-2 py-0.5 rounded-md border border-blue-200">
+                    {periodSummary.olahragaSudahCount}x
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-600 font-medium">
+                  Aktivitas fisik dengan total durasi {periodSummary.totalDurasiOlahraga} menit
+                </p>
+              </div>
+
+              {/* 4. Makan Sehat */}
+              <div className="p-4 rounded-2xl bg-teal-50/60 border border-teal-200/80 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Utensils className="w-4 h-4 text-teal-600" />
+                    <span className="text-xs font-black text-brand-950">4. Makan Sehat</span>
+                  </div>
+                  <span className="text-xs font-black text-teal-800 bg-white px-2 py-0.5 rounded-md border border-teal-200">
+                    {periodSummary.sarapanBergiziCount}x
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-600 font-medium">
+                  Hari dengan sarapan bergizi seimbang
+                </p>
+              </div>
+
+              {/* 5. Gemar Belajar */}
+              <div className="p-4 rounded-2xl bg-violet-50/60 border border-violet-200/80 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <BookOpen className="w-4 h-4 text-violet-600" />
+                    <span className="text-xs font-black text-brand-950">5. Gemar Belajar</span>
+                  </div>
+                  <span className="text-xs font-black text-violet-800 bg-white px-2 py-0.5 rounded-md border border-violet-200">
+                    {periodSummary.totalDurasiBelajar} mnt
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-600 font-medium">
+                  {periodSummary.totalAktivitasBelajar} materi / aktivitas belajar mandiri
+                </p>
+              </div>
+
+              {/* 6. Bermasyarakat */}
+              <div className="p-4 rounded-2xl bg-pink-50/60 border border-pink-200/80 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <HeartHandshake className="w-4 h-4 text-pink-600" />
+                    <span className="text-xs font-black text-brand-950">6. Bermasyarakat</span>
+                  </div>
+                  <span className="text-xs font-black text-pink-800 bg-white px-2 py-0.5 rounded-md border border-pink-200">
+                    {periodSummary.bermasyarakatSudahCount}x
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-600 font-medium">
+                  Partisipasi gotong royong & kegiatan sosial
+                </p>
+              </div>
+
+              {/* 7. Tidur Cepat */}
+              <div className="p-4 rounded-2xl bg-indigo-50/60 border border-indigo-200/80 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Moon className="w-4 h-4 text-indigo-600" />
+                    <span className="text-xs font-black text-brand-950">7. Tidur Cepat</span>
+                  </div>
+                  <span className="text-xs font-black text-indigo-800 bg-white px-2 py-0.5 rounded-md border border-indigo-200">
+                    {periodSummary.tidurCepatTargetMetCount}x
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-600 font-medium">
+                  Istirahat tepat waktu malam hari (≤ {TARGET_TIDUR_CEPAT} WIB)
+                </p>
+              </div>
+
+              {/* Total Jurnal Final */}
+              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Lock className="w-4 h-4 text-slate-700" />
+                    <span className="text-xs font-black text-brand-950">Jurnal Final</span>
+                  </div>
+                  <span className="text-xs font-black text-slate-800 bg-white px-2 py-0.5 rounded-md border border-slate-200">
+                    {periodSummary.totalFinalCount}x
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-600 font-medium">
+                  Hari dengan pengiriman final terkunci
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Tabel Kronologi Pengisian Periode */}
+          <div className="bg-white rounded-3xl border border-brand-100 shadow-sm overflow-hidden">
+            <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+              <div>
+                <h4 className="text-sm font-black text-brand-950">
+                  Rincian Catatan Jurnal pada {activeRekapRange.label}
+                </h4>
+                <p className="text-xs text-slate-400 font-medium">
+                  Klik tombol pada baris tanggal untuk melihat atau mengedit checklist
+                </p>
+              </div>
+              <span className="text-xs font-black text-brand-700 bg-brand-50 px-3 py-1 rounded-xl border border-brand-200">
+                {periodRecords.length} Hari Terisi
+              </span>
+            </div>
+
+            {isLoadingPeriodRekap ? (
+              <div className="py-16 text-center text-slate-400 space-y-3">
+                <div className="w-8 h-8 border-3 border-brand-500 border-t-transparent rounded-full animate-spin mx-auto" />
+                <p className="text-xs font-bold">Memuat rekap pengerjaan Anda...</p>
+              </div>
+            ) : periodRecords.length === 0 ? (
+              <div className="py-16 text-center text-slate-400 space-y-2">
+                <Calendar className="w-10 h-10 mx-auto text-slate-300" />
+                <p className="text-xs font-bold text-slate-700">Belum ada catatan jurnal pada periode ini</p>
+                <p className="text-[11px] text-slate-400">
+                  Kembali ke tab Checklist Harian untuk mulai mencatat 7 kebiasaan Anda.
+                </p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-50/75 border-b border-slate-100 text-[11px] font-black uppercase tracking-wider text-slate-500">
+                      <th className="py-3.5 px-5">Tanggal</th>
+                      <th className="py-3.5 px-4 text-center">Status</th>
+                      <th className="py-3.5 px-4">Capaian 7 Kebiasaan</th>
+                      <th className="py-3.5 px-4 text-center">Progres</th>
+                      <th className="py-3.5 px-5 text-right">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 text-xs">
+                    {periodRecords.map((r) => {
+                      const evals = evaluate7KaihHabits(r);
+                      const doneCount = evals.filter((e) => e.status === "selesai").length;
+                      const progress = r.progres_persen ?? calculate7KaihProgress(r);
+
+                      return (
+                        <tr key={r.tanggal} className="hover:bg-slate-50/70 transition-colors">
+                          <td className="py-3.5 px-5 font-bold text-brand-950">
+                            {parseDateSafe(r.tanggal).toLocaleDateString("id-ID", {
+                              weekday: "long",
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric"
+                            })}
+                          </td>
+                          <td className="py-3.5 px-4 text-center">
+                            {r.is_final ? (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 font-black text-[10px] border border-emerald-300">
+                                <Lock className="w-2.5 h-2.5" /> Terkunci
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-cyan-50 text-cyan-800 font-black text-[10px] border border-cyan-200">
+                                Draft
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3.5 px-4">
+                            <div className="flex items-center gap-1">
+                              {evals.map((ev, i) => (
+                                <div
+                                  key={ev.id}
+                                  title={`${i + 1}. ${ev.title}: ${ev.summary}`}
+                                  className={`w-5 h-5 rounded-lg flex items-center justify-center text-[10px] font-black cursor-help ${
+                                    ev.status === "selesai"
+                                      ? "bg-emerald-500 text-white"
+                                      : ev.status === "belum_dilakukan"
+                                      ? "bg-amber-400 text-amber-950"
+                                      : "bg-slate-200 text-slate-400"
+                                  }`}
+                                >
+                                  {i + 1}
+                                </div>
+                              ))}
+                              <span className="ml-2 text-[11px] font-bold text-slate-500">
+                                ({doneCount}/7)
+                              </span>
+                            </div>
+                          </td>
+                          <td className="py-3.5 px-4 text-center font-black text-brand-950">
+                            {progress}%
+                          </td>
+                          <td className="py-3.5 px-5 text-right">
+                            <button
+                              onClick={() => {
+                                setSelectedDate(r.tanggal);
+                                setMainTab("checklist");
+                              }}
+                              className="px-3 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-200 rounded-xl text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-1"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                              <span>Lihat Checklist</span>
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       <AnimatePresence>
         {showHistoryModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">

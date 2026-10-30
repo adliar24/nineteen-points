@@ -1756,20 +1756,32 @@ export const saveTujuhKaih = async (
 
 export const getTujuhKaihHistoryBySiswa = async (
   siswaId: string,
-  limit: number = 30
+  limit: number = 60,
+  startDate?: string,
+  endDate?: string
 ): Promise<TujuhKaih[]> => {
   const listKey = `19points_7kaih_history_${siswaId}`;
   try {
     if (supabase) {
-      const { data, error } = await supabase
+      let query = supabase
         .from("tujuh_kaih")
         .select("*")
-        .eq("siswa_id", siswaId)
+        .eq("siswa_id", siswaId);
+
+      if (startDate && endDate) {
+        query = query.gte("tanggal", startDate).lte("tanggal", endDate);
+      } else if (startDate) {
+        query = query.gte("tanggal", startDate);
+      }
+
+      const { data, error } = await query
         .order("tanggal", { ascending: false })
         .limit(limit);
 
       if (!error && data && data.length > 0) {
-        setLocalStorage(listKey, data);
+        if (!startDate && !endDate) {
+          setLocalStorage(listKey, data);
+        }
         return data as TujuhKaih[];
       }
     }
@@ -1777,12 +1789,23 @@ export const getTujuhKaihHistoryBySiswa = async (
     console.warn("Supabase getTujuhKaihHistory error:", err);
   }
 
-  return getLocalStorage<TujuhKaih[]>(listKey, []);
+  const localData = getLocalStorage<TujuhKaih[]>(listKey, []);
+  if (startDate || endDate) {
+    return localData.filter(item => {
+      if (startDate && item.tanggal < startDate) return false;
+      if (endDate && item.tanggal > endDate) return false;
+      return true;
+    });
+  }
+  return localData;
 };
 
 export const getTujuhKaihRekap = async (filter: {
   kelas?: string;
   tanggal?: string;
+  startDate?: string;
+  endDate?: string;
+  siswaId?: string;
   guruId?: string;
   role: string;
 }): Promise<TujuhKaih[]> => {
@@ -1812,11 +1835,19 @@ export const getTujuhKaihRekap = async (filter: {
           )
         `);
 
-      if (filter.tanggal) {
+      if (filter.startDate && filter.endDate) {
+        query = query.gte("tanggal", filter.startDate).lte("tanggal", filter.endDate);
+      } else if (filter.startDate) {
+        query = query.gte("tanggal", filter.startDate);
+      } else if (filter.tanggal) {
         query = query.eq("tanggal", filter.tanggal);
       }
 
-      const { data, error } = await query;
+      if (filter.siswaId) {
+        query = query.eq("siswa_id", filter.siswaId);
+      }
+
+      const { data, error } = await query.order("tanggal", { ascending: false });
       if (!error && data) {
         let results = (data || []).map((row: any) => ({
           ...row,

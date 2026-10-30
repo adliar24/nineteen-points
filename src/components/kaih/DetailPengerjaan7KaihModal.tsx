@@ -25,7 +25,8 @@ import {
   Check,
   Flame,
   FileCheck2,
-  ExternalLink
+  ExternalLink,
+  Download
 } from "lucide-react";
 import { Siswa, TujuhKaih } from "../../types";
 import {
@@ -37,7 +38,10 @@ import {
   evaluate7KaihHabits,
   calculate7KaihProgress,
   TARGET_BANGUN_PAGI,
-  TARGET_TIDUR_CEPAT
+  TARGET_TIDUR_CEPAT,
+  getWeekRange,
+  getMonthRange,
+  exportRekapIndividuToExcel
 } from "../../services/kaihService";
 import { formatLocalDate, parseDateSafe } from "../../parseDateSafe";
 import { toSentenceCase } from "../../formatName";
@@ -103,6 +107,7 @@ export default function DetailPengerjaan7KaihModal({
   const [record, setRecord] = useState<TujuhKaih | null>(initialRecord || null);
   const [isLoadingRecord, setIsLoadingRecord] = useState(false);
   const [historyList, setHistoryList] = useState<TujuhKaih[]>([]);
+  const [historyFilter, setHistoryFilter] = useState<"semua" | "minggu" | "bulan">("semua");
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [isUnlocking, setIsUnlocking] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
@@ -218,18 +223,31 @@ export default function DetailPengerjaan7KaihModal({
     return evaluations.filter((e) => e.status === "selesai").length;
   }, [evaluations]);
 
-  // Statistik 30 hari murid
+  // Filter Riwayat berdasarkan Periode
+  const filteredHistoryRecords = useMemo(() => {
+    if (historyFilter === "semua") return historyList;
+    const nowD = new Date();
+    if (historyFilter === "minggu") {
+      const { startDate, endDate } = getWeekRange(formatLocalDate(nowD));
+      return historyList.filter((r) => r.tanggal >= startDate && r.tanggal <= endDate);
+    } else {
+      const { startDate, endDate } = getMonthRange(nowD.getFullYear(), nowD.getMonth() + 1);
+      return historyList.filter((r) => r.tanggal >= startDate && r.tanggal <= endDate);
+    }
+  }, [historyList, historyFilter]);
+
+  // Statistik akumulasi periode murid
   const statsHistory = useMemo(() => {
-    const totalHari = historyList.length;
+    const totalHari = filteredHistoryRecords.length;
     if (totalHari === 0) return { totalHari: 0, avgProgress: 0, totalFinal: 0 };
-    const sumProgress = historyList.reduce(
+    const sumProgress = filteredHistoryRecords.reduce(
       (acc, curr) => acc + (curr.progres_persen ?? calculate7KaihProgress(curr)),
       0
     );
     const avgProgress = Math.round(sumProgress / totalHari);
-    const totalFinal = historyList.filter((h) => h.is_final).length;
+    const totalFinal = filteredHistoryRecords.filter((h) => h.is_final).length;
     return { totalHari, avgProgress, totalFinal };
-  }, [historyList]);
+  }, [filteredHistoryRecords]);
 
   if (!isOpen || !student) return null;
 
@@ -991,10 +1009,66 @@ export default function DetailPengerjaan7KaihModal({
           )}
 
           {/* ======================================================== */}
-          {/* TAB 2: RIWAYAT PENGERJAAN MURID (30 HARI TERAKHIR)       */}
+          {/* TAB 2: RIWAYAT & REKAP PENGERJAAN MURID                  */}
           {/* ======================================================== */}
           {activeTab === "riwayat" && (
             <div className="space-y-5">
+              {/* Filter Sub-Periode & Tombol Export Excel */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-200">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[11px] font-black text-slate-500 uppercase mr-1">Filter:</span>
+                  <button
+                    onClick={() => setHistoryFilter("semua")}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      historyFilter === "semua"
+                        ? "bg-brand-600 text-white shadow-2xs"
+                        : "bg-white text-slate-600 hover:bg-slate-200 border border-slate-200"
+                    }`}
+                  >
+                    Semua (30 Hari)
+                  </button>
+                  <button
+                    onClick={() => setHistoryFilter("minggu")}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      historyFilter === "minggu"
+                        ? "bg-brand-600 text-white shadow-2xs"
+                        : "bg-white text-slate-600 hover:bg-slate-200 border border-slate-200"
+                    }`}
+                  >
+                    Minggu Ini
+                  </button>
+                  <button
+                    onClick={() => setHistoryFilter("bulan")}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      historyFilter === "bulan"
+                        ? "bg-brand-600 text-white shadow-2xs"
+                        : "bg-white text-slate-600 hover:bg-slate-200 border border-slate-200"
+                    }`}
+                  >
+                    Bulan Ini
+                  </button>
+                </div>
+
+                <button
+                  onClick={() =>
+                    exportRekapIndividuToExcel(
+                      student,
+                      filteredHistoryRecords,
+                      historyFilter === "minggu"
+                        ? "Minggu Ini"
+                        : historyFilter === "bulan"
+                        ? "Bulan Ini"
+                        : "30 Hari Terakhir"
+                    )
+                  }
+                  className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs self-start sm:self-auto shrink-0"
+                  title="Unduh laporan rekap murid ini ke file Excel (.xlsx)"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Export Rekap Excel</span>
+                </button>
+              </div>
+
               {/* Summary KPI Murid */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200">
@@ -1023,17 +1097,17 @@ export default function DetailPengerjaan7KaihModal({
                   <div className="w-8 h-8 border-3 border-brand-500 border-t-transparent rounded-full animate-spin mx-auto" />
                   <p className="text-xs font-bold">Memuat riwayat pengerjaan murid...</p>
                 </div>
-              ) : historyList.length === 0 ? (
+              ) : filteredHistoryRecords.length === 0 ? (
                 <div className="p-12 text-center bg-slate-50 rounded-3xl border border-dashed border-slate-200 space-y-2">
                   <History className="w-10 h-10 text-slate-300 mx-auto" />
-                  <h5 className="text-sm font-black text-slate-700">Belum Ada Riwayat Jurnal Tersimpan</h5>
+                  <h5 className="text-sm font-black text-slate-700">Belum Ada Riwayat Jurnal pada Filter Ini</h5>
                   <p className="text-xs text-slate-500">
-                    Murid belum pernah mengisi atau menyimpan checklist 7 KAIH.
+                    Tidak ditemukan catatan pengerjaan pada filter periode yang dipilih.
                   </p>
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {historyList.map((item) => {
+                  {filteredHistoryRecords.map((item) => {
                     const itemEvals = evaluate7KaihHabits(item);
                     const itemCompleted = itemEvals.filter((e) => e.status === "selesai").length;
                     const itemProgress = item.progres_persen ?? calculate7KaihProgress(item);

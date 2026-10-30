@@ -164,6 +164,16 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
     }
   };
 
+  // Label ringkas kelas binaan untuk header agar tidak memenuhi layar mobile
+  const kelasBinaanLabel = useMemo(() => {
+    if (assignedClasses.includes("Semua")) return "Semua Kelas (Akses Penuh)";
+    if (assignedClasses.length === 0) return "Belum Ada Kelas Ditugaskan";
+    if (assignedClasses.length > 4) {
+      return `${assignedClasses.slice(0, 4).join(", ")} +${assignedClasses.length - 4} lainnya`;
+    }
+    return assignedClasses.join(", ");
+  }, [assignedClasses]);
+
   // Muat data master guru & kepsek serta penugasan untuk Super Admin
   const loadAdminData = async () => {
     if (isAdmin) {
@@ -627,31 +637,39 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
       </AnimatePresence>
 
       {/* Header Banner */}
-      <div className="bg-gradient-to-r from-brand-900 via-brand-800 to-indigo-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-xs font-black uppercase tracking-wider mb-3">
-              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-              7 Kebiasaan Anak Indonesia Hebat
+      <div className="bg-gradient-to-r from-brand-900 via-brand-800 to-indigo-900 rounded-2xl sm:rounded-3xl p-5 sm:p-8 text-white shadow-xl relative overflow-hidden">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 relative z-10">
+          <div className="min-w-0">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-[11px] sm:text-xs font-black uppercase tracking-wider mb-2.5 sm:mb-3">
+              <Sparkles className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+              <span>7 Kebiasaan Anak Indonesia Hebat</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
+            <h1 className="text-xl sm:text-3xl font-black tracking-tight">
               Jurnal 7 KAIH
             </h1>
-            <p className="text-brand-200 text-xs sm:text-sm mt-1 max-w-2xl">
-              {isAdmin
-                ? "Monitoring capaian karakter murid harian dan kelola izin akses guru atau kepala sekolah."
-                : `Pemantauan data karakter murid di kelas binaan Anda: ${
-                    assignedClasses.includes("Semua") ? "Semua Kelas" : assignedClasses.join(", ")
-                  }.`}
+            <p className="text-brand-200 text-xs sm:text-sm mt-1 max-w-2xl leading-relaxed">
+              {isAdmin ? (
+                "Monitoring capaian karakter murid harian dan kelola izin akses guru atau kepala sekolah."
+              ) : (
+                <span>
+                  Pemantauan karakter murid kelas binaan:{" "}
+                  <span
+                    className="font-bold text-white bg-white/20 px-2 py-0.5 rounded-lg inline-block my-0.5"
+                    title={assignedClasses.join(", ")}
+                  >
+                    {kelasBinaanLabel}
+                  </span>
+                </span>
+              )}
             </p>
           </div>
 
           {/* Tab Switcher (Khusus Super Admin) */}
           {isAdmin && (
-            <div className="bg-white/10 backdrop-blur-md p-1.5 rounded-2xl border border-white/20 flex items-center gap-1 self-start md:self-auto">
+            <div className="bg-white/10 backdrop-blur-md p-1.5 rounded-2xl border border-white/20 flex items-center gap-1 self-stretch sm:self-start md:self-auto shrink-0">
               <button
                 onClick={() => setActiveTab("rekap")}
-                className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                className={`flex-1 sm:flex-none text-center px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
                   activeTab === "rekap"
                     ? "bg-white text-brand-900 shadow-md"
                     : "text-white hover:bg-white/15"
@@ -661,14 +679,14 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
               </button>
               <button
                 onClick={() => setActiveTab("penugasan")}
-                className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
+                className={`flex-1 sm:flex-none justify-center px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
                   activeTab === "penugasan"
                     ? "bg-white text-brand-900 shadow-md"
                     : "text-white hover:bg-white/15"
                 }`}
               >
-                <ShieldCheck className="w-3.5 h-3.5" />
-                Izin & Penugasan Akses
+                <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
+                <span>Izin Akses</span>
               </button>
             </div>
           )}
@@ -683,72 +701,76 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
           {/* ======================================================== */}
           {/* SWITCHER MODE PERIODE & TINJAUAN                         */}
           {/* ======================================================== */}
-          <div className="bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-4 border border-slate-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-4 border border-slate-200/80 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-4">
             {/* Mode Periode */}
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider">Periode:</span>
-              <div className="bg-slate-100 p-1 rounded-xl flex items-center gap-0.5">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2.5">
+              <span className="text-[10px] sm:text-[11px] font-black text-slate-400 uppercase tracking-wider shrink-0">
+                Periode:
+              </span>
+              <div className="bg-slate-100/90 p-1 rounded-xl flex items-center gap-1 w-full sm:w-auto">
                 <button
                   onClick={() => setPeriodeMode("harian")}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  className={`flex-1 sm:flex-none justify-center px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
                     periodeMode === "harian"
                       ? "bg-white text-slate-900 shadow-2xs font-black"
                       : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
-                  <Calendar className="w-3.5 h-3.5 text-brand-600" />
-                  Harian
+                  <Calendar className="w-3.5 h-3.5 text-brand-600 shrink-0" />
+                  <span>Harian</span>
                 </button>
                 <button
                   onClick={() => setPeriodeMode("mingguan")}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  className={`flex-1 sm:flex-none justify-center px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
                     periodeMode === "mingguan"
                       ? "bg-white text-slate-900 shadow-2xs font-black"
                       : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
-                  <Layers className="w-3.5 h-3.5 text-indigo-600" />
-                  Mingguan
+                  <Layers className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                  <span>Mingguan</span>
                 </button>
                 <button
                   onClick={() => setPeriodeMode("bulanan")}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  className={`flex-1 sm:flex-none justify-center px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
                     periodeMode === "bulanan"
                       ? "bg-white text-slate-900 shadow-2xs font-black"
                       : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
-                  <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
-                  Bulanan
+                  <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span>Bulanan</span>
                 </button>
               </div>
             </div>
 
             {/* Mode Tinjauan */}
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider">Tinjauan:</span>
-              <div className="bg-slate-100 p-1 rounded-xl flex items-center gap-0.5">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2.5">
+              <span className="text-[10px] sm:text-[11px] font-black text-slate-400 uppercase tracking-wider shrink-0">
+                Tinjauan:
+              </span>
+              <div className="bg-slate-100/90 p-1 rounded-xl flex items-center gap-1 w-full sm:w-auto">
                 <button
                   onClick={() => setTinjauanMode("kelas")}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  className={`flex-1 sm:flex-none justify-center px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
                     tinjauanMode === "kelas"
                       ? "bg-brand-600 text-white shadow-2xs font-black"
                       : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
-                  <Users className="w-3.5 h-3.5" />
-                  Per Kelas
+                  <Users className="w-3.5 h-3.5 shrink-0" />
+                  <span>Per Kelas</span>
                 </button>
                 <button
                   onClick={() => setTinjauanMode("individu")}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  className={`flex-1 sm:flex-none justify-center px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
                     tinjauanMode === "individu"
                       ? "bg-brand-600 text-white shadow-2xs font-black"
                       : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
-                  <User className="w-3.5 h-3.5" />
-                  Per Murid
+                  <User className="w-3.5 h-3.5 shrink-0" />
+                  <span>Per Murid</span>
                 </button>
               </div>
             </div>
@@ -903,8 +925,11 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
             <div className="flex flex-wrap items-center gap-2">
               {/* 1. Selector Tanggal / Minggu / Bulan */}
               {periodeMode === "harian" && (
-                <div className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 text-xs">
-                  <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                <div className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 text-xs w-full sm:w-auto justify-between sm:justify-start">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    <span className="text-slate-500 font-medium sm:hidden">Tanggal:</span>
+                  </div>
                   <input
                     type="date"
                     value={selectedDate}
@@ -915,7 +940,7 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
               )}
 
               {periodeMode === "mingguan" && (
-                <div className="flex items-center gap-1 bg-slate-50 px-2 py-1 rounded-xl border border-slate-200 text-xs">
+                <div className="flex items-center justify-between sm:justify-start gap-1 bg-slate-50 px-2 py-1 rounded-xl border border-slate-200 text-xs w-full sm:w-auto">
                   <button
                     onClick={() => handleShiftWeek(-1)}
                     title="Minggu Sebelumnya"
@@ -923,7 +948,7 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                   >
                     <ChevronLeft className="w-3.5 h-3.5" />
                   </button>
-                  <span className="font-bold text-slate-900 px-1 whitespace-nowrap">
+                  <span className="font-bold text-slate-900 px-1 whitespace-nowrap text-center text-[11px] sm:text-xs">
                     {currentWeekRange.label}
                   </span>
                   <button
@@ -937,7 +962,7 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
               )}
 
               {periodeMode === "bulanan" && (
-                <div className="flex items-center gap-1 bg-slate-50 px-2 py-1 rounded-xl border border-slate-200 text-xs">
+                <div className="flex items-center justify-between sm:justify-start gap-1 bg-slate-50 px-2 py-1 rounded-xl border border-slate-200 text-xs w-full sm:w-auto">
                   <button
                     onClick={() => handleShiftMonth(-1)}
                     title="Bulan Sebelumnya"
@@ -978,12 +1003,12 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
               )}
 
               {/* 2. Filter Kelas */}
-              <div className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1.5 rounded-xl border border-slate-200 text-xs">
-                <span className="font-medium text-slate-500">Kelas:</span>
+              <div className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1.5 rounded-xl border border-slate-200 text-xs flex-1 sm:flex-none justify-between sm:justify-start">
+                <span className="font-medium text-slate-500 shrink-0">Kelas:</span>
                 <select
                   value={selectedKelas}
                   onChange={(e) => setSelectedKelas(e.target.value)}
-                  className="bg-transparent font-bold text-slate-900 outline-none cursor-pointer"
+                  className="bg-transparent font-bold text-slate-900 outline-none cursor-pointer min-w-0"
                 >
                   <option value="Semua">Semua Kelas</option>
                   {availableClassOptions.map((c) => (
@@ -996,12 +1021,12 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
 
               {/* 3. Selector Murid (Khusus Tinjauan Individu) */}
               {tinjauanMode === "individu" && (
-                <div className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1.5 rounded-xl border border-slate-200 text-xs">
-                  <span className="font-medium text-slate-500">Murid:</span>
+                <div className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1.5 rounded-xl border border-slate-200 text-xs w-full sm:w-auto justify-between sm:justify-start">
+                  <span className="font-medium text-slate-500 shrink-0">Murid:</span>
                   <select
                     value={selectedStudentId}
                     onChange={(e) => setSelectedStudentId(e.target.value)}
-                    className="bg-transparent font-bold text-slate-900 outline-none cursor-pointer max-w-[180px] truncate"
+                    className="bg-transparent font-bold text-slate-900 outline-none cursor-pointer w-full sm:max-w-[200px] truncate"
                   >
                     {classScopedSiswa.length === 0 ? (
                       <option value="">Tidak ada murid</option>
@@ -1016,14 +1041,14 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                 </div>
               )}
 
-              {/* 4. Filter Status */}
+              {/* 4. Filter Status (Khusus Tinjauan Kelas) */}
               {tinjauanMode === "kelas" && (
-                <div className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1.5 rounded-xl border border-slate-200 text-xs">
-                  <span className="font-medium text-slate-500">Status:</span>
+                <div className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1.5 rounded-xl border border-slate-200 text-xs flex-1 sm:flex-none justify-between sm:justify-start">
+                  <span className="font-medium text-slate-500 shrink-0">Status:</span>
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value as any)}
-                    className="bg-transparent font-bold text-slate-900 outline-none cursor-pointer"
+                    className="bg-transparent font-bold text-slate-900 outline-none cursor-pointer min-w-0"
                   >
                     <option value="Semua">Semua</option>
                     <option value="Sudah Mengisi">Sudah Mengisi</option>
@@ -1043,17 +1068,17 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                     placeholder="Cari nama / NIS..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-slate-50 pl-8 pr-3 py-1.5 rounded-xl border border-slate-200 text-xs text-slate-800 outline-none focus:bg-white focus:border-brand-500"
+                    className="w-full bg-slate-50 pl-8 pr-3 py-1.5 rounded-xl border border-slate-200 text-xs text-slate-800 outline-none focus:bg-white focus:border-brand-500 transition-colors"
                   />
                 </div>
               )}
 
               <button
                 onClick={handleExportExcel}
-                className="w-full sm:w-auto px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs shrink-0"
+                className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs whitespace-nowrap shrink-0"
                 title="Unduh laporan ke file Excel (.xlsx)"
               >
-                <Download className="w-3.5 h-3.5" />
+                <Download className="w-3.5 h-3.5 shrink-0" />
                 <span>Export Excel</span>
               </button>
             </div>
@@ -1062,7 +1087,13 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
           {/* ======================================================== */}
           {/* DATA TABLES BERDASARKAN MODE PERIODE & TINJAUAN          */}
           {/* ======================================================== */}
-          <div className="bg-white rounded-3xl border border-brand-100 shadow-sm overflow-hidden">
+          <div className="bg-white rounded-2xl sm:rounded-3xl border border-brand-100 shadow-sm overflow-hidden">
+            {/* Mobile Scroll Hint */}
+            <div className="block sm:hidden px-4 py-2 bg-slate-50/90 border-b border-slate-100 text-[10px] font-bold text-slate-500 flex items-center justify-between">
+              <span>Geser tabel untuk melihat data lengkap</span>
+              <span className="text-brand-600">⇄</span>
+            </div>
+
             {isLoading ? (
               <div className="py-20 text-center text-slate-400 space-y-3">
                 <div className="w-8 h-8 border-3 border-brand-500 border-t-transparent rounded-full animate-spin mx-auto" />
@@ -1077,14 +1108,14 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                 </div>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
+                  <table className="w-full min-w-[620px] text-left border-collapse">
                     <thead>
                       <tr className="bg-slate-50/75 border-b border-slate-100 text-[11px] font-black uppercase tracking-wider text-slate-500">
-                        <th className="py-4 px-5">Tanggal</th>
-                        <th className="py-4 px-4 text-center">Status</th>
-                        <th className="py-4 px-4">Capaian 7 Kebiasaan</th>
-                        <th className="py-4 px-4 text-center">Progres</th>
-                        <th className="py-4 px-5 text-right">Aksi</th>
+                        <th className="py-4 px-5 whitespace-nowrap">Tanggal</th>
+                        <th className="py-4 px-4 text-center whitespace-nowrap">Status</th>
+                        <th className="py-4 px-4 whitespace-nowrap">Capaian 7 Kebiasaan</th>
+                        <th className="py-4 px-4 text-center whitespace-nowrap">Progres</th>
+                        <th className="py-4 px-5 text-right whitespace-nowrap">Aksi</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-xs">
@@ -1097,8 +1128,8 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                           <tr key={row.tanggal} className="hover:bg-slate-50/70 transition-colors">
                             <td className="py-3.5 px-5">
                               <div className="flex items-center gap-2.5">
-                                <Calendar className="w-4 h-4 text-brand-600" />
-                                <span className="font-bold text-brand-950">
+                                <Calendar className="w-4 h-4 text-brand-600 shrink-0" />
+                                <span className="font-bold text-brand-950 whitespace-nowrap">
                                   {parseDateSafe(row.tanggal).toLocaleDateString("id-ID", {
                                     weekday: "long",
                                     day: "numeric",
@@ -1111,18 +1142,18 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                             <td className="py-3.5 px-4 text-center">
                               {row.isFilled ? (
                                 row.record?.is_final ? (
-                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 font-black text-[10px] border border-emerald-300">
+                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 font-black text-[10px] border border-emerald-300 whitespace-nowrap">
                                     <Lock className="w-3 h-3 text-emerald-600" />
                                     Terkirim Final
                                   </span>
                                 ) : (
-                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-cyan-50 text-cyan-800 font-black text-[10px] border border-cyan-200">
+                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-cyan-50 text-cyan-800 font-black text-[10px] border border-cyan-200 whitespace-nowrap">
                                     <CheckCircle2 className="w-3 h-3 text-cyan-600" />
                                     Draft
                                   </span>
                                 )
                               ) : (
-                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 font-black text-[10px] border border-rose-200">
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 font-black text-[10px] border border-rose-200 whitespace-nowrap">
                                   <AlertCircle className="w-3 h-3" />
                                   Kosong
                                 </span>
@@ -1130,12 +1161,12 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                             </td>
                             <td className="py-3.5 px-4">
                               {row.isFilled ? (
-                                <div className="flex items-center gap-1">
+                                <div className="flex items-center gap-1 whitespace-nowrap">
                                   {evaluations.map((ev, i) => (
                                     <div
                                       key={ev.id}
                                       title={`${i + 1}. ${ev.title}: ${ev.summary}`}
-                                      className={`w-5 h-5 rounded-lg flex items-center justify-center text-[10px] font-black cursor-help ${
+                                      className={`w-5 h-5 rounded-lg flex items-center justify-center text-[10px] font-black cursor-help shrink-0 ${
                                         ev.status === "selesai"
                                           ? "bg-emerald-500 text-white"
                                           : ev.status === "belum_dilakukan"
@@ -1167,10 +1198,10 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                                     setDetailModalRecord(row.record);
                                   }
                                 }}
-                                className="px-3 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-200 rounded-xl text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-1.5"
+                                className="px-3 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-200 rounded-xl text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-1.5 shadow-2xs whitespace-nowrap"
                               >
                                 <Eye className="w-3.5 h-3.5" />
-                                Rincian
+                                <span>Rincian</span>
                               </button>
                             </td>
                           </tr>
@@ -1190,15 +1221,15 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
               ) : (
                 <>
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
+                    <table className="w-full min-w-[760px] text-left border-collapse">
                       <thead>
                         <tr className="bg-slate-50/75 border-b border-slate-100 text-[11px] font-black uppercase tracking-wider text-slate-500">
-                          <th className="py-4 px-5">Murid</th>
-                          <th className="py-4 px-4">Kelas</th>
-                          <th className="py-4 px-4 text-center">Keaktifan Mengisi</th>
-                          <th className="py-4 px-4 text-center">Rata-rata Progres</th>
-                          <th className="py-4 px-4">Ringkasan 7 Kebiasaan</th>
-                          <th className="py-4 px-5 text-right">Aksi</th>
+                          <th className="py-4 px-5 whitespace-nowrap">Murid</th>
+                          <th className="py-4 px-4 whitespace-nowrap">Kelas</th>
+                          <th className="py-4 px-4 text-center whitespace-nowrap">Keaktifan Mengisi</th>
+                          <th className="py-4 px-4 text-center whitespace-nowrap">Rata-rata Progres</th>
+                          <th className="py-4 px-4 whitespace-nowrap">Ringkasan 7 Kebiasaan</th>
+                          <th className="py-4 px-5 text-right whitespace-nowrap">Aksi</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100 text-xs">
@@ -1221,15 +1252,15 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                                     <img
                                       src={item.siswa.foto_url}
                                       alt={item.siswa.nama}
-                                      className="w-9 h-9 rounded-xl object-cover border border-slate-200 group-hover:border-brand-500 transition-colors"
+                                      className="w-9 h-9 rounded-xl object-cover border border-slate-200 group-hover:border-brand-500 transition-colors shrink-0"
                                     />
                                   ) : (
-                                    <div className="w-9 h-9 rounded-xl bg-brand-100 text-brand-700 flex items-center justify-center font-black text-xs group-hover:bg-brand-600 group-hover:text-white transition-colors">
+                                    <div className="w-9 h-9 rounded-xl bg-brand-100 text-brand-700 flex items-center justify-center font-black text-xs group-hover:bg-brand-600 group-hover:text-white transition-colors shrink-0">
                                       {item.siswa.nama.slice(0, 2).toUpperCase()}
                                     </div>
                                   )}
-                                  <div>
-                                    <h4 className="font-black text-brand-950 group-hover:text-brand-600 transition-colors">
+                                  <div className="min-w-0">
+                                    <h4 className="font-black text-brand-950 group-hover:text-brand-600 transition-colors truncate max-w-[140px] sm:max-w-[200px]">
                                       {toSentenceCase(item.siswa.nama)}
                                     </h4>
                                     <p className="text-[10px] text-slate-400 font-bold">NIS: {item.siswa.nis}</p>
@@ -1237,13 +1268,13 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                                 </div>
                               </td>
 
-                              <td className="py-3.5 px-4 font-bold text-slate-700">
+                              <td className="py-3.5 px-4 font-bold text-slate-700 whitespace-nowrap">
                                 <span className="px-2.5 py-1 rounded-xl bg-slate-100 text-slate-700 font-black text-[11px]">
                                   {item.siswa.kelas}
                                 </span>
                               </td>
 
-                              <td className="py-3.5 px-4 text-center">
+                              <td className="py-3.5 px-4 text-center whitespace-nowrap">
                                 <div className="inline-flex flex-col items-center">
                                   <span className={`px-2.5 py-1 rounded-full font-black text-[11px] border ${
                                     fillPercent >= 80
@@ -1257,7 +1288,7 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                                 </div>
                               </td>
 
-                              <td className="py-3.5 px-4 text-center">
+                              <td className="py-3.5 px-4 text-center whitespace-nowrap">
                                 <div className="flex items-center justify-center gap-2">
                                   <div className="w-16 bg-slate-100 rounded-full h-2 overflow-hidden">
                                     <div
@@ -1277,21 +1308,21 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                                 </div>
                               </td>
 
-                              <td className="py-3.5 px-4">
-                                <div className="text-[11px] text-slate-600 space-y-0.5">
+                              <td className="py-3.5 px-4 min-w-[220px]">
+                                <div className="text-[11px] text-slate-600 space-y-0.5 whitespace-nowrap">
                                   <p>
-                                    <span className="font-bold text-slate-700">Bangun:</span> {s.bangunPagiTargetMetCount}x tepat •{" "}
-                                    <span className="font-bold text-slate-700">Salat:</span> {s.salat5WaktuLengkapCount}x lengkap •{" "}
+                                    <span className="font-bold text-slate-700">Bangun:</span> {s.bangunPagiTargetMetCount}x •{" "}
+                                    <span className="font-bold text-slate-700">Salat:</span> {s.salat5WaktuLengkapCount}x •{" "}
                                     <span className="font-bold text-slate-700">Tadarus:</span> {s.mengajiSudahCount}x
                                   </p>
                                   <p>
-                                    <span className="font-bold text-slate-700">Olahraga:</span> {s.olahragaSudahCount}x ({s.totalDurasiOlahraga} mnt) •{" "}
-                                    <span className="font-bold text-slate-700">Belajar:</span> {s.totalDurasiBelajar} mnt
+                                    <span className="font-bold text-slate-700">Olahraga:</span> {s.olahragaSudahCount}x ({s.totalDurasiOlahraga} m) •{" "}
+                                    <span className="font-bold text-slate-700">Belajar:</span> {s.totalDurasiBelajar} m
                                   </p>
                                 </div>
                               </td>
 
-                              <td className="py-3.5 px-5 text-right">
+                              <td className="py-3.5 px-5 text-right whitespace-nowrap">
                                 <div className="flex items-center justify-end gap-1.5">
                                   <button
                                     onClick={() => {
@@ -1343,15 +1374,15 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
               ) : (
                 <>
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
+                    <table className="w-full min-w-[720px] text-left border-collapse">
                       <thead>
                         <tr className="bg-slate-50/75 border-b border-slate-100 text-[11px] font-black uppercase tracking-wider text-slate-500">
-                          <th className="py-4 px-5">Murid</th>
-                          <th className="py-4 px-4">Kelas</th>
-                          <th className="py-4 px-4 text-center">Status Pengisian</th>
-                          <th className="py-4 px-4">Capaian 7 Kebiasaan</th>
-                          <th className="py-4 px-4 text-center">Progres</th>
-                          <th className="py-4 px-5 text-right">Aksi</th>
+                          <th className="py-4 px-5 whitespace-nowrap">Murid</th>
+                          <th className="py-4 px-4 whitespace-nowrap">Kelas</th>
+                          <th className="py-4 px-4 text-center whitespace-nowrap">Status Pengisian</th>
+                          <th className="py-4 px-4 whitespace-nowrap">Capaian 7 Kebiasaan</th>
+                          <th className="py-4 px-4 text-center whitespace-nowrap">Progres</th>
+                          <th className="py-4 px-5 text-right whitespace-nowrap">Aksi</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100 text-xs">
@@ -1373,15 +1404,15 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                                     <img
                                       src={item.siswa.foto_url}
                                       alt={item.siswa.nama}
-                                      className="w-9 h-9 rounded-xl object-cover border border-slate-200 group-hover:border-brand-500 transition-colors"
+                                      className="w-9 h-9 rounded-xl object-cover border border-slate-200 group-hover:border-brand-500 transition-colors shrink-0"
                                     />
                                   ) : (
-                                    <div className="w-9 h-9 rounded-xl bg-brand-100 text-brand-700 flex items-center justify-center font-black text-xs group-hover:bg-brand-600 group-hover:text-white transition-colors">
+                                    <div className="w-9 h-9 rounded-xl bg-brand-100 text-brand-700 flex items-center justify-center font-black text-xs group-hover:bg-brand-600 group-hover:text-white transition-colors shrink-0">
                                       {item.siswa.nama.slice(0, 2).toUpperCase()}
                                     </div>
                                   )}
-                                  <div>
-                                    <h4 className="font-black text-brand-950 group-hover:text-brand-600 transition-colors">
+                                  <div className="min-w-0">
+                                    <h4 className="font-black text-brand-950 group-hover:text-brand-600 transition-colors truncate max-w-[140px] sm:max-w-[200px]">
                                       {toSentenceCase(item.siswa.nama)}
                                     </h4>
                                     <p className="text-[10px] text-slate-400 font-bold">NIS: {item.siswa.nis}</p>
@@ -1389,13 +1420,13 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                                 </div>
                               </td>
 
-                              <td className="py-3.5 px-4 font-bold text-slate-700">
+                              <td className="py-3.5 px-4 font-bold text-slate-700 whitespace-nowrap">
                                 <span className="px-2.5 py-1 rounded-xl bg-slate-100 text-slate-700 font-black text-[11px]">
                                   {item.siswa.kelas}
                                 </span>
                               </td>
 
-                              <td className="py-3.5 px-4 text-center">
+                              <td className="py-3.5 px-4 text-center whitespace-nowrap">
                                 {item.isFilled ? (
                                   item.record?.is_final ? (
                                     <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 font-black text-[10px] border border-emerald-300">
@@ -1405,7 +1436,7 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                                   ) : (
                                     <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-cyan-50 text-cyan-800 font-black text-[10px] border border-cyan-200">
                                       <CheckCircle2 className="w-3 h-3 text-cyan-600" />
-                                      Draft (Auto-saved)
+                                      Draft
                                     </span>
                                   )
                                 ) : (
@@ -1416,14 +1447,14 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                                 )}
                               </td>
 
-                              <td className="py-3.5 px-4">
+                              <td className="py-3.5 px-4 whitespace-nowrap">
                                 {item.isFilled ? (
                                   <div className="flex items-center gap-1">
                                     {item.evaluations.map((ev, i) => (
                                       <div
                                         key={ev.id}
                                         title={`${i + 1}. ${ev.title}: ${ev.summary}`}
-                                        className={`w-5 h-5 rounded-lg flex items-center justify-center text-[10px] font-black cursor-help ${
+                                        className={`w-5 h-5 rounded-lg flex items-center justify-center text-[10px] font-black cursor-help shrink-0 ${
                                           ev.status === "selesai"
                                             ? "bg-emerald-500 text-white"
                                             : ev.status === "belum_dilakukan"
@@ -1443,7 +1474,7 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                                 )}
                               </td>
 
-                              <td className="py-3.5 px-4 text-center">
+                              <td className="py-3.5 px-4 text-center whitespace-nowrap">
                                 <div className="flex items-center justify-center gap-2">
                                   <div className="w-16 bg-slate-100 rounded-full h-2 overflow-hidden">
                                     <div
@@ -1463,13 +1494,13 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                                 </div>
                               </td>
 
-                              <td className="py-3.5 px-5 text-right">
+                              <td className="py-3.5 px-5 text-right whitespace-nowrap">
                                 <button
                                   onClick={() => {
                                     setDetailModalStudent(item.siswa);
                                     setDetailModalRecord(item.record);
                                   }}
-                                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-1.5 shadow-2xs ${
+                                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-1.5 shadow-2xs whitespace-nowrap ${
                                     item.isFilled
                                       ? "bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-200"
                                       : "bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200"
@@ -1477,7 +1508,7 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                                   title={item.isFilled ? "Lihat rincian pengerjaan jurnal hari ini" : "Lihat detail & riwayat jurnal murid"}
                                 >
                                   <Eye className="w-3.5 h-3.5" />
-                                  <span>{item.isFilled ? "Detail Pengerjaan" : "Lihat Detail"}</span>
+                                  <span>Detail</span>
                                 </button>
                               </td>
                             </tr>
@@ -1538,13 +1569,13 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
+                <table className="w-full min-w-[640px] text-left border-collapse">
                   <thead>
                     <tr className="bg-slate-50/75 border-b border-slate-100 text-[11px] font-black uppercase tracking-wider text-slate-500">
-                      <th className="py-4 px-5">Nama Pengguna</th>
-                      <th className="py-4 px-4">Email</th>
-                      <th className="py-4 px-4">Kelas yang Diizinkan</th>
-                      <th className="py-4 px-5 text-right">Aksi</th>
+                      <th className="py-4 px-5 whitespace-nowrap">Nama Pengguna</th>
+                      <th className="py-4 px-4 whitespace-nowrap">Email</th>
+                      <th className="py-4 px-4 whitespace-nowrap">Kelas yang Diizinkan</th>
+                      <th className="py-4 px-5 text-right whitespace-nowrap">Aksi</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-xs">

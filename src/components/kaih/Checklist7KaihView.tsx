@@ -1599,14 +1599,14 @@ export default function Checklist7KaihView({ userSession, siswaId: propSiswaId }
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
+                <table className="w-full min-w-[620px] text-left border-collapse">
                   <thead>
                     <tr className="bg-slate-50/75 border-b border-slate-100 text-[11px] font-black uppercase tracking-wider text-slate-500">
-                      <th className="py-3.5 px-5">Tanggal</th>
-                      <th className="py-3.5 px-4 text-center">Status</th>
-                      <th className="py-3.5 px-4">Capaian 7 Kebiasaan</th>
-                      <th className="py-3.5 px-4 text-center">Progres</th>
-                      <th className="py-3.5 px-5 text-right">Aksi</th>
+                      <th className="py-3.5 px-5 whitespace-nowrap">Tanggal</th>
+                      <th className="py-3.5 px-4 text-center whitespace-nowrap">Status</th>
+                      <th className="py-3.5 px-4 whitespace-nowrap">Capaian 7 Kebiasaan</th>
+                      <th className="py-3.5 px-4 text-center whitespace-nowrap">Progres</th>
+                      <th className="py-3.5 px-5 text-right whitespace-nowrap">Aksi</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-xs">

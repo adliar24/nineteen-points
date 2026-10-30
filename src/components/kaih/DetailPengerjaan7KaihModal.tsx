@@ -269,7 +269,7 @@ export default function DetailPengerjaan7KaihModal({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
           transition={{ duration: 0.2 }}
-          className="bg-white rounded-3xl p-5 sm:p-7 max-w-4xl w-full max-h-[92vh] overflow-y-auto relative z-10 shadow-2xl border border-brand-100 space-y-6 print:shadow-none print:border-none print:max-h-none print:p-0"
+          className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-7 max-w-4xl w-full max-h-[92vh] overflow-y-auto relative z-10 shadow-2xl border border-brand-100 space-y-5 sm:space-y-6 print:shadow-none print:border-none print:max-h-none print:p-0"
         >
           {/* Toast Notification */}
           <AnimatePresence>
@@ -289,35 +289,35 @@ export default function DetailPengerjaan7KaihModal({
           {/* ======================================================== */}
           {/* MODAL HEADER: Profil Murid & Navigasi Tanggal            */}
           {/* ======================================================== */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-100">
-            <div className="flex items-center gap-3.5">
+          <div className="flex items-start justify-between gap-3 pb-4 sm:pb-5 border-b border-slate-100">
+            <div className="flex items-center gap-3 min-w-0">
               {student.foto_url ? (
                 <img
                   src={student.foto_url}
                   alt={student.nama}
-                  className="w-13 h-13 rounded-2xl object-cover border-2 border-brand-200 shadow-sm"
+                  className="w-11 h-11 sm:w-13 sm:h-13 rounded-2xl object-cover border-2 border-brand-200 shadow-sm shrink-0"
                 />
               ) : (
-                <div className="w-13 h-13 rounded-2xl bg-gradient-to-tr from-brand-600 to-indigo-600 text-white flex items-center justify-center font-black text-base shadow-sm">
+                <div className="w-11 h-11 sm:w-13 sm:h-13 rounded-2xl bg-gradient-to-tr from-brand-600 to-indigo-600 text-white flex items-center justify-center font-black text-sm sm:text-base shadow-sm shrink-0">
                   {student.nama.slice(0, 2).toUpperCase()}
                 </div>
               )}
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="text-lg font-black text-brand-950">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="text-base sm:text-lg font-black text-brand-950 truncate max-w-[170px] sm:max-w-xs">
                     {toSentenceCase(student.nama)}
                   </h3>
-                  <span className="px-2.5 py-0.5 rounded-full bg-brand-50 text-brand-700 border border-brand-200 text-[11px] font-black">
+                  <span className="px-2 py-0.5 rounded-full bg-brand-50 text-brand-700 border border-brand-200 text-[10px] sm:text-[11px] font-black shrink-0">
                     {student.kelas}
                   </span>
                 </div>
-                <p className="text-xs text-slate-500 font-bold mt-0.5">
-                  NIS: <span className="text-slate-700 font-mono">{student.nis}</span> • Detail Pengerjaan Jurnal 7 KAIH
+                <p className="text-[11px] sm:text-xs text-slate-500 font-bold mt-0.5 truncate">
+                  NIS: <span className="text-slate-700 font-mono">{student.nis}</span> • Jurnal 7 KAIH
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 self-end sm:self-auto print:hidden">
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 print:hidden">
               <button
                 onClick={handlePrint}
                 title="Cetak Ringkasan Jurnal"
@@ -337,36 +337,36 @@ export default function DetailPengerjaan7KaihModal({
           {/* ======================================================== */}
           {/* TAB SWITCHER & DATE CONTROL                              */}
           {/* ======================================================== */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 p-2.5 rounded-2xl border border-slate-200 print:hidden">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 p-2 sm:p-2.5 rounded-2xl border border-slate-200 print:hidden">
             {/* Tabs */}
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 w-full sm:w-auto">
               <button
                 onClick={() => setActiveTab("detail")}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
+                className={`flex-1 sm:flex-none justify-center px-3 sm:px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
                   activeTab === "detail"
                     ? "bg-brand-600 text-white shadow-sm"
                     : "text-slate-600 hover:bg-slate-200/70"
                 }`}
               >
-                <Sparkles className="w-3.5 h-3.5" />
-                Rincian 7 Kebiasaan
+                <Sparkles className="w-3.5 h-3.5 shrink-0" />
+                <span>Rincian 7 Kebiasaan</span>
               </button>
               <button
                 onClick={() => setActiveTab("riwayat")}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
+                className={`flex-1 sm:flex-none justify-center px-3 sm:px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
                   activeTab === "riwayat"
                     ? "bg-brand-600 text-white shadow-sm"
                     : "text-slate-600 hover:bg-slate-200/70"
                 }`}
               >
-                <History className="w-3.5 h-3.5" />
-                Riwayat Pengisian ({historyList.length})
+                <History className="w-3.5 h-3.5 shrink-0" />
+                <span>Riwayat ({historyList.length})</span>
               </button>
             </div>
 
             {/* Date Navigator (Hanya aktif di Tab Detail) */}
             {activeTab === "detail" && (
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center justify-center gap-1.5 w-full sm:w-auto">
                 <button
                   onClick={() => handleShiftDate(-1)}
                   title="Hari Sebelumnya"
@@ -374,7 +374,7 @@ export default function DetailPengerjaan7KaihModal({
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
-                <div className="relative flex items-center bg-white px-2.5 py-1 rounded-xl border border-slate-200 shadow-2xs">
+                <div className="flex-1 sm:flex-none relative flex items-center justify-center bg-white px-2.5 py-1 rounded-xl border border-slate-200 shadow-2xs">
                   <Calendar className="w-3.5 h-3.5 text-brand-600 mr-2 shrink-0" />
                   <input
                     type="date"
@@ -602,7 +602,7 @@ export default function DetailPengerjaan7KaihModal({
                           / 5 Waktu Selesai
                         </span>
                       </div>
-                      <div className="grid grid-cols-5 gap-2 text-center">
+                      <div className="grid grid-cols-5 gap-1.5 sm:gap-2 text-center">
                         {[
                           { label: "Subuh", done: record.salat_subuh },
                           { label: "Zuhur", done: record.salat_zuhur },
@@ -612,17 +612,17 @@ export default function DetailPengerjaan7KaihModal({
                         ].map((salat) => (
                           <div
                             key={salat.label}
-                            className={`p-2.5 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all ${
+                            className={`p-1.5 sm:p-2.5 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all ${
                               salat.done
                                 ? "bg-emerald-50 border-emerald-300 text-emerald-900"
                                 : "bg-slate-50 border-slate-200 text-slate-400"
                             }`}
                           >
-                            <span className="text-[11px] font-black">{salat.label}</span>
+                            <span className="text-[10px] sm:text-[11px] font-black">{salat.label}</span>
                             {salat.done ? (
-                              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                              <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600 shrink-0" />
                             ) : (
-                              <X className="w-4 h-4 text-slate-300" />
+                              <X className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-300 shrink-0" />
                             )}
                           </div>
                         ))}
@@ -1148,7 +1148,7 @@ export default function DetailPengerjaan7KaihModal({
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-3 self-end sm:self-auto">
+                          <div className="flex flex-wrap items-center justify-between sm:justify-end gap-2.5 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
                             {/* Visual mini dots 7 kebiasaan */}
                             <div className="flex items-center gap-1">
                               {itemEvals.map((ev, i) => (
@@ -1174,9 +1174,9 @@ export default function DetailPengerjaan7KaihModal({
                                 setRecord(item);
                                 setActiveTab("detail");
                               }}
-                              className="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1 shadow-2xs"
+                              className="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1 shadow-2xs shrink-0"
                             >
-                              Lihat Rincian
+                              <span>Lihat Rincian</span>
                               <ChevronRight className="w-3.5 h-3.5" />
                             </button>
                           </div>

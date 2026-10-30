@@ -683,16 +683,16 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
           {/* ======================================================== */}
           {/* SWITCHER MODE PERIODE & TINJAUAN                         */}
           {/* ======================================================== */}
-          <div className="bg-white rounded-3xl p-4 sm:p-5 border border-brand-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-4 border border-slate-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             {/* Mode Periode */}
             <div className="flex items-center gap-2">
-              <span className="text-xs font-black text-slate-500 uppercase tracking-wider mr-1">Periode:</span>
-              <div className="bg-slate-100 p-1 rounded-2xl flex items-center gap-1">
+              <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider">Periode:</span>
+              <div className="bg-slate-100 p-1 rounded-xl flex items-center gap-0.5">
                 <button
                   onClick={() => setPeriodeMode("harian")}
-                  className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                     periodeMode === "harian"
-                      ? "bg-white text-brand-950 shadow-sm"
+                      ? "bg-white text-slate-900 shadow-2xs font-black"
                       : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
@@ -701,9 +701,9 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                 </button>
                 <button
                   onClick={() => setPeriodeMode("mingguan")}
-                  className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                     periodeMode === "mingguan"
-                      ? "bg-white text-brand-950 shadow-sm"
+                      ? "bg-white text-slate-900 shadow-2xs font-black"
                       : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
@@ -712,9 +712,9 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                 </button>
                 <button
                   onClick={() => setPeriodeMode("bulanan")}
-                  className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                     periodeMode === "bulanan"
-                      ? "bg-white text-brand-950 shadow-sm"
+                      ? "bg-white text-slate-900 shadow-2xs font-black"
                       : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
@@ -726,13 +726,13 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
 
             {/* Mode Tinjauan */}
             <div className="flex items-center gap-2">
-              <span className="text-xs font-black text-slate-500 uppercase tracking-wider mr-1">Tinjauan:</span>
-              <div className="bg-slate-100 p-1 rounded-2xl flex items-center gap-1">
+              <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider">Tinjauan:</span>
+              <div className="bg-slate-100 p-1 rounded-xl flex items-center gap-0.5">
                 <button
                   onClick={() => setTinjauanMode("kelas")}
-                  className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                     tinjauanMode === "kelas"
-                      ? "bg-brand-600 text-white shadow-sm"
+                      ? "bg-brand-600 text-white shadow-2xs font-black"
                       : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
@@ -741,14 +741,14 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                 </button>
                 <button
                   onClick={() => setTinjauanMode("individu")}
-                  className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                     tinjauanMode === "individu"
-                      ? "bg-brand-600 text-white shadow-sm"
+                      ? "bg-brand-600 text-white shadow-2xs font-black"
                       : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
                   <User className="w-3.5 h-3.5" />
-                  Per Individu
+                  Per Murid
                 </button>
               </div>
             </div>
@@ -758,139 +758,139 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
           {/* KPI SUMMARY CARDS DYNAMIC                                */}
           {/* ======================================================== */}
           {tinjauanMode === "individu" ? (
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-white p-5 rounded-3xl border border-brand-100 shadow-sm flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-brand-50 text-brand-700 flex items-center justify-center border border-brand-100">
-                  <Calendar className="w-6 h-6" />
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs flex items-center gap-3 sm:gap-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-brand-50 text-brand-700 flex items-center justify-center border border-brand-100 shrink-0">
+                  <Calendar className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
-                <div>
-                  <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Hari Mengisi Jurnal</p>
-                  <h3 className="text-2xl font-black text-brand-950">
+                <div className="min-w-0">
+                  <p className="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider truncate">Hari Mengisi</p>
+                  <h3 className="text-xl sm:text-2xl font-black text-brand-950">
                     {individualStudentStats.totalHariTerisi}{" "}
-                    <span className="text-xs font-bold text-slate-400">/ {totalDaysInPeriod} Hari</span>
+                    <span className="text-[10px] sm:text-xs font-bold text-slate-400">/ {totalDaysInPeriod}</span>
                   </h3>
                 </div>
               </div>
 
-              <div className="bg-white p-5 rounded-3xl border border-brand-100 shadow-sm flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center border border-emerald-100">
-                  <Award className="w-6 h-6" />
+              <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs flex items-center gap-3 sm:gap-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center border border-emerald-100 shrink-0">
+                  <Award className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
-                <div>
-                  <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Rata-rata Capaian</p>
-                  <h3 className="text-2xl font-black text-emerald-700">{individualStudentStats.avgProgress}%</h3>
+                <div className="min-w-0">
+                  <p className="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider truncate">Rata-rata Capaian</p>
+                  <h3 className="text-xl sm:text-2xl font-black text-emerald-700">{individualStudentStats.avgProgress}%</h3>
                 </div>
               </div>
 
-              <div className="bg-white p-5 rounded-3xl border border-brand-100 shadow-sm flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-700 flex items-center justify-center border border-indigo-100">
-                  <BookOpen className="w-6 h-6" />
+              <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs flex items-center gap-3 sm:gap-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-indigo-50 text-indigo-700 flex items-center justify-center border border-indigo-100 shrink-0">
+                  <BookOpen className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
-                <div>
-                  <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Total Belajar</p>
-                  <h3 className="text-2xl font-black text-indigo-700">
+                <div className="min-w-0">
+                  <p className="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider truncate">Total Belajar</p>
+                  <h3 className="text-xl sm:text-2xl font-black text-indigo-700">
                     {individualStudentStats.totalDurasiBelajar}{" "}
-                    <span className="text-xs font-bold text-slate-400">Menit</span>
+                    <span className="text-[10px] sm:text-xs font-bold text-slate-400">Mnt</span>
                   </h3>
                 </div>
               </div>
 
-              <div className="bg-white p-5 rounded-3xl border border-brand-100 shadow-sm flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center border border-amber-100">
-                  <Dumbbell className="w-6 h-6" />
+              <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs flex items-center gap-3 sm:gap-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center border border-amber-100 shrink-0">
+                  <Dumbbell className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
-                <div>
-                  <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Olahraga Fisik</p>
-                  <h3 className="text-2xl font-black text-amber-700">
+                <div className="min-w-0">
+                  <p className="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider truncate">Olahraga</p>
+                  <h3 className="text-xl sm:text-2xl font-black text-amber-700">
                     {individualStudentStats.olahragaSudahCount}{" "}
-                    <span className="text-xs font-bold text-slate-400">Sesi</span>
+                    <span className="text-[10px] sm:text-xs font-bold text-slate-400">Sesi</span>
                   </h3>
                 </div>
               </div>
             </div>
           ) : periodeMode === "harian" ? (
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-white p-5 rounded-3xl border border-brand-100 shadow-sm flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-brand-50 text-brand-700 flex items-center justify-center border border-brand-100">
-                  <Users className="w-6 h-6" />
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs flex items-center gap-3 sm:gap-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-brand-50 text-brand-700 flex items-center justify-center border border-brand-100 shrink-0">
+                  <Users className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
-                <div>
-                  <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Total Murid</p>
-                  <h3 className="text-2xl font-black text-brand-950">{dailyStats.total}</h3>
-                </div>
-              </div>
-
-              <div className="bg-white p-5 rounded-3xl border border-brand-100 shadow-sm flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center border border-emerald-100">
-                  <CheckCircle2 className="w-6 h-6" />
-                </div>
-                <div>
-                  <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Sudah Mengisi</p>
-                  <h3 className="text-2xl font-black text-emerald-700">{dailyStats.sudah}</h3>
+                <div className="min-w-0">
+                  <p className="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider truncate">Total Murid</p>
+                  <h3 className="text-xl sm:text-2xl font-black text-brand-950">{dailyStats.total}</h3>
                 </div>
               </div>
 
-              <div className="bg-white p-5 rounded-3xl border border-brand-100 shadow-sm flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-700 flex items-center justify-center border border-rose-100">
-                  <AlertCircle className="w-6 h-6" />
+              <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs flex items-center gap-3 sm:gap-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center border border-emerald-100 shrink-0">
+                  <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
-                <div>
-                  <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Belum Mengisi (Kosong)</p>
-                  <h3 className="text-2xl font-black text-rose-700">{dailyStats.belum}</h3>
+                <div className="min-w-0">
+                  <p className="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider truncate">Sudah Mengisi</p>
+                  <h3 className="text-xl sm:text-2xl font-black text-emerald-700">{dailyStats.sudah}</h3>
                 </div>
               </div>
 
-              <div className="bg-white p-5 rounded-3xl border border-brand-100 shadow-sm flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center border border-amber-100">
-                  <Award className="w-6 h-6" />
+              <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs flex items-center gap-3 sm:gap-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-rose-50 text-rose-700 flex items-center justify-center border border-rose-100 shrink-0">
+                  <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
-                <div>
-                  <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Rata-rata Progres</p>
-                  <h3 className="text-2xl font-black text-amber-700">{dailyStats.avgProgress}%</h3>
+                <div className="min-w-0">
+                  <p className="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider truncate">Belum Mengisi</p>
+                  <h3 className="text-xl sm:text-2xl font-black text-rose-700">{dailyStats.belum}</h3>
+                </div>
+              </div>
+
+              <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs flex items-center gap-3 sm:gap-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center border border-amber-100 shrink-0">
+                  <Award className="w-5 h-5 sm:w-6 sm:h-6" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider truncate">Rata-rata Progres</p>
+                  <h3 className="text-xl sm:text-2xl font-black text-amber-700">{dailyStats.avgProgress}%</h3>
                 </div>
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-white p-5 rounded-3xl border border-brand-100 shadow-sm flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-brand-50 text-brand-700 flex items-center justify-center border border-brand-100">
-                  <Users className="w-6 h-6" />
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs flex items-center gap-3 sm:gap-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-brand-50 text-brand-700 flex items-center justify-center border border-brand-100 shrink-0">
+                  <Users className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
-                <div>
-                  <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Total Murid Kelas</p>
-                  <h3 className="text-2xl font-black text-brand-950">{periodClassStats.total}</h3>
-                </div>
-              </div>
-
-              <div className="bg-white p-5 rounded-3xl border border-brand-100 shadow-sm flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center border border-emerald-100">
-                  <CheckCircle2 className="w-6 h-6" />
-                </div>
-                <div>
-                  <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Murid Aktif Mengisi</p>
-                  <h3 className="text-2xl font-black text-emerald-700">{periodClassStats.aktif}</h3>
+                <div className="min-w-0">
+                  <p className="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider truncate">Total Murid</p>
+                  <h3 className="text-xl sm:text-2xl font-black text-brand-950">{periodClassStats.total}</h3>
                 </div>
               </div>
 
-              <div className="bg-white p-5 rounded-3xl border border-brand-100 shadow-sm flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-700 flex items-center justify-center border border-indigo-100">
-                  <Calendar className="w-6 h-6" />
+              <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs flex items-center gap-3 sm:gap-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center border border-emerald-100 shrink-0">
+                  <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
-                <div>
-                  <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Rentang Periode</p>
-                  <h3 className="text-lg font-black text-indigo-950 truncate" title={activePeriodRange.label}>
+                <div className="min-w-0">
+                  <p className="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider truncate">Aktif Mengisi</p>
+                  <h3 className="text-xl sm:text-2xl font-black text-emerald-700">{periodClassStats.aktif}</h3>
+                </div>
+              </div>
+
+              <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs flex items-center gap-3 sm:gap-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-indigo-50 text-indigo-700 flex items-center justify-center border border-indigo-100 shrink-0">
+                  <Calendar className="w-5 h-5 sm:w-6 sm:h-6" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider truncate">Periode</p>
+                  <h3 className="text-sm sm:text-base font-black text-indigo-950 truncate" title={activePeriodRange.label}>
                     {activePeriodRange.label}
                   </h3>
                 </div>
               </div>
 
-              <div className="bg-white p-5 rounded-3xl border border-brand-100 shadow-sm flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center border border-amber-100">
-                  <Award className="w-6 h-6" />
+              <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs flex items-center gap-3 sm:gap-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center border border-amber-100 shrink-0">
+                  <Award className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
-                <div>
-                  <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Rata-rata Capaian</p>
-                  <h3 className="text-2xl font-black text-amber-700">{periodClassStats.avgProgress}%</h3>
+                <div className="min-w-0">
+                  <p className="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider truncate">Rata-rata Capaian</p>
+                  <h3 className="text-xl sm:text-2xl font-black text-amber-700">{periodClassStats.avgProgress}%</h3>
                 </div>
               </div>
             </div>
@@ -899,41 +899,37 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
           {/* ======================================================== */}
           {/* FILTER BAR & NAVIGATOR                                    */}
           {/* ======================================================== */}
-          <div className="bg-white rounded-3xl p-5 border border-brand-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex flex-wrap items-center gap-3">
+          <div className="bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-4 border border-slate-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-2">
               {/* 1. Selector Tanggal / Minggu / Bulan */}
               {periodeMode === "harian" && (
-                <div className="flex items-center gap-2 bg-slate-50 px-3 py-2 rounded-2xl border border-slate-200">
-                  <Calendar className="w-4 h-4 text-slate-400" />
-                  <span className="text-xs font-bold text-slate-600 hidden sm:inline">Tanggal:</span>
+                <div className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 text-xs">
+                  <Calendar className="w-3.5 h-3.5 text-slate-400" />
                   <input
                     type="date"
                     value={selectedDate}
                     onChange={(e) => setSelectedDate(e.target.value)}
-                    className="bg-transparent text-xs font-black text-brand-950 outline-none cursor-pointer"
+                    className="bg-transparent font-bold text-slate-900 outline-none cursor-pointer"
                   />
                 </div>
               )}
 
               {periodeMode === "mingguan" && (
-                <div className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1.5 rounded-2xl border border-slate-200">
+                <div className="flex items-center gap-1 bg-slate-50 px-2 py-1 rounded-xl border border-slate-200 text-xs">
                   <button
                     onClick={() => handleShiftWeek(-1)}
                     title="Minggu Sebelumnya"
-                    className="p-1.5 bg-white hover:bg-slate-200 text-slate-700 rounded-xl transition-all border border-slate-200 cursor-pointer shadow-2xs"
+                    className="p-1 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors cursor-pointer"
                   >
                     <ChevronLeft className="w-3.5 h-3.5" />
                   </button>
-                  <div className="flex items-center gap-2 px-2">
-                    <Calendar className="w-4 h-4 text-brand-600 shrink-0" />
-                    <span className="text-xs font-black text-brand-950 whitespace-nowrap">
-                      {currentWeekRange.label}
-                    </span>
-                  </div>
+                  <span className="font-bold text-slate-900 px-1 whitespace-nowrap">
+                    {currentWeekRange.label}
+                  </span>
                   <button
                     onClick={() => handleShiftWeek(1)}
                     title="Minggu Berikutnya"
-                    className="p-1.5 bg-white hover:bg-slate-200 text-slate-700 rounded-xl transition-all border border-slate-200 cursor-pointer shadow-2xs"
+                    className="p-1 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors cursor-pointer"
                   >
                     <ChevronRight className="w-3.5 h-3.5" />
                   </button>
@@ -941,42 +937,40 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
               )}
 
               {periodeMode === "bulanan" && (
-                <div className="flex items-center gap-1.5 bg-slate-50 px-2 py-1.5 rounded-2xl border border-slate-200">
+                <div className="flex items-center gap-1 bg-slate-50 px-2 py-1 rounded-xl border border-slate-200 text-xs">
                   <button
                     onClick={() => handleShiftMonth(-1)}
                     title="Bulan Sebelumnya"
-                    className="p-1.5 bg-white hover:bg-slate-200 text-slate-700 rounded-xl transition-all border border-slate-200 cursor-pointer shadow-2xs"
+                    className="p-1 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors cursor-pointer"
                   >
                     <ChevronLeft className="w-3.5 h-3.5" />
                   </button>
-                  <div className="flex items-center gap-1.5 px-1">
-                    <select
-                      value={selectedMonth}
-                      onChange={(e) => setSelectedMonth(Number(e.target.value))}
-                      className="bg-white px-2.5 py-1 rounded-xl border border-slate-200 text-xs font-black text-brand-950 outline-none cursor-pointer"
-                    >
-                      {MONTH_NAMES_ID.map((mName, i) => (
-                        <option key={mName} value={i + 1}>
-                          {mName}
-                        </option>
-                      ))}
-                    </select>
-                    <select
-                      value={selectedYear}
-                      onChange={(e) => setSelectedYear(Number(e.target.value))}
-                      className="bg-white px-2.5 py-1 rounded-xl border border-slate-200 text-xs font-black text-brand-950 outline-none cursor-pointer"
-                    >
-                      {[2024, 2025, 2026, 2027].map((yr) => (
-                        <option key={yr} value={yr}>
-                          {yr}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  <select
+                    value={selectedMonth}
+                    onChange={(e) => setSelectedMonth(Number(e.target.value))}
+                    className="bg-transparent font-bold text-slate-900 outline-none cursor-pointer"
+                  >
+                    {MONTH_NAMES_ID.map((mName, i) => (
+                      <option key={mName} value={i + 1}>
+                        {mName}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    value={selectedYear}
+                    onChange={(e) => setSelectedYear(Number(e.target.value))}
+                    className="bg-transparent font-bold text-slate-900 outline-none cursor-pointer"
+                  >
+                    {[2024, 2025, 2026, 2027].map((yr) => (
+                      <option key={yr} value={yr}>
+                        {yr}
+                      </option>
+                    ))}
+                  </select>
                   <button
                     onClick={() => handleShiftMonth(1)}
                     title="Bulan Berikutnya"
-                    className="p-1.5 bg-white hover:bg-slate-200 text-slate-700 rounded-xl transition-all border border-slate-200 cursor-pointer shadow-2xs"
+                    className="p-1 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors cursor-pointer"
                   >
                     <ChevronRight className="w-3.5 h-3.5" />
                   </button>
@@ -984,13 +978,12 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
               )}
 
               {/* 2. Filter Kelas */}
-              <div className="flex items-center gap-2 bg-slate-50 px-3 py-2 rounded-2xl border border-slate-200">
-                <Filter className="w-4 h-4 text-slate-400" />
-                <span className="text-xs font-bold text-slate-600">Kelas:</span>
+              <div className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1.5 rounded-xl border border-slate-200 text-xs">
+                <span className="font-medium text-slate-500">Kelas:</span>
                 <select
                   value={selectedKelas}
                   onChange={(e) => setSelectedKelas(e.target.value)}
-                  className="bg-transparent text-xs font-black text-brand-950 outline-none cursor-pointer"
+                  className="bg-transparent font-bold text-slate-900 outline-none cursor-pointer"
                 >
                   <option value="Semua">Semua Kelas</option>
                   {availableClassOptions.map((c) => (
@@ -1003,13 +996,12 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
 
               {/* 3. Selector Murid (Khusus Tinjauan Individu) */}
               {tinjauanMode === "individu" && (
-                <div className="flex items-center gap-2 bg-slate-50 px-3 py-2 rounded-2xl border border-slate-200">
-                  <User className="w-4 h-4 text-brand-600" />
-                  <span className="text-xs font-bold text-slate-600">Pilih Murid:</span>
+                <div className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1.5 rounded-xl border border-slate-200 text-xs">
+                  <span className="font-medium text-slate-500">Murid:</span>
                   <select
                     value={selectedStudentId}
                     onChange={(e) => setSelectedStudentId(e.target.value)}
-                    className="bg-transparent text-xs font-black text-brand-950 outline-none cursor-pointer max-w-[220px]"
+                    className="bg-transparent font-bold text-slate-900 outline-none cursor-pointer max-w-[180px] truncate"
                   >
                     {classScopedSiswa.length === 0 ? (
                       <option value="">Tidak ada murid</option>
@@ -1024,16 +1016,16 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                 </div>
               )}
 
-              {/* 4. Filter Status (Harian & Per Kelas) */}
+              {/* 4. Filter Status */}
               {tinjauanMode === "kelas" && (
-                <div className="flex items-center gap-2 bg-slate-50 px-3 py-2 rounded-2xl border border-slate-200">
-                  <span className="text-xs font-bold text-slate-600">Status:</span>
+                <div className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1.5 rounded-xl border border-slate-200 text-xs">
+                  <span className="font-medium text-slate-500">Status:</span>
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value as any)}
-                    className="bg-transparent text-xs font-black text-brand-950 outline-none cursor-pointer"
+                    className="bg-transparent font-bold text-slate-900 outline-none cursor-pointer"
                   >
-                    <option value="Semua">Semua Status</option>
+                    <option value="Semua">Semua</option>
                     <option value="Sudah Mengisi">Sudah Mengisi</option>
                     <option value="Belum Mengisi">Belum Mengisi</option>
                   </select>
@@ -1041,33 +1033,28 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
               )}
             </div>
 
-            <div className="flex items-center gap-3">
+            {/* Kanan: Search & Export */}
+            <div className="flex items-center gap-2 w-full md:w-auto">
               {tinjauanMode === "kelas" && (
-                <div className="relative flex-1 md:w-64">
-                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <div className="relative flex-1 md:w-56">
+                  <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                   <input
                     type="text"
-                    placeholder="Cari nama atau NIS..."
+                    placeholder="Cari nama / NIS..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-slate-50 pl-9 pr-3 py-2 rounded-2xl border border-slate-200 text-xs font-bold text-slate-800 outline-none focus:bg-white focus:border-brand-500"
+                    className="w-full bg-slate-50 pl-8 pr-3 py-1.5 rounded-xl border border-slate-200 text-xs text-slate-800 outline-none focus:bg-white focus:border-brand-500"
                   />
                 </div>
               )}
 
               <button
                 onClick={handleExportExcel}
-                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-black transition-all cursor-pointer flex items-center gap-2 shadow-sm shrink-0"
-                title="Ekspor laporan rekapitulasi ke file Excel (.xlsx)"
+                className="w-full sm:w-auto px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs shrink-0"
+                title="Unduh laporan ke file Excel (.xlsx)"
               >
-                <Download className="w-4 h-4" />
-                <span>
-                  {tinjauanMode === "individu"
-                    ? "Export Rekap Individu"
-                    : periodeMode === "harian"
-                    ? "Export Harian"
-                    : `Export Rekap ${periodeMode === "mingguan" ? "Mingguan" : "Bulanan"}`}
-                </span>
+                <Download className="w-3.5 h-3.5" />
+                <span>Export Excel</span>
               </button>
             </div>
           </div>
@@ -1650,7 +1637,7 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
       {/* ======================================================== */}
       <AnimatePresence>
         {isAdmin && showAssignModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -1659,296 +1646,241 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
               onClick={() => setShowAssignModal(false)}
             />
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              initial={{ opacity: 0, scale: 0.96, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              className="bg-white rounded-3xl p-6 sm:p-7 max-w-xl w-full max-h-[90vh] overflow-y-auto relative z-10 shadow-2xl border border-brand-100 space-y-5"
+              exit={{ opacity: 0, scale: 0.96, y: 10 }}
+              className="bg-white rounded-3xl p-4 sm:p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto relative z-10 shadow-2xl border border-slate-100 space-y-4"
             >
-              <div className="flex items-center justify-between">
+              {/* Header Modal */}
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                 <div>
-                  <h3 className="text-base font-black text-brand-950">Beri Izin Akses Jurnal 7 KAIH</h3>
+                  <h3 className="text-base font-black text-slate-900">Izin Akses Jurnal 7 KAIH</h3>
                   <p className="text-xs text-slate-500 font-medium">
-                    Pilih guru dan kepala sekolah yang diberikan wewenang akses monitoring
+                    Atur wewenang pemantauan untuk guru dan kepala sekolah
                   </p>
                 </div>
                 <button
                   onClick={() => setShowAssignModal(false)}
-                  className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all cursor-pointer"
+                  className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
-              {/* 1. Pilih Guru / Kepala Sekolah (Mendukung Select Semua Guru) */}
-              <div className="space-y-2.5">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <label className="text-xs font-bold text-slate-700">
-                    Pilih Guru / Kepala Sekolah:
-                  </label>
+              {/* 1. Pilih Guru / Kepala Sekolah */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-1.5 font-bold text-slate-800">
+                    <User className="w-3.5 h-3.5 text-brand-600" />
+                    <span>Pilih Guru:</span>
+                    <span className="text-[11px] font-semibold text-slate-400">
+                      ({isAllTeachersSelected ? "Semua dipilih" : `${selectedCandidateIds.length} dipilih`})
+                    </span>
+                  </div>
 
-                  {/* Shortcut Button Bar: Select Semua Guru, Hanya Guru, Kepsek, Reset */}
-                  <div className="flex flex-wrap items-center gap-1.5">
+                  <div className="flex items-center gap-1">
                     <button
                       type="button"
                       onClick={handleToggleSelectAllTeachers}
-                      className={`px-2.5 py-1 rounded-xl text-[11px] font-black transition-all cursor-pointer border flex items-center gap-1 ${
-                        isAllTeachersSelected
-                          ? "bg-brand-600 text-white border-brand-600 shadow-xs"
-                          : "bg-brand-50 text-brand-700 border-brand-200 hover:bg-brand-100"
-                      }`}
-                      title={isAllTeachersSelected ? "Batalkan pemilihan seluruh guru" : "Pilih seluruh guru & kepala sekolah sekaligus"}
+                      className="px-2 py-0.5 rounded-lg text-[11px] font-bold text-brand-700 bg-brand-50 hover:bg-brand-100 transition-colors cursor-pointer"
                     >
-                      <CheckCheck className="w-3.5 h-3.5" />
-                      <span>{isAllTeachersSelected ? "Batalkan Semua Guru" : "Select Semua Guru"}</span>
+                      {isAllTeachersSelected ? "Batal Semua" : "Pilih Semua"}
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => handleSelectTeachersByRole("guru")}
-                      className="px-2 py-1 rounded-xl text-[11px] font-black bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-all cursor-pointer"
-                      title="Pilih seluruh akun guru"
-                    >
-                      Semua Guru
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleSelectTeachersByRole("kepala_sekolah")}
-                      className="px-2 py-1 rounded-xl text-[11px] font-black bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-all cursor-pointer"
-                      title="Pilih kepala sekolah"
-                    >
-                      Kepsek
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setSelectedCandidateIds([])}
-                      className="px-2 py-1 rounded-xl text-[11px] font-black bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition-all cursor-pointer"
-                      title="Kosongkan pilihan guru"
-                    >
-                      Reset
-                    </button>
+                    {selectedCandidateIds.length > 0 && !isAllTeachersSelected && (
+                      <button
+                        type="button"
+                        onClick={() => setSelectedCandidateIds([])}
+                        className="px-1.5 py-0.5 rounded-lg text-[11px] font-bold text-slate-500 hover:bg-slate-100 transition-colors cursor-pointer"
+                      >
+                        Reset
+                      </button>
+                    )}
                   </div>
                 </div>
 
-                {/* Status Terpilih Info Guru */}
-                <div className="flex items-center justify-between text-[11px] font-bold px-1 text-slate-500">
-                  <span>Guru Terpilih:</span>
-                  <span className={`font-black ${isAllTeachersSelected ? "text-emerald-700" : selectedCandidateIds.length > 0 ? "text-brand-700" : "text-slate-400"}`}>
-                    {isAllTeachersSelected
-                      ? `⭐ Akses Massal: Semua Guru & Kepsek Terpilih (${candidatesList.length} Pengguna)`
-                      : selectedCandidateIds.length > 0
-                      ? `${selectedCandidateIds.length} dari ${candidatesList.length} guru/kepsek dipilih`
-                      : "Belum ada guru yang dipilih"}
-                  </span>
-                </div>
-
-                {/* Search & List Box Guru */}
-                <div className="p-2.5 border border-slate-200 rounded-2xl bg-slate-50 space-y-2">
-                  {/* Search Input Guru */}
+                {/* Filter Role & Search Guru */}
+                <div className="space-y-1.5">
                   <div className="relative">
-                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
                     <input
                       type="text"
                       placeholder="Cari nama guru atau email..."
                       value={teacherSearchQuery}
                       onChange={(e) => setTeacherSearchQuery(e.target.value)}
-                      className="w-full bg-white pl-8 pr-3 py-1.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 outline-none focus:border-brand-500"
+                      className="w-full bg-slate-50 pl-8 pr-3 py-1.5 rounded-xl border border-slate-200 text-xs text-slate-800 outline-none focus:bg-white focus:border-brand-500"
                     />
                   </div>
 
-                  {/* Banner Tombol Utama Select Semua Guru */}
-                  <button
-                    type="button"
-                    onClick={handleToggleSelectAllTeachers}
-                    className={`w-full p-2.5 rounded-xl text-xs font-black transition-all cursor-pointer border flex items-center justify-between gap-3 text-left ${
-                      isAllTeachersSelected
-                        ? "bg-brand-600 text-white border-brand-600 shadow-sm"
-                        : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <div className={`w-5 h-5 rounded-lg flex items-center justify-center shrink-0 ${isAllTeachersSelected ? "bg-white text-brand-600" : "border border-slate-300 bg-slate-50"}`}>
-                        {isAllTeachersSelected ? <CheckCheck className="w-3.5 h-3.5" /> : null}
-                      </div>
-                      <div>
-                        <p className="font-black text-xs">⭐ Seluruh Guru & Kepala Sekolah (Akses Massal)</p>
-                        <p className={`text-[10px] font-medium ${isAllTeachersSelected ? "text-brand-100" : "text-slate-400"}`}>
-                          {isAllTeachersSelected ? "Semua guru dan kepala sekolah terpilih aktif" : "Klik untuk menandai dan memilih semua guru sekaligus"}
-                        </p>
-                      </div>
-                    </div>
-                    <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${isAllTeachersSelected ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600"}`}>
-                      {candidatesList.length} Pengguna
-                    </span>
-                  </button>
+                  {/* Filter Role Quick Pills */}
+                  <div className="flex items-center gap-1 text-[11px]">
+                    <button
+                      type="button"
+                      onClick={() => handleSelectTeachersByRole("guru")}
+                      className="px-2 py-0.5 rounded-lg font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
+                    >
+                      Hanya Guru
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSelectTeachersByRole("kepala_sekolah")}
+                      className="px-2 py-0.5 rounded-lg font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
+                    >
+                      Hanya Kepsek
+                    </button>
+                  </div>
+                </div>
 
-                  {/* Daftar Guru Scrollable List */}
-                  <div className="max-h-40 overflow-y-auto space-y-1 pr-1">
-                    {filteredCandidatesList.length === 0 ? (
-                      <p className="text-center text-xs text-slate-400 py-3">Tidak ditemukan pengguna guru</p>
-                    ) : (
-                      filteredCandidatesList.map((t) => {
-                        const isSelected = selectedCandidateIds.includes(t.id);
-                        return (
-                          <div
-                            key={t.id}
-                            onClick={() => handleToggleSingleTeacher(t.id)}
-                            className={`p-2 rounded-xl text-xs transition-all cursor-pointer border flex items-center justify-between gap-2.5 ${
-                              isSelected
-                                ? "bg-brand-50/80 border-brand-300 text-brand-950 font-bold"
-                                : "bg-white border-slate-200 hover:bg-slate-100 text-slate-700"
+                {/* List Guru */}
+                <div className="border border-slate-200 rounded-2xl max-h-40 overflow-y-auto divide-y divide-slate-100 bg-slate-50/50">
+                  {filteredCandidatesList.length === 0 ? (
+                    <p className="text-center text-xs text-slate-400 py-4">Guru tidak ditemukan</p>
+                  ) : (
+                    filteredCandidatesList.map((t) => {
+                      const isSelected = selectedCandidateIds.includes(t.id);
+                      return (
+                        <div
+                          key={t.id}
+                          onClick={() => handleToggleSingleTeacher(t.id)}
+                          className={`px-3 py-2 text-xs flex items-center justify-between gap-2.5 cursor-pointer transition-colors ${
+                            isSelected ? "bg-brand-50/70 text-brand-950" : "hover:bg-white text-slate-700"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div
+                              className={`w-4 h-4 rounded-md flex items-center justify-center shrink-0 border transition-all ${
+                                isSelected ? "bg-brand-600 border-brand-600 text-white" : "border-slate-300 bg-white"
+                              }`}
+                            >
+                              {isSelected && <Check className="w-3 h-3" />}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="font-bold truncate text-xs">{toSentenceCase(t.nama)}</p>
+                              <p className="text-[10px] text-slate-400 truncate">{t.email || "-"}</p>
+                            </div>
+                          </div>
+                          <span
+                            className={`text-[10px] font-bold px-1.5 py-0.5 rounded shrink-0 ${
+                              t.role === "kepala_sekolah"
+                                ? "bg-indigo-50 text-indigo-700 border border-indigo-200"
+                                : "bg-slate-100 text-slate-600"
                             }`}
                           >
-                            <div className="flex items-center gap-2.5 min-w-0">
-                              <div className={`w-4 h-4 rounded-md flex items-center justify-center shrink-0 ${
-                                isSelected ? "bg-brand-600 text-white" : "border border-slate-300 bg-white"
-                              }`}>
-                                {isSelected && <CheckCheck className="w-3 h-3" />}
-                              </div>
-                              <div className="min-w-0">
-                                <p className="font-bold text-xs truncate">
-                                  {toSentenceCase(t.nama)}
-                                </p>
-                                <p className="text-[10px] text-slate-400 truncate">
-                                  {t.email || "-"}
-                                </p>
-                              </div>
-                            </div>
-                            <span className={`text-[10px] font-black px-2 py-0.5 rounded-md shrink-0 ${
-                              t.role === "kepala_sekolah" ? "bg-indigo-100 text-indigo-700" : "bg-slate-100 text-slate-600"
-                            }`}>
-                              {t.role === "kepala_sekolah" ? "Kepsek" : "Guru"}
-                            </span>
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
+                            {t.role === "kepala_sekolah" ? "Kepsek" : "Guru"}
+                          </span>
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
               </div>
 
-              {/* Pilih Kelas Binaan (Termasuk "Select Semua") */}
-              <div className="space-y-2.5">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <label className="text-xs font-bold text-slate-700">Pilih Akses Kelas:</label>
-                  
-                  {/* Shortcut Button Bar: Select Semua, Tingkat X, XI, XII, Reset */}
-                  <div className="flex flex-wrap items-center gap-1.5">
+              {/* 2. Pilih Akses Kelas */}
+              <div className="space-y-2 pt-2 border-t border-slate-100">
+                <div className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-1.5 font-bold text-slate-800">
+                    <Filter className="w-3.5 h-3.5 text-brand-600" />
+                    <span>Akses Kelas:</span>
+                    <span className="text-[11px] font-semibold text-slate-400">
+                      ({isAllClassesSelected ? "Semua Kelas" : `${selectedClassesToAssign.length} kelas`})
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-1">
                     <button
                       type="button"
                       onClick={handleToggleSelectAll}
-                      className={`px-2.5 py-1 rounded-xl text-[11px] font-black transition-all cursor-pointer border flex items-center gap-1 ${
-                        isAllClassesSelected
-                          ? "bg-brand-600 text-white border-brand-600 shadow-xs"
-                          : "bg-brand-50 text-brand-700 border-brand-200 hover:bg-brand-100"
-                      }`}
-                      title={isAllClassesSelected ? "Batalkan pemilihan seluruh kelas" : "Pilih seluruh kelas yang ada sekaligus"}
+                      className="px-2 py-0.5 rounded-lg text-[11px] font-bold text-brand-700 bg-brand-50 hover:bg-brand-100 transition-colors cursor-pointer"
                     >
-                      <CheckCheck className="w-3.5 h-3.5" />
-                      <span>{isAllClassesSelected ? "Batalkan Semua" : "Select Semua"}</span>
+                      {isAllClassesSelected ? "Pilih Per Kelas" : "Semua Kelas"}
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => handleSelectGrade("X")}
-                      className="px-2 py-1 rounded-xl text-[11px] font-black bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-all cursor-pointer"
-                      title="Pilih seluruh kelas X"
-                    >
-                      Kls X
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleSelectGrade("XI")}
-                      className="px-2 py-1 rounded-xl text-[11px] font-black bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-all cursor-pointer"
-                      title="Pilih seluruh kelas XI"
-                    >
-                      Kls XI
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleSelectGrade("XII")}
-                      className="px-2 py-1 rounded-xl text-[11px] font-black bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-all cursor-pointer"
-                      title="Pilih seluruh kelas XII"
-                    >
-                      Kls XII
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setSelectedClassesToAssign([])}
-                      className="px-2 py-1 rounded-xl text-[11px] font-black bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition-all cursor-pointer"
-                      title="Kosongkan semua pilihan kelas"
-                    >
-                      Reset
-                    </button>
+                    {!isAllClassesSelected && selectedClassesToAssign.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setSelectedClassesToAssign([])}
+                        className="px-1.5 py-0.5 rounded-lg text-[11px] font-bold text-slate-500 hover:bg-slate-100 transition-colors cursor-pointer"
+                      >
+                        Reset
+                      </button>
+                    )}
                   </div>
                 </div>
 
-                {/* Status Pilihan Info */}
-                <div className="flex items-center justify-between text-[11px] font-bold px-1 text-slate-500">
-                  <span>Status Terpilih:</span>
-                  <span className={`font-black ${isAllClassesSelected ? "text-emerald-700" : selectedClassesToAssign.length > 0 ? "text-brand-700" : "text-slate-400"}`}>
-                    {isAllClassesSelected
-                      ? `⭐ Akses Penuh: Semua Kelas Terpilih (${availableClassOptions.length} Kelas)`
-                      : selectedClassesToAssign.length > 0
-                      ? `${selectedClassesToAssign.filter((c) => c !== "Semua").length} dari ${availableClassOptions.length} kelas dipilih`
-                      : "Belum ada kelas yang dipilih"}
+                {/* Checkbox Utama Semua Kelas */}
+                <div
+                  onClick={handleToggleSelectAll}
+                  className={`p-2.5 rounded-xl border text-xs font-bold cursor-pointer transition-colors flex items-center justify-between ${
+                    isAllClassesSelected
+                      ? "bg-brand-600 text-white border-brand-600 shadow-2xs"
+                      : "bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200"
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <div
+                      className={`w-4 h-4 rounded-md flex items-center justify-center shrink-0 border ${
+                        isAllClassesSelected ? "bg-white border-white text-brand-600" : "border-slate-300 bg-white"
+                      }`}
+                    >
+                      {isAllClassesSelected && <Check className="w-3 h-3" />}
+                    </div>
+                    <span>Akses Penuh Semua Kelas</span>
+                  </div>
+                  <span
+                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                      isAllClassesSelected ? "bg-white/20 text-white" : "bg-slate-200 text-slate-600"
+                    }`}
+                  >
+                    {availableClassOptions.length} Kelas
                   </span>
                 </div>
 
-                <div className="p-2.5 border border-slate-200 rounded-2xl bg-slate-50 space-y-2">
-                  {/* Banner Tombol Utama Select Semua */}
-                  <button
-                    type="button"
-                    onClick={handleToggleSelectAll}
-                    className={`w-full p-2.5 rounded-xl text-xs font-black transition-all cursor-pointer border flex items-center justify-between gap-3 text-left ${
-                      isAllClassesSelected
-                        ? "bg-brand-600 text-white border-brand-600 shadow-sm"
-                        : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <div className={`w-5 h-5 rounded-lg flex items-center justify-center shrink-0 ${isAllClassesSelected ? "bg-white text-brand-600" : "border border-slate-300 bg-slate-50"}`}>
-                        {isAllClassesSelected ? <CheckCheck className="w-3.5 h-3.5" /> : null}
-                      </div>
-                      <div>
-                        <p className="font-black text-xs">⭐ Semua Kelas (Akses Penuh Seluruh Siswa)</p>
-                        <p className={`text-[10px] font-medium ${isAllClassesSelected ? "text-brand-100" : "text-slate-400"}`}>
-                          {isAllClassesSelected ? "Seluruh kelas terpilih aktif" : "Klik untuk memilih dan menandai semua kelas sekaligus"}
-                        </p>
-                      </div>
-                    </div>
-                    <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${isAllClassesSelected ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600"}`}>
-                      {availableClassOptions.length} Kelas
-                    </span>
-                  </button>
-
-                  {/* Grid Kelas Individual */}
-                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5 max-h-48 overflow-y-auto p-1">
-                    {availableClassOptions.map((k) => {
-                      const isSelected = isAllClassesSelected || selectedClassesToAssign.includes(k);
-                      return (
+                {/* Grid Kelas Spesifik */}
+                {!isAllClassesSelected && (
+                  <div className="space-y-1.5">
+                    {/* Filter Tingkat Cepat */}
+                    <div className="flex items-center gap-1 text-[11px]">
+                      <span className="text-slate-400 font-medium">Jenjang:</span>
+                      {["X", "XI", "XII"].map((grade) => (
                         <button
-                          key={k}
+                          key={grade}
                           type="button"
-                          onClick={() => handleToggleSingleClass(k)}
-                          className={`p-2 rounded-xl text-xs font-black transition-all cursor-pointer border flex items-center justify-center gap-1 ${
-                            isSelected
-                              ? "bg-brand-600 text-white border-brand-600 shadow-2xs"
-                              : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
-                          }`}
+                          onClick={() => handleSelectGrade(grade)}
+                          className="px-2 py-0.5 rounded-md font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
                         >
-                          {isSelected && <CheckCheck className="w-3 h-3 shrink-0" />}
-                          <span className="truncate">{k}</span>
+                          Kls {grade}
                         </button>
-                      );
-                    })}
+                      ))}
+                    </div>
+
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5 max-h-36 overflow-y-auto p-1 border border-slate-200 rounded-xl bg-slate-50">
+                      {availableClassOptions.map((k) => {
+                        const isSelected = selectedClassesToAssign.includes(k);
+                        return (
+                          <button
+                            key={k}
+                            type="button"
+                            onClick={() => handleToggleSingleClass(k)}
+                            className={`p-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer border flex items-center justify-center gap-1 ${
+                              isSelected
+                                ? "bg-brand-600 text-white border-brand-600"
+                                : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
+                            }`}
+                          >
+                            {isSelected && <Check className="w-3 h-3 shrink-0" />}
+                            <span className="truncate">{k}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
 
-              {/* Actions */}
-              <div className="pt-3 flex items-center justify-end gap-2 border-t border-slate-100">
+              {/* Actions Footer */}
+              <div className="pt-3 flex flex-col-reverse sm:flex-row items-center justify-end gap-2 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setShowAssignModal(false)}
-                  className="px-4 py-2.5 rounded-2xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition-all cursor-pointer"
+                  className="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer text-center"
                 >
                   Batal
                 </button>
@@ -1956,7 +1888,7 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                   type="button"
                   onClick={handleSaveTeacherAssignment}
                   disabled={isAssigning}
-                  className="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-2xl text-xs font-black transition-all cursor-pointer flex items-center gap-2 shadow-sm"
+                  className="w-full sm:w-auto px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 shadow-sm"
                 >
                   {isAssigning ? "Menyimpan..." : "Simpan Izin Akses"}
                 </button>

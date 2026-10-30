@@ -419,10 +419,10 @@ export default function Checklist7KaihView({ userSession, siswaId: propSiswaId }
       </AnimatePresence>
 
       {/* Tab Switcher: Checklist Harian vs Rekap Hasil Saya */}
-      <div className="flex items-center gap-2 p-1.5 bg-slate-100 rounded-2xl w-fit print:hidden">
+      <div className="flex items-center gap-1.5 p-1.5 bg-slate-100 rounded-2xl w-full sm:w-fit print:hidden">
         <button
           onClick={() => setMainTab("checklist")}
-          className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
+          className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
             mainTab === "checklist"
               ? "bg-white text-brand-950 shadow-sm"
               : "text-slate-600 hover:text-slate-900"
@@ -433,7 +433,7 @@ export default function Checklist7KaihView({ userSession, siswaId: propSiswaId }
         </button>
         <button
           onClick={() => setMainTab("rekap")}
-          className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
+          className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
             mainTab === "rekap"
               ? "bg-white text-brand-950 shadow-sm"
               : "text-slate-600 hover:text-slate-900"
@@ -1305,51 +1305,51 @@ export default function Checklist7KaihView({ userSession, siswaId: propSiswaId }
             </div>
 
             {/* Sub-bar: Periode Navigator & Tombol Export */}
-            <div className="mt-6 pt-5 border-t border-white/15 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="mt-5 pt-4 border-t border-white/15 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               {/* Date Navigator */}
               <div className="flex items-center gap-2">
                 {rekapPeriodMode === "mingguan" ? (
-                  <div className="flex items-center gap-1.5 bg-black/25 px-2 py-1 rounded-xl border border-white/15">
+                  <div className="flex items-center gap-1.5 bg-black/25 px-2 py-1 rounded-xl border border-white/15 text-xs">
                     <button
                       onClick={() => handleShiftRekapWeek(-1)}
                       title="Minggu Sebelumnya"
-                      className="p-1 hover:bg-white/20 text-white rounded-lg transition-all cursor-pointer"
+                      className="p-1 hover:bg-white/20 text-white rounded-lg transition-colors cursor-pointer"
                     >
                       <ChevronLeft className="w-4 h-4" />
                     </button>
-                    <div className="flex items-center gap-2 px-2">
+                    <div className="flex items-center gap-1.5 px-1.5">
                       <Calendar className="w-3.5 h-3.5 text-amber-300" />
-                      <span className="text-xs font-black text-white whitespace-nowrap">
-                        Minggu: {rekapWeekRange.label}
+                      <span className="font-bold text-white whitespace-nowrap">
+                        {rekapWeekRange.label}
                       </span>
                     </div>
                     <button
                       onClick={() => handleShiftRekapWeek(1)}
                       title="Minggu Berikutnya"
-                      className="p-1 hover:bg-white/20 text-white rounded-lg transition-all cursor-pointer"
+                      className="p-1 hover:bg-white/20 text-white rounded-lg transition-colors cursor-pointer"
                     >
                       <ChevronRight className="w-4 h-4" />
                     </button>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-1.5 bg-black/25 px-2 py-1 rounded-xl border border-white/15">
+                  <div className="flex items-center gap-1.5 bg-black/25 px-2 py-1 rounded-xl border border-white/15 text-xs">
                     <button
                       onClick={() => handleShiftRekapMonth(-1)}
                       title="Bulan Sebelumnya"
-                      className="p-1 hover:bg-white/20 text-white rounded-lg transition-all cursor-pointer"
+                      className="p-1 hover:bg-white/20 text-white rounded-lg transition-colors cursor-pointer"
                     >
                       <ChevronLeft className="w-4 h-4" />
                     </button>
-                    <div className="flex items-center gap-2 px-2">
+                    <div className="flex items-center gap-1.5 px-1.5">
                       <Calendar className="w-3.5 h-3.5 text-amber-300" />
-                      <span className="text-xs font-black text-white whitespace-nowrap">
-                        Bulan: {MONTH_NAMES_ID[rekapMonth - 1]} {rekapYear}
+                      <span className="font-bold text-white whitespace-nowrap">
+                        {MONTH_NAMES_ID[rekapMonth - 1]} {rekapYear}
                       </span>
                     </div>
                     <button
                       onClick={() => handleShiftRekapMonth(1)}
                       title="Bulan Berikutnya"
-                      className="p-1 hover:bg-white/20 text-white rounded-lg transition-all cursor-pointer"
+                      className="p-1 hover:bg-white/20 text-white rounded-lg transition-colors cursor-pointer"
                     >
                       <ChevronRight className="w-4 h-4" />
                     </button>
@@ -1358,18 +1358,18 @@ export default function Checklist7KaihView({ userSession, siswaId: propSiswaId }
               </div>
 
               {/* Action Buttons: Export Excel & Cetak PDF */}
-              <div className="flex items-center gap-2 print:hidden">
+              <div className="flex items-center gap-2 print:hidden w-full sm:w-auto">
                 <button
                   onClick={handleExportMyRekap}
-                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-2 shadow-sm"
+                  className="flex-1 sm:flex-none px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs"
                   title="Unduh laporan rekap saya ke Excel (.xlsx)"
                 >
-                  <Download className="w-4 h-4" />
-                  <span>Download Rekap (Excel)</span>
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Download Excel</span>
                 </button>
                 <button
                   onClick={() => window.print()}
-                  className="p-2 bg-white/20 hover:bg-white/30 text-white rounded-xl transition-all cursor-pointer border border-white/20"
+                  className="p-1.5 bg-white/20 hover:bg-white/30 text-white rounded-xl transition-colors cursor-pointer border border-white/20"
                   title="Cetak Ringkasan Jurnal"
                 >
                   <Printer className="w-4 h-4" />
@@ -1379,52 +1379,52 @@ export default function Checklist7KaihView({ userSession, siswaId: propSiswaId }
           </div>
 
           {/* KPI Summary Cards Murid */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-white p-5 rounded-3xl border border-brand-100 shadow-sm flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-brand-50 text-brand-700 flex items-center justify-center border border-brand-100">
-                <Calendar className="w-6 h-6" />
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs flex items-center gap-3 sm:gap-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-brand-50 text-brand-700 flex items-center justify-center border border-brand-100 shrink-0">
+                <Calendar className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
-              <div>
-                <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Hari Mengisi</p>
-                <h3 className="text-2xl font-black text-brand-950">
+              <div className="min-w-0">
+                <p className="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider truncate">Hari Mengisi</p>
+                <h3 className="text-xl sm:text-2xl font-black text-brand-950">
                   {periodSummary.totalHariTerisi}{" "}
-                  <span className="text-xs font-bold text-slate-400">/ {totalDaysInRekapPeriod} Hari</span>
+                  <span className="text-[10px] sm:text-xs font-bold text-slate-400">/ {totalDaysInRekapPeriod}</span>
                 </h3>
               </div>
             </div>
 
-            <div className="bg-white p-5 rounded-3xl border border-brand-100 shadow-sm flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center border border-emerald-100">
-                <Award className="w-6 h-6" />
+            <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs flex items-center gap-3 sm:gap-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center border border-emerald-100 shrink-0">
+                <Award className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
-              <div>
-                <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Rata-rata Capaian</p>
-                <h3 className="text-2xl font-black text-emerald-700">{periodSummary.avgProgress}%</h3>
+              <div className="min-w-0">
+                <p className="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider truncate">Rata-rata Capaian</p>
+                <h3 className="text-xl sm:text-2xl font-black text-emerald-700">{periodSummary.avgProgress}%</h3>
               </div>
             </div>
 
-            <div className="bg-white p-5 rounded-3xl border border-brand-100 shadow-sm flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-700 flex items-center justify-center border border-indigo-100">
-                <BookOpen className="w-6 h-6" />
+            <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs flex items-center gap-3 sm:gap-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-indigo-50 text-indigo-700 flex items-center justify-center border border-indigo-100 shrink-0">
+                <BookOpen className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
-              <div>
-                <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Total Belajar</p>
-                <h3 className="text-2xl font-black text-indigo-700">
+              <div className="min-w-0">
+                <p className="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider truncate">Total Belajar</p>
+                <h3 className="text-xl sm:text-2xl font-black text-indigo-700">
                   {periodSummary.totalDurasiBelajar}{" "}
-                  <span className="text-xs font-bold text-slate-400">Menit</span>
+                  <span className="text-[10px] sm:text-xs font-bold text-slate-400">Mnt</span>
                 </h3>
               </div>
             </div>
 
-            <div className="bg-white p-5 rounded-3xl border border-brand-100 shadow-sm flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center border border-amber-100">
-                <Dumbbell className="w-6 h-6" />
+            <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs flex items-center gap-3 sm:gap-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center border border-amber-100 shrink-0">
+                <Dumbbell className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
-              <div>
-                <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Olahraga Fisik</p>
-                <h3 className="text-2xl font-black text-amber-700">
+              <div className="min-w-0">
+                <p className="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider truncate">Olahraga</p>
+                <h3 className="text-xl sm:text-2xl font-black text-amber-700">
                   {periodSummary.olahragaSudahCount}{" "}
-                  <span className="text-xs font-bold text-slate-400">Sesi</span>
+                  <span className="text-[10px] sm:text-xs font-bold text-slate-400">Sesi</span>
                 </h3>
               </div>
             </div>

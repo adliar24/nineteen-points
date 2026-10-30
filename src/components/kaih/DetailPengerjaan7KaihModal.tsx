@@ -1014,35 +1014,35 @@ export default function DetailPengerjaan7KaihModal({
           {activeTab === "riwayat" && (
             <div className="space-y-5">
               {/* Filter Sub-Periode & Tombol Export Excel */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-200">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[11px] font-black text-slate-500 uppercase mr-1">Filter:</span>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-2.5 bg-slate-50 rounded-2xl border border-slate-200 text-xs">
+                <div className="flex flex-wrap items-center gap-1">
+                  <span className="text-[11px] font-bold text-slate-400 uppercase mr-1">Filter:</span>
                   <button
                     onClick={() => setHistoryFilter("semua")}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    className={`px-2.5 py-1 rounded-lg font-bold transition-colors cursor-pointer ${
                       historyFilter === "semua"
-                        ? "bg-brand-600 text-white shadow-2xs"
-                        : "bg-white text-slate-600 hover:bg-slate-200 border border-slate-200"
+                        ? "bg-brand-600 text-white"
+                        : "bg-white text-slate-700 hover:bg-slate-200 border border-slate-200"
                     }`}
                   >
                     Semua (30 Hari)
                   </button>
                   <button
                     onClick={() => setHistoryFilter("minggu")}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    className={`px-2.5 py-1 rounded-lg font-bold transition-colors cursor-pointer ${
                       historyFilter === "minggu"
-                        ? "bg-brand-600 text-white shadow-2xs"
-                        : "bg-white text-slate-600 hover:bg-slate-200 border border-slate-200"
+                        ? "bg-brand-600 text-white"
+                        : "bg-white text-slate-700 hover:bg-slate-200 border border-slate-200"
                     }`}
                   >
                     Minggu Ini
                   </button>
                   <button
                     onClick={() => setHistoryFilter("bulan")}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    className={`px-2.5 py-1 rounded-lg font-bold transition-colors cursor-pointer ${
                       historyFilter === "bulan"
-                        ? "bg-brand-600 text-white shadow-2xs"
-                        : "bg-white text-slate-600 hover:bg-slate-200 border border-slate-200"
+                        ? "bg-brand-600 text-white"
+                        : "bg-white text-slate-700 hover:bg-slate-200 border border-slate-200"
                     }`}
                   >
                     Bulan Ini
@@ -1061,11 +1061,11 @@ export default function DetailPengerjaan7KaihModal({
                         : "30 Hari Terakhir"
                     )
                   }
-                  className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs self-start sm:self-auto shrink-0"
+                  className="w-full sm:w-auto px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs shrink-0"
                   title="Unduh laporan rekap murid ini ke file Excel (.xlsx)"
                 >
                   <Download className="w-3.5 h-3.5" />
-                  <span>Export Rekap Excel</span>
+                  <span>Export Excel</span>
                 </button>
               </div>
 

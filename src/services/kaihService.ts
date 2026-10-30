@@ -489,7 +489,41 @@ export function calculatePeriodSummary(records: TujuhKaih[]): KaihPeriodSummary 
 }
 
 /**
- * Export rekap pengerjaan satu murid (Individu) ke Excel (.xlsx)
+ * Menghitung lebar kolom otomatis (Auto-fit) pada Worksheet XLSX
+ * Berdasarkan panjang karakter data dan header, dengan batas min dan max.
+ */
+export function autoFitWorksheetCols(
+  ws: XLSX.WorkSheet,
+  startRowIndex = 0,
+  minWidth = 10,
+  maxWidth = 65
+) {
+  if (!ws || !ws["!ref"]) return;
+  const range = XLSX.utils.decode_range(ws["!ref"]);
+  const colWidths: { wch: number }[] = [];
+
+  for (let C = range.s.c; C <= range.e.c; ++C) {
+    let maxLen = minWidth;
+    for (let R = Math.max(range.s.r, startRowIndex); R <= range.e.r; ++R) {
+      const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
+      const cell = ws[cellAddress];
+      if (cell && cell.v !== undefined && cell.v !== null) {
+        const valStr = String(cell.v);
+        const lines = valStr.split("\n");
+        for (const line of lines) {
+          if (line.length > maxLen) {
+            maxLen = line.length;
+          }
+        }
+      }
+    }
+    colWidths.push({ wch: Math.min(Math.max(maxLen + 3, minWidth), maxWidth) });
+  }
+  ws["!cols"] = colWidths;
+}
+
+/**
+ * Export rekap pengerjaan satu murid (Individu) ke Excel (.xlsx) dengan format rapi
  */
 export function exportRekapIndividuToExcel(
   siswa: Siswa,
@@ -503,8 +537,26 @@ export function exportRekapIndividuToExcel(
 
   const summary = calculatePeriodSummary(records);
 
-  // Sheet 1: Rincian Hari per Hari
-  const rows = records.map((r, idx) => {
+  // Sheet 1: Rincian Hari per Hari dengan Kop Resmi
+  const rincianHeaders = [
+    "No",
+    "Hari, Tanggal",
+    "Status Jurnal",
+    "Capaian (%)",
+    "1. Bangun Pagi",
+    "Target Bangun (<= 05.30)",
+    "2. Salat 5 Waktu Wajib",
+    "2b. Tadarus / Mengaji",
+    "3. Olahraga",
+    "4. Makan Sehat & Bergizi",
+    "5. Gemar Belajar Mandiri",
+    "6. Kegiatan Bermasyarakat",
+    "7. Tidur Cepat",
+    "Target Tidur (<= 22.00)",
+    "Waktu Final / Kirim"
+  ];
+
+  const rincianDataRows = records.map((r, idx) => {
     const salatList = [
       r.salat_subuh && "Subuh",
       r.salat_zuhur && "Zuhur",
@@ -514,7 +566,7 @@ export function exportRekapIndividuToExcel(
     ].filter(Boolean).join(", ") || "-";
 
     const mengajiText = r.mengaji_status === "sudah"
-      ? `Sudah (${r.mengaji_surah || ""}: ${r.mengaji_ayat_awal || ""}-${r.mengaji_ayat_akhir || ""})`
+      ? `Sudah (QS. ${r.mengaji_surah || ""}: ayat ${r.mengaji_ayat_awal || ""}-${r.mengaji_ayat_akhir || ""})`
       : r.mengaji_status === "belum" ? "Belum" : "-";
 
     const olahragaText = r.olahraga_status === "sudah"
@@ -527,46 +579,70 @@ export function exportRekapIndividuToExcel(
       ? r.bermasyarakat_kegiatan || "Sudah"
       : r.bermasyarakat_status === "belum" ? "Belum" : "-";
 
-    return {
-      No: idx + 1,
-      Tanggal: r.tanggal,
-      "Status Jurnal": r.is_final ? "Terkirim Final" : "Draft (Auto-saved)",
-      "Progres (%)": r.progres_persen ?? calculate7KaihProgress(r),
-      "1. Bangun Pagi": r.bangun_pagi_waktu || "-",
-      "Target Bangun": r.bangun_pagi_target_sesuai ? "Tercapai" : "-",
-      "2. Salat Wajib": salatList,
-      "2b. Mengaji / Tadarus": mengajiText,
-      "3. Olahraga": olahragaText,
-      "4. Makan Sehat & Bergizi": makanText,
-      "5. Gemar Belajar": belajarText,
-      "6. Bermasyarakat": masyarakatText,
-      "7. Tidur Cepat": r.tidur_cepat_waktu || "-",
-      "Target Tidur": r.tidur_cepat_target_sesuai ? "Tercapai" : "-"
-    };
+    const dateFormatted = parseDateSafe(r.tanggal).toLocaleDateString("id-ID", {
+      weekday: "long",
+      day: "numeric",
+      month: "short",
+      year: "numeric"
+    });
+
+    return [
+      idx + 1,
+      dateFormatted,
+      r.is_final ? "Terkirim Final" : "Draft (Auto-saved)",
+      `${r.progres_persen ?? calculate7KaihProgress(r)}%`,
+      r.bangun_pagi_waktu || "-",
+      r.bangun_pagi_target_sesuai ? "Tercapai" : "Terlambat / Belum",
+      salatList,
+      mengajiText,
+      olahragaText,
+      makanText,
+      belajarText,
+      masyarakatText,
+      r.tidur_cepat_waktu || "-",
+      r.tidur_cepat_target_sesuai ? "Tercapai" : "Terlambat / Belum",
+      r.waktu_kirim_final ? new Date(r.waktu_kirim_final).toLocaleString("id-ID") : "-"
+    ];
   });
 
-  // Sheet 2: Ringkasan Metrik Akumulasi
-  const summaryRows = [
-    { Parameter: "Nama Murid", Nilai: siswa.nama },
-    { Parameter: "NIS", Nilai: siswa.nis },
-    { Parameter: "Kelas", Nilai: siswa.kelas },
-    { Parameter: "Periode Rekap", Nilai: periodLabel },
-    { Parameter: "Total Hari Mengisi Jurnal", Nilai: `${summary.totalHariTerisi} Hari` },
-    { Parameter: "Rata-rata Capaian Progres Jurnal", Nilai: `${summary.avgProgress}%` },
-    { Parameter: "Jurnal Terkirim Final & Terkunci", Nilai: `${summary.totalFinalCount} Hari` },
-    { Parameter: "1. Bangun Pagi Tepat Waktu (<= 05.30)", Nilai: `${summary.bangunPagiTargetMetCount} Hari` },
-    { Parameter: "2. Salat 5 Waktu Lengkap", Nilai: `${summary.salat5WaktuLengkapCount} Hari` },
-    { Parameter: "2b. Mengaji / Tadarus Al-Qur'an", Nilai: `${summary.mengajiSudahCount} Hari` },
-    { Parameter: "3. Frekuensi Berolahraga", Nilai: `${summary.olahragaSudahCount} Hari (Total ${summary.totalDurasiOlahraga} menit)` },
-    { Parameter: "4. Hari Sarapan Bergizi Seimbang", Nilai: `${summary.sarapanBergiziCount} Hari` },
-    { Parameter: "5. Total Waktu Belajar Mandiri", Nilai: `${summary.totalDurasiBelajar} menit (${summary.totalAktivitasBelajar} kegiatan)` },
-    { Parameter: "6. Keikutsertaan Bermasyarakat", Nilai: `${summary.bermasyarakatSudahCount} Hari` },
-    { Parameter: "7. Tidur Cepat Tepat Waktu (<= 22.00)", Nilai: `${summary.tidurCepatTargetMetCount} Hari` }
+  const sheet1AOA: any[][] = [
+    ["LAPORAN JURNAL 7 KEBIASAAN ANAK INDONESIA HEBAT (7 KAIH)"],
+    ["SMAN 19 BANDUNG - LEMBAR RINCIAN HARIAN INDIVIDU"],
+    [`Nama: ${siswa.nama}`, `NIS: ${siswa.nis}`, `Kelas: ${siswa.kelas}`],
+    [`Periode: ${periodLabel}`, "", `Waktu Ekspor: ${new Date().toLocaleString("id-ID")}`],
+    [], // Baris kosong pemisah
+    rincianHeaders,
+    ...rincianDataRows
+  ];
+
+  // Sheet 2: Ringkasan & Evaluasi Capaian Periode
+  const sheet2AOA: any[][] = [
+    ["LEMBAR EVALUASI CAPAIAN 7 KAIH (RINGKASAN INDIVIDU)"],
+    ["SMAN 19 BANDUNG"],
+    [`Nama Murid: ${siswa.nama}`, `NIS: ${siswa.nis}`, `Kelas: ${siswa.kelas}`],
+    [`Periode Rekap: ${periodLabel}`, "", `Tanggal Ekspor: ${new Date().toLocaleDateString("id-ID")}`],
+    [],
+    ["No", "Indikator / Kebiasaan 7 KAIH", "Capaian Periode Ini", "Target Standar", "Evaluasi Konsistensi"],
+    [1, "Total Keaktifan Mengisi Jurnal", `${summary.totalHariTerisi} Hari`, "Setiap Hari", summary.totalHariTerisi >= 5 ? "Sangat Baik" : "Perlu Ditingkatkan"],
+    [2, "Rata-rata Capaian Progres Harian", `${summary.avgProgress}%`, "Minimal 80%", summary.avgProgress >= 80 ? "Memenuhi Target" : "Perlu Bimbingan"],
+    [3, "Jurnal Terkirim Final & Terkunci", `${summary.totalFinalCount} Hari`, "Terkirim Tepat Waktu", `${summary.totalFinalCount} hari dikirim final`],
+    [4, "1. Bangun Pagi (<= 05.30)", `${summary.bangunPagiTargetMetCount} Hari Tepat`, "Rutin Setiap Hari", summary.bangunPagiTargetMetCount >= 5 ? "Sangat Disiplin" : "Cukup"],
+    [5, "2. Salat 5 Waktu Wajib Lengkap", `${summary.salat5WaktuLengkapCount} Hari Lengkap`, "5 Waktu Setiap Hari", summary.salat5WaktuLengkapCount >= 5 ? "Sangat Baik" : "Tingkatkan"],
+    [6, "2b. Tadarus / Mengaji Al-Qur'an", `${summary.mengajiSudahCount} Hari Mengaji`, "Rutin Setiap Hari", `${summary.mengajiSudahCount} hari terlaksana`],
+    [7, "3. Frekuensi & Durasi Olahraga", `${summary.olahragaSudahCount} Hari (${summary.totalDurasiOlahraga} mnt)`, "3-5x per minggu", `${summary.totalDurasiOlahraga} menit akumulasi`],
+    [8, "4. Sarapan Bergizi Seimbang", `${summary.sarapanBergiziCount} Hari Seimbang`, "Setiap Hari", `${summary.sarapanBergiziCount} hari bergizi seimbang`],
+    [9, "5. Gemar Belajar Mandiri", `${summary.totalDurasiBelajar} Menit (${summary.totalAktivitasBelajar} kegiatan)`, "Rutin Belajar", `${summary.totalDurasiBelajar} menit total belajar`],
+    [10, "6. Kegiatan Sosial Bermasyarakat", `${summary.bermasyarakatSudahCount} Hari`, "Aktif di Lingkungan", `${summary.bermasyarakatSudahCount} hari tercatat`],
+    [11, "7. Tidur Cepat Tepat Waktu (<= 22.00)", `${summary.tidurCepatTargetMetCount} Hari Tepat`, "Sebelum 22.00 WIB", summary.tidurCepatTargetMetCount >= 5 ? "Pola Tidur Sehat" : "Hindari Begadang"]
   ];
 
   const wb = XLSX.utils.book_new();
-  const ws1 = XLSX.utils.json_to_sheet(rows);
-  const ws2 = XLSX.utils.json_to_sheet(summaryRows);
+  const ws1 = XLSX.utils.aoa_to_sheet(sheet1AOA);
+  const ws2 = XLSX.utils.aoa_to_sheet(sheet2AOA);
+
+  // Format lebar kolom otomatis
+  autoFitWorksheetCols(ws1, 5, 12, 60);
+  ws2["!cols"] = [{ wch: 6 }, { wch: 38 }, { wch: 32 }, { wch: 22 }, { wch: 28 }];
 
   XLSX.utils.book_append_sheet(wb, ws1, "Rincian Harian 7 KAIH");
   XLSX.utils.book_append_sheet(wb, ws2, "Ringkasan Capaian");
@@ -577,7 +653,7 @@ export function exportRekapIndividuToExcel(
 }
 
 /**
- * Export rekap pengerjaan seluruh kelas (Per Kelas / Semua Kelas) ke Excel (.xlsx)
+ * Export rekap pengerjaan seluruh kelas (Per Kelas / Semua Kelas) ke Excel (.xlsx) dengan format rapi
  */
 export function exportRekapKelasToExcel(
   kelas: string,
@@ -598,36 +674,186 @@ export function exportRekapKelasToExcel(
     recordsBySiswa.set(r.siswa_id, list);
   });
 
-  const rows = allSiswaInKelas.map((siswa, idx) => {
+  const headers = [
+    "No",
+    "NIS",
+    "Nama Murid",
+    "Kelas",
+    "Periode",
+    "Hari Mengisi",
+    "Rata-rata Capaian (%)",
+    "1. Bangun Pagi Sesuai",
+    "2. Salat 5 Waktu Lengkap",
+    "2b. Mengaji / Tadarus",
+    "3. Olahraga (Frekuensi & Durasi)",
+    "4. Sarapan Bergizi",
+    "5. Total Belajar (Menit)",
+    "6. Bermasyarakat",
+    "7. Tidur Tepat Waktu",
+    "Jurnal Final"
+  ];
+
+  const dataRows = allSiswaInKelas.map((siswa, idx) => {
     const sRecords = recordsBySiswa.get(siswa.id) || [];
     const summary = calculatePeriodSummary(sRecords);
 
-    return {
-      No: idx + 1,
-      NIS: siswa.nis,
-      Nama: siswa.nama,
-      Kelas: siswa.kelas,
-      "Periode": periodLabel,
-      "Hari Mengisi": summary.totalHariTerisi,
-      "Rata-rata Progres (%)": summary.totalHariTerisi > 0 ? `${summary.avgProgress}%` : "0%",
-      "Bangun Pagi Sesuai": `${summary.bangunPagiTargetMetCount}x`,
-      "Salat 5 Waktu Lengkap": `${summary.salat5WaktuLengkapCount}x`,
-      "Mengaji / Tadarus": `${summary.mengajiSudahCount}x`,
-      "Olahraga": `${summary.olahragaSudahCount}x (${summary.totalDurasiOlahraga} mnt)`,
-      "Sarapan Bergizi": `${summary.sarapanBergiziCount}x`,
-      "Total Belajar (Menit)": summary.totalDurasiBelajar,
-      "Bermasyarakat": `${summary.bermasyarakatSudahCount}x`,
-      "Tidur Cepat Sesuai": `${summary.tidurCepatTargetMetCount}x`,
-      "Jurnal Final": `${summary.totalFinalCount}x`
-    };
+    return [
+      idx + 1,
+      siswa.nis || "-",
+      siswa.nama,
+      siswa.kelas || "-",
+      periodLabel,
+      `${summary.totalHariTerisi} Hari`,
+      summary.totalHariTerisi > 0 ? `${summary.avgProgress}%` : "0%",
+      `${summary.bangunPagiTargetMetCount}x`,
+      `${summary.salat5WaktuLengkapCount}x`,
+      `${summary.mengajiSudahCount}x`,
+      `${summary.olahragaSudahCount}x (${summary.totalDurasiOlahraga} mnt)`,
+      `${summary.sarapanBergiziCount}x`,
+      `${summary.totalDurasiBelajar} mnt`,
+      `${summary.bermasyarakatSudahCount}x`,
+      `${summary.tidurCepatTargetMetCount}x`,
+      `${summary.totalFinalCount}x`
+    ];
   });
 
+  const sheetAOA: any[][] = [
+    ["REKAPITULASI JURNAL 7 KEBIASAAN ANAK INDONESIA HEBAT (7 KAIH)"],
+    ["SMAN 19 BANDUNG"],
+    [`Kelas: ${kelas === "Semua" ? "Semua Kelas" : kelas}`, `Periode: ${periodLabel}`, `Total Murid: ${allSiswaInKelas.length}`],
+    [`Tanggal Unduh: ${new Date().toLocaleString("id-ID")}`],
+    [],
+    headers,
+    ...dataRows
+  ];
+
   const wb = XLSX.utils.book_new();
-  const ws = XLSX.utils.json_to_sheet(rows);
+  const ws = XLSX.utils.aoa_to_sheet(sheetAOA);
+
+  autoFitWorksheetCols(ws, 5, 10, 50);
   XLSX.utils.book_append_sheet(wb, ws, "Rekap Kelas 7 KAIH");
 
   const sanitizedKelas = (kelas || "Semua").replace(/[^a-zA-Z0-9]/g, "_");
   const sanitizedPeriod = periodLabel.replace(/[^a-zA-Z0-9]/g, "_");
   XLSX.writeFile(wb, `Rekap_7KAIH_Kelas_${sanitizedKelas}_${sanitizedPeriod}.xlsx`);
+}
+
+/**
+ * Export rekap harian Jurnal 7 KAIH ke Excel (.xlsx) dengan format rapi
+ */
+export function exportRekapHarianToExcel(
+  tanggal: string,
+  kelas: string,
+  dailyRows: {
+    siswa: Siswa;
+    record: TujuhKaih | null;
+    isFilled: boolean;
+    progress: number;
+  }[]
+) {
+  if (dailyRows.length === 0) {
+    alert("Tidak ada data untuk diekspor pada tanggal ini.");
+    return;
+  }
+
+  const dateFormatted = parseDateSafe(tanggal).toLocaleDateString("id-ID", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric"
+  });
+
+  const headers = [
+    "No",
+    "NIS",
+    "Nama Murid",
+    "Kelas",
+    "Status Pengisian",
+    "Capaian (%)",
+    "1. Bangun Pagi",
+    "2. Salat Wajib",
+    "2b. Tadarus / Mengaji",
+    "3. Olahraga",
+    "4. Makan Sehat",
+    "5. Gemar Belajar",
+    "6. Bermasyarakat",
+    "7. Tidur Cepat",
+    "Waktu Final / Kirim"
+  ];
+
+  const dataRows = dailyRows.map((item, idx) => {
+    const r = item.record;
+    const salatList = r
+      ? [
+          r.salat_subuh && "Subuh",
+          r.salat_zuhur && "Zuhur",
+          r.salat_asar && "Asar",
+          r.salat_magrib && "Magrib",
+          r.salat_isya && "Isya"
+        ]
+          .filter(Boolean)
+          .join(", ") || "-"
+      : "-";
+
+    const mengajiText = r?.mengaji_status === "sudah"
+      ? `Sudah (QS. ${r.mengaji_surah || ""}: ${r.mengaji_ayat_awal || ""}-${r.mengaji_ayat_akhir || ""})`
+      : r?.mengaji_status === "belum" ? "Belum" : "-";
+
+    const olahragaText = r?.olahraga_status === "sudah"
+      ? `${r.olahraga_jenis || "Olahraga"} (${r.olahraga_durasi_menit || 0} menit)`
+      : r?.olahraga_status === "belum" ? "Belum" : "-";
+
+    const makanText = r
+      ? `Sarapan: ${r.sarapan_status}${r.sarapan_bergizi ? " [Gizi Seimbang]" : ""}, Siang: ${r.makan_siang_status}, Malam: ${r.makan_malam_status}`
+      : "-";
+
+    const belajarText = r ? `${r.belajar_total_durasi || 0} menit (${r.belajar_kegiatan?.length || 0} kegiatan)` : "-";
+
+    const masyarakatText = r?.bermasyarakat_status === "sudah"
+      ? r.bermasyarakat_kegiatan || "Sudah"
+      : r?.bermasyarakat_status === "belum" ? "Belum" : "-";
+
+    let statusText = "Belum Mengisi";
+    if (item.isFilled) {
+      statusText = r?.is_final ? "Terkirim Final" : "Draft (Auto-saved)";
+    }
+
+    return [
+      idx + 1,
+      item.siswa.nis || "-",
+      item.siswa.nama,
+      item.siswa.kelas || "-",
+      statusText,
+      item.isFilled ? `${item.progress}%` : "0%",
+      r?.bangun_pagi_waktu || "-",
+      salatList,
+      mengajiText,
+      olahragaText,
+      makanText,
+      belajarText,
+      masyarakatText,
+      r?.tidur_cepat_waktu || "-",
+      r?.waktu_kirim_final ? new Date(r.waktu_kirim_final).toLocaleString("id-ID") : "-"
+    ];
+  });
+
+  const sheetAOA: any[][] = [
+    ["LAPORAN HARIAN JURNAL 7 KEBIASAAN ANAK INDONESIA HEBAT (7 KAIH)"],
+    ["SMAN 19 BANDUNG"],
+    [`Tanggal: ${dateFormatted}`, `Kelas: ${kelas === "Semua" ? "Semua Kelas" : kelas}`, `Total Siswa: ${dailyRows.length}`],
+    [`Waktu Ekspor: ${new Date().toLocaleString("id-ID")}`],
+    [],
+    headers,
+    ...dataRows
+  ];
+
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet(sheetAOA);
+
+  autoFitWorksheetCols(ws, 5, 10, 55);
+  XLSX.utils.book_append_sheet(wb, ws, "Rekap Harian 7 KAIH");
+
+  const sanitizedKelas = (kelas || "Semua").replace(/[^a-zA-Z0-9]/g, "_");
+  XLSX.writeFile(wb, `Rekap_Harian_7KAIH_${sanitizedKelas}_${tanggal}.xlsx`);
 }
 

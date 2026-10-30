@@ -51,7 +51,8 @@ import {
   MONTH_NAMES_ID,
   calculatePeriodSummary,
   exportRekapIndividuToExcel,
-  exportRekapKelasToExcel
+  exportRekapKelasToExcel,
+  exportRekapHarianToExcel
 } from "../../services/kaihService";
 import { formatLocalDate, parseDateSafe } from "../../parseDateSafe";
 import { compareClasses, toSentenceCase } from "../../formatName";
@@ -419,71 +420,69 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
       return;
     }
 
-    // 3. Ekspor Rekap Harian
+    // 3. Ekspor Rekap Harian (Format Spreadsheet Rapi dengan Kop Resmi)
     if (filteredDailyRows.length === 0) {
       alert("Tidak ada data untuk diekspor pada tanggal ini.");
       return;
     }
 
-    const rows = filteredDailyRows.map((item, idx) => {
-      const r = item.record;
-      const salatList = r
-        ? [
-            r.salat_subuh && "Subuh",
-            r.salat_zuhur && "Zuhur",
-            r.salat_asar && "Asar",
-            r.salat_magrib && "Magrib",
-            r.salat_isya && "Isya"
-          ]
-            .filter(Boolean)
-            .join(", ")
-        : "-";
+    exportRekapHarianToExcel(selectedDate, selectedKelas, filteredDailyRows);
+  };
 
-      const mengajiText = r?.mengaji_status === "sudah"
-        ? `Sudah (${r.mengaji_surah || ""}: ${r.mengaji_ayat_awal || ""}-${r.mengaji_ayat_akhir || ""})`
-        : r?.mengaji_status === "belum" ? "Belum" : "-";
+  // Helper & Handler untuk Pilihan Akses Kelas (Termasuk Select Semua)
+  const isAllClassesSelected = useMemo(() => {
+    if (selectedClassesToAssign.includes("Semua")) return true;
+    if (availableClassOptions.length === 0) return false;
+    return availableClassOptions.every((c) => selectedClassesToAssign.includes(c));
+  }, [selectedClassesToAssign, availableClassOptions]);
 
-      const olahragaText = r?.olahraga_status === "sudah"
-        ? `${r.olahraga_jenis || "Olahraga"} (${r.olahraga_durasi_menit || 0} menit)`
-        : r?.olahraga_status === "belum" ? "Belum" : "-";
+  const handleToggleSelectAll = () => {
+    if (isAllClassesSelected) {
+      setSelectedClassesToAssign([]);
+    } else {
+      setSelectedClassesToAssign(["Semua", ...availableClassOptions]);
+    }
+  };
 
-      const makanText = r
-        ? `Sarapan: ${r.sarapan_status}, Siang: ${r.makan_siang_status}, Malam: ${r.makan_malam_status}`
-        : "-";
+  const handleSelectGrade = (gradePrefix: string) => {
+    const gradeClasses = availableClassOptions.filter(
+      (c) => c.startsWith(`${gradePrefix}-`) || c.startsWith(`${gradePrefix} `) || c === gradePrefix
+    );
+    if (gradeClasses.length === 0) return;
 
-      const belajarText = r
-        ? `${r.belajar_total_durasi || 0} menit (${r.belajar_kegiatan?.length || 0} kegiatan)`
-        : "-";
+    const currentClean = selectedClassesToAssign.filter((c) => c !== "Semua");
+    const allGradeSelected = gradeClasses.every((c) => currentClean.includes(c));
 
-      const masyarakatText = r?.bermasyarakat_status === "sudah"
-        ? r.bermasyarakat_kegiatan || "Sudah"
-        : r?.bermasyarakat_status === "belum" ? "Belum" : "-";
+    let next: string[];
+    if (allGradeSelected) {
+      next = currentClean.filter((c) => !gradeClasses.includes(c));
+    } else {
+      next = Array.from(new Set([...currentClean, ...gradeClasses]));
+    }
 
-      return {
-        No: idx + 1,
-        NIS: item.siswa.nis,
-        Nama: item.siswa.nama,
-        Kelas: item.siswa.kelas,
-        Tanggal: selectedDate,
-        "Status Pengisian": item.isFilled ? (r?.is_final ? "Terkirim Final" : "Draft (Auto-saved)") : "Belum Mengisi",
-        "Progres Jurnal 7 KAIH (%)": item.progress,
-        "1. Bangun Pagi": r?.bangun_pagi_waktu || "-",
-        "Target Bangun": r?.bangun_pagi_target_sesuai ? "Tercapai" : "-",
-        "2. Salat Wajib": salatList,
-        "2b. Mengaji": mengajiText,
-        "3. Berolahraga": olahragaText,
-        "4. Makan Sehat": makanText,
-        "5. Gemar Belajar": belajarText,
-        "6. Bermasyarakat": masyarakatText,
-        "7. Tidur Cepat": r?.tidur_cepat_waktu || "-",
-        "Target Tidur": r?.tidur_cepat_target_sesuai ? "Tercapai" : "-"
-      };
-    });
+    if (availableClassOptions.length > 0 && availableClassOptions.every((c) => next.includes(c))) {
+      setSelectedClassesToAssign(["Semua", ...availableClassOptions]);
+    } else {
+      setSelectedClassesToAssign(next);
+    }
+  };
 
-    const worksheet = XLSX.utils.json_to_sheet(rows);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap Jurnal 7 KAIH");
-    XLSX.writeFile(workbook, `Rekap_Jurnal_7KAIH_${selectedKelas}_${selectedDate}.xlsx`);
+  const handleToggleSingleClass = (k: string) => {
+    let current = isAllClassesSelected
+      ? [...availableClassOptions]
+      : selectedClassesToAssign.filter((c) => c !== "Semua");
+
+    if (current.includes(k)) {
+      current = current.filter((c) => c !== k);
+    } else {
+      current = [...current, k];
+    }
+
+    if (availableClassOptions.length > 0 && availableClassOptions.every((c) => current.includes(c))) {
+      setSelectedClassesToAssign(["Semua", ...availableClassOptions]);
+    } else {
+      setSelectedClassesToAssign(current);
+    }
   };
 
   // Admin: Simpan Penugasan Guru / Kepsek
@@ -492,14 +491,18 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
       alert("Silakan pilih guru atau kepala sekolah terlebih dahulu");
       return;
     }
-    if (selectedClassesToAssign.length === 0) {
-      alert("Pilih minimal satu kelas (atau 'Semua') untuk diberikan izin akses");
+    if (selectedClassesToAssign.length === 0 && !isAllClassesSelected) {
+      alert("Pilih minimal satu kelas (atau 'Select Semua') untuk diberikan izin akses");
       return;
     }
 
+    const finalClasses = isAllClassesSelected
+      ? ["Semua"]
+      : selectedClassesToAssign.filter((c) => c !== "Semua");
+
     setIsAssigning(true);
     try {
-      const res = await assignGuruKelas7Kaih(selectedCandidateId, selectedClassesToAssign);
+      const res = await assignGuruKelas7Kaih(selectedCandidateId, finalClasses);
       if (res.success) {
         setToastMsg("Izin akses & penugasan kelas berhasil disimpan!");
         loadAdminData();
@@ -1527,9 +1530,13 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                               {userAssignments.map((ga) => (
                                 <span
                                   key={ga.kelas}
-                                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-brand-50 text-brand-700 border border-brand-200 font-black text-xs"
+                                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl font-black text-xs border ${
+                                    ga.kelas === "Semua"
+                                      ? "bg-amber-50 text-amber-900 border-amber-300 shadow-2xs"
+                                      : "bg-brand-50 text-brand-700 border-brand-200"
+                                  }`}
                                 >
-                                  {ga.kelas === "Semua" ? "Semua Kelas" : ga.kelas}
+                                  {ga.kelas === "Semua" ? "⭐ Semua Kelas (Akses Penuh)" : ga.kelas}
                                   <button
                                     onClick={() => handleRemoveAssignment(guruId, ga.kelas)}
                                     className="hover:text-rose-600 transition-colors cursor-pointer"
@@ -1545,7 +1552,12 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                             <button
                               onClick={() => {
                                 setSelectedCandidateId(guruId);
-                                setSelectedClassesToAssign(userAssignments.map((g) => g.kelas));
+                                const existingClasses = userAssignments.map((g) => g.kelas);
+                                if (existingClasses.includes("Semua")) {
+                                  setSelectedClassesToAssign(["Semua", ...availableClassOptions]);
+                                } else {
+                                  setSelectedClassesToAssign(existingClasses);
+                                }
                                 setShowAssignModal(true);
                               }}
                               className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all cursor-pointer"
@@ -1633,73 +1645,121 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                 </select>
               </div>
 
-              {/* Pilih Kelas Binaan (Termasuk "Semua Kelas") */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
+              {/* Pilih Kelas Binaan (Termasuk "Select Semua") */}
+              <div className="space-y-2.5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <label className="text-xs font-bold text-slate-700">Pilih Akses Kelas:</label>
-                  <div className="flex items-center gap-2 text-[11px] font-bold">
+                  
+                  {/* Shortcut Button Bar: Select Semua, Tingkat X, XI, XII, Reset */}
+                  <div className="flex flex-wrap items-center gap-1.5">
                     <button
                       type="button"
-                      onClick={() => setSelectedClassesToAssign(["Semua"])}
-                      className="text-brand-600 hover:underline cursor-pointer"
+                      onClick={handleToggleSelectAll}
+                      className={`px-2.5 py-1 rounded-xl text-[11px] font-black transition-all cursor-pointer border flex items-center gap-1 ${
+                        isAllClassesSelected
+                          ? "bg-brand-600 text-white border-brand-600 shadow-xs"
+                          : "bg-brand-50 text-brand-700 border-brand-200 hover:bg-brand-100"
+                      }`}
+                      title={isAllClassesSelected ? "Batalkan pemilihan seluruh kelas" : "Pilih seluruh kelas yang ada sekaligus"}
                     >
-                      Akses Semua Kelas
+                      <CheckCheck className="w-3.5 h-3.5" />
+                      <span>{isAllClassesSelected ? "Batalkan Semua" : "Select Semua"}</span>
                     </button>
-                    <span className="text-slate-300">•</span>
+                    <button
+                      type="button"
+                      onClick={() => handleSelectGrade("X")}
+                      className="px-2 py-1 rounded-xl text-[11px] font-black bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-all cursor-pointer"
+                      title="Pilih seluruh kelas X"
+                    >
+                      Kls X
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSelectGrade("XI")}
+                      className="px-2 py-1 rounded-xl text-[11px] font-black bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-all cursor-pointer"
+                      title="Pilih seluruh kelas XI"
+                    >
+                      Kls XI
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSelectGrade("XII")}
+                      className="px-2 py-1 rounded-xl text-[11px] font-black bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-all cursor-pointer"
+                      title="Pilih seluruh kelas XII"
+                    >
+                      Kls XII
+                    </button>
                     <button
                       type="button"
                       onClick={() => setSelectedClassesToAssign([])}
-                      className="text-slate-500 hover:underline cursor-pointer"
+                      className="px-2 py-1 rounded-xl text-[11px] font-black bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition-all cursor-pointer"
+                      title="Kosongkan semua pilihan kelas"
                     >
                       Reset
                     </button>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto p-2 border border-slate-200 rounded-2xl bg-slate-50">
+                {/* Status Pilihan Info */}
+                <div className="flex items-center justify-between text-[11px] font-bold px-1 text-slate-500">
+                  <span>Status Terpilih:</span>
+                  <span className={`font-black ${isAllClassesSelected ? "text-emerald-700" : selectedClassesToAssign.length > 0 ? "text-brand-700" : "text-slate-400"}`}>
+                    {isAllClassesSelected
+                      ? `⭐ Akses Penuh: Semua Kelas Terpilih (${availableClassOptions.length} Kelas)`
+                      : selectedClassesToAssign.length > 0
+                      ? `${selectedClassesToAssign.filter((c) => c !== "Semua").length} dari ${availableClassOptions.length} kelas dipilih`
+                      : "Belum ada kelas yang dipilih"}
+                  </span>
+                </div>
+
+                <div className="p-2.5 border border-slate-200 rounded-2xl bg-slate-50 space-y-2">
+                  {/* Banner Tombol Utama Select Semua */}
                   <button
                     type="button"
-                    onClick={() => {
-                      if (selectedClassesToAssign.includes("Semua")) {
-                        setSelectedClassesToAssign([]);
-                      } else {
-                        setSelectedClassesToAssign(["Semua"]);
-                      }
-                    }}
-                    className={`col-span-3 p-2 rounded-xl text-xs font-black transition-all cursor-pointer border ${
-                      selectedClassesToAssign.includes("Semua")
+                    onClick={handleToggleSelectAll}
+                    className={`w-full p-2.5 rounded-xl text-xs font-black transition-all cursor-pointer border flex items-center justify-between gap-3 text-left ${
+                      isAllClassesSelected
                         ? "bg-brand-600 text-white border-brand-600 shadow-sm"
                         : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
                     }`}
                   >
-                    ⭐ Semua Kelas (Akses Penuh Seluruh Siswa)
+                    <div className="flex items-center gap-2.5">
+                      <div className={`w-5 h-5 rounded-lg flex items-center justify-center shrink-0 ${isAllClassesSelected ? "bg-white text-brand-600" : "border border-slate-300 bg-slate-50"}`}>
+                        {isAllClassesSelected ? <CheckCheck className="w-3.5 h-3.5" /> : null}
+                      </div>
+                      <div>
+                        <p className="font-black text-xs">⭐ Semua Kelas (Akses Penuh Seluruh Siswa)</p>
+                        <p className={`text-[10px] font-medium ${isAllClassesSelected ? "text-brand-100" : "text-slate-400"}`}>
+                          {isAllClassesSelected ? "Seluruh kelas terpilih aktif" : "Klik untuk memilih dan menandai semua kelas sekaligus"}
+                        </p>
+                      </div>
+                    </div>
+                    <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${isAllClassesSelected ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600"}`}>
+                      {availableClassOptions.length} Kelas
+                    </span>
                   </button>
 
-                  {availableClassOptions.map((k) => {
-                    const isSelected = selectedClassesToAssign.includes(k);
-                    return (
-                      <button
-                        key={k}
-                        type="button"
-                        onClick={() => {
-                          if (selectedClassesToAssign.includes("Semua")) {
-                            setSelectedClassesToAssign([k]);
-                          } else if (isSelected) {
-                            setSelectedClassesToAssign(selectedClassesToAssign.filter((c) => c !== k));
-                          } else {
-                            setSelectedClassesToAssign([...selectedClassesToAssign, k]);
-                          }
-                        }}
-                        className={`p-2 rounded-xl text-xs font-black transition-all cursor-pointer border ${
-                          isSelected && !selectedClassesToAssign.includes("Semua")
-                            ? "bg-brand-600 text-white border-brand-600 shadow-sm"
-                            : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
-                        }`}
-                      >
-                        {k}
-                      </button>
-                    );
-                  })}
+                  {/* Grid Kelas Individual */}
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5 max-h-48 overflow-y-auto p-1">
+                    {availableClassOptions.map((k) => {
+                      const isSelected = isAllClassesSelected || selectedClassesToAssign.includes(k);
+                      return (
+                        <button
+                          key={k}
+                          type="button"
+                          onClick={() => handleToggleSingleClass(k)}
+                          className={`p-2 rounded-xl text-xs font-black transition-all cursor-pointer border flex items-center justify-center gap-1 ${
+                            isSelected
+                              ? "bg-brand-600 text-white border-brand-600 shadow-2xs"
+                              : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
+                          }`}
+                        >
+                          {isSelected && <CheckCheck className="w-3 h-3 shrink-0" />}
+                          <span className="truncate">{k}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
 

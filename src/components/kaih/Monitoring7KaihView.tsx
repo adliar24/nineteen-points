@@ -39,6 +39,7 @@ import {
   getTujuhKaihRekap,
   getGuruPenugasan7Kaih,
   assignGuruKelas7Kaih,
+  assignMultipleGuruKelas7Kaih,
   removeGuruPenugasan7Kaih,
   unlockFinal7Kaih
 } from "../../dbStore";
@@ -149,7 +150,8 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
 
   // Admin Assignment Form Modal
   const [showAssignModal, setShowAssignModal] = useState(false);
-  const [selectedCandidateId, setSelectedCandidateId] = useState("");
+  const [selectedCandidateIds, setSelectedCandidateIds] = useState<string[]>([]);
+  const [teacherSearchQuery, setTeacherSearchQuery] = useState("");
   const [selectedClassesToAssign, setSelectedClassesToAssign] = useState<string[]>([]);
   const [isAssigning, setIsAssigning] = useState(false);
 
@@ -429,7 +431,53 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
     exportRekapHarianToExcel(selectedDate, selectedKelas, filteredDailyRows);
   };
 
-  // Helper & Handler untuk Pilihan Akses Kelas (Termasuk Select Semua)
+  // Helper & Handler untuk Pilihan Guru (Termasuk Select Semua Guru)
+  const isAllTeachersSelected = useMemo(() => {
+    if (candidatesList.length === 0) return false;
+    return candidatesList.every((t) => selectedCandidateIds.includes(t.id));
+  }, [candidatesList, selectedCandidateIds]);
+
+  const filteredCandidatesList = useMemo(() => {
+    if (!teacherSearchQuery.trim()) return candidatesList;
+    const q = teacherSearchQuery.toLowerCase();
+    return candidatesList.filter(
+      (t) =>
+        (t.nama || "").toLowerCase().includes(q) ||
+        (t.email || "").toLowerCase().includes(q)
+    );
+  }, [candidatesList, teacherSearchQuery]);
+
+  const handleToggleSelectAllTeachers = () => {
+    if (isAllTeachersSelected) {
+      setSelectedCandidateIds([]);
+    } else {
+      setSelectedCandidateIds(candidatesList.map((t) => t.id));
+    }
+  };
+
+  const handleSelectTeachersByRole = (role: "guru" | "kepala_sekolah") => {
+    const roleTeachers = candidatesList.filter((t) => t.role === role);
+    if (roleTeachers.length === 0) return;
+
+    const roleIds = roleTeachers.map((t) => t.id);
+    const allRoleSelected = roleIds.every((id) => selectedCandidateIds.includes(id));
+
+    if (allRoleSelected) {
+      setSelectedCandidateIds((prev) => prev.filter((id) => !roleIds.includes(id)));
+    } else {
+      setSelectedCandidateIds((prev) => Array.from(new Set([...prev, ...roleIds])));
+    }
+  };
+
+  const handleToggleSingleTeacher = (teacherId: string) => {
+    setSelectedCandidateIds((prev) =>
+      prev.includes(teacherId)
+        ? prev.filter((id) => id !== teacherId)
+        : [...prev, teacherId]
+    );
+  };
+
+  // Helper & Handler untuk Pilihan Akses Kelas (Termasuk Select Semua Kelas)
   const isAllClassesSelected = useMemo(() => {
     if (selectedClassesToAssign.includes("Semua")) return true;
     if (availableClassOptions.length === 0) return false;
@@ -485,10 +533,10 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
     }
   };
 
-  // Admin: Simpan Penugasan Guru / Kepsek
+  // Admin: Simpan Penugasan Guru / Kepsek (Mendukung Multi-Guru dan Multi-Kelas)
   const handleSaveTeacherAssignment = async () => {
-    if (!selectedCandidateId) {
-      alert("Silakan pilih guru atau kepala sekolah terlebih dahulu");
+    if (selectedCandidateIds.length === 0) {
+      alert("Silakan pilih minimal satu guru atau kepala sekolah (atau klik 'Select Semua Guru')");
       return;
     }
     if (selectedClassesToAssign.length === 0 && !isAllClassesSelected) {
@@ -502,12 +550,13 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
 
     setIsAssigning(true);
     try {
-      const res = await assignGuruKelas7Kaih(selectedCandidateId, finalClasses);
+      const res = await assignMultipleGuruKelas7Kaih(selectedCandidateIds, finalClasses);
       if (res.success) {
-        setToastMsg("Izin akses & penugasan kelas berhasil disimpan!");
+        setToastMsg(`Izin akses berhasil disimpan untuk ${selectedCandidateIds.length} guru/kepala sekolah!`);
         loadAdminData();
         setShowAssignModal(false);
-        setSelectedCandidateId("");
+        setSelectedCandidateIds([]);
+        setTeacherSearchQuery("");
         setSelectedClassesToAssign([]);
         setTimeout(() => setToastMsg(""), 3500);
       } else {
@@ -1479,7 +1528,8 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
             </div>
             <button
               onClick={() => {
-                setSelectedCandidateId("");
+                setSelectedCandidateIds([]);
+                setTeacherSearchQuery("");
                 setSelectedClassesToAssign([]);
                 setShowAssignModal(true);
               }}
@@ -1551,7 +1601,8 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                           <td className="py-4 px-5 text-right">
                             <button
                               onClick={() => {
-                                setSelectedCandidateId(guruId);
+                                setSelectedCandidateIds([guruId]);
+                                setTeacherSearchQuery("");
                                 const existingClasses = userAssignments.map((g) => g.kelas);
                                 if (existingClasses.includes("Semua")) {
                                   setSelectedClassesToAssign(["Semua", ...availableClassOptions]);
@@ -1611,13 +1662,13 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full relative z-10 shadow-2xl border border-brand-100 space-y-5"
+              className="bg-white rounded-3xl p-6 sm:p-7 max-w-xl w-full max-h-[90vh] overflow-y-auto relative z-10 shadow-2xl border border-brand-100 space-y-5"
             >
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-base font-black text-brand-950">Beri Izin Akses Jurnal 7 KAIH</h3>
                   <p className="text-xs text-slate-500 font-medium">
-                    Hanya guru dan kepala sekolah yang dapat dipilih
+                    Pilih guru dan kepala sekolah yang diberikan wewenang akses monitoring
                   </p>
                 </div>
                 <button
@@ -1628,21 +1679,150 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                 </button>
               </div>
 
-              {/* Pilih Guru / Kepsek */}
-              <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">Pilih Guru / Kepala Sekolah:</label>
-                <select
-                  value={selectedCandidateId}
-                  onChange={(e) => setSelectedCandidateId(e.target.value)}
-                  className="w-full bg-slate-50 px-3 py-2.5 rounded-2xl border border-slate-200 text-xs font-bold text-slate-800 outline-none"
-                >
-                  <option value="">-- Pilih Guru / Kepala Sekolah --</option>
-                  {candidatesList.map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {toSentenceCase(t.nama)} ({t.role === "kepala_sekolah" ? "Kepala Sekolah" : "Guru"}) - {t.email}
-                    </option>
-                  ))}
-                </select>
+              {/* 1. Pilih Guru / Kepala Sekolah (Mendukung Select Semua Guru) */}
+              <div className="space-y-2.5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <label className="text-xs font-bold text-slate-700">
+                    Pilih Guru / Kepala Sekolah:
+                  </label>
+
+                  {/* Shortcut Button Bar: Select Semua Guru, Hanya Guru, Kepsek, Reset */}
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={handleToggleSelectAllTeachers}
+                      className={`px-2.5 py-1 rounded-xl text-[11px] font-black transition-all cursor-pointer border flex items-center gap-1 ${
+                        isAllTeachersSelected
+                          ? "bg-brand-600 text-white border-brand-600 shadow-xs"
+                          : "bg-brand-50 text-brand-700 border-brand-200 hover:bg-brand-100"
+                      }`}
+                      title={isAllTeachersSelected ? "Batalkan pemilihan seluruh guru" : "Pilih seluruh guru & kepala sekolah sekaligus"}
+                    >
+                      <CheckCheck className="w-3.5 h-3.5" />
+                      <span>{isAllTeachersSelected ? "Batalkan Semua Guru" : "Select Semua Guru"}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSelectTeachersByRole("guru")}
+                      className="px-2 py-1 rounded-xl text-[11px] font-black bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-all cursor-pointer"
+                      title="Pilih seluruh akun guru"
+                    >
+                      Semua Guru
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSelectTeachersByRole("kepala_sekolah")}
+                      className="px-2 py-1 rounded-xl text-[11px] font-black bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-all cursor-pointer"
+                      title="Pilih kepala sekolah"
+                    >
+                      Kepsek
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedCandidateIds([])}
+                      className="px-2 py-1 rounded-xl text-[11px] font-black bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition-all cursor-pointer"
+                      title="Kosongkan pilihan guru"
+                    >
+                      Reset
+                    </button>
+                  </div>
+                </div>
+
+                {/* Status Terpilih Info Guru */}
+                <div className="flex items-center justify-between text-[11px] font-bold px-1 text-slate-500">
+                  <span>Guru Terpilih:</span>
+                  <span className={`font-black ${isAllTeachersSelected ? "text-emerald-700" : selectedCandidateIds.length > 0 ? "text-brand-700" : "text-slate-400"}`}>
+                    {isAllTeachersSelected
+                      ? `⭐ Akses Massal: Semua Guru & Kepsek Terpilih (${candidatesList.length} Pengguna)`
+                      : selectedCandidateIds.length > 0
+                      ? `${selectedCandidateIds.length} dari ${candidatesList.length} guru/kepsek dipilih`
+                      : "Belum ada guru yang dipilih"}
+                  </span>
+                </div>
+
+                {/* Search & List Box Guru */}
+                <div className="p-2.5 border border-slate-200 rounded-2xl bg-slate-50 space-y-2">
+                  {/* Search Input Guru */}
+                  <div className="relative">
+                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      placeholder="Cari nama guru atau email..."
+                      value={teacherSearchQuery}
+                      onChange={(e) => setTeacherSearchQuery(e.target.value)}
+                      className="w-full bg-white pl-8 pr-3 py-1.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 outline-none focus:border-brand-500"
+                    />
+                  </div>
+
+                  {/* Banner Tombol Utama Select Semua Guru */}
+                  <button
+                    type="button"
+                    onClick={handleToggleSelectAllTeachers}
+                    className={`w-full p-2.5 rounded-xl text-xs font-black transition-all cursor-pointer border flex items-center justify-between gap-3 text-left ${
+                      isAllTeachersSelected
+                        ? "bg-brand-600 text-white border-brand-600 shadow-sm"
+                        : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <div className={`w-5 h-5 rounded-lg flex items-center justify-center shrink-0 ${isAllTeachersSelected ? "bg-white text-brand-600" : "border border-slate-300 bg-slate-50"}`}>
+                        {isAllTeachersSelected ? <CheckCheck className="w-3.5 h-3.5" /> : null}
+                      </div>
+                      <div>
+                        <p className="font-black text-xs">⭐ Seluruh Guru & Kepala Sekolah (Akses Massal)</p>
+                        <p className={`text-[10px] font-medium ${isAllTeachersSelected ? "text-brand-100" : "text-slate-400"}`}>
+                          {isAllTeachersSelected ? "Semua guru dan kepala sekolah terpilih aktif" : "Klik untuk menandai dan memilih semua guru sekaligus"}
+                        </p>
+                      </div>
+                    </div>
+                    <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${isAllTeachersSelected ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600"}`}>
+                      {candidatesList.length} Pengguna
+                    </span>
+                  </button>
+
+                  {/* Daftar Guru Scrollable List */}
+                  <div className="max-h-40 overflow-y-auto space-y-1 pr-1">
+                    {filteredCandidatesList.length === 0 ? (
+                      <p className="text-center text-xs text-slate-400 py-3">Tidak ditemukan pengguna guru</p>
+                    ) : (
+                      filteredCandidatesList.map((t) => {
+                        const isSelected = selectedCandidateIds.includes(t.id);
+                        return (
+                          <div
+                            key={t.id}
+                            onClick={() => handleToggleSingleTeacher(t.id)}
+                            className={`p-2 rounded-xl text-xs transition-all cursor-pointer border flex items-center justify-between gap-2.5 ${
+                              isSelected
+                                ? "bg-brand-50/80 border-brand-300 text-brand-950 font-bold"
+                                : "bg-white border-slate-200 hover:bg-slate-100 text-slate-700"
+                            }`}
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <div className={`w-4 h-4 rounded-md flex items-center justify-center shrink-0 ${
+                                isSelected ? "bg-brand-600 text-white" : "border border-slate-300 bg-white"
+                              }`}>
+                                {isSelected && <CheckCheck className="w-3 h-3" />}
+                              </div>
+                              <div className="min-w-0">
+                                <p className="font-bold text-xs truncate">
+                                  {toSentenceCase(t.nama)}
+                                </p>
+                                <p className="text-[10px] text-slate-400 truncate">
+                                  {t.email || "-"}
+                                </p>
+                              </div>
+                            </div>
+                            <span className={`text-[10px] font-black px-2 py-0.5 rounded-md shrink-0 ${
+                              t.role === "kepala_sekolah" ? "bg-indigo-100 text-indigo-700" : "bg-slate-100 text-slate-600"
+                            }`}>
+                              {t.role === "kepala_sekolah" ? "Kepsek" : "Guru"}
+                            </span>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
               </div>
 
               {/* Pilih Kelas Binaan (Termasuk "Select Semua") */}

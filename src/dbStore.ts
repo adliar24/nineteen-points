@@ -1970,16 +1970,30 @@ export const assignGuruKelas7Kaih = async (
   guruId: string,
   kelasList: string[]
 ): Promise<{ success: boolean; error?: string }> => {
+  return assignMultipleGuruKelas7Kaih([guruId], kelasList);
+};
+
+export const assignMultipleGuruKelas7Kaih = async (
+  guruIds: string[],
+  kelasList: string[]
+): Promise<{ success: boolean; error?: string }> => {
   try {
+    if (guruIds.length === 0) return { success: true };
+
     if (supabase) {
-      // Hapus penugasan lama untuk guru ini terlebih dahulu lalu insert yang baru
-      await supabase.from("guru_penugasan_7kaih").delete().eq("guru_id", guruId);
+      // Hapus penugasan lama untuk guru-guru ini terlebih dahulu lalu insert yang baru
+      await supabase.from("guru_penugasan_7kaih").delete().in("guru_id", guruIds);
 
       if (kelasList.length > 0) {
-        const rows = kelasList.map(kelas => ({
-          guru_id: guruId,
-          kelas
-        }));
+        const rows: { guru_id: string; kelas: string }[] = [];
+        guruIds.forEach((gId) => {
+          kelasList.forEach((k) => {
+            rows.push({
+              guru_id: gId,
+              kelas: k
+            });
+          });
+        });
         const { error } = await supabase.from("guru_penugasan_7kaih").insert(rows);
         if (error) throw error;
       }
@@ -1987,14 +2001,20 @@ export const assignGuruKelas7Kaih = async (
 
     // Update local cache
     const existing = getLocalStorage<GuruPenugasan7Kaih[]>("19points_7kaih_penugasan_all", []);
-    const filtered = existing.filter(e => e.guru_id !== guruId);
-    const newItems = kelasList.map(k => ({
-      id: `local_${guruId}_${k}`,
-      guru_id: guruId,
-      kelas: k
-    }));
+    const filtered = existing.filter((e) => !guruIds.includes(e.guru_id));
+    const newItems: GuruPenugasan7Kaih[] = [];
+
+    guruIds.forEach((gId) => {
+      const guruItems = kelasList.map((k) => ({
+        id: `local_${gId}_${k}`,
+        guru_id: gId,
+        kelas: k
+      }));
+      newItems.push(...guruItems);
+      setLocalStorage(`19points_7kaih_penugasan_${gId}`, guruItems);
+    });
+
     setLocalStorage("19points_7kaih_penugasan_all", [...filtered, ...newItems]);
-    setLocalStorage(`19points_7kaih_penugasan_${guruId}`, newItems);
 
     return { success: true };
   } catch (err: any) {

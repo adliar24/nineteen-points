@@ -1,11 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Printer } from "lucide-react";
+import { X, Printer, Sparkles } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Siswa } from "../types";
 import { toSentenceCase } from "../formatName";
 import { getSiswaSeparatePoinMap } from "../dbStore";
+import DetailPengerjaan7KaihModal from "./kaih/DetailPengerjaan7KaihModal";
 
 interface StudentDetailPopupProps {
   isOpen: boolean;
@@ -20,6 +21,8 @@ export default function StudentDetailPopup({
   student,
   onDownloadCard,
 }: StudentDetailPopupProps) {
+  const [show7KaihModal, setShow7KaihModal] = useState(false);
+
   const { data: poinMap = {} } = useQuery({
     queryKey: ["siswaPoinMap"],
     queryFn: getSiswaSeparatePoinMap,
@@ -90,10 +93,17 @@ export default function StudentDetailPopup({
               </div>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2 pt-1">
+              <button
+                onClick={() => setShow7KaihModal(true)}
+                className="w-full flex items-center justify-center gap-2 py-2.5 bg-gradient-to-r from-brand-900 to-indigo-900 hover:from-brand-800 hover:to-indigo-800 text-white rounded-2xl text-xs font-black transition-all cursor-pointer shadow-sm"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                Lihat Detail Jurnal 7 KAIH
+              </button>
               <button
                 onClick={() => onDownloadCard(student)}
-                className="flex-1 flex items-center justify-center gap-2 py-3 bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-200 rounded-2xl text-sm font-black transition-all cursor-pointer"
+                className="w-full flex items-center justify-center gap-2 py-2.5 bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-200 rounded-2xl text-xs font-black transition-all cursor-pointer"
               >
                 <Printer className="w-4 h-4" />
                 Unduh Kartu
@@ -102,6 +112,13 @@ export default function StudentDetailPopup({
           </motion.div>
         </motion.div>
       )}
+
+      {/* Modal Detail Pengerjaan Jurnal 7 KAIH */}
+      <DetailPengerjaan7KaihModal
+        isOpen={show7KaihModal}
+        onClose={() => setShow7KaihModal(false)}
+        student={student}
+      />
     </AnimatePresence>,
     document.body
   );

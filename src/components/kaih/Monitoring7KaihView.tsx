@@ -43,6 +43,7 @@ import { formatLocalDate, parseDateSafe } from "../../parseDateSafe";
 import { compareClasses, toSentenceCase } from "../../formatName";
 import * as XLSX from "xlsx";
 import PaginationFooter from "../PaginationFooter";
+import DetailPengerjaan7KaihModal from "./DetailPengerjaan7KaihModal";
 
 interface Monitoring7KaihViewProps {
   userSession: UserSession;
@@ -589,22 +590,31 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                       const completedCount = item.evaluations.filter((e) => e.status === "selesai").length;
 
                       return (
-                        <tr key={item.siswa.id} className="hover:bg-slate-50/50 transition-colors">
+                        <tr key={item.siswa.id} className="hover:bg-slate-50/70 transition-colors">
                           <td className="py-3.5 px-5">
-                            <div className="flex items-center gap-3">
+                            <div
+                              onClick={() => {
+                                setDetailModalStudent(item.siswa);
+                                setDetailModalRecord(item.record);
+                              }}
+                              className="flex items-center gap-3 cursor-pointer group"
+                              title="Klik untuk melihat detail pengerjaan murid"
+                            >
                               {item.siswa.foto_url ? (
                                 <img
                                   src={item.siswa.foto_url}
                                   alt={item.siswa.nama}
-                                  className="w-9 h-9 rounded-xl object-cover border border-slate-200"
+                                  className="w-9 h-9 rounded-xl object-cover border border-slate-200 group-hover:border-brand-500 transition-colors"
                                 />
                               ) : (
-                                <div className="w-9 h-9 rounded-xl bg-brand-100 text-brand-700 flex items-center justify-center font-black text-xs">
+                                <div className="w-9 h-9 rounded-xl bg-brand-100 text-brand-700 flex items-center justify-center font-black text-xs group-hover:bg-brand-600 group-hover:text-white transition-colors">
                                   {item.siswa.nama.slice(0, 2).toUpperCase()}
                                 </div>
                               )}
                               <div>
-                                <h4 className="font-black text-brand-950">{toSentenceCase(item.siswa.nama)}</h4>
+                                <h4 className="font-black text-brand-950 group-hover:text-brand-600 transition-colors">
+                                  {toSentenceCase(item.siswa.nama)}
+                                </h4>
                                 <p className="text-[10px] text-slate-400 font-bold">NIS: {item.siswa.nis}</p>
                               </div>
                             </div>
@@ -685,20 +695,21 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
                           </td>
 
                           <td className="py-3.5 px-5 text-right">
-                            {item.isFilled ? (
-                              <button
-                                onClick={() => {
-                                  setDetailModalStudent(item.siswa);
-                                  setDetailModalRecord(item.record);
-                                }}
-                                className="px-3 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 rounded-xl text-xs font-bold transition-all cursor-pointer border border-brand-200 inline-flex items-center gap-1.5"
-                              >
-                                <Eye className="w-3.5 h-3.5" />
-                                Rincian
-                              </button>
-                            ) : (
-                              <span className="text-slate-300 text-xs">-</span>
-                            )}
+                            <button
+                              onClick={() => {
+                                setDetailModalStudent(item.siswa);
+                                setDetailModalRecord(item.record);
+                              }}
+                              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-1.5 shadow-2xs ${
+                                item.isFilled
+                                  ? "bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-200"
+                                  : "bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200"
+                              }`}
+                              title={item.isFilled ? "Lihat rincian pengerjaan jurnal hari ini" : "Lihat detail & riwayat jurnal murid"}
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                              <span>{item.isFilled ? "Detail Pengerjaan" : "Lihat Detail"}</span>
+                            </button>
                           </td>
                         </tr>
                       );
@@ -823,179 +834,22 @@ export default function Monitoring7KaihView({ userSession }: Monitoring7KaihView
       )}
 
       {/* ======================================================== */}
-      {/* MODAL RINCIAN CHECKLIST MURID                            */}
+      {/* MODAL RINCIAN & DETAIL PENGERJAAN MURID 7 KAIH           */}
       {/* ======================================================== */}
-      <AnimatePresence>
-        {detailModalStudent && detailModalRecord && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm"
-              onClick={() => {
-                setDetailModalStudent(null);
-                setDetailModalRecord(null);
-              }}
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 15 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              className="bg-white rounded-3xl p-6 sm:p-8 max-w-2xl w-full max-h-[88vh] overflow-y-auto relative z-10 shadow-2xl border border-brand-100 space-y-6"
-            >
-              <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-                <div className="flex items-center gap-3">
-                  {detailModalStudent.foto_url ? (
-                    <img
-                      src={detailModalStudent.foto_url}
-                      alt={detailModalStudent.nama}
-                      className="w-12 h-12 rounded-2xl object-cover border border-slate-200"
-                    />
-                  ) : (
-                    <div className="w-12 h-12 rounded-2xl bg-brand-100 text-brand-700 flex items-center justify-center font-black text-sm">
-                      {detailModalStudent.nama.slice(0, 2).toUpperCase()}
-                    </div>
-                  )}
-                  <div>
-                    <h3 className="text-base font-black text-brand-950">
-                      {toSentenceCase(detailModalStudent.nama)}
-                    </h3>
-                    <p className="text-xs text-slate-500 font-bold">
-                      Kelas: {detailModalStudent.kelas} • NIS: {detailModalStudent.nis} • Tanggal: {detailModalRecord.tanggal}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  {isAdmin && detailModalRecord.is_final && (
-                    <button
-                      onClick={handleUnlockRecord}
-                      disabled={isUnlocking}
-                      className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-xl text-xs font-bold transition-all border border-amber-200 flex items-center gap-1.5 cursor-pointer"
-                    >
-                      <Unlock className="w-3.5 h-3.5" />
-                      {isUnlocking ? "Membuka..." : "Buka Kunci"}
-                    </button>
-                  )}
-                  <button
-                    onClick={() => {
-                      setDetailModalStudent(null);
-                      setDetailModalRecord(null);
-                    }}
-                    className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all cursor-pointer"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Status Header */}
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-200">
-                <div className="flex items-center gap-2 text-xs font-bold">
-                  {detailModalRecord.is_final ? (
-                    <>
-                      <Lock className="w-4 h-4 text-emerald-600" />
-                      <span className="text-emerald-800 font-black">Data Final Terkunci</span>
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle2 className="w-4 h-4 text-cyan-600" />
-                      <span className="text-cyan-800 font-black">Data Draft (Auto-saved)</span>
-                    </>
-                  )}
-                </div>
-                <span className="text-xs font-black text-brand-950">
-                  Progres: {detailModalRecord.progres_persen || calculate7KaihProgress(detailModalRecord)}%
-                </span>
-              </div>
-
-              {/* Rincian 7 Kebiasaan */}
-              <div className="space-y-4">
-                {evaluate7KaihHabits(detailModalRecord).map((h) => (
-                  <div
-                    key={h.id}
-                    className="p-4 rounded-2xl border border-slate-200 bg-slate-50/60 flex items-start justify-between gap-3"
-                  >
-                    <div>
-                      <h4 className="text-xs font-black text-brand-950 mb-1">{h.nomenklatur}</h4>
-                      <p className="text-xs font-bold text-slate-700">{h.summary}</p>
-
-                      {h.id === "beribadah" && (
-                        <div className="mt-2 text-[11px] text-slate-600 space-y-1">
-                          <p>
-                            Salat Wajib:{" "}
-                            {[
-                              detailModalRecord.salat_subuh && "Subuh",
-                              detailModalRecord.salat_zuhur && "Zuhur",
-                              detailModalRecord.salat_asar && "Asar",
-                              detailModalRecord.salat_magrib && "Magrib",
-                              detailModalRecord.salat_isya && "Isya"
-                            ]
-                              .filter(Boolean)
-                              .join(", ") || "Belum ada yang dicentang"}
-                          </p>
-                          {detailModalRecord.mengaji_status === "sudah" && (
-                            <p>
-                              Tadarus: Surah {detailModalRecord.mengaji_surah || "-"} Ayat{" "}
-                              {detailModalRecord.mengaji_ayat_awal || 0}-
-                              {detailModalRecord.mengaji_ayat_akhir || 0}{" "}
-                              {detailModalRecord.mengaji_catatan ? `(${detailModalRecord.mengaji_catatan})` : ""}
-                            </p>
-                          )}
-                        </div>
-                      )}
-
-                      {h.id === "makan_sehat" && (
-                        <div className="mt-2 text-[11px] text-slate-600 space-y-1">
-                          <p>
-                            Sarapan: {detailModalRecord.sarapan_status}{" "}
-                            {detailModalRecord.sarapan_menu ? `(${detailModalRecord.sarapan_menu})` : ""}
-                          </p>
-                          <p>
-                            Makan Siang: {detailModalRecord.makan_siang_status}{" "}
-                            {detailModalRecord.makan_siang_menu ? `(${detailModalRecord.makan_siang_menu})` : ""}
-                          </p>
-                          <p>
-                            Makan Malam: {detailModalRecord.makan_malam_status}{" "}
-                            {detailModalRecord.makan_malam_menu ? `(${detailModalRecord.makan_malam_menu})` : ""}
-                          </p>
-                        </div>
-                      )}
-
-                      {h.id === "gemar_belajar" && Array.isArray(detailModalRecord.belajar_kegiatan) && (
-                        <div className="mt-2 text-[11px] text-slate-600 space-y-1">
-                          {detailModalRecord.belajar_kegiatan.map((bk, i) => (
-                            <p key={bk.id || i}>
-                              • {bk.kegiatan} ({bk.durasi_menit} menit)
-                            </p>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    <span
-                      className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-full border ${
-                        h.status === "selesai"
-                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                          : h.status === "belum_dilakukan"
-                          ? "bg-amber-50 text-amber-700 border-amber-200"
-                          : "bg-slate-200 text-slate-600 border-slate-300"
-                      }`}
-                    >
-                      {h.status === "selesai"
-                        ? "Tercapai"
-                        : h.status === "belum_dilakukan"
-                        ? "Belum Dilakukan"
-                        : "Belum Diisi"}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      <DetailPengerjaan7KaihModal
+        isOpen={!!detailModalStudent}
+        onClose={() => {
+          setDetailModalStudent(null);
+          setDetailModalRecord(null);
+        }}
+        student={detailModalStudent}
+        initialDate={selectedDate}
+        initialRecord={detailModalRecord}
+        userRole={userSession.role}
+        onUnlocked={() => {
+          loadData();
+        }}
+      />
 
       {/* ======================================================== */}
       {/* MODAL PENUGASAN: HANYA GURU & KEPALA SEKOLAH             */}

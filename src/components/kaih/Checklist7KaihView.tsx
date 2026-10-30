@@ -23,15 +23,17 @@ import {
   X,
   Activity,
   Zap,
-  CheckCheck
+  CheckCheck,
+  Eye
 } from "lucide-react";
-import { UserSession, TujuhKaih, BelajarItem, HabitStatus } from "../../types";
+import { UserSession, TujuhKaih, BelajarItem, HabitStatus, Siswa } from "../../types";
 import {
   getTujuhKaihBySiswaAndDate,
   saveTujuhKaih,
   submitFinal7Kaih,
   getTujuhKaihHistoryBySiswa
 } from "../../dbStore";
+import { supabase } from "../../supabaseClient";
 import {
   createDefault7Kaih,
   getCurrentDeviceTime,
@@ -42,6 +44,7 @@ import {
 } from "../../services/kaihService";
 import { formatLocalDate, parseDateSafe } from "../../parseDateSafe";
 import ConfirmationModal from "../ConfirmationModal";
+import DetailPengerjaan7KaihModal from "./DetailPengerjaan7KaihModal";
 
 interface Checklist7KaihViewProps {
   userSession: UserSession;
@@ -58,12 +61,45 @@ export default function Checklist7KaihView({ userSession, siswaId: propSiswaId }
   const [toastMsg, setToastMsg] = useState("");
   const [historyList, setHistoryList] = useState<TujuhKaih[]>([]);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [currentStudent, setCurrentStudent] = useState<Siswa | null>(null);
   const [showConfirmSubmitFinal, setShowConfirmSubmitFinal] = useState(false);
   const [isSubmittingFinal, setIsSubmittingFinal] = useState(false);
   const [activeMakanTab, setActiveMakanTab] = useState<"sarapan" | "siang" | "malam">("sarapan");
 
   const isToday = selectedDate === formatLocalDate(new Date());
   const isLocked = !!data.is_final;
+
+  // Load informasi data murid
+  useEffect(() => {
+    const loadStudentInfo = async () => {
+      try {
+        if (supabase) {
+          const { data: sData } = await supabase
+            .from("siswa")
+            .select("*")
+            .eq("id", currentSiswaId)
+            .maybeSingle();
+          if (sData) {
+            setCurrentStudent(sData as Siswa);
+            return;
+          }
+        }
+      } catch (e) {
+        console.warn("Gagal mengambil data siswa:", e);
+      }
+
+      setCurrentStudent({
+        id: currentSiswaId,
+        nis: userSession.nis || "-",
+        nama: userSession.fullName || "Murid",
+        kelas: "-",
+        total_poin: 0,
+        foto_url: userSession.foto_url || null
+      });
+    };
+    loadStudentInfo();
+  }, [currentSiswaId, userSession]);
 
   // Load data untuk tanggal terpilih
   const loadDataForDate = async (dateStr: string) => {
@@ -387,6 +423,14 @@ export default function Checklist7KaihView({ userSession, siswaId: propSiswaId }
               </span>
             )}
             <button
+              onClick={() => setShowDetailModal(true)}
+              className="inline-flex items-center gap-1.5 px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-xl text-xs font-bold transition-all cursor-pointer border border-white/20"
+              title="Lihat Rincian Lengkap Pengerjaan Jurnal 7 KAIH"
+            >
+              <Eye className="w-4 h-4" />
+              Detail Pengerjaan
+            </button>
+            <button
               onClick={() => setShowHistoryModal(true)}
               className="inline-flex items-center gap-1.5 px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-xl text-xs font-bold transition-all cursor-pointer border border-white/20"
             >
@@ -399,7 +443,7 @@ export default function Checklist7KaihView({ userSession, siswaId: propSiswaId }
 
       {/* Locked Status Banner if is_final = true */}
       {isLocked && (
-        <div className="bg-amber-500/10 border-2 border-amber-500/30 rounded-3xl p-5 text-amber-900 flex items-center justify-between gap-4">
+        <div className="bg-amber-500/10 border-2 border-amber-500/30 rounded-3xl p-5 text-amber-900 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center font-bold flex-shrink-0">
               <Lock className="w-5 h-5" />
@@ -413,9 +457,18 @@ export default function Checklist7KaihView({ userSession, siswaId: propSiswaId }
               </p>
             </div>
           </div>
-          <span className="text-xs font-black px-3 py-1 bg-amber-200 text-amber-950 rounded-xl">
-            Terkunci 🔒
-          </span>
+          <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+            <button
+              onClick={() => setShowDetailModal(true)}
+              className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-sm"
+            >
+              <Eye className="w-3.5 h-3.5" />
+              Lihat Detail
+            </button>
+            <span className="text-xs font-black px-3 py-1 bg-amber-200 text-amber-950 rounded-xl">
+              Terkunci 🔒
+            </span>
+          </div>
         </div>
       )}
 
@@ -1185,6 +1238,20 @@ export default function Checklist7KaihView({ userSession, siswaId: propSiswaId }
           </div>
         )}
       </AnimatePresence>
+
+      {/* Modal Detail Pengerjaan Murid */}
+      <DetailPengerjaan7KaihModal
+        isOpen={showDetailModal}
+        onClose={() => setShowDetailModal(false)}
+        student={currentStudent}
+        initialDate={selectedDate}
+        initialRecord={data}
+        userRole={userSession.role}
+        onUnlocked={() => {
+          loadDataForDate(selectedDate);
+          loadHistory();
+        }}
+      />
     </div>
   );
 }
